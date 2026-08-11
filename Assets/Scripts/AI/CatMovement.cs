@@ -8,25 +8,27 @@ public class CatMovement : MonoBehaviour
     [SerializeField] int minimumWaypointsBeforeExit = 0;
     [SerializeField] int maximumWaypointsBeforeExit = 3;
     [SerializeField] float stoppingDistance = 0.1f;
+    [SerializeField] float pauseDurationBetweenWaypoints = 0.2f;
 
     NavMeshAgent agent;
     AIState currentState;
-    AIState previousState;
     Vector3 targetDestination;
     int numberOfRoamingWaypoints;
     Vector3[] roamingWaypoints;
     int numberofWaypointsReached;
 
-    void Start()
+    void OnDisable()
     {
-        agent = GetComponent<NavMeshAgent>();
-
-        Initialise();
-        StartCoroutine(MoveToTargetRoutine());
+        StopAllCoroutines();
     }
 
     public void Initialise()
     {
+        if (agent == null)
+        {
+            agent = GetComponent<NavMeshAgent>();
+        }
+
         numberOfRoamingWaypoints = Random.Range(minimumWaypointsBeforeExit, maximumWaypointsBeforeExit + 1);
         Debug.Log("Chosen number of roaming waypoints: " + numberOfRoamingWaypoints);
         if (numberOfRoamingWaypoints == 0)
@@ -41,11 +43,14 @@ public class CatMovement : MonoBehaviour
             numberofWaypointsReached = 0;
             targetDestination = roamingWaypoints[0];
         }
+
+        StartCoroutine(MoveToTargetRoutine());
     }
 
     IEnumerator MoveToTargetRoutine()
     {
         WaitForSeconds updateWait = new WaitForSeconds(targetUpdateFrequency);
+        WaitForSeconds interWaypointWait = new WaitForSeconds(pauseDurationBetweenWaypoints);
         while (true)
         {
             switch (currentState)
@@ -54,6 +59,7 @@ public class CatMovement : MonoBehaviour
                     // Checks whether target destination has been reached
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
                     {
+                        yield return interWaypointWait;
                         numberofWaypointsReached++;
                         // Determines whether all waypoints have been reached and updates destination accordingly
                         if (numberofWaypointsReached >= roamingWaypoints.Length)
@@ -66,15 +72,16 @@ public class CatMovement : MonoBehaviour
                             targetDestination = roamingWaypoints[numberofWaypointsReached];
                         }
                     }
-                    goto case AIState.Exiting;
-                case AIState.Exiting:
-                    // TODO: If treat is nearby, then go to "sees treat" state; once exit is reached, despawn
                     break;
-                case AIState.SeesTreat:
-                    // TODO: If has arrived at treat, then begin eating treat; if treat has disappeared, resume previous behaviour
+                case AIState.Exiting:
+                    if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
+                    {
+                        // Setting the cat to inactive will automatically recycle in back into the pool for spawning
+                        gameObject.SetActive(false);
+                    }
                     break;
                 case AIState.EatingTreat:
-                    // TODO: If treat has disappeared, then go home
+                    // TODO: After short animation, then go home
                     break;
                 case AIState.ReturningHome:
                     // TODO: Once home is reached, despawn
@@ -90,7 +97,6 @@ public class CatMovement : MonoBehaviour
     {
         Roaming,
         Exiting,
-        SeesTreat,
         EatingTreat,
         ReturningHome
     }
