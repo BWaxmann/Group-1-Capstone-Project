@@ -71,6 +71,7 @@ MonoBehaviour:
   minimumWaypointsBeforeExit: 2
   maximumWaypointsBeforeExit: 5
   stoppingDistance: 1
+  pauseDurationBetweenWaypoints: 0.2
 --- !u!1 &2623369373151292546
 GameObject:
   m_ObjectHideFlags: 0

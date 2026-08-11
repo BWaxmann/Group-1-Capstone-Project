@@ -30,7 +30,6 @@ public class CatMovement : MonoBehaviour
         }
 
         numberOfRoamingWaypoints = Random.Range(minimumWaypointsBeforeExit, maximumWaypointsBeforeExit + 1);
-        Debug.Log("Chosen number of roaming waypoints: " + numberOfRoamingWaypoints);
         if (numberOfRoamingWaypoints == 0)
         {
             currentState = AIState.Exiting;
@@ -84,8 +83,7 @@ public class CatMovement : MonoBehaviour
                     // TODO: After short animation, then go home
                     break;
                 case AIState.ReturningHome:
-                    // TODO: Once home is reached, despawn
-                    break;
+                    goto case AIState.Exiting;
             }
 
             agent.destination = targetDestination;
