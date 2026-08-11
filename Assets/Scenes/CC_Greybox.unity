@@ -6020,12 +6020,24 @@ MonoBehaviour:
   spawnPointCentre: {fileID: 823453160}
   spawnPointRadius: 1
   spawnWavesData:
-  - _secondsAfterStartToBegin: 0.5
+  - _secondsAfterStartToBegin: 2
+    _numberOfTimesToSpawn: 5
+    _minimumNumberToSpawnAtATime: 3
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 3
+    _maximumDelayBetweenSpawns: 5
+  - _secondsAfterStartToBegin: 15
+    _numberOfTimesToSpawn: 8
+    _minimumNumberToSpawnAtATime: 3
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 3
+    _maximumDelayBetweenSpawns: 5
+  - _secondsAfterStartToBegin: 30
     _numberOfTimesToSpawn: 10
     _minimumNumberToSpawnAtATime: 3
     _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 0.7
-    _maximumDelayBetweenSpawns: 1.1
+    _minimumDelayBetweenSpawns: 3
+    _maximumDelayBetweenSpawns: 5
 --- !u!1 &1640296377
 GameObject:
   m_ObjectHideFlags: 0
