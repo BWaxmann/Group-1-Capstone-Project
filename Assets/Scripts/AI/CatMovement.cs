@@ -4,17 +4,11 @@ using UnityEngine.AI;
 
 public class CatMovement : MonoBehaviour
 {
-    [Header("AI Behaviour")]
     [SerializeField] float targetUpdateFrequency = 0.2f;
     [SerializeField] int minimumWaypointsBeforeExit = 0;
     [SerializeField] int maximumWaypointsBeforeExit = 3;
     [SerializeField] float stoppingDistance = 0.1f;
     [SerializeField] float pauseDurationBetweenWaypoints = 0.2f;
-
-    [Header("Animation")]
-    [SerializeField] float eatingTreatPauseDuration = 1.2f;
-    [SerializeField] Animator animator;
-    [SerializeField] string eatingTreatAnimationTrigger = "HappyCat";
 
     NavMeshAgent agent;
     AIState currentState;
@@ -22,14 +16,6 @@ public class CatMovement : MonoBehaviour
     int numberOfRoamingWaypoints;
     Vector3[] roamingWaypoints;
     int numberofWaypointsReached;
-    int eatingTreatTriggerHash;
-
-    public bool isFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
-
-    void Start()
-    {
-        eatingTreatTriggerHash = Animator.StringToHash(eatingTreatAnimationTrigger);
-    }
 
     void OnDisable()
     {
@@ -42,12 +28,9 @@ public class CatMovement : MonoBehaviour
         {
             agent = GetComponent<NavMeshAgent>();
         }
-        if (animator == null)
-        {
-            animator = GetComponentInChildren<Animator>();
-        }
 
         numberOfRoamingWaypoints = Random.Range(minimumWaypointsBeforeExit, maximumWaypointsBeforeExit + 1);
+        Debug.Log("Chosen number of roaming waypoints: " + numberOfRoamingWaypoints);
         if (numberOfRoamingWaypoints == 0)
         {
             currentState = AIState.Exiting;
@@ -98,32 +81,15 @@ public class CatMovement : MonoBehaviour
                     }
                     break;
                 case AIState.EatingTreat:
-                    // Wait for animation of cat eating
-                    agent.isStopped = true;
-                    yield return new WaitForSeconds(eatingTreatPauseDuration);
-
-                    // Begin cat's return home
-                    agent.isStopped = false;
-                    currentState = AIState.ReturningHome;
-                    targetDestination = WaypointManager.instance.HomeWaypoint;
+                    // TODO: After short animation, then go home
                     break;
                 case AIState.ReturningHome:
-                    goto case AIState.Exiting;
+                    // TODO: Once home is reached, despawn
+                    break;
             }
 
             agent.destination = targetDestination;
             yield return updateWait;
-        }
-    }
-
-    public void FeedCat()
-    {
-        if (isFed) return;
-
-        currentState = AIState.EatingTreat;
-        if (animator != null)
-        {
-            animator.SetTrigger(eatingTreatTriggerHash);
         }
     }
 

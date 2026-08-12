@@ -86,7 +86,6 @@ public class SpawnManager : MonoBehaviour
 
     CatMovement GetCatFromPool()
     {
-        RandomisePoolOrder();
         foreach (CatMovement cat in catPool)
         {
             if (!cat.gameObject.activeSelf)
@@ -103,14 +102,6 @@ public class SpawnManager : MonoBehaviour
         CatMovement cat = Instantiate(catPrefabs[chosenPrefab], transform);
         catPool.Add(cat);
         return cat;
-    }
-
-    void RandomisePoolOrder()
-    {
-        catPool.Sort(delegate (CatMovement x, CatMovement y)
-        {
-            return Random.Range(-1, 2);
-        });
     }
 
     [Serializable]
