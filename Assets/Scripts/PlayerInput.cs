@@ -9,6 +9,8 @@ public class PlayerInput : MonoBehaviour
     [SerializeField] int initialTreatPoolSize = 5;
     [SerializeField] Transform primaryHandTreatPosition;
     [SerializeField] Transform secondaryHandTreatPosition;
+    [SerializeField] GameObject primaryHandThrowPreview;
+    [SerializeField] GameObject secondaryHandThrowPreview;
     [SerializeField] float throwForce = 5f;
 
     bool primaryHandInBox;
@@ -22,6 +24,9 @@ public class PlayerInput : MonoBehaviour
 
     void Start()
     {
+        primaryHandThrowPreview.SetActive(false);
+        secondaryHandThrowPreview.SetActive(false);
+
         if (treatPrefabs == null || treatPrefabs.Length == 0)
         {
             Debug.LogError("No treat prefabs provided to player");
@@ -42,17 +47,36 @@ public class PlayerInput : MonoBehaviour
 
         if (device == null)
         {
-            Debug.LogError("Input device could not be found");
-            return;
+            Debug.LogError("Primary input device could not be found");
+        }
+        else
+        {
+            if (device.GetButtonDown(VRButton.One))
+            {
+                PickupTreat(true);
+            }
+            else if (device.GetButtonUp(VRButton.One))
+            {
+                ThrowTreat(true);
+            }
         }
 
-        if (device.GetButtonDown(VRButton.One))
+        device = VRDevice.Device.SecondaryInputDevice;
+
+        if (device == null)
         {
-            PickupTreat(true);
+            Debug.LogError("Secondary input device could not be found");
         }
-        else if (device.GetButtonUp(VRButton.One))
+        else
         {
-            ThrowTreat(true);
+            if (device.GetButtonDown(VRButton.One))
+            {
+                PickupTreat(false);
+            }
+            else if (device.GetButtonUp(VRButton.One))
+            {
+                ThrowTreat(false);
+            }
         }
     }
 
@@ -79,6 +103,7 @@ public class PlayerInput : MonoBehaviour
                 currentPrimaryHandTreat = GetTreatFromPool();
                 currentPrimaryHandTreat.gameObject.SetActive(true);
                 currentPrimaryHandTreat.AttachTreatToHand(primaryHandTreatPosition);
+                primaryHandThrowPreview.SetActive(true);
             }
         }
         else
@@ -88,6 +113,7 @@ public class PlayerInput : MonoBehaviour
                 currentSecondaryHandTreat = GetTreatFromPool();
                 currentSecondaryHandTreat.gameObject.SetActive(true);
                 currentSecondaryHandTreat.AttachTreatToHand(secondaryHandTreatPosition);
+                secondaryHandThrowPreview.SetActive(true);
             }
         }
     }
@@ -100,6 +126,7 @@ public class PlayerInput : MonoBehaviour
             {
                 currentPrimaryHandTreat.LaunchTreatFromHand(primaryHandTreatPosition.forward, throwForce);
                 currentPrimaryHandTreat = null;
+                primaryHandThrowPreview.SetActive(false);
             }
         }
         else
@@ -108,6 +135,7 @@ public class PlayerInput : MonoBehaviour
             {
                 currentSecondaryHandTreat.LaunchTreatFromHand(secondaryHandTreatPosition.forward, throwForce);
                 currentSecondaryHandTreat = null;
+                secondaryHandThrowPreview.SetActive(false);
             }
         }
     }
