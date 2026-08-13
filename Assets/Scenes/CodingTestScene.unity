@@ -348,6 +348,18 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &407193638 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70,
+    type: 3}
+  m_PrefabInstance: {fileID: 894574101}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6bff1602ebbe34eb252bf4d124fe17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &532035902
 GameObject:
   m_ObjectHideFlags: 0
@@ -570,6 +582,8 @@ MonoBehaviour:
   - {fileID: 532035903}
   - {fileID: 265206476}
   - {fileID: 1891299051}
+  - {fileID: 1641982802}
+  - {fileID: 1368871296}
   exitWaypoint: {fileID: 1875374544}
   homeWaypoint: {fileID: 136025908}
 --- !u!1 &824251184
@@ -691,24 +705,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
---- !u!114 &894574103 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70,
-    type: 3}
-  m_PrefabInstance: {fileID: 894574101}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f6bff1602ebbe34eb252bf4d124fe17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!135 &894574107 stripped
-SphereCollider:
-  m_CorrespondingSourceObject: {fileID: 894574107, guid: a727da49b44d50341ab071e657b48c70,
-    type: 3}
-  m_PrefabInstance: {fileID: 894574101}
-  m_PrefabAsset: {fileID: 0}
 --- !u!135 &894574111 stripped
 SphereCollider:
   m_CorrespondingSourceObject: {fileID: 2084092611746225454, guid: a727da49b44d50341ab071e657b48c70,
@@ -1110,9 +1106,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a047c19f6e09cf344842c02ac2b9dc54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 894574103}
+  player: {fileID: 407193638}
   playerPrimaryHand: {fileID: 894574111}
-  playerSecondaryHand: {fileID: 894574107}
+  playerSecondaryHand: {fileID: 1697099109}
 --- !u!1 &1464505939
 GameObject:
   m_ObjectHideFlags: 0
@@ -1333,7 +1329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   catPrefabs:
-  - {fileID: 2623369373108193638, guid: 6b6d39e21cf288a4f94dee938c9ccac3, type: 3}
+  - {fileID: 4251842316735065021, guid: 8879010c441781f49abf1b937dfec2f0, type: 3}
   initialPoolSize: 20
   spawnPointCentre: {fileID: 136025908}
   spawnPointRadius: 1
@@ -1450,6 +1446,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1697099109 stripped
+SphereCollider:
+  m_CorrespondingSourceObject: {fileID: 894574107, guid: a727da49b44d50341ab071e657b48c70,
+    type: 3}
+  m_PrefabInstance: {fileID: 894574101}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1720833094
 GameObject:
   m_ObjectHideFlags: 0
