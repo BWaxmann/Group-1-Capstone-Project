@@ -1,4 +1,5 @@
-﻿using Liminal.SDK.Core;
+﻿using Liminal.Core.Fader;
+using Liminal.SDK.Core;
 using TMPro;
 using UnityEngine;
 
@@ -9,6 +10,12 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] 
     float gameTime = 200f;
+
+    [SerializeField]
+    float endgameFadeDelay = 3f;
+
+    [SerializeField]
+    float fadeDuration = 1f;
 
     [SerializeField] 
     SpawnManager[] catSpawners;
@@ -35,6 +42,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     TMP_Text timerText;
+
+    [SerializeField]
+    GameObject postgameCanvas;
 
     public static GameManager instance;
 
@@ -65,6 +75,7 @@ public class GameManager : MonoBehaviour
     {
         // TODO: Do fade-in before initiating pre-game countdown
         ShowGameCanvases(false);
+        postgameCanvas.SetActive(false);
         InitiatePregame();
     }
 
@@ -95,9 +106,14 @@ public class GameManager : MonoBehaviour
                 {
                     timerText.text = Mathf.CeilToInt(timer).ToString();
                 }
-                    break;
+                break;
             case GameState.PostGame:
-                // TODO: End game
+                timer -= Time.deltaTime;
+                if (timer <= 0)
+                {
+                    FadeOut();
+                    Invoke(nameof(EndGame), fadeDuration);
+                }
                 break;
         }
     }
@@ -111,7 +127,6 @@ public class GameManager : MonoBehaviour
     {
         state = GameState.PreGame;
         timer = pregameCountdownTime;
-        // TODO: Lock player input
         pregameCanvas.SetActive(true);
     }
 
@@ -120,7 +135,6 @@ public class GameManager : MonoBehaviour
         state = GameState.DuringGame;
         timer = gameTime;
         score = 0;
-        // TODO: Unlock player input
         Invoke(nameof(HidePregameCanvas), countdownDisappearDelay);
 
         ShowGameCanvases(true);
@@ -148,8 +162,19 @@ public class GameManager : MonoBehaviour
     void EndGame()
     {
         state = GameState.PostGame;
-        // TODO: Lock player input
-        // TODO: Bring up post-game UI
+        postgameCanvas.SetActive(true);
+        timer = endgameFadeDelay;
+    }
+
+    void FadeOut()
+    {
+        var fader = ScreenFader.Instance;
+        fader?.FadeToBlack(fadeDuration);
+    }
+
+    void ExitGame()
+    {
+        ExperienceApp.End();
     }
 
     public void UpdateScore(int change)

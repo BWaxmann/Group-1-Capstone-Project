@@ -45,6 +45,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pregameCountdownTime: 3
   gameTime: 200
+  endgameFadeDelay: 3
+  fadeDuration: 1
   catSpawners:
   - {fileID: 0}
   pregameCanvas: {fileID: 0}
@@ -56,3 +58,4 @@ MonoBehaviour:
   - {fileID: 0}
   scoreText: {fileID: 0}
   timerText: {fileID: 0}
+  postgameCanvas: {fileID: 0}
