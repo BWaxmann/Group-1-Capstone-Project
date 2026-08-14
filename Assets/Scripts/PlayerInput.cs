@@ -43,6 +43,8 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
+        if (!GameManager.instance.enablePlayerInput) return;
+
         var device = VRDevice.Device.PrimaryInputDevice;
 
         if (device == null)

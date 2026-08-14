@@ -4,6 +4,9 @@ using UnityEngine.AI;
 
 public class CatMovement : MonoBehaviour
 {
+    [SerializeField] int feedingScore = 10;
+    [SerializeField] int escapePenalty = 5;
+
     [Header("AI Behaviour")]
     [SerializeField] float targetUpdateFrequency = 0.2f;
     [SerializeField] int minimumWaypointsBeforeExit = 0;
@@ -95,6 +98,7 @@ public class CatMovement : MonoBehaviour
                     {
                         // Setting the cat to inactive will automatically recycle in back into the pool for spawning
                         gameObject.SetActive(false);
+                        GameManager.instance.UpdateScore(-escapePenalty);
                     }
                     break;
                 case AIState.EatingTreat:
@@ -108,7 +112,12 @@ public class CatMovement : MonoBehaviour
                     targetDestination = WaypointManager.instance.HomeWaypoint;
                     break;
                 case AIState.ReturningHome:
-                    goto case AIState.Exiting;
+                    if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
+                    {
+                        // Setting the cat to inactive will automatically recycle in back into the pool for spawning
+                        gameObject.SetActive(false);
+                    }
+                    break;
             }
 
             agent.destination = targetDestination;
@@ -121,6 +130,7 @@ public class CatMovement : MonoBehaviour
         if (isFed) return;
 
         currentState = AIState.EatingTreat;
+        GameManager.instance.UpdateScore(feedingScore);
         if (animator != null)
         {
             animator.SetTrigger(eatingTreatTriggerHash);

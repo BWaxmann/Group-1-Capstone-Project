@@ -6,8 +6,6 @@ using Random = UnityEngine.Random;
 
 public class SpawnManager : MonoBehaviour
 {
-    public static SpawnManager instance;
-
     [SerializeField] 
     CatMovement[] catPrefabs;
 
@@ -29,18 +27,6 @@ public class SpawnManager : MonoBehaviour
     int wavesCompleted = 0;
     List<CatMovement> catPool = new List<CatMovement>();
 
-    void Awake()
-    {
-        if (instance == null)
-        {
-            instance = this;
-        }
-        else if (instance != this)
-        {
-            Destroy(gameObject);
-        }
-    }
-
     void Start()
     {
         if (catPrefabs == null || catPrefabs.Length == 0)
@@ -55,8 +41,10 @@ public class SpawnManager : MonoBehaviour
             CatMovement spawnedCat = SpawnNewCatForPool();
             spawnedCat.gameObject.SetActive(false);
         }
+    }
 
-        // Start timers for spawn waves
+    public void StartSpawningWaves()
+    {
         foreach (SpawnData data in spawnWavesData)
         {
             StartCoroutine(SpawnWave(data));
