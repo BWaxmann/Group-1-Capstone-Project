@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class SpawnManager : MonoBehaviour
 {
-    [SerializeField] 
-    CatMovement[] catPrefabs;
-
-    [SerializeField] 
-    int initialPoolSize;
+    [SerializeField]
+    ObjectSpawner catSpawner;
 
     [Tooltip("Cat spawning rotation will be taken from the spawn point transform.")] 
     [SerializeField] 
     Transform spawnPointCentre;
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     float spawnPointRadius;
+
+    [SerializeField]
+    Transform afterFeedingReturnPoint;
 
     [SerializeField]
     SpawnData[] spawnWavesData;
@@ -25,23 +25,6 @@ public class SpawnManager : MonoBehaviour
     public bool allWavesCompleted { get { return wavesCompleted >= spawnWavesData.Length; } }
 
     int wavesCompleted = 0;
-    List<CatMovement> catPool = new List<CatMovement>();
-
-    void Start()
-    {
-        if (catPrefabs == null || catPrefabs.Length == 0)
-        {
-            Debug.LogError("No cat prefabs provided to spawner.");
-            return;
-        }
-
-        // Create object pool for cats
-        for (int i = 0; i < initialPoolSize; i++)
-        {
-            CatMovement spawnedCat = SpawnNewCatForPool();
-            spawnedCat.gameObject.SetActive(false);
-        }
-    }
 
     public void StartSpawningWaves()
     {
@@ -61,44 +44,15 @@ public class SpawnManager : MonoBehaviour
             int numberToSpawn = Random.Range(data.minimumNumberToSpawnAtATime, data.maximumNumberToSpawnAtATime + 1);
             for (int j = 0; j < numberToSpawn; j++)
             {
-                CatMovement cat = GetCatFromPool();
+                CatMovement cat = catSpawner.GetObjectFromPool<CatMovement>();
                 cat.gameObject.SetActive(true);
                 Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
                 cat.transform.SetPositionAndRotation(spawnPosition, spawnPointCentre.rotation);
-                cat.Initialise();
+                cat.Initialise(afterFeedingReturnPoint);
             }
 
             yield return new WaitForSeconds(Random.Range(data.minimumDelayBetweenSpawns, data.maximumDelayBetweenSpawns));
         }
-    }
-
-    CatMovement GetCatFromPool()
-    {
-        RandomisePoolOrder();
-        foreach (CatMovement cat in catPool)
-        {
-            if (!cat.gameObject.activeSelf)
-            {
-                return cat;
-            }
-        }
-        return SpawnNewCatForPool();
-    }
-
-    CatMovement SpawnNewCatForPool()
-    {
-        int chosenPrefab = Random.Range(0, catPrefabs.Length);
-        CatMovement cat = Instantiate(catPrefabs[chosenPrefab], transform);
-        catPool.Add(cat);
-        return cat;
-    }
-
-    void RandomisePoolOrder()
-    {
-        catPool.Sort(delegate (CatMovement x, CatMovement y)
-        {
-            return Random.Range(-1, 2);
-        });
     }
 
     [Serializable]

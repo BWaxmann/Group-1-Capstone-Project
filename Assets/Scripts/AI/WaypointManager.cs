@@ -7,10 +7,8 @@ public class WaypointManager : MonoBehaviour
 
     [SerializeField] Transform[] roamingWaypoints;
     [SerializeField] Transform exitWaypoint;
-    [SerializeField] Transform homeWaypoint;
 
     public Vector3 ExitWaypoint { get { return exitWaypoint.position; } }
-    public Vector3 HomeWaypoint { get { return homeWaypoint.position; } }
 
     void Awake()
     {

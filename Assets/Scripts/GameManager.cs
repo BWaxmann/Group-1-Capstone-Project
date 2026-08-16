@@ -5,16 +5,20 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     int pregameCountdownTime = 3;
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     float gameTime = 200f;
 
     [SerializeField]
+    [Min(0)]
     float endgameFadeDelay = 3f;
 
     [SerializeField]
+    [Min(0)]
     float fadeDuration = 1f;
 
     [SerializeField] 
@@ -32,6 +36,7 @@ public class GameManager : MonoBehaviour
     string countdownEndText = "GO!";
 
     [SerializeField]
+    [Min(0)]
     float countdownDisappearDelay = 1f;
 
     [SerializeField]

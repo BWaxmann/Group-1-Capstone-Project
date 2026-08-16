@@ -4,7 +4,7 @@ using UnityEngine.AI;
 
 public class CatMovement : MonoBehaviour
 {
-    [SerializeField] 
+    [SerializeField]
     int feedingScore = 10;
 
     [SerializeField] 
@@ -12,24 +12,29 @@ public class CatMovement : MonoBehaviour
 
     [Header("AI Behaviour")]
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     float targetUpdateFrequency = 0.2f;
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     int minimumWaypointsBeforeExit = 0;
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     int maximumWaypointsBeforeExit = 3;
 
     [SerializeField] 
     float stoppingDistance = 0.1f;
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     float pauseDurationBetweenWaypoints = 0.2f;
 
     [Header("Animation")]
 
-    [SerializeField] 
+    [SerializeField]
+    [Min(0)]
     float eatingTreatPauseDuration = 1.2f;
 
     [SerializeField] 
@@ -67,6 +72,7 @@ public class CatMovement : MonoBehaviour
 
     NavMeshAgent agent;
     AIState currentState;
+    Transform home;
     Vector3 targetDestination;
     int numberOfRoamingWaypoints;
     Vector3[] roamingWaypoints;
@@ -85,7 +91,7 @@ public class CatMovement : MonoBehaviour
         StopAllCoroutines();
     }
 
-    public void Initialise()
+    public void Initialise(Transform spawnPoint)
     {
         if (agent == null)
         {
@@ -100,6 +106,7 @@ public class CatMovement : MonoBehaviour
             voiceSource = GetComponentInChildren<AudioSource>();
         }
 
+        home = spawnPoint;
         numberOfRoamingWaypoints = Random.Range(minimumWaypointsBeforeExit, maximumWaypointsBeforeExit + 1);
         if (numberOfRoamingWaypoints == 0)
         {
@@ -163,7 +170,7 @@ public class CatMovement : MonoBehaviour
                     // Begin cat's return home
                     agent.isStopped = false;
                     currentState = AIState.ReturningHome;
-                    targetDestination = WaypointManager.instance.HomeWaypoint;
+                    targetDestination = home.position;
                     break;
                 case AIState.ReturningHome:
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)

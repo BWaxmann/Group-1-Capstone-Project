@@ -49,6 +49,7 @@ MonoBehaviour:
   fadeDuration: 1
   catSpawners:
   - {fileID: 0}
+  - {fileID: 0}
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}
   countdownEndText: GO!

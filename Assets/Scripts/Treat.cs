@@ -3,6 +3,7 @@
 public class Treat : MonoBehaviour
 {
     [SerializeField]
+    [Min(0)]
     float treatOnFloorLifetime = 1.5f;
 
     Rigidbody rb;

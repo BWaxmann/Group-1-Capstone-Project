@@ -1,21 +1,30 @@
 ﻿using Liminal.SDK.VR;
 using Liminal.SDK.VR.Input;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-    [SerializeField] Treat[] treatPrefabs;
-    [SerializeField] int initialTreatPoolSize = 5;
-    [SerializeField] Transform primaryHandTreatPosition;
-    [SerializeField] Transform secondaryHandTreatPosition;
-    [SerializeField] GameObject primaryHandThrowPreview;
-    [SerializeField] GameObject secondaryHandThrowPreview;
-    [SerializeField] float throwForce = 5f;
+    [SerializeField] 
+    ObjectSpawner treatsSpawner;
+
+    [SerializeField] 
+    Transform primaryHandTreatPosition;
+
+    [SerializeField] 
+    Transform secondaryHandTreatPosition;
+
+    [SerializeField] 
+    GameObject primaryHandThrowPreview;
+
+    [SerializeField] 
+    GameObject secondaryHandThrowPreview;
+
+    [SerializeField] 
+    [Min(0)] 
+    float throwForce = 5f;
 
     bool primaryHandInBox;
     bool secondaryHandInBox;
-    List<Treat> treatsPool = new List<Treat>();
     Treat currentPrimaryHandTreat;
     Treat currentSecondaryHandTreat;
 
@@ -26,19 +35,6 @@ public class PlayerInput : MonoBehaviour
     {
         primaryHandThrowPreview.SetActive(false);
         secondaryHandThrowPreview.SetActive(false);
-
-        if (treatPrefabs == null || treatPrefabs.Length == 0)
-        {
-            Debug.LogError("No treat prefabs provided to player");
-            return;
-        }
-
-        // Create object pool for treats
-        for (int i = 0; i < initialTreatPoolSize; i++)
-        {
-            Treat treat = SpawnNewTreatForPool();
-            treat.gameObject.SetActive(false);
-        }
     }
 
     void Update()
@@ -102,7 +98,7 @@ public class PlayerInput : MonoBehaviour
         {
             if (primaryHandInBox && !treatInPrimaryHand)
             {
-                currentPrimaryHandTreat = GetTreatFromPool();
+                currentPrimaryHandTreat = treatsSpawner.GetObjectFromPool<Treat>();
                 currentPrimaryHandTreat.gameObject.SetActive(true);
                 currentPrimaryHandTreat.AttachTreatToHand(primaryHandTreatPosition);
                 primaryHandThrowPreview.SetActive(true);
@@ -112,7 +108,7 @@ public class PlayerInput : MonoBehaviour
         {
             if (secondaryHandInBox && !treatInSecondaryHand)
             {
-                currentSecondaryHandTreat = GetTreatFromPool();
+                currentSecondaryHandTreat = treatsSpawner.GetObjectFromPool<Treat>();
                 currentSecondaryHandTreat.gameObject.SetActive(true);
                 currentSecondaryHandTreat.AttachTreatToHand(secondaryHandTreatPosition);
                 secondaryHandThrowPreview.SetActive(true);
@@ -140,34 +136,5 @@ public class PlayerInput : MonoBehaviour
                 secondaryHandThrowPreview.SetActive(false);
             }
         }
-    }
-
-    Treat GetTreatFromPool()
-    {
-        RandomisePoolOrder();
-        foreach (Treat treat in treatsPool)
-        {
-            if (!treat.gameObject.activeSelf)
-            {
-                return treat;
-            }
-        }
-        return SpawnNewTreatForPool();
-    }
-
-    Treat SpawnNewTreatForPool()
-    {
-        int chosenTreat = Random.Range(0, treatPrefabs.Length);
-        Treat treat = Instantiate(treatPrefabs[chosenTreat]);
-        treatsPool.Add(treat);
-        return treat;
-    }
-
-    void RandomisePoolOrder()
-    {
-        treatsPool.Sort(delegate (Treat x, Treat y)
-        {
-            return Random.Range(-1, 2);
-        });
     }
 }
