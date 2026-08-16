@@ -4,20 +4,66 @@ using UnityEngine.AI;
 
 public class CatMovement : MonoBehaviour
 {
-    [SerializeField] int feedingScore = 10;
-    [SerializeField] int escapePenalty = 5;
+    [SerializeField] 
+    int feedingScore = 10;
+
+    [SerializeField] 
+    int escapePenalty = 5;
 
     [Header("AI Behaviour")]
-    [SerializeField] float targetUpdateFrequency = 0.2f;
-    [SerializeField] int minimumWaypointsBeforeExit = 0;
-    [SerializeField] int maximumWaypointsBeforeExit = 3;
-    [SerializeField] float stoppingDistance = 0.1f;
-    [SerializeField] float pauseDurationBetweenWaypoints = 0.2f;
+
+    [SerializeField] 
+    float targetUpdateFrequency = 0.2f;
+
+    [SerializeField] 
+    int minimumWaypointsBeforeExit = 0;
+
+    [SerializeField] 
+    int maximumWaypointsBeforeExit = 3;
+
+    [SerializeField] 
+    float stoppingDistance = 0.1f;
+
+    [SerializeField] 
+    float pauseDurationBetweenWaypoints = 0.2f;
 
     [Header("Animation")]
-    [SerializeField] float eatingTreatPauseDuration = 1.2f;
-    [SerializeField] Animator animator;
-    [SerializeField] string eatingTreatAnimationTrigger = "HappyCat";
+
+    [SerializeField] 
+    float eatingTreatPauseDuration = 1.2f;
+
+    [SerializeField] 
+    Animator animator;
+
+    [SerializeField] 
+    string eatingTreatAnimationTrigger = "HappyCat";
+
+    [Header("Sounds")]
+
+    [SerializeField] 
+    AudioSource voiceSource;
+
+    [SerializeField]
+    AudioClip[] roamingSounds;
+
+    [SerializeField]
+    [Range(0, 1)]
+    float roamingSoundVolume = 0.4f;
+
+    [SerializeField]
+    [Min(0)]
+    float roamingSoundMinimumPause = 4f;
+
+    [SerializeField]
+    [Min(0)]
+    float roamingSoundMaximumPause = 10f;
+
+    [SerializeField]
+    AudioClip fedSound;
+
+    [SerializeField]
+    [Range(0, 1)]
+    float fedSoundVolume = 1f;
 
     NavMeshAgent agent;
     AIState currentState;
@@ -49,6 +95,10 @@ public class CatMovement : MonoBehaviour
         {
             animator = GetComponentInChildren<Animator>();
         }
+        if (voiceSource == null)
+        {
+            voiceSource = GetComponentInChildren<AudioSource>();
+        }
 
         numberOfRoamingWaypoints = Random.Range(minimumWaypointsBeforeExit, maximumWaypointsBeforeExit + 1);
         if (numberOfRoamingWaypoints == 0)
@@ -65,6 +115,10 @@ public class CatMovement : MonoBehaviour
         }
 
         StartCoroutine(MoveToTargetRoutine());
+        if (voiceSource != null)
+        {
+            StartCoroutine(SoundRoutine());
+        }
     }
 
     IEnumerator MoveToTargetRoutine()
@@ -123,6 +177,32 @@ public class CatMovement : MonoBehaviour
             agent.destination = targetDestination;
             yield return updateWait;
         }
+    }
+
+    IEnumerator SoundRoutine()
+    {
+        if (roamingSounds != null && roamingSounds.Length > 0)
+        {
+            float nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause);
+            float timer = Random.Range(0, nextTime);
+            while (!isFed)
+            {
+                timer += Time.deltaTime;
+                if (timer >= nextTime)
+                {
+                    voiceSource.PlayOneShot(roamingSounds[Random.Range(0, roamingSounds.Length)], roamingSoundVolume);
+                    timer -= nextTime;
+                    nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause); ;
+                }
+                yield return null;
+            }
+        }
+        else
+        {
+            yield return new WaitUntil(() => isFed);
+        }
+
+        voiceSource.PlayOneShot(fedSound, fedSoundVolume);
     }
 
     public void FeedCat()
