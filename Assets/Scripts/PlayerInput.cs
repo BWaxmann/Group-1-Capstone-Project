@@ -8,33 +8,25 @@ public class PlayerInput : MonoBehaviour
     ObjectSpawner treatsSpawner;
 
     [SerializeField] 
-    Transform primaryHandTreatPosition;
+    Transform treatLaunchPosition;
 
-    [SerializeField] 
-    Transform secondaryHandTreatPosition;
-
-    [SerializeField] 
-    GameObject primaryHandThrowPreview;
-
-    [SerializeField] 
-    GameObject secondaryHandThrowPreview;
+    [SerializeField]
+    GameObject treatLaunchPreview;
 
     [SerializeField] 
     [Min(0)] 
-    float throwForce = 5f;
+    float launchForce = 10f;
 
-    bool primaryHandInBox;
-    bool secondaryHandInBox;
-    Treat currentPrimaryHandTreat;
-    Treat currentSecondaryHandTreat;
+    [SerializeField]
+    [Min(0)]
+    int maximumAmmo = 20;
 
-    public bool treatInPrimaryHand => currentPrimaryHandTreat != null;
-    public bool treatInSecondaryHand => currentSecondaryHandTreat != null;
+    bool handInBox;
+    int currentAmmo;
 
     void Start()
     {
-        primaryHandThrowPreview.SetActive(false);
-        secondaryHandThrowPreview.SetActive(false);
+        currentAmmo = maximumAmmo;
     }
 
     void Update()
@@ -51,89 +43,44 @@ public class PlayerInput : MonoBehaviour
         {
             if (device.GetButtonDown(VRButton.One))
             {
-                PickupTreat(true);
-            }
-            else if (device.GetButtonUp(VRButton.One))
-            {
-                ThrowTreat(true);
-            }
-        }
-
-        device = VRDevice.Device.SecondaryInputDevice;
-
-        if (device == null)
-        {
-            Debug.LogError("Secondary input device could not be found");
-        }
-        else
-        {
-            if (device.GetButtonDown(VRButton.One))
-            {
-                PickupTreat(false);
-            }
-            else if (device.GetButtonUp(VRButton.One))
-            {
-                ThrowTreat(false);
+                if (handInBox)
+                {
+                    Reload();
+                }
+                else
+                {
+                    LaunchTreat();
+                }   
             }
         }
     }
 
-    public void HandInBox(bool inBox, bool primaryHand)
+    public void HandInBox(bool inBox)
     {
-        if (primaryHand)
+        handInBox = inBox;
+        if (currentAmmo > 0)
         {
-            primaryHandInBox = inBox;
-            Debug.Log("Primary hand in box: " + inBox);
+            treatLaunchPreview.SetActive(!inBox);
         }
-        else
-        {
-            secondaryHandInBox = inBox;
-            Debug.Log("Secondary hand in box: " + inBox);
-        }
+        Debug.Log("Hand in box: " + inBox);
     }
 
-    void PickupTreat(bool primaryHand)
+    void Reload()
     {
-        if (primaryHand)
-        {
-            if (primaryHandInBox && !treatInPrimaryHand)
-            {
-                currentPrimaryHandTreat = treatsSpawner.GetObjectFromPool<Treat>();
-                currentPrimaryHandTreat.gameObject.SetActive(true);
-                currentPrimaryHandTreat.AttachTreatToHand(primaryHandTreatPosition);
-                primaryHandThrowPreview.SetActive(true);
-            }
-        }
-        else
-        {
-            if (secondaryHandInBox && !treatInSecondaryHand)
-            {
-                currentSecondaryHandTreat = treatsSpawner.GetObjectFromPool<Treat>();
-                currentSecondaryHandTreat.gameObject.SetActive(true);
-                currentSecondaryHandTreat.AttachTreatToHand(secondaryHandTreatPosition);
-                secondaryHandThrowPreview.SetActive(true);
-            }
-        }
+        currentAmmo = maximumAmmo;
     }
 
-    void ThrowTreat(bool primaryHand)
+    void LaunchTreat()
     {
-        if (primaryHand)
+        if (currentAmmo > 0)
         {
-            if (treatInPrimaryHand)
+            Treat treat = treatsSpawner.GetObjectFromPool<Treat>();
+            treat.gameObject.SetActive(true);
+            treat.LaunchTreat(treatLaunchPosition, launchForce);
+            currentAmmo--;
+            if (currentAmmo <= 0)
             {
-                currentPrimaryHandTreat.LaunchTreatFromHand(primaryHandTreatPosition.forward, throwForce);
-                currentPrimaryHandTreat = null;
-                primaryHandThrowPreview.SetActive(false);
-            }
-        }
-        else
-        {
-            if (treatInSecondaryHand)
-            {
-                currentSecondaryHandTreat.LaunchTreatFromHand(secondaryHandTreatPosition.forward, throwForce);
-                currentSecondaryHandTreat = null;
-                secondaryHandThrowPreview.SetActive(false);
+                treatLaunchPreview.SetActive(false);
             }
         }
     }

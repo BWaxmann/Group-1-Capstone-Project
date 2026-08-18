@@ -9,33 +9,29 @@ public class Treat : MonoBehaviour
     Rigidbody rb;
     bool isActive;
 
-    public void AttachTreatToHand(Transform position)
+    public void LaunchTreat(Transform launchPosition, float force)
     {
         if (rb == null)
         {
             rb = GetComponent<Rigidbody>();
         }
-        rb.isKinematic = true;
-        transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-        transform.SetParent(position, false);
-    }
 
-    public void LaunchTreatFromHand(Vector3 direction, float force)
-    {
-        rb.isKinematic = false;
-        transform.SetParent(null);
-        rb.AddForce(force * direction.normalized, ForceMode.Impulse);
+        transform.position = launchPosition.position;
+        transform.rotation = launchPosition.rotation;
+        rb.velocity = Vector3.zero;
+        rb.AddForce(force * launchPosition.forward, ForceMode.Impulse);
         isActive = true;
     }
 
     void DespawnTreat()
-    {
+    {     
         gameObject.SetActive(false);
     }
 
     public void OnCollisionEnter(Collision other)
     {
-        if (isActive)
+        if (isActive && other.gameObject.GetComponentInParent<Treat>() == null
+                && other.gameObject.GetComponentInParent<PlayerInput>() == null)
         {
             isActive = false;
             CatMovement cat = other.gameObject.GetComponentInParent<CatMovement>();
@@ -44,8 +40,12 @@ public class Treat : MonoBehaviour
                 if (!cat.isFed)
                 {
                     cat.FeedCat();
-                    gameObject.SetActive(false);
-                }         
+                    DespawnTreat();
+                }
+                else
+                {
+                    Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
+                }
             }
             else
             {
