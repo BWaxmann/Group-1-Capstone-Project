@@ -1,9 +1,12 @@
 ﻿using Liminal.SDK.VR;
 using Liminal.SDK.VR.Input;
+using TMPro;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
+    [Header("Treat Launcher")]
+
     [SerializeField] 
     ObjectSpawner treatsSpawner;
 
@@ -21,16 +24,64 @@ public class PlayerInput : MonoBehaviour
     [Min(0)]
     int maximumAmmo = 20;
 
+    [SerializeField]
+    Transform ammoCanvas;
+
+    [SerializeField]
+    TMP_Text ammoText;
+
+    [SerializeField]
+    Transform eye;
+
+    [Header("Sound Effects")]
+
+    [SerializeField]
+    AudioSource launcherAudioSource;
+
+    [SerializeField]
+    [Tooltip("Sound to play when firing a treat.")]
+    AudioClip launcherFireSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float launcherFireVolume = 1f;
+
+    [SerializeField]
+    [Tooltip("Sound to play when attempting to fire a treat with no ammo.")]
+    AudioClip launcherEmptySound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float launcherEmptyVolume = 0.5f;
+
+    [SerializeField]
+    [Tooltip("Sound to play when reloading the treat launcher.")]
+    AudioClip launcherReloadSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float launcherReloadVolume = 0.8f;
+
     bool handInBox;
     int currentAmmo;
 
     void Start()
     {
         currentAmmo = maximumAmmo;
+
+        if (launcherAudioSource == null)
+        {
+            launcherAudioSource = GetComponentInChildren<AudioSource>();
+        }
     }
 
     void Update()
     {
+        if (ammoCanvas != null && eye != null)
+        {
+            ammoCanvas.rotation = eye.rotation;
+        }
+
         if (!GameManager.instance.enablePlayerInput) return;
 
         var device = VRDevice.Device.PrimaryInputDevice;
@@ -68,6 +119,8 @@ public class PlayerInput : MonoBehaviour
     void Reload()
     {
         currentAmmo = maximumAmmo;
+        PlaySound(launcherReloadSound, launcherReloadVolume);
+        UpdateAmmoDisplay();
     }
 
     void LaunchTreat()
@@ -77,11 +130,30 @@ public class PlayerInput : MonoBehaviour
             Treat treat = treatsSpawner.GetObjectFromPool<Treat>();
             treat.gameObject.SetActive(true);
             treat.LaunchTreat(treatLaunchPosition, launchForce);
+            PlaySound(launcherFireSound, launcherFireVolume);
             currentAmmo--;
+            UpdateAmmoDisplay();
             if (currentAmmo <= 0)
             {
                 treatLaunchPreview.SetActive(false);
             }
+        }
+        else
+        {
+            PlaySound(launcherEmptySound, launcherEmptyVolume);
+        }
+    }
+
+    void UpdateAmmoDisplay()
+    {
+        if (ammoText != null) ammoText.text = currentAmmo.ToString();
+    }
+
+    void PlaySound(AudioClip sound, float volume)
+    {
+        if (launcherAudioSource != null && sound != null)
+        {
+            launcherAudioSource.PlayOneShot(sound, volume);
         }
     }
 }

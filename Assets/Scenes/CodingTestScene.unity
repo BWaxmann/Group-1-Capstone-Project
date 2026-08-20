@@ -799,6 +799,12 @@ Light:
     type: 3}
   m_PrefabInstance: {fileID: 894574101}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &894574103 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2084092611746225451, guid: a727da49b44d50341ab071e657b48c70,
+    type: 3}
+  m_PrefabInstance: {fileID: 894574101}
+  m_PrefabAsset: {fileID: 0}
 --- !u!135 &894574111 stripped
 SphereCollider:
   m_CorrespondingSourceObject: {fileID: 2084092611746225454, guid: a727da49b44d50341ab071e657b48c70,
@@ -1484,12 +1490,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &1697099109 stripped
-SphereCollider:
-  m_CorrespondingSourceObject: {fileID: 894574107, guid: a727da49b44d50341ab071e657b48c70,
-    type: 3}
-  m_PrefabInstance: {fileID: 894574101}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1701619499 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 72467753185612327, guid: be9fd579536b88947980c07fde8232b5,
@@ -2292,19 +2292,14 @@ PrefabInstance:
       objectReference: {fileID: 407193638}
     - target: {fileID: 4547689122929124382, guid: a516affe490e2c347ab03fa443a464c4,
         type: 3}
-      propertyPath: playerPrimaryHand
-      value: 
-      objectReference: {fileID: 894574111}
-    - target: {fileID: 4547689122929124382, guid: a516affe490e2c347ab03fa443a464c4,
-        type: 3}
-      propertyPath: playerSecondaryHand
-      value: 
-      objectReference: {fileID: 1697099109}
-    - target: {fileID: 4547689122929124382, guid: a516affe490e2c347ab03fa443a464c4,
-        type: 3}
       propertyPath: playerHand
       value: 
       objectReference: {fileID: 894574111}
+    - target: {fileID: 4547689124348500713, guid: a516affe490e2c347ab03fa443a464c4,
+        type: 3}
+      propertyPath: controllerTransform
+      value: 
+      objectReference: {fileID: 894574103}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a516affe490e2c347ab03fa443a464c4, type: 3}
 --- !u!1001 &5150667049355724079

@@ -37,7 +37,7 @@ public class Treat : MonoBehaviour
             CatMovement cat = other.gameObject.GetComponentInParent<CatMovement>();
             if (cat != null)
             {
-                if (!cat.isFed)
+                if (!cat.isFullyFed)
                 {
                     cat.FeedCat();
                     DespawnTreat();

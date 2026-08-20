@@ -51,6 +51,63 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     GameObject postgameCanvas;
 
+    [Header("Sounds")]
+
+    [SerializeField]
+    AudioSource soundEffectSource;
+
+    [SerializeField]
+    AudioSource musicSource;
+
+    [SerializeField]
+    AudioClip countdownSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float countdownVolume = 1f;
+
+    [SerializeField]
+    AudioClip gameStartSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float gameStartVolume = 1f;
+
+    [SerializeField]
+    AudioClip scoreUpSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float scoreUpVolume = 1f;
+
+    [SerializeField]
+    AudioClip catEscapeSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float catEscapeVolume = 1f;
+
+    [SerializeField]
+    AudioClip gameEndSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float gameEndVolume = 1f;
+
+    [SerializeField]
+    AudioClip gameMusic;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float gameMusicVolume = 1f;
+
+    [SerializeField]
+    AudioClip postgameMusic;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float postgameMusicVolume = 1f;
+
     public static GameManager instance;
 
     float timer;
@@ -81,6 +138,7 @@ public class GameManager : MonoBehaviour
         // TODO: Do fade-in before initiating pre-game countdown
         ShowGameCanvases(false);
         postgameCanvas.SetActive(false);
+
         InitiatePregame();
     }
 
@@ -97,7 +155,12 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    countdownText.text = Mathf.CeilToInt(timer).ToString();
+                    string t = Mathf.CeilToInt(timer).ToString();
+                    if (countdownText.text != t)
+                    {
+                        countdownText.text = t;
+                        PlaySoundEffect(countdownSound, countdownVolume);
+                    }
                 }
                 break;
             case GameState.DuringGame:
@@ -137,6 +200,8 @@ public class GameManager : MonoBehaviour
 
     void InitiateGame()
     {
+        PlaySoundEffect(gameStartSound, gameStartVolume);
+        PlayMusic(gameMusic, gameMusicVolume);
         state = GameState.DuringGame;
         timer = gameTime;
         score = 0;
@@ -166,6 +231,8 @@ public class GameManager : MonoBehaviour
 
     void EndGame()
     {
+        PlaySoundEffect(gameEndSound, gameEndVolume);
+        PlayMusic(postgameMusic, postgameMusicVolume);
         state = GameState.PostGame;
         postgameCanvas.SetActive(true);
         timer = endgameFadeDelay;
@@ -186,6 +253,37 @@ public class GameManager : MonoBehaviour
     {
         score = Mathf.Max(score + change, 0);
         scoreText.text = score.ToString();
+        if (change > 0)
+        {
+            PlaySoundEffect(scoreUpSound, scoreUpVolume);
+        }
+        else if (change < 0)
+        {
+            PlaySoundEffect(catEscapeSound, catEscapeVolume);
+        }
+    }
+
+    void PlaySoundEffect(AudioClip sound, float volume)
+    {
+        if (soundEffectSource != null && sound != null)
+        {
+            soundEffectSource.PlayOneShot(sound, volume);
+        }
+    }
+
+    void PlayMusic(AudioClip music, float volume)
+    {
+        if (musicSource != null && music != null)
+        {
+            musicSource.clip = music;
+            musicSource.volume = volume;
+            musicSource.Play();
+        }
+    }
+
+    void StopMusic()
+    {
+        musicSource?.Stop();
     }
 
     public enum GameState

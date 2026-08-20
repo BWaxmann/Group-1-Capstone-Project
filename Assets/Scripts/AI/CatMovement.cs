@@ -10,6 +10,9 @@ public class CatMovement : MonoBehaviour
     [SerializeField] 
     int escapePenalty = 5;
 
+    [SerializeField]
+    int treatsUntilFull = 3;
+
     [Header("AI Behaviour")]
 
     [SerializeField]
@@ -35,13 +38,13 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float eatingTreatPauseDuration = 1.2f;
+    float fullyFedPauseDuration = 1.2f;
 
     [SerializeField] 
     Animator animator;
 
     [SerializeField] 
-    string eatingTreatAnimationTrigger = "HappyCat";
+    string fullyFedAnimationTrigger = "HappyCat";
 
     [Header("Sounds")]
 
@@ -77,13 +80,14 @@ public class CatMovement : MonoBehaviour
     int numberOfRoamingWaypoints;
     Vector3[] roamingWaypoints;
     int numberofWaypointsReached;
+    int currentHealth;
     int eatingTreatTriggerHash;
 
-    public bool isFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
+    public bool isFullyFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
 
     void Start()
     {
-        eatingTreatTriggerHash = Animator.StringToHash(eatingTreatAnimationTrigger);
+        eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
     }
 
     void OnDisable()
@@ -126,6 +130,8 @@ public class CatMovement : MonoBehaviour
         {
             StartCoroutine(SoundRoutine());
         }
+
+        currentHealth = treatsUntilFull;
     }
 
     IEnumerator MoveToTargetRoutine()
@@ -165,7 +171,7 @@ public class CatMovement : MonoBehaviour
                 case AIState.EatingTreat:
                     // Wait for animation of cat eating
                     agent.isStopped = true;
-                    yield return new WaitForSeconds(eatingTreatPauseDuration);
+                    yield return new WaitForSeconds(fullyFedPauseDuration);
 
                     // Begin cat's return home
                     agent.isStopped = false;
@@ -192,7 +198,7 @@ public class CatMovement : MonoBehaviour
         {
             float nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause);
             float timer = Random.Range(0, nextTime);
-            while (!isFed)
+            while (!isFullyFed)
             {
                 timer += Time.deltaTime;
                 if (timer >= nextTime)
@@ -204,23 +210,24 @@ public class CatMovement : MonoBehaviour
                 yield return null;
             }
         }
-        else
-        {
-            yield return new WaitUntil(() => isFed);
-        }
-
-        voiceSource.PlayOneShot(fedSound, fedSoundVolume);
     }
 
     public void FeedCat()
     {
-        if (isFed) return;
+        if (isFullyFed) return;
 
-        currentState = AIState.EatingTreat;
-        GameManager.instance.UpdateScore(feedingScore);
-        if (animator != null)
+        currentHealth--;
+        voiceSource.PlayOneShot(fedSound, fedSoundVolume);
+        Debug.Log($"Cat needs {currentHealth} treats until full.");
+
+        if (currentHealth <= 0)
         {
-            animator.SetTrigger(eatingTreatTriggerHash);
+            currentState = AIState.EatingTreat;
+            GameManager.instance.UpdateScore(feedingScore);
+            if (animator != null)
+            {
+                animator.SetTrigger(eatingTreatTriggerHash);
+            }
         }
     }
 
