@@ -1,10 +1,14 @@
-﻿using Liminal.SDK.VR;
+﻿using System.Collections;
+using Liminal.SDK.VR;
 using Liminal.SDK.VR.Input;
 using TMPro;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
+    [SerializeField]
+    float billboardUpdateFrequency = 0.2f;
+
     [Header("Treat Launcher")]
 
     [SerializeField] 
@@ -23,9 +27,6 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     [Min(0)]
     int maximumAmmo = 20;
-
-    [SerializeField]
-    Transform ammoCanvas;
 
     [SerializeField]
     TMP_Text ammoText;
@@ -62,6 +63,9 @@ public class PlayerInput : MonoBehaviour
     [Range(0f, 1f)]
     float launcherReloadVolume = 0.8f;
 
+    public delegate void FaceCamera(Quaternion rotation);
+    public static event FaceCamera TurnToFaceCamera;
+
     bool handInBox;
     int currentAmmo;
 
@@ -73,15 +77,12 @@ public class PlayerInput : MonoBehaviour
         {
             launcherAudioSource = GetComponentInChildren<AudioSource>();
         }
+
+        StartCoroutine(UpdateBillboardsRoutine());
     }
 
     void Update()
     {
-        if (ammoCanvas != null && eye != null)
-        {
-            ammoCanvas.rotation = eye.rotation;
-        }
-
         if (!GameManager.instance.enablePlayerInput) return;
 
         var device = VRDevice.Device.PrimaryInputDevice;
@@ -154,6 +155,16 @@ public class PlayerInput : MonoBehaviour
         if (launcherAudioSource != null && sound != null)
         {
             launcherAudioSource.PlayOneShot(sound, volume);
+        }
+    }
+
+    IEnumerator UpdateBillboardsRoutine()
+    {
+        WaitForSeconds wait = new WaitForSeconds(billboardUpdateFrequency);
+        while (true)
+        {
+            TurnToFaceCamera?.Invoke(eye.rotation);
+            yield return billboardUpdateFrequency;
         }
     }
 }

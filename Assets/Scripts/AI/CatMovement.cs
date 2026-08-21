@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class CatMovement : MonoBehaviour
 {
@@ -9,9 +10,6 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField] 
     int escapePenalty = 5;
-
-    [SerializeField]
-    int treatsUntilFull = 3;
 
     [Header("AI Behaviour")]
 
@@ -45,6 +43,25 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField] 
     string fullyFedAnimationTrigger = "HappyCat";
+
+    [Header("Health")]
+
+    [SerializeField]
+    int treatsUntilFull = 3;
+
+    [SerializeField]
+    GameObject moodCanvas;
+
+    [SerializeField]
+    Image moodImage;
+
+    [SerializeField]
+    [Tooltip("This should be the same size as 'Treats Until Full' and be ordered from happiest to grumpiest.")]
+    Sprite[] moodSprites;
+
+    [SerializeField]
+    [Min(0)]
+    float hideMoodCanvasWhenFullDelay = 1.2f;
 
     [Header("Sounds")]
 
@@ -132,6 +149,11 @@ public class CatMovement : MonoBehaviour
         }
 
         currentHealth = treatsUntilFull;
+        if (moodCanvas != null)
+        {
+            moodCanvas.SetActive(true);
+            SetMoodImage();
+        }
     }
 
     IEnumerator MoveToTargetRoutine()
@@ -217,6 +239,7 @@ public class CatMovement : MonoBehaviour
         if (isFullyFed) return;
 
         currentHealth--;
+        SetMoodImage();
         voiceSource.PlayOneShot(fedSound, fedSoundVolume);
         Debug.Log($"Cat needs {currentHealth} treats until full.");
 
@@ -228,6 +251,27 @@ public class CatMovement : MonoBehaviour
             {
                 animator.SetTrigger(eatingTreatTriggerHash);
             }
+            Invoke(nameof(HideMoodCanvas), hideMoodCanvasWhenFullDelay);
+        }
+    }
+
+    void SetMoodImage()
+    {
+        if (moodImage != null && moodSprites != null && moodSprites.Length > currentHealth)
+        {
+            Sprite sp = moodSprites[currentHealth];
+            if (sp != null)
+            {
+                moodImage.sprite = sp;
+            }
+        }
+    }
+
+    void HideMoodCanvas()
+    {
+        if (moodCanvas != null)
+        {
+            moodCanvas.SetActive(false);
         }
     }
 

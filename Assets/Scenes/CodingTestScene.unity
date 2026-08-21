@@ -372,6 +372,24 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!1 &406312476 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6422912078432524674, guid: a727da49b44d50341ab071e657b48c70,
+    type: 3}
+  m_PrefabInstance: {fileID: 894574101}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &406312481
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406312476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c02b6e62e4a00e2479ea2f586959732c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &407193638 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70,
@@ -796,12 +814,6 @@ PrefabInstance:
 --- !u!108 &894574102 stripped
 Light:
   m_CorrespondingSourceObject: {fileID: 2084092611007962364, guid: a727da49b44d50341ab071e657b48c70,
-    type: 3}
-  m_PrefabInstance: {fileID: 894574101}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &894574103 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2084092611746225451, guid: a727da49b44d50341ab071e657b48c70,
     type: 3}
   m_PrefabInstance: {fileID: 894574101}
   m_PrefabAsset: {fileID: 0}
@@ -2295,11 +2307,6 @@ PrefabInstance:
       propertyPath: playerHand
       value: 
       objectReference: {fileID: 894574111}
-    - target: {fileID: 4547689124348500713, guid: a516affe490e2c347ab03fa443a464c4,
-        type: 3}
-      propertyPath: controllerTransform
-      value: 
-      objectReference: {fileID: 894574103}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a516affe490e2c347ab03fa443a464c4, type: 3}
 --- !u!1001 &5150667049355724079

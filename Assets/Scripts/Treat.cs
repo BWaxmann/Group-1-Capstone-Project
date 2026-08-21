@@ -6,6 +6,16 @@ public class Treat : MonoBehaviour
     [Min(0)]
     float treatOnFloorLifetime = 1.5f;
 
+    [SerializeField]
+    AudioSource audioSource;
+
+    [SerializeField]
+    AudioClip treatHittingFloorSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float treatHittingFloorVolume = 0.7f;
+
     Rigidbody rb;
     bool isActive;
 
@@ -50,6 +60,10 @@ public class Treat : MonoBehaviour
             else
             {
                 Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
+                if (audioSource != null && treatHittingFloorSound != null)
+                {
+                    audioSource.PlayOneShot(treatHittingFloorSound, treatHittingFloorVolume);
+                }
             }
         }
     }
