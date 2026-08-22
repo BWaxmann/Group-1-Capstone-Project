@@ -7,6 +7,10 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField]
     [Min(0)]
+    float pregameDelay = 0.5f;
+
+    [SerializeField]
+    [Min(0)]
     int pregameCountdownTime = 3;
 
     [SerializeField]
@@ -20,9 +24,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     [Min(0)]
     float fadeDuration = 1f;
-
-    [SerializeField] 
-    SpawnManager[] catSpawners;
 
     [Header("UI")]
 
@@ -110,6 +111,9 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance;
 
+    public delegate void GameStateChange();
+    public event GameStateChange GameStart;
+
     float timer;
     int score;
     GameState state;
@@ -126,20 +130,16 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
-
-        if (catSpawners == null || catSpawners.Length == 0)
-        {
-            ExperienceApp.Initializing += FindCatSpawners;
-        }
     }
 
     void Start()
     {
-        // TODO: Do fade-in before initiating pre-game countdown
+        pregameCanvas.SetActive(false);
         ShowGameCanvases(false);
         postgameCanvas.SetActive(false);
 
-        InitiatePregame();
+        state = GameState.Initialising;
+        Invoke(nameof(InitiatePregame), pregameDelay);
     }
 
     void Update()
@@ -186,11 +186,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void FindCatSpawners()
-    {
-        catSpawners = FindObjectsOfType<SpawnManager>();
-    }
-
     void InitiatePregame()
     {
         state = GameState.PreGame;
@@ -210,10 +205,7 @@ public class GameManager : MonoBehaviour
         ShowGameCanvases(true);
         scoreText.text = score.ToString();
 
-        foreach (SpawnManager spawner in catSpawners)
-        {
-            spawner.StartSpawningWaves();
-        }
+        GameStart?.Invoke();
     }
 
     void HidePregameCanvas()
@@ -288,6 +280,7 @@ public class GameManager : MonoBehaviour
 
     public enum GameState
     {
+        Initialising,
         PreGame,
         DuringGame,
         PostGame

@@ -26,6 +26,16 @@ public class SpawnManager : MonoBehaviour
 
     int wavesCompleted = 0;
 
+    void OnEnable()
+    {
+        GameManager.instance.GameStart += StartSpawningWaves;
+    }
+
+    void OnDisable()
+    {
+        GameManager.instance.GameStart -= StartSpawningWaves;
+    }
+
     public void StartSpawningWaves()
     {
         foreach (SpawnData data in spawnWavesData)

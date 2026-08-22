@@ -85,26 +85,27 @@ public class PlayerInput : MonoBehaviour
     {
         if (!GameManager.instance.enablePlayerInput) return;
 
-        var device = VRDevice.Device.PrimaryInputDevice;
+#if UNITY_EDITOR
+        if (Input.GetMouseButtonDown(0))
+        {
+            LaunchTreat();
+        }
 
-        if (device == null)
+        if (handInBox && Input.GetMouseButtonDown(1))
         {
-            Debug.LogError("Primary input device could not be found");
+            Reload();
         }
-        else
+#else
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
         {
-            if (device.GetButtonDown(VRButton.One))
-            {
-                if (handInBox)
-                {
-                    Reload();
-                }
-                else
-                {
-                    LaunchTreat();
-                }   
-            }
+            LaunchTreat();
         }
+
+        if (handInBox && OVRInput.GetDown(OVRInput.Button.One))
+        {
+            Reload();
+        }
+#endif
     }
 
     public void HandInBox(bool inBox)
@@ -114,7 +115,6 @@ public class PlayerInput : MonoBehaviour
         {
             treatLaunchPreview.SetActive(!inBox);
         }
-        Debug.Log("Hand in box: " + inBox);
     }
 
     void Reload()
