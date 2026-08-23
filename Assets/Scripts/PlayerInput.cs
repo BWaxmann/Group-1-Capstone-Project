@@ -1,6 +1,4 @@
 ﻿using System.Collections;
-using Liminal.SDK.VR;
-using Liminal.SDK.VR.Input;
 using TMPro;
 using UnityEngine;
 
@@ -128,7 +126,12 @@ public class PlayerInput : MonoBehaviour
     {
         if (currentAmmo > 0)
         {
-            Treat treat = treatsSpawner.GetObjectFromPool<Treat>();
+            Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
+            if (treat == null)
+            {
+                Debug.LogError("Failed to spawn treat to launch.", this);
+                return;
+            }
             treat.gameObject.SetActive(true);
             treat.LaunchTreat(treatLaunchPosition, launchForce);
             PlaySound(launcherFireSound, launcherFireVolume);

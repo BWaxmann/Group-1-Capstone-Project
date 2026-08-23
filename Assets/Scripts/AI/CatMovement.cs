@@ -63,6 +63,10 @@ public class CatMovement : MonoBehaviour
     [Min(0)]
     float hideMoodCanvasWhenFullDelay = 1.2f;
 
+    [SerializeField]
+    [Tooltip("If false, cat will immediately despawn after 'fully fed' animation.")]
+    bool returnHomeWhenFull = true;
+
     [Header("Sounds")]
 
     [SerializeField] 
@@ -195,10 +199,17 @@ public class CatMovement : MonoBehaviour
                     agent.isStopped = true;
                     yield return new WaitForSeconds(fullyFedPauseDuration);
 
-                    // Begin cat's return home
-                    agent.isStopped = false;
-                    currentState = AIState.ReturningHome;
-                    targetDestination = home.position;
+                    if (returnHomeWhenFull)
+                    {
+                        // Begin cat's return home
+                        agent.isStopped = false;
+                        currentState = AIState.ReturningHome;
+                        targetDestination = home.position;
+                    }
+                    else
+                    {
+                        gameObject.SetActive(false);
+                    }
                     break;
                 case AIState.ReturningHome:
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
@@ -241,13 +252,12 @@ public class CatMovement : MonoBehaviour
         currentHealth--;
         SetMoodImage();
         voiceSource.PlayOneShot(fedSound, fedSoundVolume);
-        Debug.Log($"Cat needs {currentHealth} treats until full.");
 
         if (currentHealth <= 0)
         {
             currentState = AIState.EatingTreat;
             GameManager.instance.UpdateScore(feedingScore);
-            if (animator != null)
+            if (animator != null && animator.runtimeAnimatorController != null)
             {
                 animator.SetTrigger(eatingTreatTriggerHash);
             }

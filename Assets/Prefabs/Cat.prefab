@@ -69,7 +69,7 @@ MonoBehaviour:
   stoppingDistance: 2
   pauseDurationBetweenWaypoints: 0.2
   fullyFedPauseDuration: 1.2
-  animator: {fileID: 0}
+  animator: {fileID: 553971562706455051}
   fullyFedAnimationTrigger: HappyCat
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}
@@ -80,6 +80,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d46b6108f3e56e14f996bbe01e33c772, type: 3}
   - {fileID: 21300000, guid: e53da6bbff9041f41a05b74a12552e9e, type: 3}
   hideMoodCanvasWhenFullDelay: 1.2
+  returnHomeWhenFull: 1
   voiceSource: {fileID: 7837930123219776036}
   roamingSounds:
   - {fileID: 8300000, guid: b9e5210b98b823042a0ef3acf2593bcf, type: 3}

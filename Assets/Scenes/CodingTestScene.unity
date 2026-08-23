@@ -1378,18 +1378,24 @@ MonoBehaviour:
     _maximumNumberToSpawnAtATime: 2
     _minimumDelayBetweenSpawns: 0.8
     _maximumDelayBetweenSpawns: 1.6
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
   - _secondsAfterStartToBegin: 10
     _numberOfTimesToSpawn: 3
     _minimumNumberToSpawnAtATime: 2
     _maximumNumberToSpawnAtATime: 3
     _minimumDelayBetweenSpawns: 1
     _maximumDelayBetweenSpawns: 2
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
   - _secondsAfterStartToBegin: 26
     _numberOfTimesToSpawn: 5
     _minimumNumberToSpawnAtATime: 3
     _maximumNumberToSpawnAtATime: 4
     _minimumDelayBetweenSpawns: 1.2
     _maximumDelayBetweenSpawns: 2.5
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
 --- !u!4 &1632909069
 Transform:
   m_ObjectHideFlags: 0
@@ -1879,18 +1885,24 @@ MonoBehaviour:
     _maximumNumberToSpawnAtATime: 2
     _minimumDelayBetweenSpawns: 0.8
     _maximumDelayBetweenSpawns: 1.6
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
   - _secondsAfterStartToBegin: 18
     _numberOfTimesToSpawn: 3
     _minimumNumberToSpawnAtATime: 2
     _maximumNumberToSpawnAtATime: 3
     _minimumDelayBetweenSpawns: 1
     _maximumDelayBetweenSpawns: 2
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
   - _secondsAfterStartToBegin: 40
     _numberOfTimesToSpawn: 5
     _minimumNumberToSpawnAtATime: 3
     _maximumNumberToSpawnAtATime: 4
     _minimumDelayBetweenSpawns: 1.2
     _maximumDelayBetweenSpawns: 2.5
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
 --- !u!4 &2047316991
 Transform:
   m_ObjectHideFlags: 0
