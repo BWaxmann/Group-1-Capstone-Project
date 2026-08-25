@@ -5986,8 +5986,6 @@ MonoBehaviour:
   - {fileID: 1251283775}
   - {fileID: 875284525}
   - {fileID: 2050690611}
-  exitWaypoint: {fileID: 884572224}
-  homeWaypoint: {fileID: 823453160}
 --- !u!4 &1555805605
 Transform:
   m_ObjectHideFlags: 0
@@ -6014,11 +6012,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1c89acd1aa1ee0488b2e064c890f74e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  catPrefabs:
-  - {fileID: 4251842316735065021, guid: 8879010c441781f49abf1b937dfec2f0, type: 3}
-  initialPoolSize: 4
+  catSpawner: {fileID: 0}
   spawnPointCentre: {fileID: 823453160}
   spawnPointRadius: 1
+  afterFeedingReturnPoint: {fileID: 0}
   spawnWavesData:
   - _secondsAfterStartToBegin: 0.5
     _numberOfTimesToSpawn: 10
@@ -6026,6 +6023,8 @@ MonoBehaviour:
     _maximumNumberToSpawnAtATime: 1
     _minimumDelayBetweenSpawns: 0.7
     _maximumDelayBetweenSpawns: 1.1
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
 --- !u!1 &1640296377
 GameObject:
   m_ObjectHideFlags: 0
