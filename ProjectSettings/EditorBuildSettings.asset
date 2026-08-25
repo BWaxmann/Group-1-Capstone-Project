@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/CC_Greybox.unity
-    guid: e4a58166d73081e419c922639cd37e7c
+    path: Assets/Scenes/CodingTestScene.unity
+    guid: 3153db33a397cbb42989e6d3acd8b38c
   m_configObjects: {}
