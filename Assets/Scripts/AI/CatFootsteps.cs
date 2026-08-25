@@ -7,11 +7,7 @@ public class CatFootsteps : MonoBehaviour
     AudioSource footstepSource;
 
     [SerializeField]
-    AudioClip[] footstepClips;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float footstepVolume = 0.3f;
+    SoundData[] footstepClips;
 
     [SerializeField]
     [Tooltip("If true, footstep clips will play in a random order; if false, footsteps will play in order provided.")]
@@ -41,6 +37,6 @@ public class CatFootsteps : MonoBehaviour
             mostRecentClipIndex = (mostRecentClipIndex + 1) % footstepClips.Length;
         }
 
-        footstepSource.PlayOneShot(footstepClips[mostRecentClipIndex], footstepVolume);
+        footstepClips[mostRecentClipIndex].PlayOneShot(footstepSource);
     }
 }

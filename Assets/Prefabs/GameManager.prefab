@@ -45,12 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0641306bae89bba4792ae5ce6ba8932a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pregameDelay: 0.5
   pregameCountdownTime: 3
   gameTime: 200
   endgameFadeDelay: 3
   fadeDuration: 1
-  catSpawners:
-  - {fileID: 0}
+  defendPoints:
   - {fileID: 0}
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}
@@ -64,16 +64,36 @@ MonoBehaviour:
   postgameCanvas: {fileID: 0}
   soundEffectSource: {fileID: 893389621652222314}
   musicSource: {fileID: 5991186334920329714}
-  countdownSound: {fileID: 0}
-  countdownVolume: 1
-  gameStartSound: {fileID: 0}
-  gameStartVolume: 1
-  gameMusic: {fileID: 0}
-  gameMusicVolume: 1
-  gameEndSound: {fileID: 0}
-  gameEndVolume: 1
-  postgameMusic: {fileID: 0}
-  postgameMusicVolume: 1
+  countdownSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  countdownSoundIsCombined: 0
+  separateGameStartSound: 1
+  gameStartSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  scoreUpSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  catEscapeSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  gameEndSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  gameMusic:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  postgameMusic:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
 --- !u!82 &893389621652222314
 AudioSource:
   m_ObjectHideFlags: 0

@@ -39,27 +39,15 @@ public class PlayerInput : MonoBehaviour
 
     [SerializeField]
     [Tooltip("Sound to play when firing a treat.")]
-    AudioClip launcherFireSound;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float launcherFireVolume = 1f;
+    SoundData launcherFireSound = new SoundData(1f, 1f);
 
     [SerializeField]
     [Tooltip("Sound to play when attempting to fire a treat with no ammo.")]
-    AudioClip launcherEmptySound;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float launcherEmptyVolume = 0.5f;
+    SoundData launcherEmptySound = new SoundData(1f, 1f);
 
     [SerializeField]
     [Tooltip("Sound to play when reloading the treat launcher.")]
-    AudioClip launcherReloadSound;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float launcherReloadVolume = 0.8f;
+    SoundData launcherReloadSound = new SoundData(1f, 1f);
 
     public delegate void FaceCamera(Quaternion rotation);
     public static event FaceCamera TurnToFaceCamera;
@@ -118,7 +106,7 @@ public class PlayerInput : MonoBehaviour
     void Reload()
     {
         currentAmmo = maximumAmmo;
-        PlaySound(launcherReloadSound, launcherReloadVolume);
+        PlaySound(launcherReloadSound);
         UpdateAmmoDisplay();
     }
 
@@ -134,7 +122,7 @@ public class PlayerInput : MonoBehaviour
             }
             treat.gameObject.SetActive(true);
             treat.LaunchTreat(treatLaunchPosition, launchForce);
-            PlaySound(launcherFireSound, launcherFireVolume);
+            PlaySound(launcherFireSound);
             currentAmmo--;
             UpdateAmmoDisplay();
             if (currentAmmo <= 0)
@@ -144,7 +132,7 @@ public class PlayerInput : MonoBehaviour
         }
         else
         {
-            PlaySound(launcherEmptySound, launcherEmptyVolume);
+            PlaySound(launcherEmptySound);
         }
     }
 
@@ -153,11 +141,11 @@ public class PlayerInput : MonoBehaviour
         if (ammoText != null) ammoText.text = currentAmmo.ToString();
     }
 
-    void PlaySound(AudioClip sound, float volume)
+    void PlaySound(SoundData sound)
     {
-        if (launcherAudioSource != null && sound != null)
+        if (launcherAudioSource != null && sound.soundClip != null)
         {
-            launcherAudioSource.PlayOneShot(sound, volume);
+            sound.PlayOneShot(launcherAudioSource);
         }
     }
 

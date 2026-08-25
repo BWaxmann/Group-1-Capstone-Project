@@ -64,8 +64,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   treatOnFloorLifetime: 1.5
   audioSource: {fileID: 2597831426235972676}
-  treatHittingFloorSound: {fileID: 0}
-  treatHittingFloorVolume: 0.7
+  treatHittingFloorSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
 --- !u!82 &2597831426235972676
 AudioSource:
   m_ObjectHideFlags: 0
