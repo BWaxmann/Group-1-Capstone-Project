@@ -43,6 +43,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14ec5c6089d4eec4ebc0db3c1e892bc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  objectPrefabs:
-  - {fileID: 1395766658557252655, guid: 8879010c441781f49abf1b937dfec2f0, type: 3}
-  initialPoolSize: 20
+  objectsInPool:
+  - _prefab: {fileID: 1395766658557252655, guid: 8879010c441781f49abf1b937dfec2f0,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 10

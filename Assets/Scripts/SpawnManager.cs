@@ -26,6 +26,16 @@ public class SpawnManager : MonoBehaviour
 
     int wavesCompleted = 0;
 
+    void OnEnable()
+    {
+        GameManager.instance.GameStart += StartSpawningWaves;
+    }
+
+    void OnDisable()
+    {
+        GameManager.instance.GameStart -= StartSpawningWaves;
+    }
+
     public void StartSpawningWaves()
     {
         foreach (SpawnData data in spawnWavesData)
@@ -44,7 +54,14 @@ public class SpawnManager : MonoBehaviour
             int numberToSpawn = Random.Range(data.minimumNumberToSpawnAtATime, data.maximumNumberToSpawnAtATime + 1);
             for (int j = 0; j < numberToSpawn; j++)
             {
-                CatMovement cat = catSpawner.GetObjectFromPool<CatMovement>();
+                CatMovement cat = data.onlySpawnSpecificVariations 
+                    ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn) 
+                    : catSpawner.GetRandomObjectFromPool<CatMovement>();
+                if (cat == null)
+                {
+                    Debug.LogError("Failed to spawn cats.", this);
+                    break;
+                }
                 cat.gameObject.SetActive(true);
                 Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
                 cat.transform.SetPositionAndRotation(spawnPosition, spawnPointCentre.rotation);
@@ -82,11 +99,19 @@ public class SpawnManager : MonoBehaviour
         [Min(0)]
         float _maximumDelayBetweenSpawns;
 
+        [SerializeField]
+        bool _onlySpawnSpecificVariations;
+
+        [SerializeField]
+        int[] _variationsToSpawn;
+
         public float secondsAfterStartToBegin { get { return _secondsAfterStartToBegin; } }
         public int numberOfTimesToSpawn { get { return _numberOfTimesToSpawn; } }
         public int minimumNumberToSpawnAtATime { get { return _minimumNumberToSpawnAtATime; } }
         public int maximumNumberToSpawnAtATime { get { return _maximumNumberToSpawnAtATime; } }
         public float minimumDelayBetweenSpawns { get { return _minimumDelayBetweenSpawns; } }
         public float maximumDelayBetweenSpawns { get { return _maximumDelayBetweenSpawns; } }
+        public bool onlySpawnSpecificVariations { get { return _onlySpawnSpecificVariations; } }
+        public int[] variationsToSpawn { get { return _variationsToSpawn; } }
     }
 }

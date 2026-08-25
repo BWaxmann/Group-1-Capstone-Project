@@ -1,63 +1,141 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ObjectSpawner : MonoBehaviour
 {
     [SerializeField]
-    GameObject[] objectPrefabs;
+    ObjectVariation[] objectsInPool;
 
-    [SerializeField]
-    [Min(0)]
-    int initialPoolSize;
-
-    List<GameObject> objectPool = new List<GameObject>();
+    List<GameObject>[] objectPools;
+    List<int> variationsForRandomPick = new List<int>();
 
     void Start()
     {
-        if (objectPrefabs == null || objectPrefabs.Length == 0)
+        if (objectsInPool == null || objectsInPool.Length == 0)
         {
-            Debug.LogError("No object prefabs provided for pool.");
+            Debug.LogError("No object prefabs provided for pool.", this);
             return;
         }
 
-        for (int i = 0; i < initialPoolSize; i++)
+        objectPools = new List<GameObject>[objectsInPool.Length];
+        variationsForRandomPick.Clear();
+        for (int i = 0; i < objectsInPool.Length; i++)
         {
-            GameObject obj = SpawnNewObjectForPool();
-            obj.SetActive(false);
+            objectPools[i] = new List<GameObject>();
+            int iPS = objectsInPool[i].initialPoolSize;
+            if (iPS > 0)
+            {
+                for (int j = 0; j < iPS; j++)
+                {
+                    GameObject obj = SpawnNewObjectForPool(i);
+                    obj.SetActive(false);
+                }
+            }
+
+            if (!objectsInPool[i].excludeFromRandomSelection)
+            {
+                variationsForRandomPick.Add(i);
+            }
+        }
+
+        if (variationsForRandomPick.Count == 0)
+        {
+            Debug.LogWarning("No object prefabs available for random picking.", this);
         }
     }
 
-    public GameObject GetObjectFromPool()
+    public GameObject GetObjectFromPool(int variation)
     {
-        RandomisePoolOrder();
-        foreach (GameObject obj in objectPool)
+        if (variation >= objectPools.Length)
+        {
+            Debug.LogError($"Attempted to get invalid variation {variation}.", this);
+            return null;
+        }
+        foreach (GameObject obj in objectPools[variation])
         {
             if (!obj.activeSelf)
             {
                 return obj;
             }
         }
-        return SpawnNewObjectForPool();
+        return SpawnNewObjectForPool(variation);
     }
 
-    public T GetObjectFromPool<T>() where T : MonoBehaviour
+    public T GetObjectFromPool<T>(int variation) where T : MonoBehaviour
     {
-        return GetObjectFromPool().GetComponent<T>();
+        GameObject obj = GetObjectFromPool(variation);
+        if (obj == null) return null;
+        return obj.GetComponent<T>();
     }
 
-    GameObject SpawnNewObjectForPool()
+    public GameObject GetRandomObjectFromPoolFromGivenVariations(int[] variations)
     {
-        int chosenPrefab = Random.Range(0, objectPrefabs.Length);
-        GameObject obj = Instantiate(objectPrefabs[chosenPrefab], transform);
-        objectPool.Add(obj);
+        if (variations == null || variations.Length == 0)
+        {
+            Debug.LogError("Attempted to get variation to spawn from an empty array.", this);
+            return null;
+        }
+        return GetObjectFromPool(GetRandomItemFromArray(variations));
+    }
+
+    public T GetRandomObjectFromPoolFromGivenVariations<T>(int[] variations) where T : MonoBehaviour
+    {
+        GameObject obj = GetRandomObjectFromPoolFromGivenVariations(variations);
+        if (obj == null) return null;
+        return obj.GetComponent<T>();
+    }    
+
+    public GameObject GetRandomObjectFromPool()
+    {
+        if (variationsForRandomPick == null || variationsForRandomPick.Count == 0)
+        {
+            Debug.LogError("Attempted to pick from empty variation list.", this);
+            return null;
+        }
+        return GetObjectFromPool(GetRandomItemFromList(variationsForRandomPick));
+    }
+
+    public T GetRandomObjectFromPool<T>() where T : MonoBehaviour
+    {
+        GameObject obj = GetRandomObjectFromPool();
+        if (obj == null) return null;
+        return obj.GetComponent<T>();
+    }
+
+    GameObject SpawnNewObjectForPool(int variation)
+    {
+        GameObject obj = Instantiate(objectsInPool[variation].prefab, transform);
+        objectPools[variation].Add(obj);
         return obj;
     }
 
-    void RandomisePoolOrder()
+    T GetRandomItemFromArray<T>(T[] items)
     {
-        objectPool.Sort(delegate (GameObject x, GameObject y)
-        {
-            return Random.Range(-1, 2);
-        });
+        return items[Random.Range(0, items.Length)];
+    }
+
+    T GetRandomItemFromList<T>(List<T> list)
+    {
+        return list[Random.Range(0, list.Count)];
+    }
+
+    [Serializable]
+    public struct ObjectVariation
+    {
+        [SerializeField]
+        GameObject _prefab;
+
+        [SerializeField]
+        bool _excludeFromRandomSelection;
+
+        [SerializeField]
+        [Min(0)]
+        int _initialPoolSize;
+
+        public GameObject prefab { get { return _prefab; } }
+        public bool excludeFromRandomSelection { get { return _excludeFromRandomSelection; } }
+        public int initialPoolSize { get { return _initialPoolSize; } }
     }
 }

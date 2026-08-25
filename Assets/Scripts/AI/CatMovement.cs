@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class CatMovement : MonoBehaviour
 {
@@ -35,13 +36,36 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float eatingTreatPauseDuration = 1.2f;
+    float fullyFedPauseDuration = 1.2f;
 
     [SerializeField] 
     Animator animator;
 
     [SerializeField] 
-    string eatingTreatAnimationTrigger = "HappyCat";
+    string fullyFedAnimationTrigger = "HappyCat";
+
+    [Header("Health")]
+
+    [SerializeField]
+    int treatsUntilFull = 3;
+
+    [SerializeField]
+    GameObject moodCanvas;
+
+    [SerializeField]
+    Image moodImage;
+
+    [SerializeField]
+    [Tooltip("This should be the same size as 'Treats Until Full' and be ordered from happiest to grumpiest.")]
+    Sprite[] moodSprites;
+
+    [SerializeField]
+    [Min(0)]
+    float hideMoodCanvasWhenFullDelay = 1.2f;
+
+    [SerializeField]
+    [Tooltip("If false, cat will immediately despawn after 'fully fed' animation.")]
+    bool returnHomeWhenFull = true;
 
     [Header("Sounds")]
 
@@ -77,13 +101,14 @@ public class CatMovement : MonoBehaviour
     int numberOfRoamingWaypoints;
     Vector3[] roamingWaypoints;
     int numberofWaypointsReached;
+    int currentHealth;
     int eatingTreatTriggerHash;
 
-    public bool isFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
+    public bool isFullyFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
 
     void Start()
     {
-        eatingTreatTriggerHash = Animator.StringToHash(eatingTreatAnimationTrigger);
+        eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
     }
 
     void OnDisable()
@@ -126,6 +151,13 @@ public class CatMovement : MonoBehaviour
         {
             StartCoroutine(SoundRoutine());
         }
+
+        currentHealth = treatsUntilFull;
+        if (moodCanvas != null)
+        {
+            moodCanvas.SetActive(true);
+            SetMoodImage();
+        }
     }
 
     IEnumerator MoveToTargetRoutine()
@@ -165,12 +197,19 @@ public class CatMovement : MonoBehaviour
                 case AIState.EatingTreat:
                     // Wait for animation of cat eating
                     agent.isStopped = true;
-                    yield return new WaitForSeconds(eatingTreatPauseDuration);
+                    yield return new WaitForSeconds(fullyFedPauseDuration);
 
-                    // Begin cat's return home
-                    agent.isStopped = false;
-                    currentState = AIState.ReturningHome;
-                    targetDestination = home.position;
+                    if (returnHomeWhenFull)
+                    {
+                        // Begin cat's return home
+                        agent.isStopped = false;
+                        currentState = AIState.ReturningHome;
+                        targetDestination = home.position;
+                    }
+                    else
+                    {
+                        gameObject.SetActive(false);
+                    }
                     break;
                 case AIState.ReturningHome:
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
@@ -192,7 +231,7 @@ public class CatMovement : MonoBehaviour
         {
             float nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause);
             float timer = Random.Range(0, nextTime);
-            while (!isFed)
+            while (!isFullyFed)
             {
                 timer += Time.deltaTime;
                 if (timer >= nextTime)
@@ -204,23 +243,45 @@ public class CatMovement : MonoBehaviour
                 yield return null;
             }
         }
-        else
-        {
-            yield return new WaitUntil(() => isFed);
-        }
-
-        voiceSource.PlayOneShot(fedSound, fedSoundVolume);
     }
 
     public void FeedCat()
     {
-        if (isFed) return;
+        if (isFullyFed) return;
 
-        currentState = AIState.EatingTreat;
-        GameManager.instance.UpdateScore(feedingScore);
-        if (animator != null)
+        currentHealth--;
+        SetMoodImage();
+        voiceSource.PlayOneShot(fedSound, fedSoundVolume);
+
+        if (currentHealth <= 0)
         {
-            animator.SetTrigger(eatingTreatTriggerHash);
+            currentState = AIState.EatingTreat;
+            GameManager.instance.UpdateScore(feedingScore);
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                animator.SetTrigger(eatingTreatTriggerHash);
+            }
+            Invoke(nameof(HideMoodCanvas), hideMoodCanvasWhenFullDelay);
+        }
+    }
+
+    void SetMoodImage()
+    {
+        if (moodImage != null && moodSprites != null && moodSprites.Length > currentHealth)
+        {
+            Sprite sp = moodSprites[currentHealth];
+            if (sp != null)
+            {
+                moodImage.sprite = sp;
+            }
+        }
+    }
+
+    void HideMoodCanvas()
+    {
+        if (moodCanvas != null)
+        {
+            moodCanvas.SetActive(false);
         }
     }
 

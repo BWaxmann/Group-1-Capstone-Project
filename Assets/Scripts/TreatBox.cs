@@ -6,32 +6,53 @@ public class TreatBox : MonoBehaviour
     PlayerInput player;
 
     [SerializeField]
-    Collider playerPrimaryHand;
+    Collider playerHand;
+
+    [Header("Outline")]
 
     [SerializeField]
-    Collider playerSecondaryHand;
+    Outline outline;
+
+    [SerializeField]
+    Color handInBoxColour = Color.yellow;
+
+    void Start()
+    {
+        if (outline == null)
+        {
+            outline = GetComponentInChildren<Outline>();
+        }
+
+        if (outline != null)
+        {
+            outline.OutlineColor = handInBoxColour;
+            outline.enabled = false;
+        }
+    }
 
     public void OnTriggerEnter(Collider other)
     {
-        if (playerPrimaryHand != null && other == playerPrimaryHand)
+        if (playerHand != null && other == playerHand)
         {
-            player.HandInBox(true, true);
-        }
-        else if (playerSecondaryHand != null && other == playerSecondaryHand)
-        {
-            player.HandInBox(true, false);
+            player.HandInBox(true);
+            EnableOutline(true);
         }
     }
 
     public void OnTriggerExit(Collider other)
     {
-        if (playerPrimaryHand != null && other == playerPrimaryHand)
+        if (playerHand != null && other == playerHand)
         {
-            player.HandInBox(false, true);
+            player.HandInBox(false);
+            EnableOutline(false);
         }
-        else if (playerSecondaryHand != null && other == playerSecondaryHand)
+    }
+
+    void EnableOutline(bool enabled)
+    {
+        if (outline != null)
         {
-            player.HandInBox(false, false);
+            outline.enabled = enabled;
         }
     }
 }

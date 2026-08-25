@@ -1,140 +1,173 @@
-﻿using Liminal.SDK.VR;
-using Liminal.SDK.VR.Input;
+﻿using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
+    [SerializeField]
+    float billboardUpdateFrequency = 0.2f;
+
+    [Header("Treat Launcher")]
+
     [SerializeField] 
     ObjectSpawner treatsSpawner;
 
     [SerializeField] 
-    Transform primaryHandTreatPosition;
+    Transform treatLaunchPosition;
 
-    [SerializeField] 
-    Transform secondaryHandTreatPosition;
-
-    [SerializeField] 
-    GameObject primaryHandThrowPreview;
-
-    [SerializeField] 
-    GameObject secondaryHandThrowPreview;
+    [SerializeField]
+    GameObject treatLaunchPreview;
 
     [SerializeField] 
     [Min(0)] 
-    float throwForce = 5f;
+    float launchForce = 10f;
 
-    bool primaryHandInBox;
-    bool secondaryHandInBox;
-    Treat currentPrimaryHandTreat;
-    Treat currentSecondaryHandTreat;
+    [SerializeField]
+    [Min(0)]
+    int maximumAmmo = 20;
 
-    public bool treatInPrimaryHand => currentPrimaryHandTreat != null;
-    public bool treatInSecondaryHand => currentSecondaryHandTreat != null;
+    [SerializeField]
+    TMP_Text ammoText;
+
+    [SerializeField]
+    Transform eye;
+
+    [Header("Sound Effects")]
+
+    [SerializeField]
+    AudioSource launcherAudioSource;
+
+    [SerializeField]
+    [Tooltip("Sound to play when firing a treat.")]
+    AudioClip launcherFireSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float launcherFireVolume = 1f;
+
+    [SerializeField]
+    [Tooltip("Sound to play when attempting to fire a treat with no ammo.")]
+    AudioClip launcherEmptySound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float launcherEmptyVolume = 0.5f;
+
+    [SerializeField]
+    [Tooltip("Sound to play when reloading the treat launcher.")]
+    AudioClip launcherReloadSound;
+
+    [SerializeField]
+    [Range(0f, 1f)]
+    float launcherReloadVolume = 0.8f;
+
+    public delegate void FaceCamera(Quaternion rotation);
+    public static event FaceCamera TurnToFaceCamera;
+
+    bool handInBox;
+    int currentAmmo;
 
     void Start()
     {
-        primaryHandThrowPreview.SetActive(false);
-        secondaryHandThrowPreview.SetActive(false);
+        currentAmmo = maximumAmmo;
+
+        if (launcherAudioSource == null)
+        {
+            launcherAudioSource = GetComponentInChildren<AudioSource>();
+        }
+
+        StartCoroutine(UpdateBillboardsRoutine());
     }
 
     void Update()
     {
         if (!GameManager.instance.enablePlayerInput) return;
 
-        var device = VRDevice.Device.PrimaryInputDevice;
-
-        if (device == null)
+#if UNITY_EDITOR
+        if (Input.GetMouseButtonDown(0))
         {
-            Debug.LogError("Primary input device could not be found");
-        }
-        else
-        {
-            if (device.GetButtonDown(VRButton.One))
-            {
-                PickupTreat(true);
-            }
-            else if (device.GetButtonUp(VRButton.One))
-            {
-                ThrowTreat(true);
-            }
+            LaunchTreat();
         }
 
-        device = VRDevice.Device.SecondaryInputDevice;
-
-        if (device == null)
+        if (handInBox && Input.GetMouseButtonDown(1))
         {
-            Debug.LogError("Secondary input device could not be found");
+            Reload();
         }
-        else
+#else
+        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
         {
-            if (device.GetButtonDown(VRButton.One))
-            {
-                PickupTreat(false);
-            }
-            else if (device.GetButtonUp(VRButton.One))
-            {
-                ThrowTreat(false);
-            }
+            LaunchTreat();
+        }
+
+        if (handInBox && OVRInput.GetDown(OVRInput.Button.One))
+        {
+            Reload();
+        }
+#endif
+    }
+
+    public void HandInBox(bool inBox)
+    {
+        handInBox = inBox;
+        if (currentAmmo > 0)
+        {
+            treatLaunchPreview.SetActive(!inBox);
         }
     }
 
-    public void HandInBox(bool inBox, bool primaryHand)
+    void Reload()
     {
-        if (primaryHand)
+        currentAmmo = maximumAmmo;
+        PlaySound(launcherReloadSound, launcherReloadVolume);
+        UpdateAmmoDisplay();
+    }
+
+    void LaunchTreat()
+    {
+        if (currentAmmo > 0)
         {
-            primaryHandInBox = inBox;
-            Debug.Log("Primary hand in box: " + inBox);
+            Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
+            if (treat == null)
+            {
+                Debug.LogError("Failed to spawn treat to launch.", this);
+                return;
+            }
+            treat.gameObject.SetActive(true);
+            treat.LaunchTreat(treatLaunchPosition, launchForce);
+            PlaySound(launcherFireSound, launcherFireVolume);
+            currentAmmo--;
+            UpdateAmmoDisplay();
+            if (currentAmmo <= 0)
+            {
+                treatLaunchPreview.SetActive(false);
+            }
         }
         else
         {
-            secondaryHandInBox = inBox;
-            Debug.Log("Secondary hand in box: " + inBox);
+            PlaySound(launcherEmptySound, launcherEmptyVolume);
         }
     }
 
-    void PickupTreat(bool primaryHand)
+    void UpdateAmmoDisplay()
     {
-        if (primaryHand)
+        if (ammoText != null) ammoText.text = currentAmmo.ToString();
+    }
+
+    void PlaySound(AudioClip sound, float volume)
+    {
+        if (launcherAudioSource != null && sound != null)
         {
-            if (primaryHandInBox && !treatInPrimaryHand)
-            {
-                currentPrimaryHandTreat = treatsSpawner.GetObjectFromPool<Treat>();
-                currentPrimaryHandTreat.gameObject.SetActive(true);
-                currentPrimaryHandTreat.AttachTreatToHand(primaryHandTreatPosition);
-                primaryHandThrowPreview.SetActive(true);
-            }
-        }
-        else
-        {
-            if (secondaryHandInBox && !treatInSecondaryHand)
-            {
-                currentSecondaryHandTreat = treatsSpawner.GetObjectFromPool<Treat>();
-                currentSecondaryHandTreat.gameObject.SetActive(true);
-                currentSecondaryHandTreat.AttachTreatToHand(secondaryHandTreatPosition);
-                secondaryHandThrowPreview.SetActive(true);
-            }
+            launcherAudioSource.PlayOneShot(sound, volume);
         }
     }
 
-    void ThrowTreat(bool primaryHand)
+    IEnumerator UpdateBillboardsRoutine()
     {
-        if (primaryHand)
+        WaitForSeconds wait = new WaitForSeconds(billboardUpdateFrequency);
+        while (true)
         {
-            if (treatInPrimaryHand)
-            {
-                currentPrimaryHandTreat.LaunchTreatFromHand(primaryHandTreatPosition.forward, throwForce);
-                currentPrimaryHandTreat = null;
-                primaryHandThrowPreview.SetActive(false);
-            }
-        }
-        else
-        {
-            if (treatInSecondaryHand)
-            {
-                currentSecondaryHandTreat.LaunchTreatFromHand(secondaryHandTreatPosition.forward, throwForce);
-                currentSecondaryHandTreat = null;
-                secondaryHandThrowPreview.SetActive(false);
-            }
+            TurnToFaceCamera?.Invoke(eye.rotation);
+            yield return billboardUpdateFrequency;
         }
     }
 }
