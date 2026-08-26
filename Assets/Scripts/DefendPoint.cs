@@ -15,6 +15,7 @@ public class DefendPoint : MonoBehaviour
     {
         _timesHit++;
         GameManager.instance.UpdateScore(-hitScorePenalty);
+        ParticleManager.instance.ShowParticleEffect(0, position);
         Debug.Log($"{gameObject.name} has been hit {_timesHit} times.");
     }
 }

@@ -228,6 +228,8 @@ public class GameManager : MonoBehaviour
 
     public void UpdateScore(int change)
     {
+        if (state != GameState.DuringGame) return;
+
         score = Mathf.Max(score + change, 0);
         scoreText.text = score.ToString();
         if (change > 0)
