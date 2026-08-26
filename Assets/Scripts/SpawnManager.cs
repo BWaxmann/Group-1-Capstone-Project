@@ -33,6 +33,7 @@ public class SpawnManager : MonoBehaviour
 
     void Start()
     {
+        debugText.text = "Debug: ";
         GameManager.instance.GameStart += StartSpawningWaves;
     }
 
