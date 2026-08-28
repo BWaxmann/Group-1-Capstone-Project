@@ -300,7 +300,7 @@ public class CatMovement : MonoBehaviour
         if (currentHealth <= 0)
         {
             currentState = AIState.EatingTreat;
-            GameManager.instance.UpdateScore(feedingScore);
+            GameManager.instance.FeedCat(feedingScore);
             if (animator != null && animator.runtimeAnimatorController != null)
             {
                 animator.SetTrigger(eatingTreatTriggerHash);

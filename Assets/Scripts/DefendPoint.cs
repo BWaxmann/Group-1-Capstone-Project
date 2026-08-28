@@ -6,6 +6,10 @@ public class DefendPoint : MonoBehaviour
     [Min(0)]
     int hitScorePenalty = 1;
 
+    [SerializeField]
+    [Min(0)]
+    int hitParticlesIndex = 0;
+
     int _timesHit;
 
     public Vector3 position => transform.position;
@@ -14,7 +18,7 @@ public class DefendPoint : MonoBehaviour
     public void GetHit()
     {
         _timesHit++;
-        GameManager.instance.UpdateScore(-hitScorePenalty, false);
-        ParticleManager.instance.ShowParticleEffect(0, position);
+        GameManager.instance.ReceivePenalty(hitScorePenalty, false);
+        ParticleManager.instance.ShowParticleEffect(hitParticlesIndex, position);
     }
 }

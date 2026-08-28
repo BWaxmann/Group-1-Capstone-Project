@@ -48,7 +48,6 @@ MonoBehaviour:
   pregameDelay: 0.5
   pregameCountdownTime: 3
   gameTime: 200
-  endgameFadeDelay: 3
   fadeDuration: 1
   defendPoints:
   - {fileID: 0}
@@ -62,6 +61,13 @@ MonoBehaviour:
   scoreText: {fileID: 0}
   timerText: {fileID: 0}
   postgameCanvas: {fileID: 0}
+  timeUpText: {fileID: 0}
+  finalScorePanel: {fileID: 0}
+  timeUpDisplayDuration: 2
+  finalScoreDisplayDuration: 10
+  catsFedText: {fileID: 0}
+  penaltyText: {fileID: 0}
+  finalScoreText: {fileID: 0}
   soundEffectSource: {fileID: 893389621652222314}
   musicSource: {fileID: 5991186334920329714}
   countdownSound:
