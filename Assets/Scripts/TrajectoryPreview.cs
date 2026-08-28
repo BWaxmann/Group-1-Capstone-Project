@@ -18,15 +18,6 @@ public class TrajectoryPreview : MonoBehaviour
     [Min(0)]
     float cornerSpacing = 0.2f;
 
-    [SerializeField]
-    [Tooltip("If true, trajectory will update at fixed time intervals rather than once per frame.")]
-    bool fixedUpdate;
-
-    [SerializeField]
-    [Tooltip("If 'Fixed Update' is true, then this is the number of seconds between updates.")]
-    [Min(0)]
-    float updateFrequency = 0.1f;
-
     float gravity;
     Vector3 xAxis;
     float cos;
@@ -51,7 +42,6 @@ public class TrajectoryPreview : MonoBehaviour
 
     IEnumerator UpdateTrajectoryRoutine()
     {
-        WaitForSeconds wait = new WaitForSeconds(updateFrequency);
         while (true)
         {
             if (trajectoryPreviewLine.gameObject.activeInHierarchy)
@@ -78,14 +68,7 @@ public class TrajectoryPreview : MonoBehaviour
                 }
             }
 
-            if (fixedUpdate)
-            {
-                yield return wait;
-            }
-            else
-            {
-                yield return null;
-            }
+            yield return null;
         }
     }
 

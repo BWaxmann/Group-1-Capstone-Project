@@ -4884,6 +4884,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2084092611420802038, guid: a727da49b44d50341ab071e657b48c70,
+        type: 3}
+      propertyPath: m_Name
+      value: '[ExperienceApp]'
+      objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -4938,11 +4943,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2084092611420802038, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_Name
-      value: '[ExperienceApp]'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
@@ -5986,7 +5986,6 @@ MonoBehaviour:
   - {fileID: 1251283775}
   - {fileID: 875284525}
   - {fileID: 2050690611}
-  exitWaypoint: {fileID: 884572224}
 --- !u!4 &1555805605
 Transform:
   m_ObjectHideFlags: 0
@@ -6024,6 +6023,8 @@ MonoBehaviour:
     _maximumNumberToSpawnAtATime: 1
     _minimumDelayBetweenSpawns: 0.7
     _maximumDelayBetweenSpawns: 1.1
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
 --- !u!1 &1640296377
 GameObject:
   m_ObjectHideFlags: 0

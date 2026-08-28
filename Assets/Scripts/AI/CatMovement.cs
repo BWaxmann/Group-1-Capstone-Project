@@ -8,9 +8,6 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     int feedingScore = 10;
 
-    [SerializeField] 
-    int escapePenalty = 5;
-
     [Header("AI Behaviour")]
 
     [SerializeField]
@@ -18,19 +15,25 @@ public class CatMovement : MonoBehaviour
     float targetUpdateFrequency = 0.2f;
 
     [SerializeField]
-    [Min(0)]
-    int minimumWaypointsBeforeExit = 0;
-
-    [SerializeField]
-    [Min(0)]
-    int maximumWaypointsBeforeExit = 3;
-
-    [SerializeField] 
     float stoppingDistance = 0.1f;
 
     [SerializeField]
     [Min(0)]
     float pauseDurationBetweenWaypoints = 0.2f;
+
+    [SerializeField]
+    [Tooltip("This is the probability of going from roaming to targeting a defend point after reaching a waypoing.")]
+    [Range(0f, 1f)]
+    float roamingToTargetingChance = 0.2f;
+
+    [SerializeField]
+    [Tooltip("This is the probability of going from targeting a defend point to roaming after attacking the defend point.")]
+    [Range(0f, 1f)]
+    float targetingToRoamingChance = 0.1f;
+
+    [SerializeField]
+    [Min(0)]
+    float pauseBetweenDefendPointHits = 0.5f;
 
     [Header("Animation")]
 
@@ -38,10 +41,10 @@ public class CatMovement : MonoBehaviour
     [Min(0)]
     float fullyFedPauseDuration = 1.2f;
 
-    [SerializeField] 
+    [SerializeField]
     Animator animator;
 
-    [SerializeField] 
+    [SerializeField]
     string fullyFedAnimationTrigger = "HappyCat";
 
     [Header("Health")]
@@ -61,7 +64,11 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float hideMoodCanvasWhenFullDelay = 1.2f;
+    float hideMoodCanvasDelay = 1.2f;
+
+    [SerializeField]
+    [Min(0)]
+    int eatingParticleIndex;
 
     [SerializeField]
     [Tooltip("If false, cat will immediately despawn after 'fully fed' animation.")]
@@ -73,11 +80,7 @@ public class CatMovement : MonoBehaviour
     AudioSource voiceSource;
 
     [SerializeField]
-    AudioClip[] roamingSounds;
-
-    [SerializeField]
-    [Range(0, 1)]
-    float roamingSoundVolume = 0.4f;
+    SoundData[] roamingSounds;
 
     [SerializeField]
     [Min(0)]
@@ -88,21 +91,17 @@ public class CatMovement : MonoBehaviour
     float roamingSoundMaximumPause = 10f;
 
     [SerializeField]
-    AudioClip fedSound;
-
-    [SerializeField]
-    [Range(0, 1)]
-    float fedSoundVolume = 1f;
+    SoundData fedSound = new SoundData(1f, 1f);
 
     NavMeshAgent agent;
     AIState currentState;
     Transform home;
     Vector3 targetDestination;
-    int numberOfRoamingWaypoints;
-    Vector3[] roamingWaypoints;
-    int numberofWaypointsReached;
+    DefendPoint targetDefendPoint;
     int currentHealth;
     int eatingTreatTriggerHash;
+    float moodDisplayTimer;
+    Coroutine moodCanvasHideRoutine;
 
     public bool isFullyFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
 
@@ -132,19 +131,8 @@ public class CatMovement : MonoBehaviour
         }
 
         home = spawnPoint;
-        numberOfRoamingWaypoints = Random.Range(minimumWaypointsBeforeExit, maximumWaypointsBeforeExit + 1);
-        if (numberOfRoamingWaypoints == 0)
-        {
-            currentState = AIState.Exiting;
-            targetDestination = WaypointManager.instance.ExitWaypoint;
-        }
-        else
-        {
-            currentState = AIState.Roaming;
-            roamingWaypoints = WaypointManager.instance.GetListOfRandomWaypoints(numberOfRoamingWaypoints);
-            numberofWaypointsReached = 0;
-            targetDestination = roamingWaypoints[0];
-        }
+        currentState = AIState.Roaming;
+        targetDestination = WaypointManager.instance.GetRandomWaypoint();
 
         StartCoroutine(MoveToTargetRoutine());
         if (voiceSource != null)
@@ -155,8 +143,8 @@ public class CatMovement : MonoBehaviour
         currentHealth = treatsUntilFull;
         if (moodCanvas != null)
         {
-            moodCanvas.SetActive(true);
-            SetMoodImage();
+            moodCanvas.SetActive(false);
+            moodDisplayTimer = 0;
         }
     }
 
@@ -164,6 +152,7 @@ public class CatMovement : MonoBehaviour
     {
         WaitForSeconds updateWait = new WaitForSeconds(targetUpdateFrequency);
         WaitForSeconds interWaypointWait = new WaitForSeconds(pauseDurationBetweenWaypoints);
+        WaitForSeconds interAttackWait = new WaitForSeconds(pauseBetweenDefendPointHits);
         while (true)
         {
             switch (currentState)
@@ -173,25 +162,52 @@ public class CatMovement : MonoBehaviour
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
                     {
                         yield return interWaypointWait;
-                        numberofWaypointsReached++;
-                        // Determines whether all waypoints have been reached and updates destination accordingly
-                        if (numberofWaypointsReached >= roamingWaypoints.Length)
+
+                        // Determines whether to go after a defend point or keep roaming
+                        if (Random.Range(0f, 1f) < roamingToTargetingChance)
                         {
-                            currentState = AIState.Exiting;
-                            targetDestination = WaypointManager.instance.ExitWaypoint;
+                            targetDefendPoint = GameManager.instance.GetRandomDefendPoint();
+                            if (targetDefendPoint != null)
+                            {
+                                currentState = AIState.Targeting;
+                                targetDestination = targetDefendPoint.position;
+                            }
+                            else
+                            {
+                                targetDestination = WaypointManager.instance.GetNewWaypoint(targetDestination);
+                            }
                         }
                         else
                         {
-                            targetDestination = roamingWaypoints[numberofWaypointsReached];
+                            targetDestination = WaypointManager.instance.GetNewWaypoint(targetDestination);
                         }
                     }
                     break;
-                case AIState.Exiting:
+                case AIState.Targeting:
+                    // Checks whether target destination has been reached
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
                     {
-                        // Setting the cat to inactive will automatically recycle in back into the pool for spawning
-                        gameObject.SetActive(false);
-                        GameManager.instance.UpdateScore(-escapePenalty);
+                        agent.isStopped = true;
+
+                        while(true)
+                        {
+                            targetDefendPoint.GetHit();
+
+                            yield return interAttackWait;
+
+                            if (currentState != AIState.Targeting)
+                            {
+                                break;
+                            }
+                            if (Random.Range(0f, 1f) < targetingToRoamingChance)
+                            {
+                                currentState = AIState.Roaming;
+                                targetDestination = WaypointManager.instance.GetRandomWaypoint();
+                                targetDefendPoint = null;
+                                agent.isStopped = false;
+                                break;
+                            }
+                        }
                     }
                     break;
                 case AIState.EatingTreat:
@@ -236,7 +252,7 @@ public class CatMovement : MonoBehaviour
                 timer += Time.deltaTime;
                 if (timer >= nextTime)
                 {
-                    voiceSource.PlayOneShot(roamingSounds[Random.Range(0, roamingSounds.Length)], roamingSoundVolume);
+                    roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource);
                     timer -= nextTime;
                     nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause); ;
                 }
@@ -250,8 +266,17 @@ public class CatMovement : MonoBehaviour
         if (isFullyFed) return;
 
         currentHealth--;
+
+        moodCanvas.SetActive(true);
         SetMoodImage();
-        voiceSource.PlayOneShot(fedSound, fedSoundVolume);
+        moodDisplayTimer = hideMoodCanvasDelay;
+        if (moodCanvasHideRoutine == null)
+        {
+            moodCanvasHideRoutine = StartCoroutine(HideMoodCanvasRoutine());
+        }
+        ParticleManager.instance.ShowParticleEffect(eatingParticleIndex, voiceSource.transform.position);
+
+        fedSound.PlayOneShot(voiceSource);
 
         if (currentHealth <= 0)
         {
@@ -261,7 +286,13 @@ public class CatMovement : MonoBehaviour
             {
                 animator.SetTrigger(eatingTreatTriggerHash);
             }
-            Invoke(nameof(HideMoodCanvas), hideMoodCanvasWhenFullDelay);
+        }
+        else if (currentState == AIState.Targeting && Random.Range(0f, 1f) < targetingToRoamingChance)
+        {
+            currentState = AIState.Roaming;
+            targetDestination = WaypointManager.instance.GetRandomWaypoint();
+            targetDefendPoint = null;
+            agent.isStopped = false;
         }
     }
 
@@ -277,18 +308,21 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    void HideMoodCanvas()
+    IEnumerator HideMoodCanvasRoutine()
     {
-        if (moodCanvas != null)
+        while (moodDisplayTimer > 0)
         {
-            moodCanvas.SetActive(false);
+            moodDisplayTimer -= Time.deltaTime;
+            yield return null;
         }
+        moodCanvas.SetActive(false);
+        moodCanvasHideRoutine = null;
     }
 
     public enum AIState
     {
         Roaming,
-        Exiting,
+        Targeting,
         EatingTreat,
         ReturningHome
     }

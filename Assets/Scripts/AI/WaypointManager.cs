@@ -6,9 +6,6 @@ public class WaypointManager : MonoBehaviour
     public static WaypointManager instance;
 
     [SerializeField] Transform[] roamingWaypoints;
-    [SerializeField] Transform exitWaypoint;
-
-    public Vector3 ExitWaypoint { get { return exitWaypoint.position; } }
 
     void Awake()
     {
@@ -48,5 +45,31 @@ public class WaypointManager : MonoBehaviour
         }
 
         return output;
+    }
+
+    public Vector3 GetRandomWaypoint()
+    {
+        return roamingWaypoints[Random.Range(0, roamingWaypoints.Length)].position;
+    }
+
+    public Vector3 GetNewWaypoint(Vector3 previousWaypoint)
+    {
+        if (roamingWaypoints == null || roamingWaypoints.Length == 0) return Vector3.zero;
+        if (roamingWaypoints.Length == 1) return roamingWaypoints[0].position;
+
+        int attempts = 0;
+        while (attempts < 10)
+        {
+            Vector3 output = GetRandomWaypoint();
+            if (Vector3.Distance(output, previousWaypoint) < 0.1f)
+            {
+                attempts++;
+            }
+            else
+            {
+                return output;
+            }
+        }
+        return previousWaypoint;
     }
 }

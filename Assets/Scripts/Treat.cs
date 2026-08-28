@@ -10,11 +10,7 @@ public class Treat : MonoBehaviour
     AudioSource audioSource;
 
     [SerializeField]
-    AudioClip treatHittingFloorSound;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float treatHittingFloorVolume = 0.7f;
+    SoundData treatHittingFloorSound = new SoundData(1f, 1f);
 
     Rigidbody rb;
     bool isActive;
@@ -60,9 +56,9 @@ public class Treat : MonoBehaviour
             else
             {
                 Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
-                if (audioSource != null && treatHittingFloorSound != null)
+                if (audioSource != null && treatHittingFloorSound.soundClip != null)
                 {
-                    audioSource.PlayOneShot(treatHittingFloorSound, treatHittingFloorVolume);
+                    treatHittingFloorSound.PlayOneShot(audioSource);
                 }
             }
         }

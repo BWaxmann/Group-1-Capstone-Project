@@ -25,6 +25,9 @@ public class GameManager : MonoBehaviour
     [Min(0)]
     float fadeDuration = 1f;
 
+    [SerializeField]
+    DefendPoint[] defendPoints;
+
     [Header("UI")]
 
     [SerializeField]
@@ -60,54 +63,35 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     AudioSource musicSource;
 
-    [SerializeField]
-    AudioClip countdownSound;
 
     [SerializeField]
-    [Range(0f, 1f)]
-    float countdownVolume = 1f;
+    SoundData countdownSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    AudioClip gameStartSound;
+    [Tooltip("Mark as true if the full countdown is included in a single clip.")]
+    bool countdownSoundIsCombined = false;
 
     [SerializeField]
-    [Range(0f, 1f)]
-    float gameStartVolume = 1f;
+    [Tooltip("Mark as false if the game start sound is included in the countdown sound clip.")]
+    bool separateGameStartSound = true;
 
     [SerializeField]
-    AudioClip scoreUpSound;
+    SoundData gameStartSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    [Range(0f, 1f)]
-    float scoreUpVolume = 1f;
+    SoundData scoreUpSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    AudioClip catEscapeSound;
+    SoundData catEscapeSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    [Range(0f, 1f)]
-    float catEscapeVolume = 1f;
+    SoundData gameEndSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    AudioClip gameEndSound;
+    SoundData gameMusic = new SoundData(1f, 1f);
 
     [SerializeField]
-    [Range(0f, 1f)]
-    float gameEndVolume = 1f;
-
-    [SerializeField]
-    AudioClip gameMusic;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float gameMusicVolume = 1f;
-
-    [SerializeField]
-    AudioClip postgameMusic;
-
-    [SerializeField]
-    [Range(0f, 1f)]
-    float postgameMusicVolume = 1f;
+    SoundData postgameMusic = new SoundData(1f, 1f);
 
     public static GameManager instance;
 
@@ -159,7 +143,7 @@ public class GameManager : MonoBehaviour
                     if (countdownText.text != t)
                     {
                         countdownText.text = t;
-                        PlaySoundEffect(countdownSound, countdownVolume);
+                        if (!countdownSoundIsCombined) PlaySoundEffect(countdownSound);
                     }
                 }
                 break;
@@ -191,12 +175,13 @@ public class GameManager : MonoBehaviour
         state = GameState.PreGame;
         timer = pregameCountdownTime;
         pregameCanvas.SetActive(true);
+        if (countdownSoundIsCombined) PlaySoundEffect(countdownSound);
     }
 
     void InitiateGame()
     {
-        PlaySoundEffect(gameStartSound, gameStartVolume);
-        PlayMusic(gameMusic, gameMusicVolume);
+        if (separateGameStartSound) PlaySoundEffect(gameStartSound);
+        PlayMusic(gameMusic);
         state = GameState.DuringGame;
         timer = gameTime;
         score = 0;
@@ -223,8 +208,8 @@ public class GameManager : MonoBehaviour
 
     void EndGame()
     {
-        PlaySoundEffect(gameEndSound, gameEndVolume);
-        PlayMusic(postgameMusic, postgameMusicVolume);
+        PlaySoundEffect(gameEndSound);
+        PlayMusic(postgameMusic);
         state = GameState.PostGame;
         postgameCanvas.SetActive(true);
         timer = endgameFadeDelay;
@@ -243,39 +228,52 @@ public class GameManager : MonoBehaviour
 
     public void UpdateScore(int change)
     {
+        if (state != GameState.DuringGame) return;
+
         score = Mathf.Max(score + change, 0);
         scoreText.text = score.ToString();
         if (change > 0)
         {
-            PlaySoundEffect(scoreUpSound, scoreUpVolume);
+            PlaySoundEffect(scoreUpSound);
         }
         else if (change < 0)
         {
-            PlaySoundEffect(catEscapeSound, catEscapeVolume);
+            PlaySoundEffect(catEscapeSound);
         }
     }
 
-    void PlaySoundEffect(AudioClip sound, float volume)
+    void PlaySoundEffect(SoundData sound)
     {
-        if (soundEffectSource != null && sound != null)
+        if (soundEffectSource != null && sound.soundClip != null)
         {
-            soundEffectSource.PlayOneShot(sound, volume);
+            sound.PlayOneShot(soundEffectSource);
         }
     }
 
-    void PlayMusic(AudioClip music, float volume)
+    void PlayMusic(SoundData music)
     {
-        if (musicSource != null && music != null)
+        if (musicSource != null)
         {
-            musicSource.clip = music;
-            musicSource.volume = volume;
-            musicSource.Play();
+            if (music.soundClip != null)
+            {
+                music.PlayMusic(musicSource);
+            }
+            else
+            {
+                StopMusic();
+            }
         }
     }
 
     void StopMusic()
     {
         musicSource?.Stop();
+    }
+
+    public DefendPoint GetRandomDefendPoint()
+    {
+        if (defendPoints == null || defendPoints.Length == 0) return null;
+        return defendPoints[Random.Range(0, defendPoints.Length)];
     }
 
     public enum GameState
