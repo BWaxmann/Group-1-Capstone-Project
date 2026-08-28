@@ -47,6 +47,9 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     string fullyFedAnimationTrigger = "HappyCat";
 
+    [SerializeField]
+    string attackAnimationTrigger = "AngryCat";
+
     [Header("Health")]
 
     [SerializeField]
@@ -80,6 +83,9 @@ public class CatMovement : MonoBehaviour
     AudioSource voiceSource;
 
     [SerializeField]
+    AudioSource attackSource;
+
+    [SerializeField]
     SoundData[] roamingSounds;
 
     [SerializeField]
@@ -91,6 +97,9 @@ public class CatMovement : MonoBehaviour
     float roamingSoundMaximumPause = 10f;
 
     [SerializeField]
+    SoundData hitDefendPointSound = new SoundData(1f, 1f);
+
+    [SerializeField]
     SoundData fedSound = new SoundData(1f, 1f);
 
     NavMeshAgent agent;
@@ -100,14 +109,17 @@ public class CatMovement : MonoBehaviour
     DefendPoint targetDefendPoint;
     int currentHealth;
     int eatingTreatTriggerHash;
+    int attackTriggerHash;
     float moodDisplayTimer;
     Coroutine moodCanvasHideRoutine;
 
+    public bool isMoving => agent.velocity.magnitude > 0;
     public bool isFullyFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
 
     void Start()
     {
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
+        attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
     }
 
     void OnDisable()
@@ -191,7 +203,10 @@ public class CatMovement : MonoBehaviour
 
                         while(true)
                         {
-                            targetDefendPoint.GetHit();
+                            if (animator != null && animator.runtimeAnimatorController != null)
+                            {
+                                animator.SetTrigger(attackTriggerHash);
+                            }
 
                             yield return interAttackWait;
 
@@ -199,6 +214,10 @@ public class CatMovement : MonoBehaviour
                             {
                                 break;
                             }
+
+                            targetDefendPoint.GetHit();
+                            hitDefendPointSound.PlayOneShot(attackSource);
+
                             if (Random.Range(0f, 1f) < targetingToRoamingChance)
                             {
                                 currentState = AIState.Roaming;

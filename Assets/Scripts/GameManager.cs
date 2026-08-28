@@ -82,7 +82,7 @@ public class GameManager : MonoBehaviour
     SoundData scoreUpSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    SoundData catEscapeSound = new SoundData(1f, 1f);
+    SoundData scoreDownSound = new SoundData(1f, 1f);
 
     [SerializeField]
     SoundData gameEndSound = new SoundData(1f, 1f);
@@ -226,19 +226,23 @@ public class GameManager : MonoBehaviour
         ExperienceApp.End();
     }
 
-    public void UpdateScore(int change)
+    public void UpdateScore(int change, bool playSoundFX = true)
     {
         if (state != GameState.DuringGame) return;
 
         score = Mathf.Max(score + change, 0);
         scoreText.text = score.ToString();
-        if (change > 0)
+
+        if (playSoundFX)
         {
-            PlaySoundEffect(scoreUpSound);
-        }
-        else if (change < 0)
-        {
-            PlaySoundEffect(catEscapeSound);
+            if (change > 0)
+            {
+                PlaySoundEffect(scoreUpSound);
+            }
+            else if (change < 0)
+            {
+                PlaySoundEffect(scoreDownSound);
+            }
         }
     }
 

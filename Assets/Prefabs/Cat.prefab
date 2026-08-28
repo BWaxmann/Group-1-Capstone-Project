@@ -56,6 +56,7 @@ MonoBehaviour:
   fullyFedPauseDuration: 1.2
   animator: {fileID: 8188994688379643624}
   fullyFedAnimationTrigger: HappyCat
+  attackAnimationTrigger: AngryCat
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}
   moodImage: {fileID: 2151679024186274129}
@@ -68,6 +69,7 @@ MonoBehaviour:
   eatingParticleIndex: 0
   returnHomeWhenFull: 1
   voiceSource: {fileID: 413373476686839318}
+  attackSource: {fileID: 8064576650844402528}
   roamingSounds:
   - _soundClip: {fileID: 8300000, guid: b9e5210b98b823042a0ef3acf2593bcf, type: 3}
     _volume: 0.4
@@ -80,6 +82,10 @@ MonoBehaviour:
     _pitch: 1
   roamingSoundMinimumPause: 4
   roamingSoundMaximumPause: 10
+  hitDefendPointSound:
+    _soundClip: {fileID: 8300000, guid: c2c0fdc3d9787334686ad4fee62e5ddf, type: 3}
+    _volume: 30
+    _pitch: 2
   fedSound:
     _soundClip: {fileID: 8300000, guid: eb974f78228742242bfe147c1a4db0d2, type: 3}
     _volume: 1
@@ -374,11 +380,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3658786338670920099}
     m_Modifications:
-    - target: {fileID: 7931526527665372054, guid: 343ce5dc962bde842a37029dc60d6336,
-        type: 3}
-      propertyPath: m_Name
-      value: Cat
-      objectReference: {fileID: 0}
     - target: {fileID: 6361660489453406597, guid: 343ce5dc962bde842a37029dc60d6336,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -434,6 +435,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7931526527665372054, guid: 343ce5dc962bde842a37029dc60d6336,
+        type: 3}
+      propertyPath: m_Name
+      value: Cat
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343ce5dc962bde842a37029dc60d6336, type: 3}
 --- !u!4 &2247054912099273618 stripped
@@ -451,6 +457,12 @@ Animator:
 --- !u!82 &413373476686839318 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 4817326541355088897, guid: 343ce5dc962bde842a37029dc60d6336,
+    type: 3}
+  m_PrefabInstance: {fileID: 5144812869828428311}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &8064576650844402528 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 2922041999861625207, guid: 343ce5dc962bde842a37029dc60d6336,
     type: 3}
   m_PrefabInstance: {fileID: 5144812869828428311}
   m_PrefabAsset: {fileID: 0}

@@ -1006,12 +1006,18 @@ MonoBehaviour:
   ammoText: {fileID: 4915059078035313387}
   eye: {fileID: 977510622112336780}
   launcherAudioSource: {fileID: 2330815458311549678}
-  launcherFireSound: {fileID: 0}
-  launcherFireVolume: 1
-  launcherEmptySound: {fileID: 0}
-  launcherEmptyVolume: 0.5
-  launcherReloadSound: {fileID: 0}
-  launcherReloadVolume: 0.8
+  launcherFireSound:
+    _soundClip: {fileID: 8300000, guid: 26d71ba23f6610847ba286b22fcea0d3, type: 3}
+    _volume: 1
+    _pitch: 1
+  launcherEmptySound:
+    _soundClip: {fileID: 8300000, guid: 92eb49ac6ecc7704795255be7b901703, type: 3}
+    _volume: 1
+    _pitch: 1
+  launcherReloadSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
 --- !u!1 &977510622321449625
 GameObject:
   m_ObjectHideFlags: 0
@@ -2150,5 +2156,3 @@ MonoBehaviour:
   launchPoint: {fileID: 1413999898784427255}
   launchSpeed: 10
   cornerSpacing: 0.2
-  fixedUpdate: 0
-  updateFrequency: 0.1

@@ -8,7 +8,8 @@ public struct SoundData
     AudioClip _soundClip;
 
     [SerializeField]
-    [Range(0f, 1f)]
+    [Tooltip("Use a value of 1 for the default volume.")]
+    [Min(0)]
     float _volume;
 
     [SerializeField]
