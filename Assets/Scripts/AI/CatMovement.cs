@@ -77,6 +77,9 @@ public class CatMovement : MonoBehaviour
     [Tooltip("If false, cat will immediately despawn after 'fully fed' animation.")]
     bool returnHomeWhenFull = true;
 
+    [SerializeField]
+    int disappearParticleIndex;
+
     [Header("Sounds")]
 
     [SerializeField] 
@@ -108,13 +111,15 @@ public class CatMovement : MonoBehaviour
     Vector3 targetDestination;
     DefendPoint targetDefendPoint;
     int currentHealth;
+
     int eatingTreatTriggerHash;
     int attackTriggerHash;
+
     float moodDisplayTimer;
     Coroutine moodCanvasHideRoutine;
 
     public bool isMoving => agent.velocity.magnitude > 0;
-    public bool isFullyFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
+    public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
 
     void Start()
     {
@@ -203,10 +208,12 @@ public class CatMovement : MonoBehaviour
 
                         while(true)
                         {
+                            /*
                             if (animator != null && animator.runtimeAnimatorController != null)
                             {
                                 animator.SetTrigger(attackTriggerHash);
                             }
+                            */
 
                             yield return interAttackWait;
 
@@ -229,7 +236,7 @@ public class CatMovement : MonoBehaviour
                         }
                     }
                     break;
-                case AIState.EatingTreat:
+                case AIState.Full:
                     // Wait for animation of cat eating
                     agent.isStopped = true;
                     yield return new WaitForSeconds(fullyFedPauseDuration);
@@ -243,6 +250,7 @@ public class CatMovement : MonoBehaviour
                     }
                     else
                     {
+                        DisappearParticleEffect();
                         gameObject.SetActive(false);
                     }
                     break;
@@ -299,7 +307,7 @@ public class CatMovement : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            currentState = AIState.EatingTreat;
+            currentState = AIState.Full;
             GameManager.instance.FeedCat(feedingScore);
             if (animator != null && animator.runtimeAnimatorController != null)
             {
@@ -338,11 +346,16 @@ public class CatMovement : MonoBehaviour
         moodCanvasHideRoutine = null;
     }
 
+    public void DisappearParticleEffect()
+    {
+        ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, transform.position);
+    }
+
     public enum AIState
     {
         Roaming,
         Targeting,
-        EatingTreat,
+        Full,
         ReturningHome
     }
 }

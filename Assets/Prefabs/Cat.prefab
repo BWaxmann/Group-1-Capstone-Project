@@ -54,9 +54,9 @@ MonoBehaviour:
   roamingToTargetingChance: 0.2
   targetingToRoamingChance: 0.1
   pauseBetweenDefendPointHits: 0.5
-  fullyFedPauseDuration: 1.2
+  fullyFedPauseDuration: 0.5833333
   animator: {fileID: 8188994688379643624}
-  fullyFedAnimationTrigger: HappyCat
+  fullyFedAnimationTrigger: IsDisappeared
   attackAnimationTrigger: AngryCat
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}
@@ -68,7 +68,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e53da6bbff9041f41a05b74a12552e9e, type: 3}
   hideMoodCanvasDelay: 1.2
   eatingParticleIndex: 0
-  returnHomeWhenFull: 1
+  returnHomeWhenFull: 0
+  disappearParticleIndex: 1
   voiceSource: {fileID: 413373476686839318}
   attackSource: {fileID: 8064576650844402528}
   roamingSounds:
@@ -460,6 +461,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cat
       objectReference: {fileID: 0}
+    - target: {fileID: 3946045268920018175, guid: 343ce5dc962bde842a37029dc60d6336,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 712311f65e170f14382ab60e419bed6d, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343ce5dc962bde842a37029dc60d6336, type: 3}
 --- !u!4 &2247054912099273618 stripped
