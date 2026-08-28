@@ -32,6 +32,10 @@ public class InstructionsText : MonoBehaviour
         {
             GameManager.instance.GameStart += HideInstructions;
         }
+        else
+        {
+            GameManager.instance.GameEnd += HideInstructions;
+        }
     }
 
     void OnDisable()
@@ -39,6 +43,10 @@ public class InstructionsText : MonoBehaviour
         if (hideOnGameStart)
         {
             GameManager.instance.GameStart -= HideInstructions;
+        }
+        else
+        {
+            GameManager.instance.GameEnd -= HideInstructions;
         }
     }
 
