@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3658786338670920099}
   - component: {fileID: 4251842316735065021}
   - component: {fileID: 4121764387368476190}
+  - component: {fileID: 2384232265619415063}
   m_Layer: 0
   m_Name: Cat
   m_TagString: Untagged
@@ -112,6 +113,25 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!95 &2384232265619415063
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395766658557252655}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 712311f65e170f14382ab60e419bed6d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &2538813160994402997
 GameObject:
   m_ObjectHideFlags: 0
