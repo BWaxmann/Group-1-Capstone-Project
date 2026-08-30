@@ -54,6 +54,9 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     string attackAnimationTrigger = "AngryCat";
 
+    [SerializeField]
+    string resetAnimatorTrigger = "Reset";
+
     [Header("Health")]
 
     [SerializeField]
@@ -114,13 +117,14 @@ public class CatMovement : MonoBehaviour
     Transform home;
     Vector3 targetDestination;
     DefendPoint targetDefendPoint;
+
     int currentHealth;
 
     int eatingTreatTriggerHash;
     int attackTriggerHash;
+    int resetTriggerHash;
 
     float moodDisplayTimer;
-    Coroutine moodCanvasHideRoutine;
 
     public bool isMoving => agent.velocity.magnitude > 0;
     public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
@@ -129,11 +133,24 @@ public class CatMovement : MonoBehaviour
     {
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
         attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
+        resetTriggerHash = Animator.StringToHash(resetAnimatorTrigger);
     }
 
     void OnDisable()
     {
         StopAllCoroutines();
+    }
+
+    void Update()
+    {
+        if (moodDisplayTimer > 0)
+        {
+            moodDisplayTimer -= Time.deltaTime;
+        }
+        else
+        {
+            moodCanvas.SetActive(false);
+        }
     }
 
     void FixedUpdate()
@@ -162,6 +179,11 @@ public class CatMovement : MonoBehaviour
         home = spawnPoint;
         currentState = AIState.Roaming;
         targetDestination = WaypointManager.instance.GetRandomWaypoint();
+
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger(resetTriggerHash);
+        }
 
         StartCoroutine(MoveToTargetRoutine());
         if (voiceSource != null)
@@ -275,7 +297,10 @@ public class CatMovement : MonoBehaviour
                     break;
             }
 
-            agent.destination = targetDestination;
+            if (agent.isOnNavMesh)
+            {
+                agent.destination = targetDestination;
+            }
             yield return updateWait;
         }
     }
@@ -306,13 +331,10 @@ public class CatMovement : MonoBehaviour
 
         currentHealth--;
 
+        moodDisplayTimer = hideMoodCanvasDelay;
         moodCanvas.SetActive(true);
         SetMoodImage();
-        moodDisplayTimer = hideMoodCanvasDelay;
-        if (moodCanvasHideRoutine == null)
-        {
-            moodCanvasHideRoutine = StartCoroutine(HideMoodCanvasRoutine());
-        }
+
         ParticleManager.instance.ShowParticleEffect(eatingParticleIndex, voiceSource.transform.position);
 
         fedSound.PlayOneShot(voiceSource);
@@ -345,17 +367,6 @@ public class CatMovement : MonoBehaviour
                 moodImage.sprite = sp;
             }
         }
-    }
-
-    IEnumerator HideMoodCanvasRoutine()
-    {
-        while (moodDisplayTimer > 0)
-        {
-            moodDisplayTimer -= Time.deltaTime;
-            yield return null;
-        }
-        moodCanvas.SetActive(false);
-        moodCanvasHideRoutine = null;
     }
 
     public void DisappearParticleEffect()
