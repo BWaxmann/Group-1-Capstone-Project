@@ -97,14 +97,14 @@ public class PlayerInput : MonoBehaviour
     public void HandInBox(bool inBox)
     {
         handInBox = inBox;
-        if (currentAmmo > 0)
-        {
-            treatLaunchPreview.SetActive(!inBox);
-        }
     }
 
     void Reload()
     {
+        if (currentAmmo <= 0)
+        {
+            treatLaunchPreview.SetActive(true);
+        }
         currentAmmo = maximumAmmo;
         PlaySound(launcherReloadSound);
         UpdateAmmoDisplay();

@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 894574102}
+  m_Sun: {fileID: 0}
   m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
@@ -105,15 +105,15 @@ NavMeshSettings:
   m_BuildSettings:
     serializedVersion: 2
     agentTypeID: 0
-    agentRadius: 0.25
-    agentHeight: 0.25
-    agentSlope: 55
-    agentClimb: 0.25
+    agentRadius: 0.1
+    agentHeight: 0.54
+    agentSlope: 60
+    agentClimb: 0.5
     ledgeDropHeight: 5
     maxJumpAcrossDistance: 2
     minRegionArea: 0
     manualCellSize: 0
-    cellSize: 0.083333336
+    cellSize: 0.033333335
     manualTileSize: 0
     tileSize: 256
     accuratePlacement: 0
@@ -770,6 +770,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: '[ExperienceApp]'
       objectReference: {fileID: 0}
+    - target: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70, type: 3}
+      propertyPath: treatsSpawner
+      value: 
+      objectReference: {fileID: 239547139}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -825,10 +829,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70, type: 3}
-      propertyPath: treatsSpawner
-      value: 
-      objectReference: {fileID: 239547139}
     - target: {fileID: 894574108, guid: a727da49b44d50341ab071e657b48c70, type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
@@ -850,12 +850,6 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: ff7bcf28cb70b0f45a629010755f64ec, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
---- !u!108 &894574102 stripped
-Light:
-  m_CorrespondingSourceObject: {fileID: 2084092611007962364, guid: a727da49b44d50341ab071e657b48c70,
-    type: 3}
-  m_PrefabInstance: {fileID: 894574101}
-  m_PrefabAsset: {fileID: 0}
 --- !u!135 &894574111 stripped
 SphereCollider:
   m_CorrespondingSourceObject: {fileID: 2084092611746225454, guid: a727da49b44d50341ab071e657b48c70,
@@ -2003,7 +1997,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &72467754742985996
 PrefabInstance:
@@ -2451,7 +2445,7 @@ PrefabInstance:
     - target: {fileID: 4547689122929124383, guid: a516affe490e2c347ab03fa443a464c4,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.2
+      value: 0.93
       objectReference: {fileID: 0}
     - target: {fileID: 4547689122929124383, guid: a516affe490e2c347ab03fa443a464c4,
         type: 3}
@@ -2481,7 +2475,7 @@ PrefabInstance:
     - target: {fileID: 4547689122929124383, guid: a516affe490e2c347ab03fa443a464c4,
         type: 3}
       propertyPath: m_RootOrder
-      value: 10
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 4547689122929124383, guid: a516affe490e2c347ab03fa443a464c4,
         type: 3}
