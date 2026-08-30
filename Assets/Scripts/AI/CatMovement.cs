@@ -8,6 +8,10 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     int feedingScore = 10;
 
+    [SerializeField]
+    [Tooltip("In radians per second.")]
+    float rotationSpeed = 12f;
+
     [Header("AI Behaviour")]
 
     [SerializeField]
@@ -130,6 +134,14 @@ public class CatMovement : MonoBehaviour
     void OnDisable()
     {
         StopAllCoroutines();
+    }
+
+    void FixedUpdate()
+    {
+        if (!agent.isStopped)
+        {
+            transform.forward = Vector3.RotateTowards(transform.forward, agent.velocity.normalized, rotationSpeed * Time.fixedDeltaTime, 0);
+        }
     }
 
     public void Initialise(Transform spawnPoint)
