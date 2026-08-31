@@ -161,7 +161,7 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    public void Initialise(Transform spawnPoint)
+    public void Initialise(Transform spawnPoint, Vector3 spawnPosition)
     {
         if (agent == null)
         {
@@ -177,10 +177,12 @@ public class CatMovement : MonoBehaviour
         }
 
         home = spawnPoint;
+        agent.Warp(spawnPosition);
+        transform.rotation = spawnPoint.rotation;
         currentState = AIState.Roaming;
         targetDestination = WaypointManager.instance.GetRandomWaypoint();
 
-        if (animator != null && animator.runtimeAnimatorController != null)
+        if (resetTriggerHash != 0 && animator != null && animator.runtimeAnimatorController != null)
         {
             animator.SetTrigger(resetTriggerHash);
         }
