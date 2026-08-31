@@ -30,13 +30,11 @@ public class TrajectoryPreview : MonoBehaviour
 
     void OnEnable()
     {
-        trajectoryPreviewLine.gameObject.SetActive(true);
         StartCoroutine(UpdateTrajectoryRoutine());
     }
 
     void OnDisable()
     {
-        trajectoryPreviewLine.gameObject.SetActive(false);
         StopAllCoroutines();
     }
 

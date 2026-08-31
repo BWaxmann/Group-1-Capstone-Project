@@ -50,7 +50,7 @@ public class Treat : MonoBehaviour
                 }
                 else
                 {
-                    Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
+                    isActive = true;
                 }
             }
             else

@@ -8,6 +8,10 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     int feedingScore = 10;
 
+    [SerializeField]
+    [Tooltip("In radians per second.")]
+    float rotationSpeed = 12f;
+
     [Header("AI Behaviour")]
 
     [SerializeField]
@@ -47,6 +51,12 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     string fullyFedAnimationTrigger = "HappyCat";
 
+    [SerializeField]
+    string attackAnimationTrigger = "AngryCat";
+
+    [SerializeField]
+    string resetAnimatorTrigger = "Reset";
+
     [Header("Health")]
 
     [SerializeField]
@@ -74,10 +84,16 @@ public class CatMovement : MonoBehaviour
     [Tooltip("If false, cat will immediately despawn after 'fully fed' animation.")]
     bool returnHomeWhenFull = true;
 
+    [SerializeField]
+    int disappearParticleIndex;
+
     [Header("Sounds")]
 
     [SerializeField] 
     AudioSource voiceSource;
+
+    [SerializeField]
+    AudioSource attackSource;
 
     [SerializeField]
     SoundData[] roamingSounds;
@@ -91,6 +107,9 @@ public class CatMovement : MonoBehaviour
     float roamingSoundMaximumPause = 10f;
 
     [SerializeField]
+    SoundData hitDefendPointSound = new SoundData(1f, 1f);
+
+    [SerializeField]
     SoundData fedSound = new SoundData(1f, 1f);
 
     NavMeshAgent agent;
@@ -98,16 +117,23 @@ public class CatMovement : MonoBehaviour
     Transform home;
     Vector3 targetDestination;
     DefendPoint targetDefendPoint;
-    int currentHealth;
-    int eatingTreatTriggerHash;
-    float moodDisplayTimer;
-    Coroutine moodCanvasHideRoutine;
 
-    public bool isFullyFed => currentState == AIState.EatingTreat || currentState == AIState.ReturningHome;
+    int currentHealth;
+
+    int eatingTreatTriggerHash;
+    int attackTriggerHash;
+    int resetTriggerHash;
+
+    float moodDisplayTimer;
+
+    public bool isMoving => agent.velocity.magnitude > 0;
+    public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
 
     void Start()
     {
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
+        attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
+        resetTriggerHash = Animator.StringToHash(resetAnimatorTrigger);
     }
 
     void OnDisable()
@@ -115,7 +141,27 @@ public class CatMovement : MonoBehaviour
         StopAllCoroutines();
     }
 
-    public void Initialise(Transform spawnPoint)
+    void Update()
+    {
+        if (moodDisplayTimer > 0)
+        {
+            moodDisplayTimer -= Time.deltaTime;
+        }
+        else
+        {
+            moodCanvas.SetActive(false);
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (!agent.isStopped)
+        {
+            transform.forward = Vector3.RotateTowards(transform.forward, agent.velocity.normalized, rotationSpeed * Time.fixedDeltaTime, 0);
+        }
+    }
+
+    public void Initialise(Transform spawnPoint, Vector3 spawnPosition)
     {
         if (agent == null)
         {
@@ -131,8 +177,15 @@ public class CatMovement : MonoBehaviour
         }
 
         home = spawnPoint;
+        agent.Warp(spawnPosition);
+        transform.rotation = spawnPoint.rotation;
         currentState = AIState.Roaming;
         targetDestination = WaypointManager.instance.GetRandomWaypoint();
+
+        if (resetTriggerHash != 0 && animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger(resetTriggerHash);
+        }
 
         StartCoroutine(MoveToTargetRoutine());
         if (voiceSource != null)
@@ -191,7 +244,12 @@ public class CatMovement : MonoBehaviour
 
                         while(true)
                         {
-                            targetDefendPoint.GetHit();
+                            /*
+                            if (animator != null && animator.runtimeAnimatorController != null)
+                            {
+                                animator.SetTrigger(attackTriggerHash);
+                            }
+                            */
 
                             yield return interAttackWait;
 
@@ -199,6 +257,10 @@ public class CatMovement : MonoBehaviour
                             {
                                 break;
                             }
+
+                            targetDefendPoint.GetHit();
+                            hitDefendPointSound.PlayOneShot(attackSource);
+
                             if (Random.Range(0f, 1f) < targetingToRoamingChance)
                             {
                                 currentState = AIState.Roaming;
@@ -210,7 +272,7 @@ public class CatMovement : MonoBehaviour
                         }
                     }
                     break;
-                case AIState.EatingTreat:
+                case AIState.Full:
                     // Wait for animation of cat eating
                     agent.isStopped = true;
                     yield return new WaitForSeconds(fullyFedPauseDuration);
@@ -224,6 +286,7 @@ public class CatMovement : MonoBehaviour
                     }
                     else
                     {
+                        DisappearParticleEffect();
                         gameObject.SetActive(false);
                     }
                     break;
@@ -236,7 +299,10 @@ public class CatMovement : MonoBehaviour
                     break;
             }
 
-            agent.destination = targetDestination;
+            if (agent.isOnNavMesh)
+            {
+                agent.destination = targetDestination;
+            }
             yield return updateWait;
         }
     }
@@ -267,21 +333,18 @@ public class CatMovement : MonoBehaviour
 
         currentHealth--;
 
+        moodDisplayTimer = hideMoodCanvasDelay;
         moodCanvas.SetActive(true);
         SetMoodImage();
-        moodDisplayTimer = hideMoodCanvasDelay;
-        if (moodCanvasHideRoutine == null)
-        {
-            moodCanvasHideRoutine = StartCoroutine(HideMoodCanvasRoutine());
-        }
+
         ParticleManager.instance.ShowParticleEffect(eatingParticleIndex, voiceSource.transform.position);
 
         fedSound.PlayOneShot(voiceSource);
 
         if (currentHealth <= 0)
         {
-            currentState = AIState.EatingTreat;
-            GameManager.instance.UpdateScore(feedingScore);
+            currentState = AIState.Full;
+            GameManager.instance.FeedCat(feedingScore);
             if (animator != null && animator.runtimeAnimatorController != null)
             {
                 animator.SetTrigger(eatingTreatTriggerHash);
@@ -308,22 +371,16 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    IEnumerator HideMoodCanvasRoutine()
+    public void DisappearParticleEffect()
     {
-        while (moodDisplayTimer > 0)
-        {
-            moodDisplayTimer -= Time.deltaTime;
-            yield return null;
-        }
-        moodCanvas.SetActive(false);
-        moodCanvasHideRoutine = null;
+        ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, transform.position);
     }
 
     public enum AIState
     {
         Roaming,
         Targeting,
-        EatingTreat,
+        Full,
         ReturningHome
     }
 }

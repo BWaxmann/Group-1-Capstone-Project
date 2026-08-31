@@ -19,10 +19,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float endgameFadeDelay = 3f;
-
-    [SerializeField]
-    [Min(0)]
     float fadeDuration = 1f;
 
     [SerializeField]
@@ -55,6 +51,28 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     GameObject postgameCanvas;
 
+    [SerializeField]
+    GameObject timeUpText;
+
+    [SerializeField]
+    GameObject finalScorePanel;
+
+    [SerializeField]
+    [Min(0)]
+    float timeUpDisplayDuration = 2f;
+
+    [SerializeField]
+    float finalScoreDisplayDuration = 10f;
+
+    [SerializeField]
+    TMP_Text catsFedText;
+
+    [SerializeField]
+    TMP_Text penaltyText;
+
+    [SerializeField]
+    TMP_Text finalScoreText;
+
     [Header("Sounds")]
 
     [SerializeField]
@@ -82,7 +100,7 @@ public class GameManager : MonoBehaviour
     SoundData scoreUpSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    SoundData catEscapeSound = new SoundData(1f, 1f);
+    SoundData scoreDownSound = new SoundData(1f, 1f);
 
     [SerializeField]
     SoundData gameEndSound = new SoundData(1f, 1f);
@@ -97,8 +115,11 @@ public class GameManager : MonoBehaviour
 
     public delegate void GameStateChange();
     public event GameStateChange GameStart;
+    public event GameStateChange GameEnd;
 
     float timer;
+    int catsFed;
+    int penalties;
     int score;
     GameState state;
 
@@ -163,8 +184,21 @@ public class GameManager : MonoBehaviour
                 timer -= Time.deltaTime;
                 if (timer <= 0)
                 {
-                    FadeOut();
-                    Invoke(nameof(EndGame), fadeDuration);
+                    if (timeUpText.activeSelf)
+                    {
+                        timeUpText.SetActive(false);
+                        finalScorePanel.SetActive(true);
+                        catsFedText.text = catsFed.ToString();
+                        penaltyText.text = penalties.ToString();
+                        finalScoreText.text = score.ToString();
+                        timer = finalScoreDisplayDuration;
+                    }
+                    else
+                    {
+                        state = GameState.FadeOut;
+                        FadeOut();
+                        Invoke(nameof(EndGame), fadeDuration);
+                    }
                 }
                 break;
         }
@@ -211,8 +245,13 @@ public class GameManager : MonoBehaviour
         PlaySoundEffect(gameEndSound);
         PlayMusic(postgameMusic);
         state = GameState.PostGame;
+        ShowGameCanvases(false);
         postgameCanvas.SetActive(true);
-        timer = endgameFadeDelay;
+        timeUpText.SetActive(true);
+        finalScorePanel.SetActive(false);
+        timer = timeUpDisplayDuration;
+
+        GameEnd?.Invoke();
     }
 
     void FadeOut()
@@ -226,20 +265,36 @@ public class GameManager : MonoBehaviour
         ExperienceApp.End();
     }
 
-    public void UpdateScore(int change)
+    void UpdateScore(int change, bool playSoundFX = true)
     {
         if (state != GameState.DuringGame) return;
 
         score = Mathf.Max(score + change, 0);
         scoreText.text = score.ToString();
-        if (change > 0)
+
+        if (playSoundFX)
         {
-            PlaySoundEffect(scoreUpSound);
+            if (change > 0)
+            {
+                PlaySoundEffect(scoreUpSound);
+            }
+            else if (change < 0)
+            {
+                PlaySoundEffect(scoreDownSound);
+            }
         }
-        else if (change < 0)
-        {
-            PlaySoundEffect(catEscapeSound);
-        }
+    }
+
+    public void FeedCat(int scoreValue)
+    {
+        catsFed++;
+        UpdateScore(scoreValue);
+    }
+
+    public void ReceivePenalty(int penaltyValue, bool playSoundFX)
+    {
+        penalties += penaltyValue;
+        UpdateScore(-penaltyValue, playSoundFX);
     }
 
     void PlaySoundEffect(SoundData sound)
@@ -281,6 +336,7 @@ public class GameManager : MonoBehaviour
         Initialising,
         PreGame,
         DuringGame,
-        PostGame
+        PostGame,
+        FadeOut
     }
 }

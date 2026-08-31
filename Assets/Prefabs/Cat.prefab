@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3658786338670920099}
   - component: {fileID: 4251842316735065021}
   - component: {fileID: 4121764387368476190}
+  - component: {fileID: 2384232265619415063}
   m_Layer: 0
   m_Name: Cat
   m_TagString: Untagged
@@ -27,7 +28,7 @@ Transform:
   m_GameObject: {fileID: 1395766658557252655}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
   m_Children:
   - {fileID: 2247054912099273618}
   - {fileID: 6611877007260156420}
@@ -53,9 +54,10 @@ MonoBehaviour:
   roamingToTargetingChance: 0.2
   targetingToRoamingChance: 0.1
   pauseBetweenDefendPointHits: 0.5
-  fullyFedPauseDuration: 1.2
+  fullyFedPauseDuration: 0.5833333
   animator: {fileID: 8188994688379643624}
-  fullyFedAnimationTrigger: HappyCat
+  fullyFedAnimationTrigger: IsDisappeared
+  attackAnimationTrigger: AngryCat
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}
   moodImage: {fileID: 2151679024186274129}
@@ -66,8 +68,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: e53da6bbff9041f41a05b74a12552e9e, type: 3}
   hideMoodCanvasDelay: 1.2
   eatingParticleIndex: 0
-  returnHomeWhenFull: 1
+  returnHomeWhenFull: 0
+  disappearParticleIndex: 1
   voiceSource: {fileID: 413373476686839318}
+  attackSource: {fileID: 8064576650844402528}
   roamingSounds:
   - _soundClip: {fileID: 8300000, guid: b9e5210b98b823042a0ef3acf2593bcf, type: 3}
     _volume: 0.4
@@ -80,6 +84,10 @@ MonoBehaviour:
     _pitch: 1
   roamingSoundMinimumPause: 4
   roamingSoundMaximumPause: 10
+  hitDefendPointSound:
+    _soundClip: {fileID: 8300000, guid: c2c0fdc3d9787334686ad4fee62e5ddf, type: 3}
+    _volume: 30
+    _pitch: 2
   fedSound:
     _soundClip: {fileID: 8300000, guid: eb974f78228742242bfe147c1a4db0d2, type: 3}
     _volume: 1
@@ -93,7 +101,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1395766658557252655}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.47
+  m_Radius: 0.1
   m_Speed: 2
   m_Acceleration: 8
   avoidancePriority: 50
@@ -102,10 +110,29 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 1
+  m_Height: 0.54
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!95 &2384232265619415063
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395766658557252655}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 712311f65e170f14382ab60e419bed6d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &2538813160994402997
 GameObject:
   m_ObjectHideFlags: 0
@@ -434,6 +461,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3946045268920018175, guid: 343ce5dc962bde842a37029dc60d6336,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 712311f65e170f14382ab60e419bed6d, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343ce5dc962bde842a37029dc60d6336, type: 3}
 --- !u!4 &2247054912099273618 stripped
@@ -451,6 +483,12 @@ Animator:
 --- !u!82 &413373476686839318 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 4817326541355088897, guid: 343ce5dc962bde842a37029dc60d6336,
+    type: 3}
+  m_PrefabInstance: {fileID: 5144812869828428311}
+  m_PrefabAsset: {fileID: 0}
+--- !u!82 &8064576650844402528 stripped
+AudioSource:
+  m_CorrespondingSourceObject: {fileID: 2922041999861625207, guid: 343ce5dc962bde842a37029dc60d6336,
     type: 3}
   m_PrefabInstance: {fileID: 5144812869828428311}
   m_PrefabAsset: {fileID: 0}
