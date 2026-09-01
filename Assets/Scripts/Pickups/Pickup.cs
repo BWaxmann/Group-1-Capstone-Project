@@ -21,7 +21,7 @@ public abstract class Pickup : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    protected float stoppingDistance = 2f;
+    protected float stoppingDistance = 1f;
 
     protected PlayerInput player;
     protected Renderer rend;
@@ -52,7 +52,7 @@ public abstract class Pickup : MonoBehaviour
             currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
 
             Vector3 direction = (player.pickupMagnet - transform.position).normalized;
-            transform.Translate(currentSpeed * Time.deltaTime * direction);
+            transform.Translate(currentSpeed * Time.deltaTime * direction, Space.World);
 
             yield return null;
         }

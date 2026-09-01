@@ -48,6 +48,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   feedingScore: 10
+  rotationSpeed: 12
+  pickupDrops:
+  - pickupIndex: 0
+    dropChance: 0.2
+    changeChanceWhenLowAmmo: 1
+    lowAmmoChanceMultiplier: 5
+  pickupOffset: {x: 0, y: 1, z: 0}
   targetUpdateFrequency: 0.2
   stoppingDistance: 1
   pauseDurationBetweenWaypoints: 0.2
@@ -58,6 +65,7 @@ MonoBehaviour:
   animator: {fileID: 8188994688379643624}
   fullyFedAnimationTrigger: IsDisappeared
   attackAnimationTrigger: AngryCat
+  resetAnimatorTrigger: Reset
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}
   moodImage: {fileID: 2151679024186274129}

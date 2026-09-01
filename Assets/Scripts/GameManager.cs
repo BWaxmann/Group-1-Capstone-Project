@@ -24,6 +24,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     DefendPoint[] defendPoints;
 
+    [SerializeField]
+    bool spawnFreeAmmoWhenPlayerIsOut = true;
+
+    [SerializeField]
+    int freeAmmoThreashold = 10;
+
+    [SerializeField]
+    int ammoPickupIndex = 0;
+
     [Header("UI")]
 
     [SerializeField]
