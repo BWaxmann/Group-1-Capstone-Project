@@ -24,13 +24,16 @@ public class PlayerInput : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    int maximumAmmo = 20;
+    int initialAmmoCount = 20;
 
     [SerializeField]
     TMP_Text ammoText;
 
     [SerializeField]
     Transform eye;
+
+    [SerializeField]
+    Transform _pickupMagnet;
 
     [Header("Sound Effects")]
 
@@ -55,9 +58,11 @@ public class PlayerInput : MonoBehaviour
     bool handInBox;
     int currentAmmo;
 
+    public Vector3 pickupMagnet => _pickupMagnet.position;
+
     void Start()
     {
-        currentAmmo = maximumAmmo;
+        currentAmmo = initialAmmoCount;
 
         if (launcherAudioSource == null)
         {
@@ -76,36 +81,21 @@ public class PlayerInput : MonoBehaviour
         {
             LaunchTreat();
         }
-
-        if (handInBox && Input.GetMouseButtonDown(1))
-        {
-            Reload();
-        }
 #else
         if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
         {
             LaunchTreat();
         }
-
-        if (handInBox && OVRInput.GetDown(OVRInput.Button.One))
-        {
-            Reload();
-        }
 #endif
     }
 
-    public void HandInBox(bool inBox)
-    {
-        handInBox = inBox;
-    }
-
-    void Reload()
+    public void GetAmmo(int amount)
     {
         if (currentAmmo <= 0)
         {
             treatLaunchPreview.SetActive(true);
         }
-        currentAmmo = maximumAmmo;
+        currentAmmo += amount;
         PlaySound(launcherReloadSound);
         UpdateAmmoDisplay();
     }

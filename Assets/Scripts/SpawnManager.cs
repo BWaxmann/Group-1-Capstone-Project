@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
 public class SpawnManager : MonoBehaviour
@@ -59,7 +58,7 @@ public class SpawnManager : MonoBehaviour
                     break;
                 }
                 cat.gameObject.SetActive(true);
-                Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);                
+                Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
                 cat.Initialise(afterFeedingReturnPoint, spawnPosition);
             }
 

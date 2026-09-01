@@ -332,6 +332,11 @@ public class CatMovement : MonoBehaviour
         if (isFullyFed) return;
 
         currentHealth--;
+        if (currentHealth < 0)
+        {
+            Debug.Log("A cat somehow has less than 0 health.");
+            currentHealth = 0;
+        }
 
         moodDisplayTimer = hideMoodCanvasDelay;
         moodCanvas.SetActive(true);
