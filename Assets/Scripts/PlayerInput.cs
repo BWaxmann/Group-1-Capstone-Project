@@ -24,13 +24,29 @@ public class PlayerInput : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    int maximumAmmo = 20;
+    int initialAmmoCount = 20;
 
     [SerializeField]
     TMP_Text ammoText;
 
     [SerializeField]
     Transform eye;
+
+    [SerializeField]
+    Transform _pickupMagnet;
+
+    [SerializeField]
+    bool spawnFreeAmmoWhenOut = true;
+
+    [SerializeField]
+    [Min(0)]
+    int freeAmmoThreashold = 5;
+
+    [SerializeField]
+    int ammoPickupIndex = 0;
+
+    [SerializeField]
+    Vector3 freeAmmoSpawnOffset = new Vector3(0f, 1f, -8f);
 
     [Header("Sound Effects")]
 
@@ -52,12 +68,15 @@ public class PlayerInput : MonoBehaviour
     public delegate void FaceCamera(Quaternion rotation);
     public static event FaceCamera TurnToFaceCamera;
 
-    bool handInBox;
-    int currentAmmo;
+    int _currentAmmo;
+    bool hasSpawnedFreeAmmo;
+
+    public int currentAmmo => _currentAmmo;
+    public Vector3 pickupMagnet => _pickupMagnet.position;
 
     void Start()
     {
-        currentAmmo = maximumAmmo;
+        _currentAmmo = initialAmmoCount;
 
         if (launcherAudioSource == null)
         {
@@ -76,43 +95,33 @@ public class PlayerInput : MonoBehaviour
         {
             LaunchTreat();
         }
-
-        if (handInBox && Input.GetMouseButtonDown(1))
-        {
-            Reload();
-        }
 #else
         if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
         {
             LaunchTreat();
         }
-
-        if (handInBox && OVRInput.GetDown(OVRInput.Button.One))
-        {
-            Reload();
-        }
 #endif
     }
 
-    public void HandInBox(bool inBox)
+    public void GetAmmo(int amount)
     {
-        handInBox = inBox;
-    }
-
-    void Reload()
-    {
-        if (currentAmmo <= 0)
+        if (_currentAmmo <= 0)
         {
             treatLaunchPreview.SetActive(true);
         }
-        currentAmmo = maximumAmmo;
+        _currentAmmo += amount;
         PlaySound(launcherReloadSound);
         UpdateAmmoDisplay();
+
+        if (_currentAmmo >= freeAmmoThreashold)
+        {
+            hasSpawnedFreeAmmo = false;
+        }
     }
 
     void LaunchTreat()
     {
-        if (currentAmmo > 0)
+        if (_currentAmmo > 0)
         {
             Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
             if (treat == null)
@@ -123,9 +132,15 @@ public class PlayerInput : MonoBehaviour
             treat.gameObject.SetActive(true);
             treat.LaunchTreat(treatLaunchPosition, launchForce);
             PlaySound(launcherFireSound);
-            currentAmmo--;
+            _currentAmmo--;
             UpdateAmmoDisplay();
-            if (currentAmmo <= 0)
+            if (spawnFreeAmmoWhenOut && _currentAmmo < freeAmmoThreashold && !hasSpawnedFreeAmmo)
+            {
+                Debug.Log("Spawning free ammo.");
+                hasSpawnedFreeAmmo = true;
+                PickupManager.instance.SpawnPickup(ammoPickupIndex, transform.TransformVector(freeAmmoSpawnOffset));
+            }
+            if (_currentAmmo <= 0)
             {
                 treatLaunchPreview.SetActive(false);
             }
@@ -138,7 +153,7 @@ public class PlayerInput : MonoBehaviour
 
     void UpdateAmmoDisplay()
     {
-        if (ammoText != null) ammoText.text = currentAmmo.ToString();
+        if (ammoText != null) ammoText.text = _currentAmmo.ToString();
     }
 
     void PlaySound(SoundData sound)
