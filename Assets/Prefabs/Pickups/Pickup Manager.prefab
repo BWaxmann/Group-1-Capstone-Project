@@ -53,6 +53,10 @@ MonoBehaviour:
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 3
+  - _prefab: {fileID: 5739810221934284378, guid: 4b01fa28634e99743b67622c707503ac,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 3
 --- !u!114 &1504073715
 MonoBehaviour:
   m_ObjectHideFlags: 0

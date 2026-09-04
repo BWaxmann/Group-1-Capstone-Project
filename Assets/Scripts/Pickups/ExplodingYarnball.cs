@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class ExplodingYarnball : Pickup
 {
+    [Header("Explosion")]
     [SerializeField]
     [Min(0)]
     int confettiParticleIndex = 2;
@@ -17,7 +18,7 @@ public class ExplodingYarnball : Pickup
 
     public override void OnPickup()
     {
-        ParticleManager.instance.ShowParticleEffect(2, transform.position);
+        ParticleManager.instance.ShowParticleEffect(confettiParticleIndex, transform.position);
         Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius);
         List<CatMovement> catsConsidered = new List<CatMovement>();
         foreach (Collider collider in colliders)
