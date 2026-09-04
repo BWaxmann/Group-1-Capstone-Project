@@ -172,7 +172,7 @@ public class GameManager : MonoBehaviour
                 timer -= Time.deltaTime;
                 if (timer <= 0)
                 {
-                    timerText.text = 0.ToString();
+                    timerText.text = "0";
                     EndGame();
                 }
                 else

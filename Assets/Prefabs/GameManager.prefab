@@ -45,11 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0641306bae89bba4792ae5ce6ba8932a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pregameDelay: 0.5
+  pregameDelay: 1
   pregameCountdownTime: 3
   gameTime: 200
   fadeDuration: 1
   defendPoints:
+  - {fileID: 0}
   - {fileID: 0}
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}

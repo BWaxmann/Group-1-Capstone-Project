@@ -54,8 +54,9 @@
 
         void vert (inout appdata_base v)
         {
-            float wave1 = _Magnitude * sin(_Time.y * _Speed * dot(normalize(_Direction), v.vertex.xyz));
-            float wave2 = _Magnitude2 * sin(_Time.y * _Speed2 * dot(normalize(_Direction), v.vertex.xyz));
+            float along = _Time.y * dot(normalize(_Direction), v.vertex.xyz);
+            float wave1 = _Magnitude * sin(_Speed * along);
+            float wave2 = _Magnitude2 * sin(_Speed2 * along);
             v.vertex.xyz += v.normal * (wave1 + wave2);
         }
 

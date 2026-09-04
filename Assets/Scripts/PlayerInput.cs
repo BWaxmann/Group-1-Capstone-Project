@@ -70,6 +70,7 @@ public class PlayerInput : MonoBehaviour
 
     int _currentAmmo;
     bool hasSpawnedFreeAmmo;
+    bool dontConsumeAmmo;
 
     public int currentAmmo => _currentAmmo;
     public Vector3 pickupMagnet => _pickupMagnet.position;
@@ -132,17 +133,20 @@ public class PlayerInput : MonoBehaviour
             treat.gameObject.SetActive(true);
             treat.LaunchTreat(treatLaunchPosition, launchForce);
             PlaySound(launcherFireSound);
-            _currentAmmo--;
-            UpdateAmmoDisplay();
-            if (spawnFreeAmmoWhenOut && _currentAmmo < freeAmmoThreashold && !hasSpawnedFreeAmmo)
+            if (!dontConsumeAmmo)
             {
-                Debug.Log("Spawning free ammo.");
-                hasSpawnedFreeAmmo = true;
-                PickupManager.instance.SpawnPickup(ammoPickupIndex, transform.TransformVector(freeAmmoSpawnOffset));
-            }
-            if (_currentAmmo <= 0)
-            {
-                treatLaunchPreview.SetActive(false);
+                _currentAmmo--;
+                UpdateAmmoDisplay();
+                if (spawnFreeAmmoWhenOut && _currentAmmo < freeAmmoThreashold && !hasSpawnedFreeAmmo)
+                {
+                    Debug.Log("Spawning free ammo.");
+                    hasSpawnedFreeAmmo = true;
+                    PickupManager.instance.SpawnPickup(ammoPickupIndex, transform.TransformVector(freeAmmoSpawnOffset));
+                }
+                if (_currentAmmo <= 0)
+                {
+                    treatLaunchPreview.SetActive(false);
+                }
             }
         }
         else
@@ -172,5 +176,16 @@ public class PlayerInput : MonoBehaviour
             TurnToFaceCamera?.Invoke(eye.rotation);
             yield return billboardUpdateFrequency;
         }
+    }
+
+    public void MakeAmmoInfinite(float duration)
+    {
+        dontConsumeAmmo = true;
+        Invoke(nameof(EndInfiniteAmmo), duration);
+    }
+
+    void EndInfiniteAmmo()
+    {
+        dontConsumeAmmo = false;
     }
 }

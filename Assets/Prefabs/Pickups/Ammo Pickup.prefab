@@ -121,9 +121,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ff61670dd1df4340a0ec04b1ef9af1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveToPlayerDelay: 1
+  activationDelay: 1
   slowMovementSpeed: 1
   fastMovementSpeed: 5
   acceleration: 3
   stoppingDistance: 1
+  _activationMethod: 1
   ammoAmount: 20

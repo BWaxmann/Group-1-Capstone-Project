@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3892726987495576633}
   - component: {fileID: 3892726987495576632}
+  - component: {fileID: 1504073715}
   m_Layer: 0
   m_Name: Pickup Manager
   m_TagString: Untagged
@@ -48,3 +49,21 @@ MonoBehaviour:
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 3
+  - _prefab: {fileID: 3185763986540129968, guid: ca66218dfae45f541abb8f79a533fa55,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 3
+--- !u!114 &1504073715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3892726987495576635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 897a639d236ffc046bd0d2d76fa25d91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pickupSpawner: {fileID: 3892726987495576632}
+  playerVisionPoint: {fileID: 0}

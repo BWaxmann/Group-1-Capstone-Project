@@ -5,7 +5,7 @@ public abstract class Pickup : MonoBehaviour
 {
     [SerializeField]
     [Min(0)]
-    protected float moveToPlayerDelay = 1f;
+    protected float activationDelay = 1f;
 
     [SerializeField]
     [Min(0)]
@@ -23,10 +23,15 @@ public abstract class Pickup : MonoBehaviour
     [Min(0)]
     protected float stoppingDistance = 1f;
 
+    [SerializeField]
+    protected ActivationType _activationMethod;
+
     protected PlayerInput player;
     protected Renderer rend;
 
     protected float currentSpeed;
+
+    public ActivationType activationMethod => _activationMethod;
 
     protected virtual void Start()
     {
@@ -37,27 +42,40 @@ public abstract class Pickup : MonoBehaviour
     public virtual void Initialise()
     {
         currentSpeed = 0;
-        StartCoroutine(MoveToPlayer());
+        if (_activationMethod != ActivationType.Shoot) // Logic for activating on being shot is in the Treat script.
+        {
+            StartCoroutine(PrepareToActivate());
+        }
     }
 
     public abstract void OnPickup();
 
-    protected virtual IEnumerator MoveToPlayer()
+    protected virtual IEnumerator PrepareToActivate()
     {
-        yield return new WaitForSeconds(moveToPlayerDelay);
+        yield return new WaitForSeconds(activationDelay);
 
-        while (Vector3.Distance(player.pickupMagnet, transform.position) > stoppingDistance)
+        if (_activationMethod == ActivationType.MoveToPlayer)
         {
-            float targetSpeed = rend.isVisible ? fastMovementSpeed : slowMovementSpeed;
-            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
+            while (Vector3.Distance(player.pickupMagnet, transform.position) > stoppingDistance)
+            {
+                float targetSpeed = rend.isVisible ? fastMovementSpeed : slowMovementSpeed;
+                currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, Time.deltaTime * acceleration);
 
-            Vector3 direction = (player.pickupMagnet - transform.position).normalized;
-            transform.Translate(currentSpeed * Time.deltaTime * direction, Space.World);
+                Vector3 direction = (player.pickupMagnet - transform.position).normalized;
+                transform.Translate(currentSpeed * Time.deltaTime * direction, Space.World);
 
-            yield return null;
+                yield return null;
+            }
         }
 
         OnPickup();
         gameObject.SetActive(false);
+    }
+
+    public enum ActivationType
+    {
+        Instant,
+        MoveToPlayer,
+        Shoot
     }
 }
