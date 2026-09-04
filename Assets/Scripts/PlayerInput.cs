@@ -48,6 +48,9 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     Vector3 freeAmmoSpawnOffset = new Vector3(0f, 1f, -8f);
 
+    [SerializeField]
+    string infiniteAmmoText = "<color=#FFD700>∞</color>";
+
     [Header("Sound Effects")]
 
     [SerializeField]
@@ -78,6 +81,7 @@ public class PlayerInput : MonoBehaviour
     void Start()
     {
         _currentAmmo = initialAmmoCount;
+        UpdateAmmoDisplay();
 
         if (launcherAudioSource == null)
         {
@@ -95,6 +99,10 @@ public class PlayerInput : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             LaunchTreat();
+        }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            MakeAmmoInfinite(10f);
         }
 #else
         if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
@@ -181,11 +189,13 @@ public class PlayerInput : MonoBehaviour
     public void MakeAmmoInfinite(float duration)
     {
         dontConsumeAmmo = true;
+        if (ammoText != null) ammoText.text = infiniteAmmoText;
         Invoke(nameof(EndInfiniteAmmo), duration);
     }
 
     void EndInfiniteAmmo()
     {
         dontConsumeAmmo = false;
+        UpdateAmmoDisplay();
     }
 }

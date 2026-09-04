@@ -4,9 +4,13 @@ using UnityEngine;
 public abstract class Pickup : MonoBehaviour
 {
     [SerializeField]
+    protected ActivationType _activationMethod;
+
+    [SerializeField]
     [Min(0)]
     protected float activationDelay = 1f;
 
+    [Header("Move To Player Settings")]
     [SerializeField]
     [Min(0)]
     protected float slowMovementSpeed = 1f;
@@ -22,9 +26,6 @@ public abstract class Pickup : MonoBehaviour
     [SerializeField]
     [Min(0)]
     protected float stoppingDistance = 1f;
-
-    [SerializeField]
-    protected ActivationType _activationMethod;
 
     protected PlayerInput player;
     protected Renderer rend;
