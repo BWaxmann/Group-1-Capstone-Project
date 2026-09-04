@@ -54,7 +54,11 @@ MonoBehaviour:
     dropChance: 0.2
     changeChanceWhenLowAmmo: 1
     lowAmmoChanceMultiplier: 5
-  pickupOffset: {x: 0, y: 1, z: 0}
+  - pickupIndex: 1
+    dropChance: 0.1
+    changeChanceWhenLowAmmo: 0
+    lowAmmoChanceMultiplier: 5
+  pickupOffset: {x: 0, y: 0.5, z: 0}
   targetUpdateFrequency: 0.2
   stoppingDistance: 1
   pauseDurationBetweenWaypoints: 0.2
@@ -65,6 +69,7 @@ MonoBehaviour:
   animator: {fileID: 8188994688379643624}
   fullyFedAnimationTrigger: IsDisappeared
   attackAnimationTrigger: AngryCat
+  stunnedAnimationBool: DizzyCat
   resetAnimatorTrigger: Reset
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}

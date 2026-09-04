@@ -65,6 +65,9 @@ public class CatMovement : MonoBehaviour
     string attackAnimationTrigger = "AngryCat";
 
     [SerializeField]
+    string stunnedAnimationBool = "DizzyCat";
+
+    [SerializeField]
     string resetAnimatorTrigger = "Reset";
 
     [Header("Health")]
@@ -129,9 +132,12 @@ public class CatMovement : MonoBehaviour
     DefendPoint targetDefendPoint;
 
     int currentHealth;
+    bool isStunned;
+    bool previousStoppedState;
 
     int eatingTreatTriggerHash;
     int attackTriggerHash;
+    int stunnedBoolHash;
     int resetTriggerHash;
 
     float moodDisplayTimer;
@@ -145,6 +151,7 @@ public class CatMovement : MonoBehaviour
     {
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
         attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
+        stunnedBoolHash = Animator.StringToHash(stunnedAnimationBool);
         resetTriggerHash = Animator.StringToHash(resetAnimatorTrigger);
 
         player = FindObjectOfType<PlayerInput>();
@@ -222,101 +229,107 @@ public class CatMovement : MonoBehaviour
         WaitForSeconds interAttackWait = new WaitForSeconds(pauseBetweenDefendPointHits);
         while (true)
         {
-            switch (currentState)
+            if (!isStunned)
             {
-                case AIState.Roaming:
-                    // Checks whether target destination has been reached
-                    if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
-                    {
-                        yield return interWaypointWait;
-
-                        // Determines whether to go after a defend point or keep roaming
-                        if (Random.Range(0f, 1f) < roamingToTargetingChance)
+                switch (currentState)
+                {
+                    case AIState.Roaming:
+                        // Checks whether target destination has been reached
+                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
                         {
-                            targetDefendPoint = GameManager.instance.GetRandomDefendPoint();
-                            if (targetDefendPoint != null)
+                            yield return interWaypointWait;
+
+                            // Determines whether to go after a defend point or keep roaming
+                            if (Random.Range(0f, 1f) < roamingToTargetingChance)
                             {
-                                currentState = AIState.Targeting;
-                                targetDestination = targetDefendPoint.position;
+                                targetDefendPoint = GameManager.instance.GetRandomDefendPoint();
+                                if (targetDefendPoint != null)
+                                {
+                                    currentState = AIState.Targeting;
+                                    targetDestination = targetDefendPoint.position;
+                                }
+                                else
+                                {
+                                    targetDestination = WaypointManager.instance.GetNewWaypoint(targetDestination);
+                                }
                             }
                             else
                             {
                                 targetDestination = WaypointManager.instance.GetNewWaypoint(targetDestination);
                             }
                         }
+                        break;
+                    case AIState.Targeting:
+                        // Checks whether target destination has been reached
+                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
+                        {
+                            agent.isStopped = true;
+
+                            while (true)
+                            {
+                                /*
+                                if (animator != null && animator.runtimeAnimatorController != null)
+                                {
+                                    animator.SetTrigger(attackTriggerHash);
+                                }
+                                */
+
+                                yield return interAttackWait;
+
+                                if (currentState != AIState.Targeting)
+                                {
+                                    break;
+                                }
+
+                                if (!isStunned)
+                                {
+                                    targetDefendPoint.GetHit();
+                                    hitDefendPointSound.PlayOneShot(attackSource);
+
+                                    if (Random.Range(0f, 1f) < targetingToRoamingChance)
+                                    {
+                                        currentState = AIState.Roaming;
+                                        targetDestination = WaypointManager.instance.GetRandomWaypoint();
+                                        targetDefendPoint = null;
+                                        agent.isStopped = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case AIState.Full:
+                        // Wait for animation of cat eating
+                        agent.isStopped = true;
+                        yield return new WaitForSeconds(fullyFedPauseDuration);
+
+                        if (returnHomeWhenFull)
+                        {
+                            // Begin cat's return home
+                            agent.isStopped = false;
+                            currentState = AIState.ReturningHome;
+                            targetDestination = home.position;
+                        }
                         else
                         {
-                            targetDestination = WaypointManager.instance.GetNewWaypoint(targetDestination);
+                            DisappearParticleEffect();
+                            DropPickup();
+                            gameObject.SetActive(false);
                         }
-                    }
-                    break;
-                case AIState.Targeting:
-                    // Checks whether target destination has been reached
-                    if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
-                    {
-                        agent.isStopped = true;
-
-                        while(true)
+                        break;
+                    case AIState.ReturningHome:
+                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
                         {
-                            /*
-                            if (animator != null && animator.runtimeAnimatorController != null)
-                            {
-                                animator.SetTrigger(attackTriggerHash);
-                            }
-                            */
-
-                            yield return interAttackWait;
-
-                            if (currentState != AIState.Targeting)
-                            {
-                                break;
-                            }
-
-                            targetDefendPoint.GetHit();
-                            hitDefendPointSound.PlayOneShot(attackSource);
-
-                            if (Random.Range(0f, 1f) < targetingToRoamingChance)
-                            {
-                                currentState = AIState.Roaming;
-                                targetDestination = WaypointManager.instance.GetRandomWaypoint();
-                                targetDefendPoint = null;
-                                agent.isStopped = false;
-                                break;
-                            }
+                            // Setting the cat to inactive will automatically recycle in back into the pool for spawning
+                            gameObject.SetActive(false);
                         }
-                    }
-                    break;
-                case AIState.Full:
-                    // Wait for animation of cat eating
-                    agent.isStopped = true;
-                    yield return new WaitForSeconds(fullyFedPauseDuration);
+                        break;
+                }
 
-                    if (returnHomeWhenFull)
-                    {
-                        // Begin cat's return home
-                        agent.isStopped = false;
-                        currentState = AIState.ReturningHome;
-                        targetDestination = home.position;
-                    }
-                    else
-                    {
-                        DisappearParticleEffect();
-                        DropPickup();
-                        gameObject.SetActive(false);
-                    }
-                    break;
-                case AIState.ReturningHome:
-                    if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
-                    {
-                        // Setting the cat to inactive will automatically recycle in back into the pool for spawning
-                        gameObject.SetActive(false);
-                    }
-                    break;
-            }
-
-            if (agent.isOnNavMesh)
-            {
-                agent.destination = targetDestination;
+                if (agent.isOnNavMesh)
+                {
+                    agent.destination = targetDestination;
+                }
             }
             yield return updateWait;
         }
@@ -432,6 +445,31 @@ public class CatMovement : MonoBehaviour
                 PickupManager.instance.SpawnPickup(pd.pickupIndex, pickupOffset + transform.position);
                 return;
             }
+        }
+    }
+
+    public void GetStunned(float duration)
+    {
+        isStunned = true;
+        previousStoppedState = agent.isStopped;
+        agent.isStopped = true;
+
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetBool(stunnedBoolHash, true);
+        }
+
+        Invoke(nameof(EndStun), duration);
+    }
+
+    void EndStun()
+    {
+        isStunned = false;
+        agent.isStopped = previousStoppedState;
+
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetBool(stunnedBoolHash, false);
         }
     }
 
