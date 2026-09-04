@@ -55,10 +55,26 @@ public class Treat : MonoBehaviour
             }
             else
             {
-                Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
-                if (audioSource != null && treatHittingFloorSound.soundClip != null)
+                Pickup pickup = other.gameObject.GetComponentInParent<Pickup>();
+                if (pickup != null)
                 {
-                    treatHittingFloorSound.PlayOneShot(audioSource);
+                    if (pickup.activationMethod == Pickup.ActivationType.Shoot)
+                    {
+                        pickup.OnPickup();
+                        pickup.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        isActive = true;
+                    }
+                }
+                else
+                {
+                    Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
+                    if (audioSource != null && treatHittingFloorSound.soundClip != null)
+                    {
+                        treatHittingFloorSound.PlayOneShot(audioSource);
+                    }
                 }
             }
         }

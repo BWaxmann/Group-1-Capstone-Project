@@ -139,7 +139,7 @@ MonoBehaviour:
     spaceCount: 5
     wordCount: 6
     linkCount: 0
-    lineCount: 2
+    lineCount: 1
     pageCount: 1
     materialCount: 1
   m_isUsingLegacyAnimationComponent: 0
@@ -184,7 +184,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3533416738950914042}
-  m_LocalRotation: {x: -0.22113848, y: -0.67163813, z: -0.22113854, w: 0.67163813}
+  m_LocalRotation: {x: -0.22114128, y: -0.67163724, z: -0.22114128, w: 0.67163724}
   m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
   m_Children:
@@ -272,8 +272,8 @@ MonoBehaviour:
   textBox: {fileID: 3533416738884083536}
   editorInstructions: 'Mouse left click to launch treats.
 
-    Mouse right click while hand is in box to reload.'
+    Feed the cats before they get out of control!'
   buildInstructions: 'Right-hand trigger to launch treats.
 
-    A button while hand is in box to reload.'
+    Feed the cats before they get out of control!'
   hideOnGameStart: 0
