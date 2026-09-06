@@ -16,6 +16,27 @@ public class ExplodingYarnball : Pickup
     [Min(0)]
     float stunDuration = 10f;
 
+    [SerializeField]
+    bool randomiseYarnballMaterial;
+
+    [SerializeField]
+    Renderer yarnballRenderer;
+
+    [SerializeField]
+    Material[] yarnballMaterials;
+
+    void OnEnable()
+    {
+        if (randomiseYarnballMaterial && yarnballMaterials != null && yarnballMaterials.Length > 0)
+        {
+            int index = Random.Range(0, yarnballMaterials.Length);
+            if (yarnballMaterials[index] != null)
+            {
+                yarnballRenderer.material = yarnballMaterials[index];
+            }
+        }
+    }
+
     public override void OnPickup()
     {
         ParticleManager.instance.ShowParticleEffect(confettiParticleIndex, transform.position);
