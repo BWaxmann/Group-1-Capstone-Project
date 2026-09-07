@@ -170,7 +170,7 @@ public class PlayerInput : MonoBehaviour
 
     void PlaySound(SoundData sound)
     {
-        if (launcherAudioSource != null && sound.soundClip != null)
+        if (launcherAudioSource != null && launcherAudioSource.gameObject.activeInHierarchy)
         {
             sound.PlayOneShot(launcherAudioSource);
         }

@@ -62,6 +62,7 @@ public class Treat : MonoBehaviour
                     {
                         pickup.OnPickup();
                         pickup.gameObject.SetActive(false);
+                        DespawnTreat();
                     }
                     else
                     {

@@ -331,6 +331,17 @@ public class GameManager : MonoBehaviour
         return defendPoints[Random.Range(0, defendPoints.Length)];
     }
 
+    public void ShieldAllDefendPoints(float duration)
+    {
+        foreach (DefendPoint dP in defendPoints)
+        {
+            if (dP != null)
+            {
+                dP.DeployShield(duration);
+            }
+        }
+    }
+
     public enum GameState
     {
         Initialising,

@@ -283,8 +283,8 @@ public class CatMovement : MonoBehaviour
 
                                 if (!isStunned)
                                 {
-                                    targetDefendPoint.GetHit();
                                     hitDefendPointSound.PlayOneShot(attackSource);
+                                    targetDefendPoint.GetHit();
 
                                     if (Random.Range(0f, 1f) < targetingToRoamingChance)
                                     {

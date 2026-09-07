@@ -62,6 +62,10 @@ MonoBehaviour:
     dropChance: 0.1
     changeChanceWhenLowAmmo: 0
     lowAmmoChanceMultiplier: 5
+  - pickupIndex: 3
+    dropChance: 0.1
+    changeChanceWhenLowAmmo: 0
+    lowAmmoChanceMultiplier: 5
   pickupOffset: {x: 0, y: 0.5, z: 0}
   targetUpdateFrequency: 0.2
   stoppingDistance: 1
