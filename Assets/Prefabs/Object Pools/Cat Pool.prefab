@@ -48,3 +48,15 @@ MonoBehaviour:
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 10
+  - _prefab: {fileID: 3268094886495892768, guid: 1b2e79cde2b86d742b836c54af448498,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 10
+  - _prefab: {fileID: 7956631704070311474, guid: 9950199675fff2049a55e881bd28c588,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 10
+  - _prefab: {fileID: 7050370373223874651, guid: 1d762dc68eea2e240b7ecb04e25a1724,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 10
