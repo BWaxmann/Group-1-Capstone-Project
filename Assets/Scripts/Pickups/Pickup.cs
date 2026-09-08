@@ -10,6 +10,10 @@ public abstract class Pickup : MonoBehaviour
     [Min(0)]
     protected float activationDelay = 1f;
 
+    [SerializeField]
+    [Min(0)]
+    protected float despawnTime = 30f;
+
     [Header("Move To Player Settings")]
     [SerializeField]
     [Min(0)]
@@ -31,6 +35,7 @@ public abstract class Pickup : MonoBehaviour
     protected Renderer rend;
 
     protected float currentSpeed;
+    protected float despawnTimer;
 
     public ActivationType activationMethod => _activationMethod;
 
@@ -46,6 +51,22 @@ public abstract class Pickup : MonoBehaviour
         if (_activationMethod != ActivationType.Shoot) // Logic for activating on being shot is in the Treat script.
         {
             StartCoroutine(PrepareToActivate());
+        }
+        else
+        {
+            despawnTimer = despawnTime;
+        }
+    }
+
+    protected virtual void Update()
+    {
+        if (_activationMethod == ActivationType.Shoot && despawnTimer > 0)
+        {
+            despawnTimer -= Time.deltaTime;
+            if (despawnTimer <= 0)
+            {
+                Despawn();
+            }
         }
     }
 
@@ -70,6 +91,11 @@ public abstract class Pickup : MonoBehaviour
         }
 
         OnPickup();
+        Despawn();
+    }
+
+    protected virtual void Despawn()
+    {
         gameObject.SetActive(false);
     }
 

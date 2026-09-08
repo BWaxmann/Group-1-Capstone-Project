@@ -46,6 +46,12 @@ public class GameManager : MonoBehaviour
     TMP_Text scoreText;
 
     [SerializeField]
+    GameObject bonusDisplay;
+
+    [SerializeField]
+    TMP_Text bonusText;
+
+    [SerializeField]
     TMP_Text timerText;
 
     [SerializeField]
@@ -121,6 +127,7 @@ public class GameManager : MonoBehaviour
     int catsFed;
     int penalties;
     int score;
+    float scoreMultiplier;
     GameState state;
 
     public bool enablePlayerInput => state == GameState.DuringGame;
@@ -219,6 +226,8 @@ public class GameManager : MonoBehaviour
         state = GameState.DuringGame;
         timer = gameTime;
         score = 0;
+        scoreMultiplier = 1;
+        bonusDisplay.SetActive(false);
         Invoke(nameof(HidePregameCanvas), countdownDisappearDelay);
 
         ShowGameCanvases(true);
@@ -269,6 +278,10 @@ public class GameManager : MonoBehaviour
     {
         if (state != GameState.DuringGame) return;
 
+        if (change > 0)
+        {
+            change = Mathf.FloorToInt(change * scoreMultiplier);
+        }
         score = Mathf.Max(score + change, 0);
         scoreText.text = score.ToString();
 
@@ -339,6 +352,21 @@ public class GameManager : MonoBehaviour
             {
                 dP.DeployShield(duration);
             }
+        }
+    }
+
+    public void ChangeScoreMultiplier(float multiplier)
+    {
+        scoreMultiplier *= multiplier;
+
+        if (scoreMultiplier != 1)
+        {
+            bonusDisplay.SetActive(true);
+            bonusText.text = $"x{scoreMultiplier}";
+        }
+        else
+        {
+            bonusDisplay.SetActive(false);
         }
     }
 
