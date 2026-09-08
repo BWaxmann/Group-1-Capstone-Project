@@ -28,7 +28,6 @@ public class PinToFloor : MonoBehaviour
         if (Physics.Raycast(referencePoint.position, Vector3.down, out RaycastHit hit, maxDistance))
         {
             transform.position = hit.point + offset;
-            transform.rotation = Quaternion.identity;
             transform.localScale = Mathf.Pow(distanceScaling, hit.distance) * initialScale;
         }
     }
