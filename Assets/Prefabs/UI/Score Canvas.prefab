@@ -486,7 +486,6 @@ GameObject:
   - component: {fileID: 4376384864822272967}
   - component: {fileID: 4376384864822272960}
   - component: {fileID: 4376384864822272961}
-  - component: {fileID: 4376384864822272962}
   m_Layer: 5
   m_Name: Score Canvas
   m_TagString: Untagged
@@ -558,23 +557,6 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
---- !u!114 &4376384864822272962
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4376384864822272963}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1301386320, guid: f70555f144d8491a825f0804e09c671c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!1 &7994402501334209977
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,7 +622,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: 999
+  m_text: x2.5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -709,10 +691,10 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 3548111604276214897}
-    characterCount: 3
+    characterCount: 4
     spriteCount: 0
     spaceCount: 0
-    wordCount: 1
+    wordCount: 2
     linkCount: 0
     lineCount: 1
     pageCount: 1
