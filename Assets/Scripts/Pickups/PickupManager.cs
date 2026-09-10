@@ -36,7 +36,9 @@ public class PickupManager : MonoBehaviour
         if (obj != null)
         {
             obj.SetActive(true);
-            obj.transform.SetPositionAndRotation(position, Quaternion.LookRotation(playerVisionPoint.position - position));
+            Vector3 lookAtPosition = playerVisionPoint.position;
+            lookAtPosition.y = position.y;
+            obj.transform.SetPositionAndRotation(position, Quaternion.LookRotation(lookAtPosition - position));
             obj.GetComponent<Pickup>().Initialise();
         }
     }

@@ -2918,6 +2918,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
         type: 3}
+      propertyPath: defendPoints.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
       propertyPath: defendPoints.Array.data[0]
       value: 
       objectReference: {fileID: 8717275795187336534}
