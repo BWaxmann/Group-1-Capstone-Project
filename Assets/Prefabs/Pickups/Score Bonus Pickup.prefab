@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7047066097646245185}
   - component: {fileID: 7047066097646245184}
   - component: {fileID: 2252591804061299227}
+  - component: {fileID: 8994589704303337151}
   m_Layer: 0
   m_Name: Score Bonus Pickup
   m_TagString: Untagged
@@ -69,6 +70,19 @@ MonoBehaviour:
   axis: {x: 0, y: 1, z: 0}
   rotationSpeed: 10
   updateFrequency: 0.03
+--- !u!135 &8994589704303337151
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7047066097646245187}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.15
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7047066098060196874
 GameObject:
   m_ObjectHideFlags: 0
@@ -80,7 +94,6 @@ GameObject:
   - component: {fileID: 7047066098060196875}
   - component: {fileID: 7047066098060196878}
   - component: {fileID: 7047066098060196873}
-  - component: {fileID: 7047066098060196872}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -147,16 +160,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!135 &7047066098060196872
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7047066098060196874}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5
-  m_Center: {x: 0, y: 0, z: 0}

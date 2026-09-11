@@ -1,18 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!135 &7417770221865665137
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2977148839833223989}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 1.0000001
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7417770221639469615
 GameObject:
   m_ObjectHideFlags: 0
@@ -24,6 +11,7 @@ GameObject:
   - component: {fileID: 7417770221639469613}
   - component: {fileID: 7417770221639469612}
   - component: {fileID: 1342238750450468290}
+  - component: {fileID: 5933170460065442959}
   m_Layer: 0
   m_Name: Defense Ball Pickup
   m_TagString: Untagged
@@ -81,6 +69,19 @@ MonoBehaviour:
   axis: {x: 0, y: 1, z: 0}
   rotationSpeed: 10
   updateFrequency: 0.03
+--- !u!135 &5933170460065442959
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7417770221639469615}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.2
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &7417770221865665138
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -165,12 +166,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7545d0496d38d0f4680a1c44e26edf83, type: 3}
---- !u!1 &2977148839833223989 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5738082559225479495, guid: 7545d0496d38d0f4680a1c44e26edf83,
-    type: 3}
-  m_PrefabInstance: {fileID: 7417770221865665138}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2237071581864997158 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8789507460636947284, guid: 7545d0496d38d0f4680a1c44e26edf83,
