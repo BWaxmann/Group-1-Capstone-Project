@@ -112,7 +112,18 @@ public class GameManager : MonoBehaviour
     SoundData gameEndSound = new SoundData(1f, 1f);
 
     [SerializeField]
-    SoundData gameMusic = new SoundData(1f, 1f);
+    SoundData gameMusicIntroAndOutro = new SoundData(1f, 1f);
+
+    [SerializeField]
+    SoundData gameMusicLoop = new SoundData(1f, 1f);
+
+    [SerializeField]
+    [Min(0)]
+    float introLength = 10f;
+
+    [SerializeField]
+    [Min(0)]
+    float outroLength = 10f;
 
     [SerializeField]
     SoundData postgameMusic = new SoundData(1f, 1f);
@@ -222,7 +233,10 @@ public class GameManager : MonoBehaviour
     void InitiateGame()
     {
         if (separateGameStartSound) PlaySoundEffect(gameStartSound);
-        PlayMusic(gameMusic);
+        PlayMusic(gameMusicIntroAndOutro);
+        Invoke(nameof(BeginLoop), introLength);
+        Invoke(nameof(PlayOutro), gameTime - outroLength);
+        
         state = GameState.DuringGame;
         timer = gameTime;
         score = 0;
@@ -318,19 +332,29 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void PlayMusic(SoundData music)
+    void PlayMusic(SoundData music, float startPoint = 0)
     {
         if (musicSource != null)
         {
             if (music.soundClip != null)
             {
-                music.PlayMusic(musicSource);
+                music.PlayMusic(musicSource, startPoint);
             }
             else
             {
                 StopMusic();
             }
         }
+    }
+
+    void BeginLoop()
+    {
+        PlayMusic(gameMusicLoop);
+    }
+
+    void PlayOutro()
+    {
+        PlayMusic(gameMusicIntroAndOutro, gameMusicIntroAndOutro.soundClip.length - outroLength);
     }
 
     void StopMusic()
