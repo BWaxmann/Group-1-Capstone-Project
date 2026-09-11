@@ -1,4 +1,4 @@
-﻿Shader "FlexibleCelShader/Cel Silhouette"
+Shader "FlexibleCelShader/Cel Silhouette"
 {
 	Properties
 	{
@@ -218,5 +218,4 @@
 		UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
 	}
 
-	CustomEditor "CelCustomEditor"
 }
