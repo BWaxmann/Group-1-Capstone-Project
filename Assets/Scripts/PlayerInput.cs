@@ -13,10 +13,16 @@ public class PlayerInput : MonoBehaviour
     ObjectSpawner treatsSpawner;
 
     [SerializeField] 
-    Transform treatLaunchPosition;
+    Transform treatLaunchPositionRight;
 
     [SerializeField]
-    GameObject treatLaunchPreview;
+    Transform treatLaunchPositionLeft;
+
+    [SerializeField]
+    GameObject treatLaunchPreviewRight;
+
+    [SerializeField]
+    GameObject treatLaunchPreviewLeft;
 
     [SerializeField] 
     [Min(0)] 
@@ -54,7 +60,10 @@ public class PlayerInput : MonoBehaviour
     [Header("Sound Effects")]
 
     [SerializeField]
-    AudioSource launcherAudioSource;
+    AudioSource launcherAudioSourceRight;
+
+    [SerializeField]
+    AudioSource launcherAudioSourceLeft;
 
     [SerializeField]
     [Tooltip("Sound to play when firing a treat.")]
@@ -83,11 +92,6 @@ public class PlayerInput : MonoBehaviour
         _currentAmmo = initialAmmoCount;
         UpdateAmmoDisplay();
 
-        if (launcherAudioSource == null)
-        {
-            launcherAudioSource = GetComponentInChildren<AudioSource>();
-        }
-
         StartCoroutine(UpdateBillboardsRoutine());
     }
 
@@ -98,7 +102,7 @@ public class PlayerInput : MonoBehaviour
 #if UNITY_EDITOR
         if (Input.GetMouseButtonDown(0))
         {
-            LaunchTreat();
+            LaunchTreat(true);
         }
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -107,7 +111,11 @@ public class PlayerInput : MonoBehaviour
 #else
         if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
         {
-            LaunchTreat();
+            LaunchTreat(true);
+        }
+        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+        {
+            LaunchTreat(false);
         }
 #endif
     }
@@ -116,10 +124,11 @@ public class PlayerInput : MonoBehaviour
     {
         if (_currentAmmo <= 0)
         {
-            treatLaunchPreview.SetActive(true);
+            treatLaunchPreviewRight.SetActive(true);
+            treatLaunchPreviewLeft.SetActive(true);
         }
         _currentAmmo += amount;
-        PlaySound(launcherReloadSound);
+        PlaySound(launcherReloadSound, true);
         UpdateAmmoDisplay();
 
         if (_currentAmmo >= freeAmmoThreashold)
@@ -128,7 +137,7 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
-    void LaunchTreat()
+    void LaunchTreat(bool rightHand)
     {
         if (_currentAmmo > 0)
         {
@@ -139,8 +148,8 @@ public class PlayerInput : MonoBehaviour
                 return;
             }
             treat.gameObject.SetActive(true);
-            treat.LaunchTreat(treatLaunchPosition, launchForce);
-            PlaySound(launcherFireSound);
+            treat.LaunchTreat(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce);
+            PlaySound(launcherFireSound, rightHand);
             if (!dontConsumeAmmo)
             {
                 _currentAmmo--;
@@ -153,13 +162,14 @@ public class PlayerInput : MonoBehaviour
                 }
                 if (_currentAmmo <= 0)
                 {
-                    treatLaunchPreview.SetActive(false);
+                    treatLaunchPreviewRight.SetActive(false);
+                    treatLaunchPreviewRight.SetActive(true);
                 }
             }
         }
         else
         {
-            PlaySound(launcherEmptySound);
+            PlaySound(launcherEmptySound, rightHand);
         }
     }
 
@@ -168,11 +178,21 @@ public class PlayerInput : MonoBehaviour
         if (ammoText != null) ammoText.text = _currentAmmo.ToString();
     }
 
-    void PlaySound(SoundData sound)
+    void PlaySound(SoundData sound, bool rightHand)
     {
-        if (launcherAudioSource != null && launcherAudioSource.gameObject.activeInHierarchy)
+        if (rightHand)
         {
-            sound.PlayOneShot(launcherAudioSource);
+            if (launcherAudioSourceRight != null && launcherAudioSourceRight.gameObject.activeInHierarchy)
+            {
+                sound.PlayOneShot(launcherAudioSourceRight);
+            }
+        }
+        else
+        {
+            if (launcherAudioSourceLeft != null && launcherAudioSourceLeft.gameObject.activeInHierarchy)
+            {
+                sound.PlayOneShot(launcherAudioSourceLeft);
+            }
         }
     }
 
