@@ -359,9 +359,9 @@ MonoBehaviour:
   moodCanvas: {fileID: 8821123876356601709}
   moodImage: {fileID: 2151679024186274129}
   moodSprites:
-  - {fileID: 21300000, guid: ceb27b3b345061c4ea8d3e8b0da09e0c, type: 3}
-  - {fileID: 21300000, guid: 73d5cb28de72734469f6f5b362d1841f, type: 3}
-  - {fileID: 21300000, guid: d46b6108f3e56e14f996bbe01e33c772, type: 3}
+  - {fileID: 21300000, guid: 13f29d1fd654792409165a2957d3ad8a, type: 3}
+  - {fileID: 21300000, guid: 9a49549adbb502445a90dbe7c8bcf9bb, type: 3}
+  - {fileID: 21300000, guid: 6a53551564ee7df44a5e4ed58fe60853, type: 3}
   - {fileID: 21300000, guid: e53da6bbff9041f41a05b74a12552e9e, type: 3}
   hideMoodCanvasDelay: 1.2
   eatingParticleIndex: 0
@@ -2650,11 +2650,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 3658786338670920099}
     m_Modifications:
-    - target: {fileID: 7931526527665372054, guid: 343ce5dc962bde842a37029dc60d6336,
-        type: 3}
-      propertyPath: m_Name
-      value: Cat
-      objectReference: {fileID: 0}
     - target: {fileID: 3946045268920018175, guid: 343ce5dc962bde842a37029dc60d6336,
         type: 3}
       propertyPath: m_Controller
@@ -2714,6 +2709,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7931526527665372054, guid: 343ce5dc962bde842a37029dc60d6336,
+        type: 3}
+      propertyPath: m_Name
+      value: Cat
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343ce5dc962bde842a37029dc60d6336, type: 3}
