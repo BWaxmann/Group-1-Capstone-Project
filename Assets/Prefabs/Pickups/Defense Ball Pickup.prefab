@@ -23,7 +23,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7417770221639469613}
   - component: {fileID: 7417770221639469612}
-  - component: {fileID: -5134601708563906150}
+  - component: {fileID: 1342238750450468290}
   m_Layer: 0
   m_Name: Defense Ball Pickup
   m_TagString: Untagged
@@ -66,7 +66,7 @@ MonoBehaviour:
   acceleration: 3
   stoppingDistance: 1
   shieldDuration: 10
---- !u!114 &-5134601708563906150
+--- !u!114 &1342238750450468290
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -75,15 +75,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 7417770221639469615}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1213c00a7ca5ea24ca4fa40c8252373c, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d086f256e962b642b2231929c565b20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotateDegreesPerSecond:
-    value: {x: 0, y: 90, z: 0}
-    space: 1
-  moveUnitsPerSecond:
-    value: {x: 0, y: 0, z: 0}
-    space: 1
+  axis: {x: 0, y: 1, z: 0}
+  rotationSpeed: 10
+  updateFrequency: 0.03
 --- !u!1001 &7417770221865665138
 PrefabInstance:
   m_ObjectHideFlags: 0

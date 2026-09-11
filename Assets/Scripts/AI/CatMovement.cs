@@ -331,6 +331,18 @@ public class CatMovement : MonoBehaviour
                     agent.destination = targetDestination;
                 }
             }
+            else if (currentState == AIState.Full && !returnHomeWhenFull)
+            {
+                yield return new WaitForSeconds(fullyFedPauseDuration);
+
+                DisappearParticleEffect();
+                DropPickup();
+                gameObject.SetActive(false);
+            }
+            else if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+            }
             yield return updateWait;
         }
     }
@@ -452,7 +464,6 @@ public class CatMovement : MonoBehaviour
     {
         isStunned = true;
         previousStoppedState = agent.isStopped;
-        agent.isStopped = true;
 
         if (animator != null && animator.runtimeAnimatorController != null)
         {

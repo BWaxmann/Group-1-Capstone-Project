@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7047066097646245185}
   - component: {fileID: 7047066097646245184}
+  - component: {fileID: 2252591804061299227}
   m_Layer: 0
   m_Name: Score Bonus Pickup
   m_TagString: Untagged
@@ -53,6 +54,21 @@ MonoBehaviour:
   stoppingDistance: 1
   scoreMultiplier: 2
   duration: 10
+--- !u!114 &2252591804061299227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7047066097646245187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d086f256e962b642b2231929c565b20, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  axis: {x: 0, y: 1, z: 0}
+  rotationSpeed: 10
+  updateFrequency: 0.03
 --- !u!1 &7047066098060196874
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1904251538652667043}
   - component: {fileID: 970324635}
   - component: {fileID: 970324634}
-  - component: {fileID: -6541761063819144016}
+  - component: {fileID: 3705694514476758527}
   m_Layer: 0
   m_Name: Make Cats High Power Up
   m_TagString: Untagged
@@ -78,7 +78,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: fddde191fb3fdf4458fd6df93964c50a, type: 2}
   - {fileID: 2100000, guid: b7c730719c637b04ebf54a8aeefa53a5, type: 2}
   - {fileID: 2100000, guid: b806efee3b0db2349b640f83d3ab6405, type: 2}
---- !u!114 &-6541761063819144016
+--- !u!114 &3705694514476758527
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,15 +87,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 3185763986540129968}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1213c00a7ca5ea24ca4fa40c8252373c, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d086f256e962b642b2231929c565b20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotateDegreesPerSecond:
-    value: {x: 0, y: 90, z: 0}
-    space: 1
-  moveUnitsPerSecond:
-    value: {x: 0, y: 0, z: 0}
-    space: 1
+  axis: {x: 0, y: 1, z: 0}
+  rotationSpeed: 10
+  updateFrequency: 0.03
 --- !u!1001 &5908684589893612479
 PrefabInstance:
   m_ObjectHideFlags: 0

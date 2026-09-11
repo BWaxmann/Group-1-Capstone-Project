@@ -1,5 +1,5 @@
-﻿using Liminal.Core.Fader;
-using Liminal.SDK.Core;
+﻿using System.Collections;
+using Liminal.Core.Fader;
 using TMPro;
 using UnityEngine;
 
@@ -131,17 +131,18 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     public delegate void GameStateChange();
+    public event GameStateChange StartCountdown;
     public event GameStateChange GameStart;
     public event GameStateChange GameEnd;
 
-    float timer;
+    bool playerInputsEnabled;
     int catsFed;
     int penalties;
     int score;
     float scoreMultiplier;
     GameState state;
 
-    public bool enablePlayerInput => state == GameState.DuringGame;
+    public bool enablePlayerInput => playerInputsEnabled;
 
     void Awake()
     {
@@ -162,72 +163,82 @@ public class GameManager : MonoBehaviour
         postgameCanvas.SetActive(false);
 
         state = GameState.Initialising;
-        Invoke(nameof(InitiatePregame), pregameDelay);
+        playerInputsEnabled = true;
     }
 
-    void Update()
+    public void GrabbedLaunchers()
     {
-        switch (state)
+        playerInputsEnabled = false;
+
+        Invoke(nameof(InitiatePregame), pregameDelay);
+        StartCountdown?.Invoke();
+    }
+
+    IEnumerator PreGameRoutine()
+    {
+        WaitForSeconds wait = new WaitForSeconds(1);
+
+        for (int i = 0; i < pregameCountdownTime; i++)
         {
-            case GameState.PreGame:
-                timer -= Time.deltaTime;
-                if (timer <= 0)
-                {
-                    countdownText.text = countdownEndText;
-                    InitiateGame();
-                }
-                else
-                {
-                    string t = Mathf.CeilToInt(timer).ToString();
-                    if (countdownText.text != t)
-                    {
-                        countdownText.text = t;
-                        if (!countdownSoundIsCombined) PlaySoundEffect(countdownSound);
-                    }
-                }
-                break;
-            case GameState.DuringGame:
-                timer -= Time.deltaTime;
-                if (timer <= 0)
-                {
-                    timerText.text = "0";
-                    EndGame();
-                }
-                else
-                {
-                    timerText.text = Mathf.CeilToInt(timer).ToString();
-                }
-                break;
-            case GameState.PostGame:
-                timer -= Time.deltaTime;
-                if (timer <= 0)
-                {
-                    if (timeUpText.activeSelf)
-                    {
-                        timeUpText.SetActive(false);
-                        finalScorePanel.SetActive(true);
-                        catsFedText.text = catsFed.ToString();
-                        penaltyText.text = penalties.ToString();
-                        finalScoreText.text = score.ToString();
-                        timer = finalScoreDisplayDuration;
-                    }
-                    else
-                    {
-                        state = GameState.FadeOut;
-                        FadeOut();
-                        Invoke(nameof(EndGame), fadeDuration);
-                    }
-                }
-                break;
+            countdownText.text = (pregameCountdownTime - i).ToString();
+            if (!countdownSoundIsCombined) PlaySoundEffect(countdownSound);
+
+            yield return wait;
         }
+
+        countdownText.text = countdownEndText;
+        InitiateGame();
+    }
+
+    IEnumerator GameRoutine()
+    {
+        WaitForSeconds wait = new WaitForSeconds(1);
+
+        if (Mathf.Floor(gameTime) < gameTime)
+        {
+            timerText.text = Mathf.CeilToInt(gameTime).ToString();
+            yield return new WaitForSeconds(gameTime % 1);
+        }
+
+        int steps = Mathf.FloorToInt(gameTime);
+        for (int i = 0; i < steps; i++)
+        {
+            timerText.text = (steps - i).ToString();
+
+            yield return wait;
+        }
+
+        timerText.text = "0";
+        EndGame();
+    }
+
+    IEnumerator PostGameRoutine()
+    {
+        yield return new WaitForSeconds(timeUpDisplayDuration);
+
+        timeUpText.SetActive(false);
+        finalScorePanel.SetActive(true);
+        catsFedText.text = catsFed.ToString();
+        penaltyText.text = penalties.ToString();
+        finalScoreText.text = score.ToString();
+
+        yield return new WaitForSeconds(finalScoreDisplayDuration);
+
+        state = GameState.FadeOut;
+        FadeOut();
+
+        yield return new WaitForSeconds(fadeDuration);
+
+        ExitGame();
     }
 
     void InitiatePregame()
     {
         state = GameState.PreGame;
-        timer = pregameCountdownTime;
         pregameCanvas.SetActive(true);
         if (countdownSoundIsCombined) PlaySoundEffect(countdownSound);
+
+        StartCoroutine(PreGameRoutine());
     }
 
     void InitiateGame()
@@ -238,15 +249,16 @@ public class GameManager : MonoBehaviour
         Invoke(nameof(PlayOutro), gameTime - outroLength);
         
         state = GameState.DuringGame;
-        timer = gameTime;
+        playerInputsEnabled = true;
         score = 0;
         scoreMultiplier = 1;
         bonusDisplay.SetActive(false);
         Invoke(nameof(HidePregameCanvas), countdownDisappearDelay);
 
         ShowGameCanvases(true);
-        scoreText.text = score.ToString();
+        scoreText.text = "0";
 
+        StartCoroutine(GameRoutine());
         GameStart?.Invoke();
     }
 
@@ -268,12 +280,13 @@ public class GameManager : MonoBehaviour
         PlaySoundEffect(gameEndSound);
         PlayMusic(postgameMusic);
         state = GameState.PostGame;
+        playerInputsEnabled = false;
         ShowGameCanvases(false);
         postgameCanvas.SetActive(true);
         timeUpText.SetActive(true);
         finalScorePanel.SetActive(false);
-        timer = timeUpDisplayDuration;
 
+        StartCoroutine(PostGameRoutine());
         GameEnd?.Invoke();
     }
 
@@ -285,7 +298,11 @@ public class GameManager : MonoBehaviour
 
     void ExitGame()
     {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
         ExperienceApp.End();
+#endif
     }
 
     void UpdateScore(int change, bool playSoundFX = true)
