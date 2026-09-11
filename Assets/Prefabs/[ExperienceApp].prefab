@@ -1231,7 +1231,7 @@ MonoBehaviour:
   freeAmmoThreashold: 5
   ammoPickupIndex: 0
   freeAmmoSpawnOffset: {x: 0, y: 1, z: -8}
-  infiniteAmmoText: "<color=#FFD700>\u221E</color>"
+  infiniteAmmoText: "<color=#FFD700><size=2em>\u221E</size></color>"
   launcherAudioSourceRight: {fileID: 2330815458311549678}
   launcherAudioSourceLeft: {fileID: 2740191476147212289}
   launcherFireSound:
