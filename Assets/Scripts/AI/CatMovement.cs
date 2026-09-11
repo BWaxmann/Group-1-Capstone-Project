@@ -202,6 +202,7 @@ public class CatMovement : MonoBehaviour
         transform.rotation = spawnPoint.rotation;
         currentState = AIState.Roaming;
         targetDestination = WaypointManager.instance.GetRandomWaypoint();
+        isStunned = false;
 
         if (resetTriggerHash != 0 && animator != null && animator.runtimeAnimatorController != null)
         {
@@ -465,10 +466,12 @@ public class CatMovement : MonoBehaviour
         isStunned = true;
         previousStoppedState = agent.isStopped;
 
+        /*
         if (animator != null && animator.runtimeAnimatorController != null)
         {
             animator.SetBool(stunnedBoolHash, true);
         }
+        */
 
         Invoke(nameof(EndStun), duration);
     }

@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   axis: {x: 0, y: 1, z: 0}
-  rotationSpeed: 10
+  rotationSpeed: 13
   updateFrequency: 0.03
 --- !u!135 &970324635
 SphereCollider:

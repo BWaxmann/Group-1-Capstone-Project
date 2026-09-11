@@ -98,6 +98,7 @@ public class PlayerInput : MonoBehaviour
     int _currentAmmo;
     bool hasSpawnedFreeAmmo;
     bool dontConsumeAmmo;
+    float infiniteAmmoTimer;
 
     public int currentAmmo => _currentAmmo;
     public Vector3 pickupMagnet => _pickupMagnet.position;
@@ -117,6 +118,17 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
+        if (dontConsumeAmmo)
+        {
+            infiniteAmmoTimer -= Time.deltaTime;
+            if (infiniteAmmoTimer <= 0)
+            {
+                infiniteAmmoTimer = 0;
+                dontConsumeAmmo = false;
+                UpdateAmmoDisplay();
+            }
+        }
+
         if (!GameManager.instance.enablePlayerInput) return;
 
 #if UNITY_EDITOR
@@ -249,7 +261,10 @@ public class PlayerInput : MonoBehaviour
         }
         _currentAmmo += amount;
         PlaySound(launcherReloadSound, true);
-        UpdateAmmoDisplay();
+        if (!dontConsumeAmmo)
+        {
+            UpdateAmmoDisplay();
+        }
 
         if (_currentAmmo >= freeAmmoThreashold)
         {
@@ -330,12 +345,6 @@ public class PlayerInput : MonoBehaviour
     {
         dontConsumeAmmo = true;
         if (ammoText != null) ammoText.text = infiniteAmmoText;
-        Invoke(nameof(EndInfiniteAmmo), duration);
-    }
-
-    void EndInfiniteAmmo()
-    {
-        dontConsumeAmmo = false;
-        UpdateAmmoDisplay();
+        infiniteAmmoTimer += duration;
     }
 }
