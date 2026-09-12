@@ -278,7 +278,7 @@ public class GameManager : MonoBehaviour
     void EndGame()
     {
         PlaySoundEffect(gameEndSound);
-        PlayMusic(postgameMusic);
+        PlayMusic(postgameMusic, loop: false);
         state = GameState.PostGame;
         playerInputsEnabled = false;
         ShowGameCanvases(false);
@@ -349,13 +349,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void PlayMusic(SoundData music, float startPoint = 0)
+    void PlayMusic(SoundData music, float startPoint = 0, bool loop = true)
     {
         if (musicSource != null)
         {
             if (music.soundClip != null)
             {
-                music.PlayMusic(musicSource, startPoint);
+                music.PlayMusic(musicSource, startPoint, loop);
             }
             else
             {
@@ -371,7 +371,7 @@ public class GameManager : MonoBehaviour
 
     void PlayOutro()
     {
-        PlayMusic(gameMusicIntroAndOutro, gameMusicIntroAndOutro.soundClip.length - outroLength);
+        PlayMusic(gameMusicIntroAndOutro, gameMusicIntroAndOutro.soundClip.length - outroLength, false);
     }
 
     void StopMusic()

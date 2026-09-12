@@ -69,6 +69,11 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     string infiniteAmmoText = "<color=#FFD700>∞</color>";
 
+    [SerializeField]
+    [Tooltip("Press Q to activate.")]
+    [Min(0)]
+    float debugInfiniteAmmoDuration = 200f;
+
     [Header("Sound Effects")]
 
     [SerializeField]
@@ -140,7 +145,7 @@ public class PlayerInput : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                MakeAmmoInfinite(10f);
+                MakeAmmoInfinite(debugInfiniteAmmoDuration);
             }
         }
         else
@@ -181,41 +186,44 @@ public class PlayerInput : MonoBehaviour
         }
         else
         {
+            bool launchersFound = false;
             RaycastHit hit;
             if (Physics.Raycast(handLeft.position, handLeft.forward, out hit, 20))
             {
                 if (TestForLaunchers(hit.transform))
                 {
+                    launchersFound = true;
                     if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger)
                         || OVRInput.GetDown(OVRInput.Button.Three))
                     {
                         GetLaunchers();
+                        return;
                     }
                     else
                     {
                         lastPerceivedLaunchers.Highlight(true);
                     }
-                    return;
                 }
             }
             if (Physics.Raycast(handRight.position, handRight.forward, out hit, 20))
             {
                 if (TestForLaunchers(hit.transform))
                 {
+                    launchersFound = true;
                     if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger)
                         || OVRInput.GetDown(OVRInput.Button.One))
                     {
                         GetLaunchers();
+                        return;
                     }
                     else
                     {
                         lastPerceivedLaunchers.Highlight(true);
                     }
-                    return;
                 }
             }
 
-            if (lastPerceivedLaunchers != null)
+            if (!launchersFound && lastPerceivedLaunchers != null)
             {
                 lastPerceivedLaunchers.Highlight(false);
                 lastPerceivedLaunchers = null;
