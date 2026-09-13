@@ -2570,11 +2570,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 4634114768349255127}
     m_Modifications:
-    - target: {fileID: 35134598334681099, guid: 343ce5dc962bde842a37029dc60d6336,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: e617882a97cd99947a8d5955daf4475d, type: 2}
     - target: {fileID: 3946045268920018175, guid: 343ce5dc962bde842a37029dc60d6336,
         type: 3}
       propertyPath: m_Controller
@@ -2640,6 +2635,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cat
       objectReference: {fileID: 0}
+    - target: {fileID: 35134598334681099, guid: 343ce5dc962bde842a37029dc60d6336,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: e617882a97cd99947a8d5955daf4475d, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343ce5dc962bde842a37029dc60d6336, type: 3}
 --- !u!1001 &8610143975279244735

@@ -46,17 +46,21 @@ MonoBehaviour:
   objectsInPool:
   - _prefab: {fileID: 1395766658557252655, guid: 8879010c441781f49abf1b937dfec2f0,
       type: 3}
-    _excludeFromRandomSelection: 0
+    _excludeFromRandomSelection: 1
     _initialPoolSize: 10
   - _prefab: {fileID: 3268094886495892768, guid: 1b2e79cde2b86d742b836c54af448498,
       type: 3}
-    _excludeFromRandomSelection: 0
+    _excludeFromRandomSelection: 1
     _initialPoolSize: 10
   - _prefab: {fileID: 7956631704070311474, guid: 9950199675fff2049a55e881bd28c588,
       type: 3}
-    _excludeFromRandomSelection: 0
+    _excludeFromRandomSelection: 1
     _initialPoolSize: 10
   - _prefab: {fileID: 7050370373223874651, guid: 1d762dc68eea2e240b7ecb04e25a1724,
+      type: 3}
+    _excludeFromRandomSelection: 1
+    _initialPoolSize: 10
+  - _prefab: {fileID: 1114307487121564436, guid: ae20e4babe314ae45b6ea703e9f4222f,
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 10
