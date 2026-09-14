@@ -64,3 +64,11 @@ MonoBehaviour:
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 10
+  - _prefab: {fileID: 8180139127190145470, guid: b3040db7b39c9f14ea045a924111145e,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 10
+  - _prefab: {fileID: 1676240177179758337, guid: cd002fbb0e945264aba956ca533ac614,
+      type: 3}
+    _excludeFromRandomSelection: 0
+    _initialPoolSize: 10
