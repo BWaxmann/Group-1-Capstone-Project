@@ -151,7 +151,7 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
         }
-        else if (instance != null)
+        else if (instance != this)
         {
             Destroy(gameObject);
         }

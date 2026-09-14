@@ -16,7 +16,11 @@ public class TrajectoryPreview : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float cornerSpacing = 0.2f;
+    float cornerSpacing = .5f;
+
+    [SerializeField]
+    [Min(0)]
+    int maxPoints = 3;
 
     float gravity;
     Vector3 xAxis;
@@ -53,7 +57,7 @@ public class TrajectoryPreview : MonoBehaviour
                 sin = Mathf.Sin(angle);
 
                 float endTime = GetHitGroundTime();
-                int points = Mathf.Max(Mathf.CeilToInt(endTime / cornerSpacing), -1);
+                int points = Mathf.Min(Mathf.Max(Mathf.CeilToInt(endTime / cornerSpacing), -1), maxPoints - 1);
                 trajectoryPreviewLine.positionCount = points + 1;
 
                 if (points >= 0)
