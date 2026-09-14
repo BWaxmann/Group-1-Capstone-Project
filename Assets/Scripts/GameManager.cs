@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using Liminal.Core.Fader;
+using Liminal.SDK.Core; // This is needed for ExperienceApp.End()
 using TMPro;
 using UnityEngine;
 
