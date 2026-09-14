@@ -133,6 +133,7 @@ public class CatMovement : MonoBehaviour
 
     int currentHealth;
     bool isStunned;
+    float stunTimer;
     bool previousStoppedState;
 
     int eatingTreatTriggerHash;
@@ -202,6 +203,7 @@ public class CatMovement : MonoBehaviour
         transform.rotation = spawnPoint.rotation;
         currentState = AIState.Roaming;
         targetDestination = WaypointManager.instance.GetRandomWaypoint();
+        isStunned = false;
 
         if (resetTriggerHash != 0 && animator != null && animator.runtimeAnimatorController != null)
         {
@@ -229,6 +231,11 @@ public class CatMovement : MonoBehaviour
         WaitForSeconds interAttackWait = new WaitForSeconds(pauseBetweenDefendPointHits);
         while (true)
         {
+            if (currentState == AIState.Full)
+            {
+                yield break;
+            }
+
             if (!isStunned)
             {
                 switch (currentState)
@@ -238,6 +245,11 @@ public class CatMovement : MonoBehaviour
                         if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
                         {
                             yield return interWaypointWait;
+
+                            if (currentState != AIState.Roaming)
+                            {
+                                break;
+                            }
 
                             // Determines whether to go after a defend point or keep roaming
                             if (Random.Range(0f, 1f) < roamingToTargetingChance)
@@ -298,38 +310,28 @@ public class CatMovement : MonoBehaviour
                             }
                         }
                         break;
-                    case AIState.Full:
-                        // Wait for animation of cat eating
-                        agent.isStopped = true;
-                        yield return new WaitForSeconds(fullyFedPauseDuration);
-
-                        if (returnHomeWhenFull)
-                        {
-                            // Begin cat's return home
-                            agent.isStopped = false;
-                            currentState = AIState.ReturningHome;
-                            targetDestination = home.position;
-                        }
-                        else
-                        {
-                            DisappearParticleEffect();
-                            DropPickup();
-                            gameObject.SetActive(false);
-                        }
-                        break;
-                    case AIState.ReturningHome:
-                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
-                        {
-                            // Setting the cat to inactive will automatically recycle in back into the pool for spawning
-                            gameObject.SetActive(false);
-                        }
-                        break;
                 }
 
                 if (agent.isOnNavMesh)
                 {
                     agent.destination = targetDestination;
                 }
+            }
+            else
+            {
+                stunTimer -= targetUpdateFrequency;
+                if (stunTimer <= 0)
+                {
+                    EndStun();
+                }
+                else if (agent.isOnNavMesh)
+                {
+                    agent.isStopped = true;
+                }
+            }
+            if (currentState == AIState.Full)
+            {
+                yield break;
             }
             yield return updateWait;
         }
@@ -360,18 +362,12 @@ public class CatMovement : MonoBehaviour
         if (isFullyFed) return;
 
         currentHealth--;
-        if (currentHealth < 0)
-        {
-            Debug.Log("A cat somehow has less than 0 health.");
-            currentHealth = 0;
-        }
 
         moodDisplayTimer = hideMoodCanvasDelay;
         moodCanvas.SetActive(true);
         SetMoodImage();
 
         ParticleManager.instance.ShowParticleEffect(eatingParticleIndex, voiceSource.transform.position);
-
         fedSound.PlayOneShot(voiceSource);
 
         if (currentHealth <= 0)
@@ -382,6 +378,8 @@ public class CatMovement : MonoBehaviour
             {
                 animator.SetTrigger(eatingTreatTriggerHash);
             }
+            agent.isStopped = true;
+            Invoke(nameof(Vanish), fullyFedPauseDuration);
         }
         else if (currentState == AIState.Targeting && Random.Range(0f, 1f) < targetingToRoamingChance)
         {
@@ -402,6 +400,14 @@ public class CatMovement : MonoBehaviour
                 moodImage.sprite = sp;
             }
         }
+    }
+
+    void Vanish()
+    {
+        DisappearParticleEffect();
+        DropPickup();
+        // Setting the cat to inactive will automatically recycle in back into the pool for spawning
+        gameObject.SetActive(false);
     }
 
     public void DisappearParticleEffect()
@@ -451,15 +457,15 @@ public class CatMovement : MonoBehaviour
     public void GetStunned(float duration)
     {
         isStunned = true;
+        stunTimer = Mathf.Max(stunTimer, duration);
         previousStoppedState = agent.isStopped;
-        agent.isStopped = true;
 
+        /*
         if (animator != null && animator.runtimeAnimatorController != null)
         {
             animator.SetBool(stunnedBoolHash, true);
         }
-
-        Invoke(nameof(EndStun), duration);
+        */
     }
 
     void EndStun()

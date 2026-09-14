@@ -2206,7 +2206,7 @@ MonoBehaviour:
     lowAmmoChanceMultiplier: 5
   pickupOffset: {x: 0, y: 0.5, z: 0}
   targetUpdateFrequency: 0.2
-  stoppingDistance: 1
+  stoppingDistance: 0.5
   pauseDurationBetweenWaypoints: 0.2
   roamingToTargetingChance: 0.2
   targetingToRoamingChance: 0.1

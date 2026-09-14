@@ -7,7 +7,19 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     float billboardUpdateFrequency = 0.2f;
 
+    [SerializeField]
+    Transform handRight;
+
+    [SerializeField]
+    Transform handLeft;
+
     [Header("Treat Launcher")]
+
+    [SerializeField] 
+    GameObject launcherRight;
+
+    [SerializeField]
+    GameObject launcherLeft;
 
     [SerializeField] 
     ObjectSpawner treatsSpawner;
@@ -57,6 +69,11 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     string infiniteAmmoText = "<color=#FFD700>∞</color>";
 
+    [SerializeField]
+    [Tooltip("Press Q to activate.")]
+    [Min(0)]
+    float debugInfiniteAmmoDuration = 200f;
+
     [Header("Sound Effects")]
 
     [SerializeField]
@@ -80,15 +97,24 @@ public class PlayerInput : MonoBehaviour
     public delegate void FaceCamera(Quaternion rotation);
     public static event FaceCamera TurnToFaceCamera;
 
+    bool launchersActive;
+    GrabbableLaunchers lastPerceivedLaunchers;
+
     int _currentAmmo;
     bool hasSpawnedFreeAmmo;
     bool dontConsumeAmmo;
+    float infiniteAmmoTimer;
 
     public int currentAmmo => _currentAmmo;
     public Vector3 pickupMagnet => _pickupMagnet.position;
 
     void Start()
     {
+        handLeft.gameObject.SetActive(true);
+        handRight.gameObject.SetActive(true);
+        launcherLeft.gameObject.SetActive(false);
+        launcherRight.gameObject.SetActive(false);
+
         _currentAmmo = initialAmmoCount;
         UpdateAmmoDisplay();
 
@@ -97,27 +123,141 @@ public class PlayerInput : MonoBehaviour
 
     void Update()
     {
+        if (dontConsumeAmmo)
+        {
+            infiniteAmmoTimer -= Time.deltaTime;
+            if (infiniteAmmoTimer <= 0)
+            {
+                infiniteAmmoTimer = 0;
+                dontConsumeAmmo = false;
+                UpdateAmmoDisplay();
+            }
+        }
+
         if (!GameManager.instance.enablePlayerInput) return;
 
 #if UNITY_EDITOR
-        if (Input.GetMouseButtonDown(0))
+        if (launchersActive)
         {
-            LaunchTreat(true);
+            if (Input.GetMouseButtonDown(0))
+            {
+                LaunchTreat(true);
+            }
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                MakeAmmoInfinite(debugInfiniteAmmoDuration);
+            }
         }
-        if (Input.GetKeyDown(KeyCode.Q))
+        else
         {
-            MakeAmmoInfinite(10f);
+            if (Physics.Raycast(handRight.position, handRight.forward, out RaycastHit hit, 20))
+            {
+                if (TestForLaunchers(hit.transform))
+                {
+                    if (Input.GetMouseButton(0))
+                    {
+                        GetLaunchers();
+                    }
+                    else
+                    {
+                        lastPerceivedLaunchers.Highlight(true);
+                    }
+                    return;
+                }
+            }
+
+            if (lastPerceivedLaunchers != null)
+            {
+                lastPerceivedLaunchers.Highlight(false);
+                lastPerceivedLaunchers = null;
+            }
         }
 #else
-        if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+        if (launchersActive)
         {
-            LaunchTreat(true);
+            if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+            {
+                LaunchTreat(true);
+            }
+            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+            {
+                LaunchTreat(false);
+            }
         }
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+        else
         {
-            LaunchTreat(false);
+            bool launchersFound = false;
+            RaycastHit hit;
+            if (Physics.Raycast(handLeft.position, handLeft.forward, out hit, 20))
+            {
+                if (TestForLaunchers(hit.transform))
+                {
+                    launchersFound = true;
+                    if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger)
+                        || OVRInput.GetDown(OVRInput.Button.Three))
+                    {
+                        GetLaunchers();
+                        return;
+                    }
+                    else
+                    {
+                        lastPerceivedLaunchers.Highlight(true);
+                    }
+                }
+            }
+            if (Physics.Raycast(handRight.position, handRight.forward, out hit, 20))
+            {
+                if (TestForLaunchers(hit.transform))
+                {
+                    launchersFound = true;
+                    if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger)
+                        || OVRInput.GetDown(OVRInput.Button.One))
+                    {
+                        GetLaunchers();
+                        return;
+                    }
+                    else
+                    {
+                        lastPerceivedLaunchers.Highlight(true);
+                    }
+                }
+            }
+
+            if (!launchersFound && lastPerceivedLaunchers != null)
+            {
+                lastPerceivedLaunchers.Highlight(false);
+                lastPerceivedLaunchers = null;
+            }
         }
 #endif
+    }
+
+    bool TestForLaunchers(Transform other)
+    {
+        GrabbableLaunchers launchers = other.GetComponent<GrabbableLaunchers>();
+        if (launchers != null)
+        {
+            lastPerceivedLaunchers = launchers;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    void GetLaunchers()
+    {
+        launchersActive = true;
+
+        lastPerceivedLaunchers.gameObject.SetActive(false);
+        lastPerceivedLaunchers = null;
+        handLeft.gameObject.SetActive(false);
+        handRight.gameObject.SetActive(false);
+        launcherLeft.gameObject.SetActive(true);
+        launcherRight.gameObject.SetActive(true);
+
+        GameManager.instance.GrabbedLaunchers();
     }
 
     public void GetAmmo(int amount)
@@ -129,7 +269,10 @@ public class PlayerInput : MonoBehaviour
         }
         _currentAmmo += amount;
         PlaySound(launcherReloadSound, true);
-        UpdateAmmoDisplay();
+        if (!dontConsumeAmmo)
+        {
+            UpdateAmmoDisplay();
+        }
 
         if (_currentAmmo >= freeAmmoThreashold)
         {
@@ -210,12 +353,6 @@ public class PlayerInput : MonoBehaviour
     {
         dontConsumeAmmo = true;
         if (ammoText != null) ammoText.text = infiniteAmmoText;
-        Invoke(nameof(EndInfiniteAmmo), duration);
-    }
-
-    void EndInfiniteAmmo()
-    {
-        dontConsumeAmmo = false;
-        UpdateAmmoDisplay();
+        infiniteAmmoTimer += duration;
     }
 }

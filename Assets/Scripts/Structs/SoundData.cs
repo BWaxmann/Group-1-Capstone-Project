@@ -37,13 +37,15 @@ public struct SoundData
         }
     }
 
-    public void PlayMusic(AudioSource source)
+    public void PlayMusic(AudioSource source, float startPoint = 0, bool loop = true)
     {
         if (source != null && soundClip != null)
         {
             source.volume = _volume;
             source.pitch = pitch;
             source.clip = _soundClip;
+            source.time = startPoint;
+            source.loop = loop;
             source.Play();
         }
     }

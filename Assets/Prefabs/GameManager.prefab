@@ -47,10 +47,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pregameDelay: 1
   pregameCountdownTime: 3
-  gameTime: 200
+  gameTime: 219.091
   fadeDuration: 1
   defendPoints:
-  - {fileID: 0}
   - {fileID: 0}
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}
@@ -60,11 +59,13 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   scoreText: {fileID: 0}
+  bonusDisplay: {fileID: 0}
+  bonusText: {fileID: 0}
   timerText: {fileID: 0}
   postgameCanvas: {fileID: 0}
   timeUpText: {fileID: 0}
   finalScorePanel: {fileID: 0}
-  timeUpDisplayDuration: 2
+  timeUpDisplayDuration: 5
   finalScoreDisplayDuration: 10
   catsFedText: {fileID: 0}
   penaltyText: {fileID: 0}
@@ -93,12 +94,18 @@ MonoBehaviour:
     _soundClip: {fileID: 8300000, guid: 8d8f26c052b016a4fad98f437b0be3a0, type: 3}
     _volume: 1
     _pitch: 1
-  gameMusic:
+  gameMusicIntroAndOutro:
     _soundClip: {fileID: 8300000, guid: cfedf26edd4ba7c42b7d10fe97f32059, type: 3}
-    _volume: 0.8
+    _volume: 0.5
     _pitch: 1
+  gameMusicLoop:
+    _soundClip: {fileID: 8300000, guid: d9e9e7745a219be44b9a4f8a2e1eaefb, type: 3}
+    _volume: 0.5
+    _pitch: 1
+  introLength: 12.65
+  outroLength: 12.773
   postgameMusic:
-    _soundClip: {fileID: 8300000, guid: 34680d8494b311e4eadf0bf914d5de90, type: 3}
+    _soundClip: {fileID: 8300000, guid: 0dce4ea5f2f8dad48a86a6a0e166767f, type: 3}
     _volume: 0.8
     _pitch: 1
 --- !u!82 &893389621652222314

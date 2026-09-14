@@ -14,9 +14,6 @@ public class InstructionsText : MonoBehaviour
     [TextArea]
     string buildInstructions;
 
-    [SerializeField]
-    bool hideOnGameStart;
-
     void Start()
     {
 #if UNITY_EDITOR
@@ -28,26 +25,12 @@ public class InstructionsText : MonoBehaviour
 
     void OnEnable()
     {
-        if (hideOnGameStart)
-        {
-            GameManager.instance.GameStart += HideInstructions;
-        }
-        else
-        {
-            GameManager.instance.GameEnd += HideInstructions;
-        }
+        GameManager.instance.StartCountdown += HideInstructions;
     }
 
     void OnDisable()
     {
-        if (hideOnGameStart)
-        {
-            GameManager.instance.GameStart -= HideInstructions;
-        }
-        else
-        {
-            GameManager.instance.GameEnd -= HideInstructions;
-        }
+        GameManager.instance.StartCountdown -= HideInstructions;
     }
 
     public void HideInstructions()
