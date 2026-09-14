@@ -776,13 +776,13 @@ MonoBehaviour:
   roamingSounds:
   - _soundClip: {fileID: 8300000, guid: b9e5210b98b823042a0ef3acf2593bcf, type: 3}
     _volume: 0.4
-    _pitch: 1
+    _pitch: 0.5
   - _soundClip: {fileID: 8300000, guid: 22c037f903bed1144b94d2b74c86c918, type: 3}
     _volume: 0.4
-    _pitch: 1
+    _pitch: 0.5
   - _soundClip: {fileID: 8300000, guid: 8600ee451f2583848b984bbaa744b098, type: 3}
     _volume: 0.4
-    _pitch: 1
+    _pitch: 0.5
   roamingSoundMinimumPause: 4
   roamingSoundMaximumPause: 10
   hitDefendPointSound:
@@ -792,7 +792,7 @@ MonoBehaviour:
   fedSound:
     _soundClip: {fileID: 8300000, guid: eb974f78228742242bfe147c1a4db0d2, type: 3}
     _volume: 1
-    _pitch: 1
+    _pitch: 0.5
 --- !u!195 &5456747296058575466
 NavMeshAgent:
   m_ObjectHideFlags: 0
