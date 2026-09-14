@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 101da888241709c4688fc5d76dd99653, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _activationMethod: 0
+  _activationMethod: 2
   activationDelay: 1
   despawnTime: 30
   slowMovementSpeed: 1

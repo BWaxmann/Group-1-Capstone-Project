@@ -759,9 +759,9 @@ MonoBehaviour:
   moodImage: {fileID: 2582836609836650590}
   moodSprites:
   - {fileID: 21300000, guid: 13f29d1fd654792409165a2957d3ad8a, type: 3}
-  - {fileID: 21300000, guid: f9f97891d2293cc448f8af811aa6fb56, type: 3}
+  - {fileID: 21300000, guid: 9a49549adbb502445a90dbe7c8bcf9bb, type: 3}
+  - {fileID: 21300000, guid: 2feb207613941674991acdd728bf3ce9, type: 3}
   - {fileID: 21300000, guid: 6a53551564ee7df44a5e4ed58fe60853, type: 3}
-  - {fileID: 21300000, guid: e53da6bbff9041f41a05b74a12552e9e, type: 3}
   hideMoodCanvasDelay: 1.2
   eatingParticleIndex: 0
   returnHomeWhenFull: 0
@@ -2570,11 +2570,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 919515322060398764}
     m_Modifications:
-    - target: {fileID: 1500396885295472045, guid: 9be3bb675e81a9d4c88fdf42e44cb83f,
-        type: 3}
-      propertyPath: m_Name
-      value: Shadow
-      objectReference: {fileID: 0}
     - target: {fileID: 8222418179551427427, guid: 9be3bb675e81a9d4c88fdf42e44cb83f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2635,6 +2630,11 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 0.015
       objectReference: {fileID: 0}
+    - target: {fileID: 1500396885295472045, guid: 9be3bb675e81a9d4c88fdf42e44cb83f,
+        type: 3}
+      propertyPath: m_Name
+      value: Shadow
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9be3bb675e81a9d4c88fdf42e44cb83f, type: 3}
 --- !u!4 &5326611648456457127 stripped
@@ -2650,11 +2650,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 919515322060398764}
     m_Modifications:
-    - target: {fileID: 35134598334681099, guid: 343ce5dc962bde842a37029dc60d6336,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 1d3531d03ad5e57448446c96f7095459, type: 2}
     - target: {fileID: 3946045268920018175, guid: 343ce5dc962bde842a37029dc60d6336,
         type: 3}
       propertyPath: m_Controller
@@ -2720,5 +2715,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cat
       objectReference: {fileID: 0}
+    - target: {fileID: 35134598334681099, guid: 343ce5dc962bde842a37029dc60d6336,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 1d3531d03ad5e57448446c96f7095459, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 343ce5dc962bde842a37029dc60d6336, type: 3}
