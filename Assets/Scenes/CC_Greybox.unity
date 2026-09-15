@@ -110,8 +110,8 @@ NavMeshSettings:
     agentHeight: 0.5
     agentSlope: 60
     agentClimb: 0.3
-    ledgeDropHeight: 0
-    maxJumpAcrossDistance: 0
+    ledgeDropHeight: 1
+    maxJumpAcrossDistance: 0.5
     minRegionArea: 0
     manualCellSize: 0
     cellSize: 0.033333335
@@ -5219,7 +5219,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   catSpawner: {fileID: 103450848}
   spawnPointCentre: {fileID: 523086518}
-  spawnPointRadius: 0.5
+  spawnPointRadius: 0.2
   afterFeedingReturnPoint: {fileID: 1846241328}
   spawnWavesData:
   - _secondsAfterStartToBegin: 10
@@ -9460,7 +9460,7 @@ GameObject:
   m_Name: Roof
   m_TagString: Untagged
   m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
+  m_NavMeshLayer: 1
   m_StaticEditorFlags: 4294967295
   m_IsActive: 1
 --- !u!65 &7735757762402286239
