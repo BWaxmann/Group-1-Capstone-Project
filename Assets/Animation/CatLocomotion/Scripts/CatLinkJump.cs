@@ -1,121 +1,135 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace CatAnimation
+[RequireComponent(typeof(NavMeshAgent))]
+public class CatLinkJump : MonoBehaviour
 {
-    [RequireComponent(typeof(NavMeshAgent))]
-    public sealed class CatLinkJump : MonoBehaviour
+    [SerializeField] Animator animator;
+    [SerializeField] AnimationCurve upForward;
+    [SerializeField] AnimationCurve upHeight;
+    [SerializeField] AnimationCurve downForward;
+    [SerializeField] AnimationCurve downHeight;
+    [SerializeField] float upDuration = 1.708333f;
+    [SerializeField] float downDuration = 1.625f;
+    [SerializeField] float minimumJumpHeight = 0.08f;
+    [SerializeField] float jumpUpAnimationLength = 1f;
+    [SerializeField] float jumpDownAnimationLength = 1f;
+
+    NavMeshAgent agent;
+    bool previousUpdatePosition;
+    bool crossing;
+    bool jumping;
+    bool upwards;
+    float duration;
+    Vector3 start;
+    Vector3 end;
+    Quaternion facing;
+    static readonly int jumpUpHash = Animator.StringToHash("JumpingUp");
+    static readonly int jumpDownHash = Animator.StringToHash("JumpingDown");
+    static readonly int jumpSpeedHash = Animator.StringToHash("JumpSpeed");
+
+    public bool IsCrossing { get { return crossing; } }
+
+    void Awake()
     {
-        [SerializeField] Animator animator;
-        [SerializeField] AnimationCurve upForward;
-        [SerializeField] AnimationCurve upHeight;
-        [SerializeField] AnimationCurve downForward;
-        [SerializeField] AnimationCurve downHeight;
-        [SerializeField] float upDuration = 1.708333f;
-        [SerializeField] float downDuration = 1.625f;
-        [SerializeField] float minimumJumpHeight = 0.08f;
-
-        NavMeshAgent agent;
-        bool previousAutoTraverse;
-        bool previousUpdatePosition;
-        bool crossing;
-        bool jumping;
-        bool upwards;
-        float elapsed;
-        float duration;
-        Vector3 start;
-        Vector3 end;
-        Quaternion facing;
-        static readonly int JumpUp = Animator.StringToHash("JumpUp");
-        static readonly int JumpDown = Animator.StringToHash("JumpDown");
-        static readonly int Run = Animator.StringToHash("Run");
-
-        public bool IsCrossing { get { return crossing; } }
-
-        void Awake()
+        agent = GetComponent<NavMeshAgent>();
+        if (agent != null)
         {
-            agent = GetComponent<NavMeshAgent>();
-        }
-
-        void OnEnable()
-        {
-            previousAutoTraverse = agent.autoTraverseOffMeshLink;
             agent.autoTraverseOffMeshLink = false;
-            crossing = false;
         }
+    }
 
-        void Update()
+    void OnEnable()
+    {
+        if (agent != null)
         {
-            if (!agent.isActiveAndEnabled || !agent.isOnNavMesh)
+            StartCoroutine(JumpRoutine());
+        }
+    }
+
+    void OnDisable()
+    {
+        Finish(false);
+        StopAllCoroutines();
+    }
+
+    IEnumerator JumpRoutine()
+    {
+        WaitUntil waitForJump = new WaitUntil(() => agent.isOnOffMeshLink);
+        float time;
+        bool complete;
+        while (true)
+        {
+            yield return waitForJump;
+
+            Begin();
+
+            time = 0;
+            complete = true;
+
+            while (time < duration)
             {
-                Finish(false);
-                return;
-            }
-            if (crossing && !agent.isOnOffMeshLink)
-            {
-                // A warp or reset interrupted the crossing.
-                Finish(false);
-                return;
-            }
-            if (!crossing)
-            {
-                if (!agent.isOnOffMeshLink || agent.isStopped) return;
-                Begin();
+                time += Time.deltaTime;
+                JumpMovement(time);
+
+                yield return null;
+
+                if (!agent.isActiveAndEnabled || !agent.isOnNavMesh || !agent.isOnOffMeshLink)
+                {
+                    Debug.Log("Off-mesh jump was interrupted.", this);
+                    complete = false;
+                    break;
+                }
             }
 
-            // Finish a committed jump even if attack/stun stops navigation in flight.
-            // Leave isStopped untouched, so gameplay remains in control after landing.
-            if (jumping || !agent.isStopped) elapsed += Time.deltaTime;
-            if (jumping) animator.Play(upwards ? JumpUp : JumpDown, 0, Mathf.Clamp01(elapsed / duration));
+            Finish(complete);
         }
+    }
 
-        void LateUpdate()
+    void Begin()
+    {
+        start = transform.position;
+        end = agent.currentOffMeshLinkData.endPos + Vector3.up * agent.baseOffset;
+        Vector3 direction = end - start;
+        upwards = direction.y > 0f;
+        jumping = Mathf.Abs(direction.y) >= minimumJumpHeight && animator != null;
+        direction.y = 0f;
+        facing = direction.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(direction) : transform.rotation;
+        duration = jumping ? (upwards ? upDuration : downDuration) : Mathf.Max(0.1f, Vector3.Distance(start, end) / Mathf.Max(agent.speed, 0.1f));
+        previousUpdatePosition = agent.updatePosition;
+        agent.updatePosition = false;
+        crossing = true;
+        if (animator != null && animator.runtimeAnimatorController != null)
         {
-            if (!crossing) return;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float forward = jumping ? (upwards ? upForward : downForward).Evaluate(t) : t;
-            float height = jumping ? (upwards ? upHeight : downHeight).Evaluate(t) : t;
-            Vector3 horizontal = end - start;
-            horizontal.y = 0f;
-            transform.position = start + horizontal * forward + Vector3.up * ((end.y - start.y) * height);
-            transform.rotation = facing;
-            if (t >= 1f) Finish(true);
+            animator.SetBool(upwards ? jumpUpHash : jumpDownHash, true);
+            animator.SetFloat(jumpSpeedHash, (upwards ? jumpUpAnimationLength : jumpDownAnimationLength) / duration);
         }
+    }
 
-        void Begin()
+    void JumpMovement(float elapsed)
+    {
+        float t = Mathf.Clamp01(elapsed / duration);
+        float forward = jumping ? (upwards ? upForward : downForward).Evaluate(t) : t;
+        float height = jumping ? (upwards ? upHeight : downHeight).Evaluate(t) : t;
+        Vector3 horizontal = end - start;
+        horizontal.y = 0f;
+        transform.position = start + horizontal * forward + Vector3.up * ((end.y - start.y) * height);
+        transform.rotation = facing;
+    }
+
+    void Finish(bool complete)
+    {
+        crossing = false;
+        if (complete && agent.isActiveAndEnabled && agent.isOnNavMesh && agent.isOnOffMeshLink)
         {
-            start = transform.position;
-            end = agent.currentOffMeshLinkData.endPos + Vector3.up * agent.baseOffset;
-            Vector3 direction = end - start;
-            upwards = direction.y > 0f;
-            jumping = Mathf.Abs(direction.y) >= minimumJumpHeight && animator != null;
-            direction.y = 0f;
-            facing = direction.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(direction) : transform.rotation;
-            duration = jumping ? (upwards ? upDuration : downDuration) : Mathf.Max(0.1f, Vector3.Distance(start, end) / Mathf.Max(agent.speed, 0.1f));
-            elapsed = 0f;
-            previousUpdatePosition = agent.updatePosition;
-            agent.updatePosition = false;
-            crossing = true;
+            transform.position = end;
+            agent.CompleteOffMeshLink();
         }
-
-        void Finish(bool complete)
+        agent.updatePosition = previousUpdatePosition;
+        if (animator != null && animator.runtimeAnimatorController != null)
         {
-            if (!crossing) return;
-            crossing = false;
-            if (complete && agent.isActiveAndEnabled && agent.isOnNavMesh && agent.isOnOffMeshLink)
-            {
-                transform.position = end;
-                agent.CompleteOffMeshLink();
-            }
-            agent.updatePosition = previousUpdatePosition;
-            if (animator != null && animator.isActiveAndEnabled)
-                animator.CrossFadeInFixedTime(Run, 0.1f, 0, 0f);
-        }
-
-        void OnDisable()
-        {
-            Finish(false);
-            agent.autoTraverseOffMeshLink = previousAutoTraverse;
+            animator.SetBool(upwards ? jumpUpHash : jumpDownHash, false);
         }
     }
 }

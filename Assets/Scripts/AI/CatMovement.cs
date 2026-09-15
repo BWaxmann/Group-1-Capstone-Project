@@ -59,16 +59,13 @@ public class CatMovement : MonoBehaviour
     Animator animator;
 
     [SerializeField]
-    string fullyFedAnimationTrigger = "HappyCat";
+    string fullyFedAnimationTrigger = "IsDisappeared";
 
     [SerializeField]
     string attackAnimationTrigger = "AngryCat";
 
     [SerializeField]
     string stunnedAnimationBool = "DizzyCat";
-
-    [SerializeField]
-    string resetAnimatorTrigger = "Reset";
 
     [Header("Health")]
 
@@ -92,10 +89,6 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     [Min(0)]
     int eatingParticleIndex;
-
-    [SerializeField]
-    [Tooltip("If false, cat will immediately despawn after 'fully fed' animation.")]
-    bool returnHomeWhenFull = true;
 
     [SerializeField]
     int disappearParticleIndex;
@@ -127,7 +120,6 @@ public class CatMovement : MonoBehaviour
 
     NavMeshAgent agent;
     AIState currentState;
-    Transform home;
     Vector3 targetDestination;
     DefendPoint targetDefendPoint;
 
@@ -139,7 +131,6 @@ public class CatMovement : MonoBehaviour
     int eatingTreatTriggerHash;
     int attackTriggerHash;
     int stunnedBoolHash;
-    int resetTriggerHash;
 
     float moodDisplayTimer;
 
@@ -153,7 +144,6 @@ public class CatMovement : MonoBehaviour
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
         attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
         stunnedBoolHash = Animator.StringToHash(stunnedAnimationBool);
-        resetTriggerHash = Animator.StringToHash(resetAnimatorTrigger);
 
         player = FindObjectOfType<PlayerInput>();
     }
@@ -198,17 +188,12 @@ public class CatMovement : MonoBehaviour
             voiceSource = GetComponentInChildren<AudioSource>();
         }
 
-        home = spawnPoint;
         agent.Warp(spawnPosition);
         transform.rotation = spawnPoint.rotation;
         currentState = AIState.Roaming;
         targetDestination = WaypointManager.instance.GetRandomWaypoint();
+        agent.updatePosition = true;
         isStunned = false;
-
-        if (resetTriggerHash != 0 && animator != null && animator.runtimeAnimatorController != null)
-        {
-            animator.SetTrigger(resetTriggerHash);
-        }
 
         StartCoroutine(MoveToTargetRoutine());
         if (voiceSource != null)

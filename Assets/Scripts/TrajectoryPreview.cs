@@ -22,6 +22,10 @@ public class TrajectoryPreview : MonoBehaviour
     [Min(0)]
     int maxPoints = 3;
 
+    [SerializeField]
+    [Min(0)]
+    float updateFrequency = 0.04f;
+
     float gravity;
     Vector3 xAxis;
     float cos;
@@ -44,6 +48,7 @@ public class TrajectoryPreview : MonoBehaviour
 
     IEnumerator UpdateTrajectoryRoutine()
     {
+        WaitForSeconds wait = new WaitForSeconds(updateFrequency);
         while (true)
         {
             if (trajectoryPreviewLine.gameObject.activeInHierarchy)
@@ -70,7 +75,14 @@ public class TrajectoryPreview : MonoBehaviour
                 }
             }
 
-            yield return null;
+            if (updateFrequency > Time.deltaTime)
+            {
+                yield return wait;
+            }
+            else
+            {
+                yield return null;
+            }
         }
     }
 
