@@ -282,7 +282,7 @@ public class PlayerInput : MonoBehaviour
 
     void LaunchTreat(bool rightHand)
     {
-        if (_currentAmmo > 0)
+        if (_currentAmmo > 0 || dontConsumeAmmo)
         {
             Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
             if (treat == null)
@@ -345,7 +345,14 @@ public class PlayerInput : MonoBehaviour
         while (true)
         {
             TurnToFaceCamera?.Invoke(eye.rotation);
-            yield return billboardUpdateFrequency;
+            if (billboardUpdateFrequency > Time.deltaTime)
+            {
+                yield return billboardUpdateFrequency;
+            }
+            else
+            {
+                yield return null;
+            }
         }
     }
 

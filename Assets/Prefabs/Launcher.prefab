@@ -333,6 +333,7 @@ MonoBehaviour:
   launchSpeed: 10
   cornerSpacing: 0.5
   maxPoints: 3
+  updateFrequency: 0.03
 --- !u!1001 &41297167718901516
 PrefabInstance:
   m_ObjectHideFlags: 0
