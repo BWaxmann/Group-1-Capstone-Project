@@ -62,7 +62,7 @@ public class TrajectoryPreview : MonoBehaviour
                 sin = Mathf.Sin(angle);
 
                 float endTime = GetHitGroundTime();
-                int points = Mathf.Min(Mathf.Max(Mathf.CeilToInt(endTime / cornerSpacing), -1), maxPoints - 1);
+                int points = Mathf.Clamp(Mathf.CeilToInt(endTime / cornerSpacing), -1, maxPoints - 1);
                 trajectoryPreviewLine.positionCount = points + 1;
 
                 if (points >= 0)
@@ -71,7 +71,7 @@ public class TrajectoryPreview : MonoBehaviour
                     {
                         trajectoryPreviewLine.SetPosition(i, GetPositionAtTime(i * cornerSpacing));
                     }
-                    trajectoryPreviewLine.SetPosition(points, GetPositionAtTime(endTime));
+                    trajectoryPreviewLine.SetPosition(points, GetPositionAtTime(Mathf.Min(points * cornerSpacing, endTime)));
                 }
             }
 
