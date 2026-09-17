@@ -254,6 +254,7 @@ Transform:
   - {fileID: 1324754691625124634}
   - {fileID: 2657288391585499513}
   - {fileID: 8642325809623489192}
+  - {fileID: 5717644881441949647}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -270,6 +271,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   feedingScore: 10
+  scoreDisplayPosition: {fileID: 5717644881441949647}
   rotationSpeed: 12
   pickupDrops:
   - pickupIndex: 0
@@ -2224,6 +2226,36 @@ SkinnedMeshRenderer:
     m_Center: {x: -0.00743407, y: 0.068317115, z: 0}
     m_Extent: {x: 0.44664806, y: 0.34420735, z: 0.1271518}
   m_DirtyAABB: 0
+--- !u!1 &3708597498343966444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5717644881441949647}
+  m_Layer: 0
+  m_Name: Score Particle Display Position
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5717644881441949647
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3708597498343966444}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 3658786338670920099}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4091109842254720292
 GameObject:
   m_ObjectHideFlags: 0
@@ -3468,6 +3500,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 94bbdedc2d45f7045be180ad3c546eb0, type: 3}
+--- !u!1 &380663845529205776 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+    type: 3}
+  m_PrefabInstance: {fileID: 7102241139457686202}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &2657288391585499513 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5075749303913509827, guid: 94bbdedc2d45f7045be180ad3c546eb0,
@@ -3486,9 +3524,3 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &380663845529205776 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
-    type: 3}
-  m_PrefabInstance: {fileID: 7102241139457686202}
-  m_PrefabAsset: {fileID: 0}

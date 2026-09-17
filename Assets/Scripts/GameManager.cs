@@ -80,6 +80,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     TMP_Text finalScoreText;
 
+    [SerializeField]
+    ObjectSpawner scoreParticlePool;
+
     [Header("Sounds")]
 
     [SerializeField]
@@ -306,7 +309,7 @@ public class GameManager : MonoBehaviour
 #endif
     }
 
-    void UpdateScore(int change, bool playSoundFX = true)
+    void UpdateScore(int change, Vector3 position, bool playSoundFX = true)
     {
         if (state != GameState.DuringGame) return;
 
@@ -328,18 +331,25 @@ public class GameManager : MonoBehaviour
                 PlaySoundEffect(scoreDownSound);
             }
         }
+
+        if (scoreParticlePool != null)
+        {
+            ScoreParticle scoreParticle = scoreParticlePool.GetObjectFromPool<ScoreParticle>(0);
+            scoreParticle.gameObject.SetActive(true);
+            scoreParticle.Initialise(change, position);
+        }
     }
 
-    public void FeedCat(int scoreValue)
+    public void FeedCat(int scoreValue, Vector3 position)
     {
         catsFed++;
-        UpdateScore(scoreValue);
+        UpdateScore(scoreValue, position);
     }
 
-    public void ReceivePenalty(int penaltyValue, bool playSoundFX)
+    public void ReceivePenalty(int penaltyValue, Vector3 position, bool playSoundFX)
     {
         penalties += penaltyValue;
-        UpdateScore(-penaltyValue, playSoundFX);
+        UpdateScore(-penaltyValue, position, playSoundFX);
     }
 
     void PlaySoundEffect(SoundData sound)

@@ -7,6 +7,9 @@ public class DefendPoint : MonoBehaviour
     int hitScorePenalty = 1;
 
     [SerializeField]
+    Transform scoreDisplayPosition;
+
+    [SerializeField]
     [Min(0)]
     int hitParticlesIndex = 0;
 
@@ -52,7 +55,7 @@ public class DefendPoint : MonoBehaviour
         }
         else
         {
-            GameManager.instance.ReceivePenalty(hitScorePenalty, false);
+            GameManager.instance.ReceivePenalty(hitScorePenalty, scoreDisplayPosition.position, false);
             ParticleManager.instance.ShowParticleEffect(hitParticlesIndex, position);
             hitSound.PlayOneShot(hitSource);
         }

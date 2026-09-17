@@ -11,6 +11,9 @@ public class CatMovement : MonoBehaviour
     int feedingScore = 10;
 
     [SerializeField]
+    Transform scoreDisplayPosition;
+
+    [SerializeField]
     [Tooltip("In radians per second.")]
     float rotationSpeed = 12f;
 
@@ -358,7 +361,7 @@ public class CatMovement : MonoBehaviour
         if (currentHealth <= 0)
         {
             currentState = AIState.Full;
-            GameManager.instance.FeedCat(feedingScore);
+            GameManager.instance.FeedCat(feedingScore, scoreDisplayPosition.position);
             if (animator != null && animator.runtimeAnimatorController != null)
             {
                 animator.SetTrigger(eatingTreatTriggerHash);
