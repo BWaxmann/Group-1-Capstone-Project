@@ -336,6 +336,8 @@ MonoBehaviour:
   fullyFedAnimationTrigger: IsDisappeared
   attackAnimationTrigger: AngryCat
   stunnedAnimationBool: DizzyCat
+  jiggleAnimationTrigger: Jiggle
+  jiggleAnimationLayer: Jiggle Layer
   treatsUntilFull: 3
   moodCanvas: {fileID: 8821123876356601709}
   moodImage: {fileID: 2151679024186274129}

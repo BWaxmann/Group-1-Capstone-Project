@@ -27,7 +27,7 @@ RectTransform:
   m_GameObject: {fileID: 7090113562450269060}
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: -0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_LocalScale: {x: 0.0068615037, y: 0.0068615, z: 0.0068615037}
   m_Children:
   - {fileID: 7090113562501423432}
   m_Father: {fileID: 0}
@@ -148,15 +148,16 @@ MonoBehaviour:
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_text: GO!
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d876de9643193c14b90f2607c567ca62, type: 2}
+  m_sharedMaterial: {fileID: 5536516713741580647, guid: d876de9643193c14b90f2607c567ca62,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278222847
-  m_fontColor: {r: 1, g: 0.5, b: 0, a: 1}
+    rgba: 4291091184
+  m_fontColor: {r: 0.9433962, g: 0.85696185, b: 0.7698469, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
