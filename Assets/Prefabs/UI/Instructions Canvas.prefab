@@ -71,15 +71,16 @@ MonoBehaviour:
 
     This can show up to 3 lines.'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: d876de9643193c14b90f2607c567ca62, type: 2}
+  m_sharedMaterial: {fileID: 5536516713741580647, guid: d876de9643193c14b90f2607c567ca62,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278222847
-  m_fontColor: {r: 1, g: 0.5, b: 0, a: 1}
+    rgba: 4291091184
+  m_fontColor: {r: 0.9433962, g: 0.85696185, b: 0.7698469, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -114,7 +115,7 @@ MonoBehaviour:
   m_enableWordWrapping: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
-  m_firstOverflowCharacterIndex: -1
+  m_firstOverflowCharacterIndex: 80
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
   m_isTextTruncated: 0
@@ -189,7 +190,7 @@ RectTransform:
   m_GameObject: {fileID: 3533416738950914042}
   m_LocalRotation: {x: -0.22114128, y: -0.67163724, z: -0.22114128, w: 0.67163724}
   m_LocalPosition: {x: 0, y: 0, z: -0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_LocalScale: {x: 0.0100000035, y: 0.01, z: 0.0100000035}
   m_Children:
   - {fileID: 3533416738884083538}
   m_Father: {fileID: 0}
