@@ -70,6 +70,9 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     string stunnedAnimationBool = "DizzyCat";
 
+    [SerializeField]
+    string jiggleAnimationTrigger = "Jiggle";
+
     [Header("Health")]
 
     [SerializeField]
@@ -82,7 +85,7 @@ public class CatMovement : MonoBehaviour
     Image moodImage;
 
     [SerializeField]
-    [Tooltip("This should be the same size as 'Treats Until Full' and be ordered from happiest to grumpiest.")]
+    [Tooltip("This should be ordered from happiest to grumpiest.")]
     Sprite[] moodSprites;
 
     [SerializeField]
@@ -134,6 +137,7 @@ public class CatMovement : MonoBehaviour
     int eatingTreatTriggerHash;
     int attackTriggerHash;
     int stunnedBoolHash;
+    int jiggleTriggerHash;
 
     float moodDisplayTimer;
 
@@ -147,6 +151,7 @@ public class CatMovement : MonoBehaviour
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
         attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
         stunnedBoolHash = Animator.StringToHash(stunnedAnimationBool);
+        jiggleTriggerHash = Animator.StringToHash(jiggleAnimationTrigger);
 
         player = FindObjectOfType<PlayerInput>();
     }
@@ -358,6 +363,11 @@ public class CatMovement : MonoBehaviour
         ParticleManager.instance.ShowParticleEffect(eatingParticleIndex, voiceSource.transform.position);
         fedSound.PlayOneShot(voiceSource);
 
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger(jiggleTriggerHash);
+        }
+
         if (currentHealth <= 0)
         {
             currentState = AIState.Full;
@@ -382,6 +392,7 @@ public class CatMovement : MonoBehaviour
     {
         if (moodImage != null && moodSprites != null && moodSprites.Length > currentHealth)
         {
+            int index = Mathf.CeilToInt(moodSprites.Length * currentHealth / (float)treatsUntilFull);
             Sprite sp = moodSprites[currentHealth];
             if (sp != null)
             {

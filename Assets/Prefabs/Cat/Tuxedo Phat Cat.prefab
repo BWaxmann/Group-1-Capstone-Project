@@ -43,7 +43,7 @@ Animator:
   m_GameObject: {fileID: 88547067825098592}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: ccc3b2366f3fac94d8bdf8b7a107b32d, type: 3}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1e7d13262b3743344b3f38da4c708f28, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -656,7 +656,8 @@ MonoBehaviour:
   fullyFedAnimationTrigger: IsDisappeared
   attackAnimationTrigger: AngryCat
   stunnedAnimationBool: DizzyCat
-  treatsUntilFull: 4
+  jiggleAnimationTrigger: Jiggle
+  treatsUntilFull: 5
   moodCanvas: {fileID: 2306757883471851969}
   moodImage: {fileID: 5167284443858106365}
   moodSprites:
