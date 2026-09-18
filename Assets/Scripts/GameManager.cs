@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Liminal.Core.Fader;
 using Liminal.SDK.Core; // This is needed for ExperienceApp.End()
 using TMPro;
@@ -21,9 +22,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     [Min(0)]
     float fadeDuration = 1f;
-
-    [SerializeField]
-    DefendPoint[] defendPoints;
 
     [Header("UI")]
 
@@ -145,6 +143,7 @@ public class GameManager : MonoBehaviour
     int score;
     float scoreMultiplier;
     GameState state;
+    List<DefendPoint> defendPoints = new List<DefendPoint>();
 
     public bool enablePlayerInput => playerInputsEnabled;
 
@@ -168,6 +167,19 @@ public class GameManager : MonoBehaviour
 
         state = GameState.Initialising;
         playerInputsEnabled = true;
+    }
+
+    public void RegisterDefendPoint(DefendPoint defendPoint)
+    {
+        if (defendPoints == null)
+        {
+            defendPoints = new List<DefendPoint>();
+        }
+
+        if (defendPoint != null && !defendPoints.Contains(defendPoint))
+        {
+            defendPoints.Add(defendPoint);
+        }
     }
 
     public void GrabbedLaunchers()
@@ -392,8 +404,8 @@ public class GameManager : MonoBehaviour
 
     public DefendPoint GetRandomDefendPoint()
     {
-        if (defendPoints == null || defendPoints.Length == 0) return null;
-        return defendPoints[Random.Range(0, defendPoints.Length)];
+        if (defendPoints == null || defendPoints.Count == 0) return null;
+        return defendPoints[Random.Range(0, defendPoints.Count)];
     }
 
     public void ShieldAllDefendPoints(float duration)

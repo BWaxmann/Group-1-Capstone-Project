@@ -73,6 +73,9 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     string jiggleAnimationTrigger = "Jiggle";
 
+    [SerializeField]
+    string jiggleAnimationLayer = "Jiggle Layer";
+
     [Header("Health")]
 
     [SerializeField]
@@ -138,6 +141,7 @@ public class CatMovement : MonoBehaviour
     int attackTriggerHash;
     int stunnedBoolHash;
     int jiggleTriggerHash;
+    int jiggleLayerIndex;
 
     float moodDisplayTimer;
 
@@ -152,6 +156,12 @@ public class CatMovement : MonoBehaviour
         attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
         stunnedBoolHash = Animator.StringToHash(stunnedAnimationBool);
         jiggleTriggerHash = Animator.StringToHash(jiggleAnimationTrigger);
+
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+        jiggleLayerIndex = animator.GetLayerIndex(jiggleAnimationLayer);
 
         player = FindObjectOfType<PlayerInput>();
     }
@@ -190,6 +200,10 @@ public class CatMovement : MonoBehaviour
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
+        }
+        else
+        {
+            animator.SetLayerWeight(jiggleLayerIndex, 1f);
         }
         if (voiceSource == null)
         {
@@ -366,6 +380,7 @@ public class CatMovement : MonoBehaviour
         if (animator != null && animator.runtimeAnimatorController != null)
         {
             animator.SetTrigger(jiggleTriggerHash);
+            
         }
 
         if (currentHealth <= 0)
@@ -377,7 +392,8 @@ public class CatMovement : MonoBehaviour
                 animator.SetTrigger(eatingTreatTriggerHash);
             }
             agent.isStopped = true;
-            Invoke(nameof(Vanish), fullyFedPauseDuration);
+            DisappearParticleEffect();
+            StartCoroutine(VanishRoutine());
         }
         else if (currentState == AIState.Targeting && Random.Range(0f, 1f) < targetingToRoamingChance)
         {
@@ -401,9 +417,21 @@ public class CatMovement : MonoBehaviour
         }
     }
 
+    IEnumerator VanishRoutine()
+    {
+        float timer = fullyFedPauseDuration;
+        while (timer > 0f)
+        {
+            timer = Mathf.Max(timer - Time.deltaTime, 0f);
+            animator.SetLayerWeight(jiggleLayerIndex, timer / fullyFedPauseDuration);
+            yield return null;
+        }
+
+        Vanish();
+    }
+
     void Vanish()
     {
-        DisappearParticleEffect();
         DropPickup();
         // Setting the cat to inactive will automatically recycle in back into the pool for spawning
         gameObject.SetActive(false);

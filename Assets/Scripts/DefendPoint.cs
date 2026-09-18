@@ -33,6 +33,7 @@ public class DefendPoint : MonoBehaviour
     void Start()
     {
         RemoveShield();
+        GameManager.instance.RegisterDefendPoint(this);
     }
 
     void Update()

@@ -17,6 +17,7 @@ public class CatLinkJump : MonoBehaviour
     [SerializeField] float jumpDownAnimationLength = 1f;
 
     NavMeshAgent agent;
+    CatMovement movement;
     bool previousUpdatePosition;
     bool crossing;
     bool jumping;
@@ -38,6 +39,7 @@ public class CatLinkJump : MonoBehaviour
         {
             agent.autoTraverseOffMeshLink = false;
         }
+        movement = GetComponent<CatMovement>();
     }
 
     void OnEnable()
@@ -56,10 +58,12 @@ public class CatLinkJump : MonoBehaviour
 
     IEnumerator JumpRoutine()
     {
+        yield return null;
+
         WaitUntil waitForJump = new WaitUntil(() => agent.isOnOffMeshLink);
         float time;
         bool complete;
-        while (true)
+        while (!movement.isFullyFed)
         {
             yield return waitForJump;
 
@@ -77,9 +81,12 @@ public class CatLinkJump : MonoBehaviour
 
                 if (!agent.isActiveAndEnabled || !agent.isOnNavMesh || !agent.isOnOffMeshLink)
                 {
-                    Debug.Log("Off-mesh jump was interrupted.", this);
                     complete = false;
                     break;
+                }
+                if (movement.isFullyFed)
+                {
+                    yield break;
                 }
             }
 
