@@ -249,7 +249,8 @@ public class CatMovement : MonoBehaviour
                 {
                     case AIState.Roaming:
                         // Checks whether target destination has been reached
-                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
+                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance
+                            && !agent.isOnOffMeshLink)
                         {
                             yield return interWaypointWait;
 
@@ -280,7 +281,8 @@ public class CatMovement : MonoBehaviour
                         break;
                     case AIState.Targeting:
                         // Checks whether target destination has been reached
-                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance)
+                        if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance 
+                            && !agent.isOnOffMeshLink)
                         {
                             agent.isStopped = true;
 
