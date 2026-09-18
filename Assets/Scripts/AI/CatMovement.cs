@@ -8,149 +8,154 @@ using Random = UnityEngine.Random;
 public class CatMovement : MonoBehaviour
 {
     [SerializeField]
-    int feedingScore = 10;
+    protected int feedingScore = 10;
 
     [SerializeField]
-    Transform scoreDisplayPosition;
+    protected Transform scoreDisplayPosition;
 
     [SerializeField]
     [Tooltip("In radians per second.")]
-    float rotationSpeed = 12f;
+    protected float rotationSpeed = 12f;
 
     [Header("Pickups")]
 
     [SerializeField]
-    PickupDrop[] pickupDrops;
+    protected PickupDrop[] pickupDrops;
 
     [SerializeField]
-    Vector3 pickupOffset = Vector3.up;
+    protected Vector3 pickupOffset = Vector3.up;
 
     [Header("AI Behaviour")]
 
     [SerializeField]
     [Min(0)]
-    float targetUpdateFrequency = 0.2f;
+    protected float targetUpdateFrequency = 0.2f;
 
     [SerializeField]
-    float stoppingDistance = 0.1f;
+    protected float stoppingDistance = 0.1f;
 
     [SerializeField]
     [Min(0)]
-    float pauseDurationBetweenWaypoints = 0.2f;
+    protected float pauseDurationBetweenWaypoints = 0.2f;
 
     [SerializeField]
     [Tooltip("This is the probability of going from roaming to targeting a defend point after reaching a waypoing.")]
     [Range(0f, 1f)]
-    float roamingToTargetingChance = 0.2f;
+    protected float roamingToTargetingChance = 0.2f;
 
     [SerializeField]
     [Tooltip("This is the probability of going from targeting a defend point to roaming after attacking the defend point.")]
     [Range(0f, 1f)]
-    float targetingToRoamingChance = 0.1f;
+    protected float targetingToRoamingChance = 0.1f;
 
     [SerializeField]
     [Min(0)]
-    float pauseBetweenDefendPointHits = 0.5f;
+    protected float pauseBetweenDefendPointHits = 0.5f;
+
+    [SerializeField]
+    [Min(0)]
+    protected float stunDurationMultiplier = 1f;
 
     [Header("Animation")]
 
     [SerializeField]
     [Min(0)]
-    float fullyFedPauseDuration = 1.2f;
+    protected float fullyFedPauseDuration = 1.2f;
 
     [SerializeField]
-    Animator animator;
+    protected Animator animator;
 
     [SerializeField]
-    string fullyFedAnimationTrigger = "IsDisappeared";
+    protected string fullyFedAnimationTrigger = "IsDisappeared";
 
     [SerializeField]
-    string attackAnimationTrigger = "AngryCat";
+    protected string attackAnimationTrigger = "AngryCat";
 
     [SerializeField]
-    string stunnedAnimationBool = "DizzyCat";
+    protected string stunnedAnimationBool = "DizzyCat";
 
     [SerializeField]
-    string jiggleAnimationTrigger = "Jiggle";
+    protected string jiggleAnimationTrigger = "Jiggle";
 
     [SerializeField]
-    string jiggleAnimationLayer = "Jiggle Layer";
+    protected string jiggleAnimationLayer = "Jiggle Layer";
 
     [Header("Health")]
 
     [SerializeField]
-    int treatsUntilFull = 3;
+    protected int treatsUntilFull = 3;
 
     [SerializeField]
-    GameObject moodCanvas;
+    protected GameObject moodCanvas;
 
     [SerializeField]
-    Image moodImage;
+    protected Image moodImage;
 
     [SerializeField]
     [Tooltip("This should be ordered from happiest to grumpiest.")]
-    Sprite[] moodSprites;
+    protected Sprite[] moodSprites;
 
     [SerializeField]
     [Min(0)]
-    float hideMoodCanvasDelay = 1.2f;
+    protected float hideMoodCanvasDelay = 1.2f;
 
     [SerializeField]
     [Min(0)]
-    int eatingParticleIndex;
+    protected int eatingParticleIndex;
 
     [SerializeField]
-    int disappearParticleIndex;
+    protected int disappearParticleIndex;
 
     [Header("Sounds")]
 
-    [SerializeField] 
-    AudioSource voiceSource;
+    [SerializeField]
+    protected AudioSource voiceSource;
 
     [SerializeField]
-    AudioSource attackSource;
+    protected AudioSource attackSource;
 
     [SerializeField]
-    SoundData[] roamingSounds;
-
-    [SerializeField]
-    [Min(0)]
-    float roamingSoundMinimumPause = 4f;
+    protected SoundData[] roamingSounds;
 
     [SerializeField]
     [Min(0)]
-    float roamingSoundMaximumPause = 10f;
+    protected float roamingSoundMinimumPause = 4f;
 
     [SerializeField]
-    SoundData hitDefendPointSound = new SoundData(1f, 1f);
+    [Min(0)]
+    protected float roamingSoundMaximumPause = 10f;
 
     [SerializeField]
-    SoundData fedSound = new SoundData(1f, 1f);
+    protected SoundData hitDefendPointSound = new SoundData(1f, 1f);
 
-    NavMeshAgent agent;
-    AIState currentState;
-    Vector3 targetDestination;
-    DefendPoint targetDefendPoint;
+    [SerializeField]
+    protected SoundData fedSound = new SoundData(1f, 1f);
 
-    int currentHealth;
-    bool isStunned;
-    float stunTimer;
-    bool previousStoppedState;
+    protected NavMeshAgent agent;
+    protected AIState currentState;
+    protected Vector3 targetDestination;
+    protected DefendPoint targetDefendPoint;
 
-    int eatingTreatTriggerHash;
-    int attackTriggerHash;
-    int stunnedBoolHash;
-    int jiggleTriggerHash;
-    int jiggleLayerIndex;
+    protected int currentHealth;
+    protected bool isStunned;
+    protected float stunTimer;
+    protected bool previousStoppedState;
 
-    float moodDisplayTimer;
+    protected int eatingTreatTriggerHash;
+    protected int attackTriggerHash;
+    protected int stunnedBoolHash;
+    protected int jiggleTriggerHash;
+    protected int jiggleLayerIndex;
 
-    PlayerInput player;
+    protected float moodDisplayTimer;
+
+    protected PlayerInput player;
+    protected Coroutine moodDisplayRoutineInstance;
 
     public bool isMoving => agent.velocity.magnitude > 0;
     public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
 
-    void Start()
+    protected virtual void Start()
     {
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
         attackTriggerHash = Animator.StringToHash(attackAnimationTrigger);
@@ -166,32 +171,12 @@ public class CatMovement : MonoBehaviour
         player = FindObjectOfType<PlayerInput>();
     }
 
-    void OnDisable()
+    protected virtual void OnDisable()
     {
         StopAllCoroutines();
     }
 
-    void Update()
-    {
-        if (moodDisplayTimer > 0)
-        {
-            moodDisplayTimer -= Time.deltaTime;
-        }
-        else
-        {
-            moodCanvas.SetActive(false);
-        }
-    }
-
-    void FixedUpdate()
-    {
-        if (!agent.isStopped)
-        {
-            transform.forward = Vector3.RotateTowards(transform.forward, agent.velocity.normalized, rotationSpeed * Time.fixedDeltaTime, 0);
-        }
-    }
-
-    public void Initialise(Transform spawnPoint, Vector3 spawnPosition)
+    public virtual void Initialise(Transform spawnPoint, Vector3 spawnPosition)
     {
         if (agent == null)
         {
@@ -212,12 +197,11 @@ public class CatMovement : MonoBehaviour
 
         agent.Warp(spawnPosition);
         transform.rotation = spawnPoint.rotation;
-        currentState = AIState.Roaming;
-        targetDestination = WaypointManager.instance.GetRandomWaypoint();
         agent.updatePosition = true;
         isStunned = false;
 
         StartCoroutine(MoveToTargetRoutine());
+        StartCoroutine(RotationRoutine());
         if (voiceSource != null)
         {
             StartCoroutine(SoundRoutine());
@@ -228,14 +212,18 @@ public class CatMovement : MonoBehaviour
         {
             moodCanvas.SetActive(false);
             moodDisplayTimer = 0;
+            moodDisplayRoutineInstance = null;
         }
     }
 
-    IEnumerator MoveToTargetRoutine()
+    protected virtual IEnumerator MoveToTargetRoutine()
     {
         WaitForSeconds updateWait = new WaitForSeconds(targetUpdateFrequency);
         WaitForSeconds interWaypointWait = new WaitForSeconds(pauseDurationBetweenWaypoints);
         WaitForSeconds interAttackWait = new WaitForSeconds(pauseBetweenDefendPointHits);
+
+        currentState = AIState.Roaming;
+        targetDestination = WaypointManager.instance.GetRandomWaypoint();
         while (true)
         {
             if (currentState == AIState.Full)
@@ -288,12 +276,10 @@ public class CatMovement : MonoBehaviour
 
                             while (true)
                             {
-                                /*
                                 if (animator != null && animator.runtimeAnimatorController != null)
                                 {
                                     animator.SetTrigger(attackTriggerHash);
                                 }
-                                */
 
                                 yield return interAttackWait;
 
@@ -346,43 +332,72 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    IEnumerator SoundRoutine()
+    protected virtual IEnumerator RotationRoutine()
+    {
+        WaitWhile wait = new WaitWhile(() => isStunned);
+        while (true)
+        {
+            if (currentState == AIState.Targeting && agent.isStopped)
+            {
+                transform.forward = Vector3.RotateTowards(transform.forward, targetDestination - transform.position, rotationSpeed * Time.deltaTime, 0);
+            }
+            else
+            {
+                transform.forward = Vector3.RotateTowards(transform.forward, agent.velocity.normalized, rotationSpeed * Time.deltaTime, 0);
+            }
+            yield return wait;
+        }
+    }
+
+    protected virtual IEnumerator SoundRoutine()
     {
         if (roamingSounds != null && roamingSounds.Length > 0)
         {
-            float nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause);
-            float timer = Random.Range(0, nextTime);
             while (!isFullyFed)
             {
-                timer += Time.deltaTime;
-                if (timer >= nextTime)
-                {
-                    roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource);
-                    timer -= nextTime;
-                    nextTime = Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause); ;
-                }
-                yield return null;
+                yield return new WaitForSeconds(Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause));
+
+                if (isFullyFed) break;
+                roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource);
             }
         }
     }
 
-    public void FeedCat()
+    protected virtual IEnumerator MoodDisplayRoutine()
+    {
+        while (moodDisplayTimer > 0)
+        {
+            moodDisplayTimer -= Time.deltaTime;
+            yield return null;
+        }
+
+        moodCanvas.SetActive(false);
+        moodDisplayRoutineInstance = null;
+    }
+
+    public virtual void FeedCat()
     {
         if (isFullyFed) return;
 
         currentHealth--;
 
-        moodDisplayTimer = hideMoodCanvasDelay;
-        moodCanvas.SetActive(true);
-        SetMoodImage();
+        if (moodCanvas != null)
+        {
+            moodDisplayTimer = hideMoodCanvasDelay;
+            moodCanvas.SetActive(true);
+            SetMoodImage();
+            if (moodDisplayRoutineInstance == null)
+            {
+                moodDisplayRoutineInstance = StartCoroutine(MoodDisplayRoutine());
+            }
+        }
 
         ParticleManager.instance.ShowParticleEffect(eatingParticleIndex, voiceSource.transform.position);
         fedSound.PlayOneShot(voiceSource);
 
         if (animator != null && animator.runtimeAnimatorController != null)
         {
-            animator.SetTrigger(jiggleTriggerHash);
-            
+            animator.SetTrigger(jiggleTriggerHash);  
         }
 
         if (currentHealth <= 0)
@@ -406,7 +421,7 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    void SetMoodImage()
+    protected virtual void SetMoodImage()
     {
         if (moodImage != null && moodSprites != null && moodSprites.Length > currentHealth)
         {
@@ -419,7 +434,7 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    IEnumerator VanishRoutine()
+    protected virtual IEnumerator VanishRoutine()
     {
         float timer = fullyFedPauseDuration;
         while (timer > 0f)
@@ -432,19 +447,19 @@ public class CatMovement : MonoBehaviour
         Vanish();
     }
 
-    void Vanish()
+    protected virtual void Vanish()
     {
         DropPickup();
         // Setting the cat to inactive will automatically recycle in back into the pool for spawning
         gameObject.SetActive(false);
     }
 
-    public void DisappearParticleEffect()
+    public virtual void DisappearParticleEffect()
     {
         ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, transform.position);
     }
 
-    void DropPickup()
+    protected virtual void DropPickup()
     {
         bool lowAmmo = player.currentAmmo < 20;
 
@@ -483,10 +498,10 @@ public class CatMovement : MonoBehaviour
         }
     }
 
-    public void GetStunned(float duration)
+    public virtual void GetStunned(float duration)
     {
         isStunned = true;
-        stunTimer = Mathf.Max(stunTimer, duration);
+        stunTimer = Mathf.Max(stunTimer, duration * stunDurationMultiplier);
         previousStoppedState = agent.isStopped;
 
         /*
@@ -497,7 +512,7 @@ public class CatMovement : MonoBehaviour
         */
     }
 
-    void EndStun()
+    protected virtual void EndStun()
     {
         isStunned = false;
         agent.isStopped = previousStoppedState;
