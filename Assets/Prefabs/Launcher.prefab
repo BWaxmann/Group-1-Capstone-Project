@@ -330,7 +330,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trajectoryPreviewLine: {fileID: 2726761679981963434}
   launchPoint: {fileID: 3911638130609897283}
-  launchSpeed: 10
+  launchSpeed: 6
   cornerSpacing: 0.5
   maxPoints: 3
   updateFrequency: 0.03
