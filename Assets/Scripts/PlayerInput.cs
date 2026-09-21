@@ -116,14 +116,16 @@ public class PlayerInput : MonoBehaviour
         launcherRight.gameObject.SetActive(false);
 
         _currentAmmo = initialAmmoCount;
-        UpdateAmmoDisplay();
+        //UpdateAmmoDisplay();
+        dontConsumeAmmo = true;
+        ammoText.text = infiniteAmmoText;
 
         StartCoroutine(UpdateBillboardsRoutine());
     }
 
     void Update()
     {
-        if (dontConsumeAmmo)
+        /*if (dontConsumeAmmo)
         {
             infiniteAmmoTimer -= Time.deltaTime;
             if (infiniteAmmoTimer <= 0)
@@ -132,7 +134,7 @@ public class PlayerInput : MonoBehaviour
                 dontConsumeAmmo = false;
                 UpdateAmmoDisplay();
             }
-        }
+        }*/
 
         if (!GameManager.instance.enablePlayerInput) return;
 
@@ -143,10 +145,10 @@ public class PlayerInput : MonoBehaviour
             {
                 LaunchTreat(true);
             }
-            if (Input.GetKeyDown(KeyCode.Q))
+            /*if (Input.GetKeyDown(KeyCode.Q))
             {
                 MakeAmmoInfinite(debugInfiniteAmmoDuration);
-            }
+            }*/
         }
         else
         {

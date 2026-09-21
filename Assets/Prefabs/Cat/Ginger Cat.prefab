@@ -275,7 +275,7 @@ MonoBehaviour:
   rotationSpeed: 12
   pickupDrops:
   - pickupIndex: 0
-    dropChance: 0.2
+    dropChance: 0
     changeChanceWhenLowAmmo: 1
     lowAmmoChanceMultiplier: 5
   - pickupIndex: 1
@@ -283,7 +283,7 @@ MonoBehaviour:
     changeChanceWhenLowAmmo: 0
     lowAmmoChanceMultiplier: 5
   - pickupIndex: 2
-    dropChance: 0.1
+    dropChance: 0
     changeChanceWhenLowAmmo: 0
     lowAmmoChanceMultiplier: 5
   - pickupIndex: 3
@@ -301,11 +301,14 @@ MonoBehaviour:
   roamingToTargetingChance: 0.2
   targetingToRoamingChance: 0.1
   pauseBetweenDefendPointHits: 0.5
+  stunDurationMultiplier: 1
   fullyFedPauseDuration: 0.5833333
   animator: {fileID: 9000578674974371424}
   fullyFedAnimationTrigger: IsDisappeared
   attackAnimationTrigger: AngryCat
   stunnedAnimationBool: DizzyCat
+  jiggleAnimationTrigger: Jiggle
+  jiggleAnimationLayer: Jiggle Layer
   treatsUntilFull: 3
   moodCanvas: {fileID: 380663845529205776}
   moodImage: {fileID: 7133352173263501868}
