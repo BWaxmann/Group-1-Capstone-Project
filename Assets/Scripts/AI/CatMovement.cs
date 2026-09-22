@@ -101,10 +101,10 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    protected int eatingParticleIndex;
+    protected int eatingParticleIndex = 0;
 
     [SerializeField]
-    protected int disappearParticleIndex;
+    protected int disappearParticleIndex = 1;
 
     [Header("Sounds")]
 
@@ -402,15 +402,8 @@ public class CatMovement : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            currentState = AIState.Full;
             GameManager.instance.FeedCat(feedingScore, scoreDisplayPosition.position);
-            if (animator != null && animator.runtimeAnimatorController != null)
-            {
-                animator.SetTrigger(eatingTreatTriggerHash);
-            }
-            agent.isStopped = true;
-            DisappearParticleEffect();
-            StartCoroutine(VanishRoutine());
+            BeginVanish();
         }
         else if (currentState == AIState.Targeting && Random.Range(0f, 1f) < targetingToRoamingChance)
         {
@@ -423,15 +416,28 @@ public class CatMovement : MonoBehaviour
 
     protected virtual void SetMoodImage()
     {
-        if (moodImage != null && moodSprites != null && moodSprites.Length > currentHealth)
+        if (moodImage != null && moodSprites != null && moodSprites.Length > 0)
         {
-            int index = Mathf.CeilToInt(moodSprites.Length * currentHealth / (float)treatsUntilFull);
-            Sprite sp = moodSprites[currentHealth];
+            int index = Mathf.CeilToInt((moodSprites.Length - 1) * currentHealth / (float)treatsUntilFull);
+            Debug.Log(gameObject.name + " " + currentHealth + " : " + index);
+            Sprite sp = moodSprites[index];
             if (sp != null)
             {
                 moodImage.sprite = sp;
             }
         }
+    }
+
+    protected virtual void BeginVanish()
+    {
+        currentState = AIState.Full;
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger(eatingTreatTriggerHash);
+        }
+        agent.isStopped = true;
+        DisappearParticleEffect();
+        StartCoroutine(VanishRoutine());
     }
 
     protected virtual IEnumerator VanishRoutine()

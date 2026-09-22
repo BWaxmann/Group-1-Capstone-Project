@@ -12,7 +12,7 @@ public class BossCatSpawner : MonoBehaviour
     [SerializeField]
     List<float> bossSpawnTimes = new List<float>();
 
-    List<CatMovement> bossInstances = new List<CatMovement>();
+    List<BossCat> bossInstances = new List<BossCat>();
     List<Transform> bossSpawnPoints = new List<Transform>();
 
     void Start()
@@ -22,13 +22,16 @@ public class BossCatSpawner : MonoBehaviour
             gameObject.SetActive(false);
             return;
         }
-        bossSpawnTimes.Sort();
+        else if (bossSpawnTimes.Count > 1)
+        {
+            bossSpawnTimes.Sort();
+        }
 
         foreach (BossData boss in bossPrefabs)
         {
             if (boss.bossPrefab != null)
             {
-                CatMovement instance = Instantiate(boss.bossPrefab, transform);
+                BossCat instance = Instantiate(boss.bossPrefab, transform);
                 instance.gameObject.SetActive(false);
                 bossInstances.Add(instance);
                 bossSpawnPoints.Add(boss.spawnPoint);
@@ -64,7 +67,7 @@ public class BossCatSpawner : MonoBehaviour
 
             int index = Random.Range(0, bossInstances.Count);
 
-            CatMovement boss = bossInstances[index];
+            BossCat boss = bossInstances[index];
             boss.gameObject.SetActive(true);
 
             Transform spawnPoint = bossSpawnPoints[index];
@@ -75,19 +78,18 @@ public class BossCatSpawner : MonoBehaviour
         }
 
         GameManager.instance.GameStart -= StartSpawnRoutine;
-        gameObject.SetActive(false);
     }
 
     [Serializable]
     public struct BossData
     {
         [SerializeField]
-        CatMovement _bossPrefab;
+        BossCat _bossPrefab;
 
         [SerializeField]
         Transform _spawnPoint;
 
-        public CatMovement bossPrefab => _bossPrefab;
+        public BossCat bossPrefab => _bossPrefab;
         public Transform spawnPoint => _spawnPoint;
     }
 }

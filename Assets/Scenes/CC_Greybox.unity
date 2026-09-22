@@ -2127,6 +2127,7 @@ Transform:
   - {fileID: 136025908}
   - {fileID: 785176172}
   - {fileID: 523086518}
+  - {fileID: 1096553779}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -3339,6 +3340,36 @@ Transform:
   m_Father: {fileID: 1539479895}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1096553778
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1096553779}
+  m_Layer: 0
+  m_Name: Spawn4
+  m_TagString: Untagged
+  m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1096553779
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1096553778}
+  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 4.515, y: 0.012, z: 0.09}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 745838003}
+  m_RootOrder: 8
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!1 &1108789887
 GameObject:
   m_ObjectHideFlags: 0
@@ -4860,14 +4891,6 @@ MonoBehaviour:
     _maximumDelayBetweenSpawns: 3.5
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 40
-    _numberOfTimesToSpawn: 5
-    _minimumNumberToSpawnAtATime: 2
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 3
-    _maximumDelayBetweenSpawns: 5
-    _onlySpawnSpecificVariations: 0
-    _variationsToSpawn: 
   - _secondsAfterStartToBegin: 110
     _numberOfTimesToSpawn: 8
     _minimumNumberToSpawnAtATime: 1
@@ -5389,7 +5412,15 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 1846241328}
   spawnWavesData:
   - _secondsAfterStartToBegin: 10
-    _numberOfTimesToSpawn: 29
+    _numberOfTimesToSpawn: 10
+    _minimumNumberToSpawnAtATime: 1
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 5
+    _maximumDelayBetweenSpawns: 5
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 90
+    _numberOfTimesToSpawn: 21
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
     _minimumDelayBetweenSpawns: 5
@@ -6105,14 +6136,6 @@ MonoBehaviour:
     _maximumNumberToSpawnAtATime: 2
     _minimumDelayBetweenSpawns: 2.5
     _maximumDelayBetweenSpawns: 4.2
-    _onlySpawnSpecificVariations: 0
-    _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 70
-    _numberOfTimesToSpawn: 5
-    _minimumNumberToSpawnAtATime: 2
-    _maximumNumberToSpawnAtATime: 3
-    _minimumDelayBetweenSpawns: 4
-    _maximumDelayBetweenSpawns: 6.5
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 110
@@ -7512,6 +7535,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3392840864697843892, guid: faeb3823c33a87f4ca89d7beb884a205,
+        type: 3}
+      propertyPath: bossPrefabs.Array.data[0]._spawnPoint
+      value: 
+      objectReference: {fileID: 1096553779}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: faeb3823c33a87f4ca89d7beb884a205, type: 3}
 --- !u!33 &3399916552915836913
@@ -8000,21 +8028,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Cat Pool
-      objectReference: {fileID: 0}
-    - target: {fileID: 4449210837210644611, guid: 1af1781c621f6c04396cbdaa7e3e8db3,
-        type: 3}
-      propertyPath: objectsInPool.Array.data[4]._excludeFromRandomSelection
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4449210837210644611, guid: 1af1781c621f6c04396cbdaa7e3e8db3,
-        type: 3}
-      propertyPath: objectsInPool.Array.data[5]._excludeFromRandomSelection
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4449210837210644611, guid: 1af1781c621f6c04396cbdaa7e3e8db3,
-        type: 3}
-      propertyPath: objectsInPool.Array.data[6]._excludeFromRandomSelection
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4449210837210644610, guid: 1af1781c621f6c04396cbdaa7e3e8db3,
         type: 3}
