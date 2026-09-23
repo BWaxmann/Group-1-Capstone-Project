@@ -274,35 +274,7 @@ public class CatMovement : MonoBehaviour
                         {
                             agent.isStopped = true;
 
-                            while (true)
-                            {
-                                if (animator != null && animator.runtimeAnimatorController != null)
-                                {
-                                    animator.SetTrigger(attackTriggerHash);
-                                }
-
-                                yield return interAttackWait;
-
-                                if (currentState != AIState.Targeting)
-                                {
-                                    break;
-                                }
-
-                                if (!isStunned)
-                                {
-                                    hitDefendPointSound.PlayOneShot(attackSource);
-                                    targetDefendPoint.GetHit();
-
-                                    if (Random.Range(0f, 1f) < targetingToRoamingChance)
-                                    {
-                                        currentState = AIState.Roaming;
-                                        targetDestination = WaypointManager.instance.GetRandomWaypoint();
-                                        targetDefendPoint = null;
-                                        agent.isStopped = false;
-                                        break;
-                                    }
-                                }
-                            }
+                            yield return AttackRoutine(interAttackWait, updateWait);
                         }
                         break;
                 }
@@ -339,7 +311,7 @@ public class CatMovement : MonoBehaviour
         {
             if (currentState == AIState.Targeting && agent.isStopped)
             {
-                transform.forward = Vector3.RotateTowards(transform.forward, targetDestination - transform.position, rotationSpeed * Time.deltaTime, 0);
+                transform.forward = Vector3.RotateTowards(transform.forward, targetDefendPoint.transform.GetChild(0).position - transform.position, rotationSpeed * Time.deltaTime, 0);
             }
             else
             {
@@ -347,6 +319,57 @@ public class CatMovement : MonoBehaviour
             }
             yield return wait;
         }
+    }
+
+    protected virtual IEnumerator AttackRoutine(WaitForSeconds interAttackWait, WaitForSeconds updateWait)
+    {
+        while (true)
+        {
+            if (!isStunned)
+            {
+                if (animator != null && animator.runtimeAnimatorController != null)
+                {
+                    animator.SetTrigger(attackTriggerHash);
+                }
+
+                yield return interAttackWait;
+
+                if (currentState != AIState.Targeting)
+                {
+                    break;
+                }
+
+                if (!isStunned)
+                {
+                    hitDefendPointSound.PlayOneShot(attackSource);
+                    targetDefendPoint.GetHit();
+
+                    if (CheckExitAttacking()) break;
+                }
+            }
+            else
+            {
+                yield return updateWait;
+
+                if (currentState != AIState.Targeting)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    protected virtual bool CheckExitAttacking()
+    {
+        if (Random.Range(0f, 1f) < targetingToRoamingChance)
+        {
+            currentState = AIState.Roaming;
+            targetDestination = WaypointManager.instance.GetRandomWaypoint();
+            targetDefendPoint = null;
+            agent.isStopped = false;
+            return true;
+        }
+        return false;
     }
 
     protected virtual IEnumerator SoundRoutine()
@@ -404,13 +427,6 @@ public class CatMovement : MonoBehaviour
         {
             GameManager.instance.FeedCat(feedingScore, scoreDisplayPosition.position);
             BeginVanish();
-        }
-        else if (currentState == AIState.Targeting && Random.Range(0f, 1f) < targetingToRoamingChance)
-        {
-            currentState = AIState.Roaming;
-            targetDestination = WaypointManager.instance.GetRandomWaypoint();
-            targetDefendPoint = null;
-            agent.isStopped = false;
         }
     }
 

@@ -47,5 +47,9 @@ MonoBehaviour:
   - _bossPrefab: {fileID: 4278397122933398726, guid: 99616300d37946544978e5243b905041,
       type: 3}
     _spawnPoint: {fileID: 0}
+  - _bossPrefab: {fileID: 5824394793423857481, guid: f5197ae677b8bd7429c0886613196917,
+      type: 3}
+    _spawnPoint: {fileID: 0}
   bossSpawnTimes:
-  - 60
+  - 30
+  - 120

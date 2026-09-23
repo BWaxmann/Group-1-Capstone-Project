@@ -3,7 +3,12 @@ guid: bedca910a0034434884175e951a9c886
 ModelImporter:
   serializedVersion: 25
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grimvane
+    second: {fileID: 2100000, guid: 7b5bf655c79c35348bd27eb7942990bc, type: 2}
   materials:
     importMaterials: 1
     materialName: 0

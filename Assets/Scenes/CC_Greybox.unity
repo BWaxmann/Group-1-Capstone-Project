@@ -576,6 +576,36 @@ Transform:
   m_Father: {fileID: 1291476345}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &168470201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 168470202}
+  m_Layer: 0
+  m_Name: Ninja Waypoint (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &168470202
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 168470201}
+  m_LocalRotation: {x: -0, y: 0.7808337, z: -0, w: -0.624739}
+  m_LocalPosition: {x: 4.595, y: 1.868, z: 1.167}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1205429796}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 257.326, z: 0}
 --- !u!4 &224539714 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 977510622112336780, guid: a727da49b44d50341ab071e657b48c70,
@@ -726,7 +756,7 @@ GameObject:
   m_Component:
   - component: {fileID: 265206476}
   m_Layer: 0
-  m_Name: Over Here
+  m_Name: Curtain
   m_TagString: Untagged
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -1440,6 +1470,36 @@ Transform:
   m_Father: {fileID: 669808433}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &451633492
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 451633493}
+  m_Layer: 0
+  m_Name: Ninja Waypoint (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &451633493
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 451633492}
+  m_LocalRotation: {x: -0, y: 0.9699968, z: -0, w: 0.2431177}
+  m_LocalPosition: {x: -2.449, y: 2.582, z: 4.242}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1205429796}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 151.85901, z: 0}
 --- !u!114 &460833809 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7090113562501423433, guid: 5d0d47491d353384b9263099e3c994ee,
@@ -1590,7 +1650,7 @@ GameObject:
   m_Component:
   - component: {fileID: 532035903}
   m_Layer: 0
-  m_Name: Top of Tower
+  m_Name: Tube
   m_TagString: Untagged
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -1764,6 +1824,36 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: eab7a386009784643b2e5f4dca40140c, type: 3}
+--- !u!1 &577509192
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 577509193}
+  m_Layer: 0
+  m_Name: Ninja Waypoint (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &577509193
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 577509192}
+  m_LocalRotation: {x: -0, y: 0.9763274, z: -0, w: -0.21629779}
+  m_LocalPosition: {x: 1.99, y: 2.661, z: 4.55}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1205429796}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 204.98299, z: 0}
 --- !u!1 &606530180
 GameObject:
   m_ObjectHideFlags: 0
@@ -1858,6 +1948,36 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 14
   m_Mesh: {fileID: -510434023044771782, guid: 83f5ad94585b27f41b3cc16ad0f96c70, type: 3}
+--- !u!1 &660902387
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 660902388}
+  m_Layer: 0
+  m_Name: Ninja Waypoint (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &660902388
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 660902387}
+  m_LocalRotation: {x: -0, y: 0.1282625, z: -0, w: -0.9917403}
+  m_LocalPosition: {x: 1.031, y: 1.934, z: -4.163}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1205429796}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 345.262, z: 0}
 --- !u!1 &667654750
 GameObject:
   m_ObjectHideFlags: 0
@@ -2128,6 +2248,7 @@ Transform:
   - {fileID: 785176172}
   - {fileID: 523086518}
   - {fileID: 1096553779}
+  - {fileID: 1205429796}
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -2813,6 +2934,28 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
+--- !u!1 &894574102 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 977510622188944123, guid: a727da49b44d50341ab071e657b48c70,
+    type: 3}
+  m_PrefabInstance: {fileID: 894574101}
+  m_PrefabAsset: {fileID: 0}
+--- !u!208 &894574103
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 894574102}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 0
+  m_Extents: {x: 0.5, y: 1, z: 0.5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 0
+  m_Center: {x: 0, y: 1, z: 0}
+  m_TimeToStationary: 0.5
 --- !u!1 &895066726
 GameObject:
   m_ObjectHideFlags: 0
@@ -2920,7 +3063,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.662
+      value: 3.537
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -2930,7 +3073,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.15
+      value: 2.442
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -2940,7 +3083,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.61880755
+      value: 0.99029166
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -2950,7 +3093,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.7855426
+      value: 0.13900502
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -2965,7 +3108,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 283.542
+      value: 164.01901
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -3218,7 +3361,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1027485495}
   m_Layer: 0
-  m_Name: Top of Cube
+  m_Name: Couch
   m_TagString: Untagged
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -3363,13 +3506,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1096553778}
-  m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 4.515, y: 0.012, z: 0.09}
+  m_LocalRotation: {x: -0, y: -0.89648706, z: -0, w: 0.4430699}
+  m_LocalPosition: {x: 2.59, y: 0.012, z: 2.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 745838003}
   m_RootOrder: 8
-  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -127.40001, z: 0}
 --- !u!1 &1108789887
 GameObject:
   m_ObjectHideFlags: 0
@@ -3657,6 +3800,55 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.77125216, y: 1.8885117, z: 0.7712522}
   m_Center: {x: 0.0000004172325, y: -0.000000059604645, z: 0.0000014305115}
+--- !u!1 &1205429795
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1205429796}
+  - component: {fileID: 1205429797}
+  m_Layer: 0
+  m_Name: Ninja Waypoints
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1205429796
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205429795}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 451633493}
+  - {fileID: 1592887802}
+  - {fileID: 577509193}
+  - {fileID: 168470202}
+  - {fileID: 660902388}
+  - {fileID: 1289406365}
+  m_Father: {fileID: 745838003}
+  m_RootOrder: 9
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1205429797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205429795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb885475bfc2fdf4cb1951792284b9ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1210205345
 GameObject:
   m_ObjectHideFlags: 0
@@ -3875,6 +4067,36 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 3892726988429214666}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1289406364
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1289406365}
+  m_Layer: 0
+  m_Name: Ninja Waypoint (6)
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1289406365
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289406364}
+  m_LocalRotation: {x: -0, y: -0.1941882, z: -0, w: -0.9809643}
+  m_LocalPosition: {x: -1.336, y: 2.531, z: -3.266}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1205429796}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 382.395, z: 0}
 --- !u!1 &1291476344
 GameObject:
   m_ObjectHideFlags: 0
@@ -4149,7 +4371,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1368871296}
   m_Layer: 0
-  m_Name: A Place of Quiet
+  m_Name: Ledge
   m_TagString: Untagged
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -4714,6 +4936,36 @@ Transform:
   m_Father: {fileID: 162126095}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1592887801
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1592887802}
+  m_Layer: 0
+  m_Name: Ninja Waypoint (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: -5938655980376293919, guid: 0000000000000000d000000000000000, type: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1592887802
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1592887801}
+  m_LocalRotation: {x: -0, y: 0.99975777, z: -0, w: 0.02201014}
+  m_LocalPosition: {x: -0.099, y: 1.726, z: 5.053}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1205429796}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 177.47801, z: 0}
 --- !u!1 &1610214199
 GameObject:
   m_ObjectHideFlags: 0
@@ -4871,9 +5123,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   catSpawner: {fileID: 103450848}
-  spawnPointCentre: {fileID: 136025908}
+  spawnPointCentre: {fileID: 1096553779}
   spawnPointRadius: 0.5
-  afterFeedingReturnPoint: {fileID: 136025908}
+  afterFeedingReturnPoint: {fileID: 1096553779}
   spawnWavesData:
   - _secondsAfterStartToBegin: 0.5
     _numberOfTimesToSpawn: 2
@@ -4891,7 +5143,15 @@ MonoBehaviour:
     _maximumDelayBetweenSpawns: 3.5
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 110
+  - _secondsAfterStartToBegin: 105
+    _numberOfTimesToSpawn: 3
+    _minimumNumberToSpawnAtATime: 1
+    _maximumNumberToSpawnAtATime: 2
+    _minimumDelayBetweenSpawns: 3
+    _maximumDelayBetweenSpawns: 4.5
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 165
     _numberOfTimesToSpawn: 8
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 2
@@ -5344,6 +5604,7 @@ Transform:
   - {fileID: 1632909069}
   - {fileID: 2047316991}
   - {fileID: 1846241328}
+  - {fileID: 2142153319}
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -5409,22 +5670,22 @@ MonoBehaviour:
   catSpawner: {fileID: 103450848}
   spawnPointCentre: {fileID: 523086518}
   spawnPointRadius: 0.2
-  afterFeedingReturnPoint: {fileID: 1846241328}
+  afterFeedingReturnPoint: {fileID: 523086518}
   spawnWavesData:
   - _secondsAfterStartToBegin: 10
-    _numberOfTimesToSpawn: 10
+    _numberOfTimesToSpawn: 5
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 5
-    _maximumDelayBetweenSpawns: 5
+    _minimumDelayBetweenSpawns: 10
+    _maximumDelayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 90
-    _numberOfTimesToSpawn: 21
+  - _secondsAfterStartToBegin: 180
+    _numberOfTimesToSpawn: 2
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 5
-    _maximumDelayBetweenSpawns: 5
+    _minimumDelayBetweenSpawns: 10
+    _maximumDelayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1846241328
@@ -5571,7 +5832,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1891299051}
   m_Layer: 0
-  m_Name: Over There
+  m_Name: Door
   m_TagString: Untagged
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -6130,15 +6391,15 @@ MonoBehaviour:
     _maximumDelayBetweenSpawns: 3.2
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 25
-    _numberOfTimesToSpawn: 3
-    _minimumNumberToSpawnAtATime: 2
+  - _secondsAfterStartToBegin: 90
+    _numberOfTimesToSpawn: 4
+    _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 2
     _minimumDelayBetweenSpawns: 2.5
     _maximumDelayBetweenSpawns: 4.2
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 110
+  - _secondsAfterStartToBegin: 165
     _numberOfTimesToSpawn: 8
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 2
@@ -6332,6 +6593,70 @@ OffMeshLink:
   m_BiDirectional: 1
   m_Activated: 1
   m_AutoUpdatePositions: 0
+--- !u!1 &2142153318
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2142153319}
+  - component: {fileID: 2142153320}
+  m_Layer: 0
+  m_Name: Cat Spawn Manager 4
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2142153319
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2142153318}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1818098551}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2142153320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2142153318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1c89acd1aa1ee0488b2e064c890f74e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  catSpawner: {fileID: 103450848}
+  spawnPointCentre: {fileID: 136025908}
+  spawnPointRadius: 0.2
+  afterFeedingReturnPoint: {fileID: 136025908}
+  spawnWavesData:
+  - _secondsAfterStartToBegin: 15
+    _numberOfTimesToSpawn: 5
+    _minimumNumberToSpawnAtATime: 1
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 10
+    _maximumDelayBetweenSpawns: 10
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 185
+    _numberOfTimesToSpawn: 1
+    _minimumNumberToSpawnAtATime: 1
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 10
+    _maximumDelayBetweenSpawns: 10
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
 --- !u!23 &27564395352462545
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7538,6 +7863,11 @@ PrefabInstance:
     - target: {fileID: 3392840864697843892, guid: faeb3823c33a87f4ca89d7beb884a205,
         type: 3}
       propertyPath: bossPrefabs.Array.data[0]._spawnPoint
+      value: 
+      objectReference: {fileID: 1096553779}
+    - target: {fileID: 3392840864697843892, guid: faeb3823c33a87f4ca89d7beb884a205,
+        type: 3}
+      propertyPath: bossPrefabs.Array.data[1]._spawnPoint
       value: 
       objectReference: {fileID: 1096553779}
     m_RemovedComponents: []
@@ -10130,7 +10460,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.826
+      value: 1.909
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -10140,7 +10470,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.347
+      value: -2.159
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -10150,7 +10480,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: -0.9252132
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -10160,7 +10490,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.37944773
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
@@ -10175,7 +10505,7 @@ PrefabInstance:
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -135.401
       objectReference: {fileID: 0}
     - target: {fileID: 2184097836971103551, guid: fecc3e7bef70e5d40bea89bb8def4502,
         type: 3}
