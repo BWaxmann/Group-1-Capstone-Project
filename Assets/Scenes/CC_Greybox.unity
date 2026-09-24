@@ -5143,20 +5143,12 @@ MonoBehaviour:
     _maximumDelayBetweenSpawns: 3.5
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 105
-    _numberOfTimesToSpawn: 3
+  - _secondsAfterStartToBegin: 60
+    _numberOfTimesToSpawn: 4
     _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 3
-    _maximumDelayBetweenSpawns: 4.5
-    _onlySpawnSpecificVariations: 0
-    _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 165
-    _numberOfTimesToSpawn: 8
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 5
-    _maximumDelayBetweenSpawns: 7.5
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 40
+    _maximumDelayBetweenSpawns: 40
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1632909069
@@ -5673,19 +5665,19 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 523086518}
   spawnWavesData:
   - _secondsAfterStartToBegin: 10
-    _numberOfTimesToSpawn: 5
+    _numberOfTimesToSpawn: 2
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
     _minimumDelayBetweenSpawns: 10
     _maximumDelayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 180
-    _numberOfTimesToSpawn: 2
+  - _secondsAfterStartToBegin: 80
+    _numberOfTimesToSpawn: 4
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 10
-    _maximumDelayBetweenSpawns: 10
+    _minimumDelayBetweenSpawns: 40
+    _maximumDelayBetweenSpawns: 40
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1846241328
@@ -6392,19 +6384,11 @@ MonoBehaviour:
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 90
-    _numberOfTimesToSpawn: 4
+    _numberOfTimesToSpawn: 3
     _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 2.5
-    _maximumDelayBetweenSpawns: 4.2
-    _onlySpawnSpecificVariations: 0
-    _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 165
-    _numberOfTimesToSpawn: 8
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 5
-    _maximumDelayBetweenSpawns: 7.5
+    _maximumNumberToSpawnAtATime: 1
+    _minimumDelayBetweenSpawns: 40
+    _maximumDelayBetweenSpawns: 40
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &2047316991
@@ -6642,19 +6626,19 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 136025908}
   spawnWavesData:
   - _secondsAfterStartToBegin: 15
-    _numberOfTimesToSpawn: 5
+    _numberOfTimesToSpawn: 2
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
     _minimumDelayBetweenSpawns: 10
     _maximumDelayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 185
-    _numberOfTimesToSpawn: 1
+  - _secondsAfterStartToBegin: 70
+    _numberOfTimesToSpawn: 4
     _minimumNumberToSpawnAtATime: 1
     _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 10
-    _maximumDelayBetweenSpawns: 10
+    _minimumDelayBetweenSpawns: 40
+    _maximumDelayBetweenSpawns: 40
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!23 &27564395352462545
@@ -7348,6 +7332,75 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 4294967295
   m_IsActive: 1
+--- !u!1001 &1771873258358038416
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1771873258311260713, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_Name
+      value: Armour
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1771873258311260715, guid: b001db49f12bb8947ad1907c6c63c471,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b001db49f12bb8947ad1907c6c63c471, type: 3}
 --- !u!4 &1858665532216964835
 Transform:
   m_ObjectHideFlags: 0
@@ -7868,6 +7921,11 @@ PrefabInstance:
     - target: {fileID: 3392840864697843892, guid: faeb3823c33a87f4ca89d7beb884a205,
         type: 3}
       propertyPath: bossPrefabs.Array.data[1]._spawnPoint
+      value: 
+      objectReference: {fileID: 1096553779}
+    - target: {fileID: 3392840864697843892, guid: faeb3823c33a87f4ca89d7beb884a205,
+        type: 3}
+      propertyPath: bossPrefabs.Array.data[2]._spawnPoint
       value: 
       objectReference: {fileID: 1096553779}
     m_RemovedComponents: []

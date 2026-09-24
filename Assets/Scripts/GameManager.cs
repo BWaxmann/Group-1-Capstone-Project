@@ -408,6 +408,25 @@ public class GameManager : MonoBehaviour
         return defendPoints[Random.Range(0, defendPoints.Count)];
     }
 
+    public DefendPoint GetClosestDefendPoint(Vector3 position)
+    {
+        if (defendPoints == null || defendPoints.Count == 0) return null;
+
+        DefendPoint output = null;
+        float closestDistance = Mathf.Infinity;
+        foreach (DefendPoint defendPoint in defendPoints)
+        {
+            float distance = Vector3.Distance(position, defendPoint.position);
+            if (distance < closestDistance)
+            {
+                output = defendPoint;
+                closestDistance = distance;
+            }
+        }
+
+        return output;
+    }
+
     public void ShieldAllDefendPoints(float duration)
     {
         foreach (DefendPoint dP in defendPoints)

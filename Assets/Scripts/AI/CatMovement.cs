@@ -349,6 +349,12 @@ public class CatMovement : MonoBehaviour
             }
             else
             {
+                stunTimer -= targetUpdateFrequency;
+                if (stunTimer <= 0)
+                {
+                    EndStun();
+                }
+
                 yield return updateWait;
 
                 if (currentState != AIState.Targeting)
@@ -525,6 +531,10 @@ public class CatMovement : MonoBehaviour
         isStunned = true;
         stunTimer = Mathf.Max(stunTimer, duration * stunDurationMultiplier);
         previousStoppedState = agent.isStopped;
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
 
         /*
         if (animator != null && animator.runtimeAnimatorController != null)

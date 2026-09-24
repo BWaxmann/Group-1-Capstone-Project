@@ -23,12 +23,14 @@ public class NinjaBossCat : BossCat
     Transform[] ninjaWaypoints;
     List<int> waypointSequence = new List<int>();
     float attackTimer;
+    Vector3 playerPosition;
 
     protected override void Start()
     {
         base.Start();
 
         ninjaWaypoints = FindObjectOfType<NinjaWaypoints>().waypoints;
+        playerPosition = FindObjectOfType<PlayerInput>().transform.position;
     }
 
     protected override IEnumerator MoveToTargetRoutine()
@@ -98,6 +100,25 @@ public class NinjaBossCat : BossCat
 
                 yield return updateWait;
             }
+        }
+    }
+
+    protected override IEnumerator RotationRoutine()
+    {
+        WaitWhile wait = new WaitWhile(() => isStunned);
+        while (true)
+        {
+            if (currentState == AIState.Targeting)
+            {
+                transform.forward = Vector3.RotateTowards(transform.forward, targetDefendPoint.transform.GetChild(0).position - transform.position, rotationSpeed * Time.deltaTime, 0);
+            }
+            else
+            {
+                Vector3 face = playerPosition - transform.position;
+                face.y = 0;
+                transform.forward = Vector3.RotateTowards(transform.forward, face, rotationSpeed * Time.deltaTime, 0);
+            }
+            yield return wait;
         }
     }
 
