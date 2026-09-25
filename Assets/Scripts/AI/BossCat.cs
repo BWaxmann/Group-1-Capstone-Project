@@ -9,6 +9,8 @@ public abstract class BossCat : CatMovement
     [Min(0)]
     float despawnAfter = 60f;
 
+    public override bool isBoss => true;
+
     public override void Initialise(Transform spawnPoint, Vector3 spawnPosition)
     {
         base.Initialise(spawnPoint, spawnPosition);

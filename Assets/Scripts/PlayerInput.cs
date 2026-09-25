@@ -104,6 +104,8 @@ public class PlayerInput : MonoBehaviour
     bool hasSpawnedFreeAmmo;
     bool dontConsumeAmmo;
     float infiniteAmmoTimer;
+    bool instaKillActive;
+    float instaKillTimer;
 
     public int currentAmmo => _currentAmmo;
     public Vector3 pickupMagnet => _pickupMagnet.position;
@@ -118,7 +120,7 @@ public class PlayerInput : MonoBehaviour
         _currentAmmo = initialAmmoCount;
         //UpdateAmmoDisplay();
         dontConsumeAmmo = true;
-        ammoText.text = infiniteAmmoText;
+        ammoText.text = "";
 
         StartCoroutine(UpdateBillboardsRoutine());
     }
@@ -135,6 +137,17 @@ public class PlayerInput : MonoBehaviour
                 UpdateAmmoDisplay();
             }
         }*/
+
+        if (instaKillActive)
+        {
+            instaKillTimer -= Time.deltaTime;
+            if (instaKillTimer <= 0)
+            {
+                instaKillTimer = 0;
+                instaKillActive = false;
+                ammoText.text = "";
+            }
+        }
 
         if (!GameManager.instance.enablePlayerInput) return;
 
@@ -293,7 +306,7 @@ public class PlayerInput : MonoBehaviour
                 return;
             }
             treat.gameObject.SetActive(true);
-            treat.LaunchTreat(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce);
+            treat.LaunchTreat(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
             PlaySound(launcherFireSound, rightHand);
             if (!dontConsumeAmmo)
             {
@@ -363,5 +376,12 @@ public class PlayerInput : MonoBehaviour
         dontConsumeAmmo = true;
         if (ammoText != null) ammoText.text = infiniteAmmoText;
         infiniteAmmoTimer += duration;
+    }
+
+    public void MakeTreatsInstaKill(float duration)
+    {
+        instaKillActive = true;
+        instaKillTimer += duration;
+        ammoText.text = infiniteAmmoText;
     }
 }

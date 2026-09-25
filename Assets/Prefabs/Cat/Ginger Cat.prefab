@@ -283,7 +283,7 @@ MonoBehaviour:
     changeChanceWhenLowAmmo: 0
     lowAmmoChanceMultiplier: 5
   - pickupIndex: 2
-    dropChance: 0
+    dropChance: 0.1
     changeChanceWhenLowAmmo: 0
     lowAmmoChanceMultiplier: 5
   - pickupIndex: 3

@@ -154,6 +154,7 @@ public class CatMovement : MonoBehaviour
 
     public bool isMoving => agent.velocity.magnitude > 0;
     public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
+    public virtual bool isBoss => false;
 
     protected virtual void Start()
     {
@@ -404,11 +405,25 @@ public class CatMovement : MonoBehaviour
         moodDisplayRoutineInstance = null;
     }
 
-    public virtual void FeedCat()
+    public virtual void FeedCat(bool instaKill)
     {
         if (isFullyFed) return;
 
-        currentHealth--;
+        if (instaKill)
+        {
+            if (isBoss)
+            {
+                currentHealth = Mathf.Max(currentHealth - 2, 0);
+            }
+            else
+            {
+                currentHealth = 0;
+            }
+        }
+        else
+        {
+            currentHealth--;
+        }
 
         if (moodCanvas != null)
         {

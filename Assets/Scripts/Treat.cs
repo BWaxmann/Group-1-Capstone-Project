@@ -12,14 +12,25 @@ public class Treat : MonoBehaviour
     [SerializeField]
     SoundData treatHittingFloorSound = new SoundData(1f, 1f);
 
+    [SerializeField]
+    Outline instaKillOutline;
+
     Rigidbody rb;
     bool isActive;
 
-    public void LaunchTreat(Transform launchPosition, float force)
+    bool instaKill;
+
+    public void LaunchTreat(Transform launchPosition, float force, bool instaKill)
     {
         if (rb == null)
         {
             rb = GetComponent<Rigidbody>();
+        }
+
+        this.instaKill = instaKill;
+        if (instaKillOutline != null)
+        {
+            instaKillOutline.enabled = instaKill;
         }
 
         transform.position = launchPosition.position;
@@ -45,7 +56,7 @@ public class Treat : MonoBehaviour
             {
                 if (!cat.isFullyFed)
                 {
-                    cat.FeedCat();
+                    cat.FeedCat(instaKill);
                     DespawnTreat();
                 }
                 else

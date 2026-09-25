@@ -173,12 +173,19 @@ public class ArmouredBossCat : BossCat
         return false;
     }
 
-    public override void FeedCat()
+    public override void FeedCat(bool instaKill)
     {
         if (isFullyFed) return;
         if (armourHealth > 0)
         {
-            armourHealth--;
+            if (instaKill)
+            {
+                armourHealth = Mathf.Max(armourHealth - 2, 0);
+            }
+            else
+            {
+                armourHealth--;
+            }
             if (armourHealth <= 0)
             {
                 armourOnCat.SetActive(false);
@@ -202,7 +209,7 @@ public class ArmouredBossCat : BossCat
         }
         else
         {
-            base.FeedCat();
+            base.FeedCat(instaKill);
         }
     }
 
