@@ -61,7 +61,7 @@ public class MafiaBossCat : BossCat
         WaitForSeconds postWait = new WaitForSeconds(postSpawnWait);
 
         currentState = AIState.Roaming;
-        targetDestination = WaypointManager.instance.GetRandomWaypoint();
+        targetDestination = WaypointManager.instance.GetRandomWaypointInFrontOfPlayer();
         float spawnTimer = Random.Range(minimumTimeBetweenSpawns, maximumTimeBetweenSpawns);
         while (true)
         {
@@ -118,7 +118,7 @@ public class MafiaBossCat : BossCat
                 if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance
                     && !agent.isOnOffMeshLink)
                 {
-                    targetDestination = WaypointManager.instance.GetNewWaypoint(targetDestination);
+                    targetDestination = WaypointManager.instance.GetNewWaypointInFrontOfPlayer(targetDestination);
                 }
 
                 if (agent.isOnNavMesh)

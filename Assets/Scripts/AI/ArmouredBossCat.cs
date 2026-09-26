@@ -88,7 +88,7 @@ public class ArmouredBossCat : BossCat
 
             if (!isStunned)
             {
-                if (currentState == AIState.Targeting)
+                if (currentState == AIState.Targeting && !CheckExitAttacking())
                 {
                     if (Vector3.Distance(targetDestination, transform.position) <= stoppingDistance + agent.stoppingDistance
                             && !agent.isOnOffMeshLink)
@@ -124,6 +124,8 @@ public class ArmouredBossCat : BossCat
                     }
                     else
                     {
+                        agent.isStopped = true;
+
                         yield return armourLossWait;
 
                         if (currentState == AIState.Full)

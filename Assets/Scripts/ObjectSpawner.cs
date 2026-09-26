@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -19,6 +20,11 @@ public class ObjectSpawner : MonoBehaviour
             return;
         }
 
+        StartCoroutine(SpawnInitial());
+    }
+
+    IEnumerator SpawnInitial()
+    {
         objectPools = new List<GameObject>[objectsInPool.Length];
         variationsForRandomPick.Clear();
         for (int i = 0; i < objectsInPool.Length; i++)
@@ -31,6 +37,7 @@ public class ObjectSpawner : MonoBehaviour
                 {
                     GameObject obj = SpawnNewObjectForPool(i);
                     obj.SetActive(false);
+                    yield return null;
                 }
             }
 
@@ -38,11 +45,6 @@ public class ObjectSpawner : MonoBehaviour
             {
                 variationsForRandomPick.Add(i);
             }
-        }
-
-        if (variationsForRandomPick.Count == 0)
-        {
-            Debug.LogWarning("No object prefabs available for random picking.", this);
         }
     }
 

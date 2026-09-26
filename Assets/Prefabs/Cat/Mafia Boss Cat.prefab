@@ -319,7 +319,7 @@ MonoBehaviour:
   stunnedAnimationBool: DizzyCat
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
-  treatsUntilFull: 200
+  treatsUntilFull: 250
   moodCanvas: {fileID: 8821123876356601709}
   moodImage: {fileID: 2151679024186274129}
   moodSprites:
@@ -375,7 +375,7 @@ NavMeshAgent:
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0.4
-  m_AutoTraverseOffMeshLink: 0
+  m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 0.54

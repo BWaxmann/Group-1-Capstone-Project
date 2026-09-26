@@ -456,7 +456,6 @@ public class CatMovement : MonoBehaviour
         if (moodImage != null && moodSprites != null && moodSprites.Length > 0)
         {
             int index = Mathf.CeilToInt((moodSprites.Length - 1) * currentHealth / (float)treatsUntilFull);
-            Debug.Log(gameObject.name + " " + currentHealth + " : " + index);
             Sprite sp = moodSprites[index];
             if (sp != null)
             {

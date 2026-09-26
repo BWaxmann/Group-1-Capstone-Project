@@ -67,7 +67,7 @@ MonoBehaviour:
   stunnedAnimationBool: DizzyCat
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
-  treatsUntilFull: 100
+  treatsUntilFull: 150
   moodCanvas: {fileID: 7208881986297875757}
   moodImage: {fileID: 269571909283531537}
   moodSprites:
@@ -102,7 +102,7 @@ MonoBehaviour:
     _pitch: 0.4
   despawnAfter: 60
   armourMaxHealth: 20
-  armourOnCat: {fileID: 5531940779085849484}
+  armourOnCat: {fileID: 6076362513291737222}
   armourSeperatedPrefab: {fileID: 1771873258311260714, guid: b001db49f12bb8947ad1907c6c63c471,
     type: 3}
   armouredSpeed: 1
@@ -1266,7 +1266,7 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 1771873258311260714, guid: b001db49f12bb8947ad1907c6c63c471, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: b001db49f12bb8947ad1907c6c63c471, type: 3}
---- !u!1 &5531940779085849484 stripped
+--- !u!1 &6076362513291737222 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1771873258311260713, guid: b001db49f12bb8947ad1907c6c63c471,
     type: 3}
