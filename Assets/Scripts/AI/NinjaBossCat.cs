@@ -110,7 +110,9 @@ public class NinjaBossCat : BossCat
         {
             if (currentState == AIState.Targeting)
             {
-                transform.forward = Vector3.RotateTowards(transform.forward, targetDefendPoint.transform.GetChild(0).position - transform.position, rotationSpeed * Time.deltaTime, 0);
+                Vector3 rotateTo = targetDefendPoint.transform.GetChild(0).position - transform.position;
+                rotateTo.y = 0;
+                transform.forward = Vector3.RotateTowards(transform.forward, rotateTo, rotationSpeed * Time.deltaTime, 0);
             }
             else
             {

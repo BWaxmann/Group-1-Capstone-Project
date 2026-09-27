@@ -115,6 +115,9 @@ public class CatMovement : MonoBehaviour
     protected AudioSource attackSource;
 
     [SerializeField]
+    protected AudioSource bodySource;
+
+    [SerializeField]
     protected SoundData[] roamingSounds;
 
     [SerializeField]
@@ -130,6 +133,9 @@ public class CatMovement : MonoBehaviour
 
     [SerializeField]
     protected SoundData fedSound = new SoundData(1f, 1f);
+
+    [SerializeField]
+    protected SoundData shrinkSound = new SoundData(1f, 1f);
 
     protected NavMeshAgent agent;
     protected AIState currentState;
@@ -312,7 +318,9 @@ public class CatMovement : MonoBehaviour
         {
             if (currentState == AIState.Targeting && agent.isStopped)
             {
-                transform.forward = Vector3.RotateTowards(transform.forward, targetDefendPoint.transform.GetChild(0).position - transform.position, rotationSpeed * Time.deltaTime, 0);
+                Vector3 rotateTo = targetDefendPoint.transform.GetChild(0).position - transform.position;
+                rotateTo.y = 0;
+                transform.forward = Vector3.RotateTowards(transform.forward, rotateTo, rotationSpeed * Time.deltaTime, 0);
             }
             else
             {
@@ -467,6 +475,7 @@ public class CatMovement : MonoBehaviour
     protected virtual void BeginVanish()
     {
         currentState = AIState.Full;
+        shrinkSound.PlayOneShot(bodySource);
         if (animator != null && animator.runtimeAnimatorController != null)
         {
             animator.SetTrigger(eatingTreatTriggerHash);

@@ -63,8 +63,10 @@ public class ArmouredBossCat : BossCat
 
     public override void Initialise(Transform spawnPoint, Vector3 spawnPosition)
     {
-        base.Initialise(spawnPoint, spawnPosition);
         armourHealth = armourMaxHealth;
+
+        base.Initialise(spawnPoint, spawnPosition);
+
         armourOnCat.SetActive(true);
         agent.speed = armouredSpeed;
     }
@@ -139,7 +141,7 @@ public class ArmouredBossCat : BossCat
                     }
                 }
 
-                if (agent.isOnNavMesh && !agent.isStopped)
+                if (agent.isOnNavMesh)
                 {
                     agent.destination = targetDestination;
                 }
