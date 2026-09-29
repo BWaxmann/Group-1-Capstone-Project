@@ -97,5 +97,5 @@ Material:
     - _FresnelColor: {r: 1, g: 1, b: 1, a: 1}
     - _HighColor: {r: 0, g: 0, b: 0, a: 1}
     - _LowColor: {r: 0.92780006, g: 0.7311321, b: 1, a: 1}
-    - _OutlineColor: {r: 0.5052303, g: 0.36009255, b: 0.6415094, a: 1}
+    - _OutlineColor: {r: 0.34117648, g: 0.12941177, b: 0.058823533, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}
