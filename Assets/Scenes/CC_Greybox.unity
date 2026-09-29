@@ -2080,7 +2080,7 @@ PrefabInstance:
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.132
       objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
@@ -5312,6 +5312,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cafe Level
       objectReference: {fileID: 0}
+    - target: {fileID: 8763217691092100973, guid: 19e75bcc531373946bd38772e63f4918,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5748402747009422718, guid: 19e75bcc531373946bd38772e63f4918,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5402,6 +5407,11 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 87
       objectReference: {fileID: 0}
+    - target: {fileID: 8314985867057989974, guid: 19e75bcc531373946bd38772e63f4918,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 554e74501fef5a6409c999b7bbb57e0b, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 19e75bcc531373946bd38772e63f4918, type: 3}
 --- !u!1001 &3392840864155364356
