@@ -318,6 +318,7 @@ public class GameManager : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         ExperienceApp.End();
+        Application.Quit(); // Delete this for the Liminal build
 #endif
     }
 

@@ -67,7 +67,7 @@ MonoBehaviour:
   stunnedAnimationBool: DizzyCat
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
-  treatsUntilFull: 150
+  treatsUntilFull: 100
   moodCanvas: {fileID: 7208881986297875757}
   moodImage: {fileID: 269571909283531537}
   moodSprites:

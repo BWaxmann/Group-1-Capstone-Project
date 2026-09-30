@@ -8,7 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/CodingTestScene.unity
     guid: 3153db33a397cbb42989e6d3acd8b38c
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/CC_Greybox.unity
     guid: 21c5a14259360064eb8897eb0cc885c7
+  - enabled: 1
+    path: Assets/Scenes/CC_LEVEL.unity
+    guid: d4623e755d91c5b48aecf811db08f185
   m_configObjects: {}

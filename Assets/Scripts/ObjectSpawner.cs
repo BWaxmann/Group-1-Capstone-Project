@@ -25,6 +25,8 @@ public class ObjectSpawner : MonoBehaviour
 
     IEnumerator SpawnInitial()
     {
+        yield return null;
+
         objectPools = new List<GameObject>[objectsInPool.Length];
         variationsForRandomPick.Clear();
         for (int i = 0; i < objectsInPool.Length; i++)
