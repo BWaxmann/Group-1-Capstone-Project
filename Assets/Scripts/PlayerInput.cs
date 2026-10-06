@@ -30,19 +30,9 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     Transform treatLaunchPositionLeft;
 
-    [SerializeField]
-    GameObject treatLaunchPreviewRight;
-
-    [SerializeField]
-    GameObject treatLaunchPreviewLeft;
-
     [SerializeField] 
     [Min(0)] 
     float launchForce = 10f;
-
-    [SerializeField]
-    [Min(0)]
-    int initialAmmoCount = 20;
 
     [SerializeField]
     TMP_Text ammoText;
@@ -54,25 +44,10 @@ public class PlayerInput : MonoBehaviour
     Transform _pickupMagnet;
 
     [SerializeField]
-    bool spawnFreeAmmoWhenOut = true;
+    string defaultDisplayText = "^ <rotate=\"-90\">3</rotate> ^";
 
     [SerializeField]
-    [Min(0)]
-    int freeAmmoThreashold = 5;
-
-    [SerializeField]
-    int ammoPickupIndex = 0;
-
-    [SerializeField]
-    Vector3 freeAmmoSpawnOffset = new Vector3(0f, 1f, -8f);
-
-    [SerializeField]
-    string infiniteAmmoText = "<color=#FFD700>∞</color>";
-
-    [SerializeField]
-    [Tooltip("Press Q to activate.")]
-    [Min(0)]
-    float debugInfiniteAmmoDuration = 200f;
+    string instaKillText = "<color=#FFD700><size=1.5em>∞</size></color>";
 
     [Header("Sound Effects")]
 
@@ -86,28 +61,15 @@ public class PlayerInput : MonoBehaviour
     [Tooltip("Sound to play when firing a treat.")]
     SoundData launcherFireSound = new SoundData(1f, 1f);
 
-    [SerializeField]
-    [Tooltip("Sound to play when attempting to fire a treat with no ammo.")]
-    SoundData launcherEmptySound = new SoundData(1f, 1f);
-
-    [SerializeField]
-    [Tooltip("Sound to play when reloading the treat launcher.")]
-    SoundData launcherReloadSound = new SoundData(1f, 1f);
-
     public delegate void FaceCamera(Quaternion rotation);
     public static event FaceCamera TurnToFaceCamera;
 
     bool launchersActive;
     GrabbableLaunchers lastPerceivedLaunchers;
 
-    int _currentAmmo;
-    bool hasSpawnedFreeAmmo;
-    bool dontConsumeAmmo;
-    float infiniteAmmoTimer;
     bool instaKillActive;
     float instaKillTimer;
 
-    public int currentAmmo => _currentAmmo;
     public Vector3 pickupMagnet => _pickupMagnet.position;
 
     void Start()
@@ -117,27 +79,13 @@ public class PlayerInput : MonoBehaviour
         launcherLeft.gameObject.SetActive(false);
         launcherRight.gameObject.SetActive(false);
 
-        _currentAmmo = initialAmmoCount;
-        //UpdateAmmoDisplay();
-        dontConsumeAmmo = true;
-        ammoText.text = "";
+        ammoText.text = defaultDisplayText;
 
         StartCoroutine(UpdateBillboardsRoutine());
     }
 
     void Update()
     {
-        /*if (dontConsumeAmmo)
-        {
-            infiniteAmmoTimer -= Time.deltaTime;
-            if (infiniteAmmoTimer <= 0)
-            {
-                infiniteAmmoTimer = 0;
-                dontConsumeAmmo = false;
-                UpdateAmmoDisplay();
-            }
-        }*/
-
         if (instaKillActive)
         {
             instaKillTimer -= Time.deltaTime;
@@ -145,7 +93,7 @@ public class PlayerInput : MonoBehaviour
             {
                 instaKillTimer = 0;
                 instaKillActive = false;
-                ammoText.text = "";
+                ammoText.text = defaultDisplayText;
             }
         }
 
@@ -158,10 +106,6 @@ public class PlayerInput : MonoBehaviour
             {
                 LaunchTreat(true);
             }
-            /*if (Input.GetKeyDown(KeyCode.Q))
-            {
-                MakeAmmoInfinite(debugInfiniteAmmoDuration);
-            }*/
         }
         else
         {
@@ -275,65 +219,17 @@ public class PlayerInput : MonoBehaviour
         GameManager.instance.GrabbedLaunchers();
     }
 
-    public void GetAmmo(int amount)
-    {
-        if (_currentAmmo <= 0)
-        {
-            treatLaunchPreviewRight.SetActive(true);
-            treatLaunchPreviewLeft.SetActive(true);
-        }
-        _currentAmmo += amount;
-        PlaySound(launcherReloadSound, true);
-        if (!dontConsumeAmmo)
-        {
-            UpdateAmmoDisplay();
-        }
-
-        if (_currentAmmo >= freeAmmoThreashold)
-        {
-            hasSpawnedFreeAmmo = false;
-        }
-    }
-
     void LaunchTreat(bool rightHand)
     {
-        if (_currentAmmo > 0 || dontConsumeAmmo)
+        Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
+        if (treat == null)
         {
-            Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
-            if (treat == null)
-            {
-                Debug.LogError("Failed to spawn treat to launch.", this);
-                return;
-            }
-            treat.gameObject.SetActive(true);
-            treat.LaunchTreat(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
-            PlaySound(launcherFireSound, rightHand);
-            if (!dontConsumeAmmo)
-            {
-                _currentAmmo--;
-                UpdateAmmoDisplay();
-                if (spawnFreeAmmoWhenOut && _currentAmmo < freeAmmoThreashold && !hasSpawnedFreeAmmo)
-                {
-                    Debug.Log("Spawning free ammo.");
-                    hasSpawnedFreeAmmo = true;
-                    PickupManager.instance.SpawnPickup(ammoPickupIndex, transform.TransformVector(freeAmmoSpawnOffset));
-                }
-                if (_currentAmmo <= 0)
-                {
-                    treatLaunchPreviewRight.SetActive(false);
-                    treatLaunchPreviewRight.SetActive(true);
-                }
-            }
+            Debug.LogError("Failed to spawn treat to launch.", this);
+            return;
         }
-        else
-        {
-            PlaySound(launcherEmptySound, rightHand);
-        }
-    }
-
-    void UpdateAmmoDisplay()
-    {
-        if (ammoText != null) ammoText.text = _currentAmmo.ToString();
+        treat.gameObject.SetActive(true);
+        treat.LaunchTreat(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
+        PlaySound(launcherFireSound, rightHand);
     }
 
     void PlaySound(SoundData sound, bool rightHand)
@@ -371,17 +267,10 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
-    public void MakeAmmoInfinite(float duration)
-    {
-        dontConsumeAmmo = true;
-        if (ammoText != null) ammoText.text = infiniteAmmoText;
-        infiniteAmmoTimer += duration;
-    }
-
     public void MakeTreatsInstaKill(float duration)
     {
         instaKillActive = true;
         instaKillTimer += duration;
-        ammoText.text = infiniteAmmoText;
+        ammoText.text = instaKillText;
     }
 }

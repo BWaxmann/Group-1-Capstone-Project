@@ -512,19 +512,10 @@ public class CatMovement : MonoBehaviour
 
     protected virtual void DropPickup()
     {
-        bool lowAmmo = player.currentAmmo < 20;
-
         float max = 0;
         foreach (PickupDrop pd in pickupDrops)
         {
-            if (lowAmmo && pd.changeChanceWhenLowAmmo)
-            {
-                max += pd.lowAmmoChance;
-            }
-            else
-            {
-                max += pd.dropChance;
-            }
+            max += pd.dropChance;
         }
 
         float rand = Random.Range(0f, Mathf.Max(1, max));
@@ -532,14 +523,7 @@ public class CatMovement : MonoBehaviour
 
         foreach (PickupDrop pd in pickupDrops)
         {
-            if (pd.changeChanceWhenLowAmmo && lowAmmo)
-            {
-                c += pd.lowAmmoChance;
-            }
-            else
-            {
-                c += pd.dropChance;
-            }
+            c += pd.dropChance;
 
             if (rand < c)
             {
@@ -596,12 +580,5 @@ public class CatMovement : MonoBehaviour
         [Tooltip("Chance of the pickup being dropped once cat despawns. Value between 0 and 1.")]
         [Range(0f, 1f)]
         public float dropChance;
-
-        public bool changeChanceWhenLowAmmo;
-
-        [Min(0.01f)]
-        public float lowAmmoChanceMultiplier;
-
-        public float lowAmmoChance => dropChance * lowAmmoChanceMultiplier;
     }
 }

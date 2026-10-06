@@ -305,25 +305,13 @@ MonoBehaviour:
   rotationSpeed: 12
   pickupDrops:
   - pickupIndex: 0
-    dropChance: 0
-    changeChanceWhenLowAmmo: 1
-    lowAmmoChanceMultiplier: 5
+    dropChance: 0.1
   - pickupIndex: 1
     dropChance: 0.1
-    changeChanceWhenLowAmmo: 0
-    lowAmmoChanceMultiplier: 5
   - pickupIndex: 2
     dropChance: 0.1
-    changeChanceWhenLowAmmo: 0
-    lowAmmoChanceMultiplier: 5
   - pickupIndex: 3
     dropChance: 0.1
-    changeChanceWhenLowAmmo: 0
-    lowAmmoChanceMultiplier: 5
-  - pickupIndex: 4
-    dropChance: 0.1
-    changeChanceWhenLowAmmo: 0
-    lowAmmoChanceMultiplier: 5
   pickupOffset: {x: 0, y: 0.5, z: 0}
   targetUpdateFrequency: 0.2
   stoppingDistance: 0.4
