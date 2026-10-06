@@ -1145,7 +1145,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977510622188944123}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0.637, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 977510621430673680}
@@ -1226,10 +1226,11 @@ MonoBehaviour:
   treatLaunchPositionRight: {fileID: 1413999898784427255}
   treatLaunchPositionLeft: {fileID: 1567301619170872856}
   launchForce: 6
+  autofireRate: 4
   ammoText: {fileID: 1442800102}
   eye: {fileID: 977510622112336780}
   _pickupMagnet: {fileID: 2402349129688171909}
-  defaultDisplayText: <sup>@</sup><rotate="-90">3</rotate><sup>@</sup>
+  defaultDisplayText: ^ <rotate="-90">3</rotate> ^
   instaKillText: "<color=#FFD700><size=1.5em>\u221E</size></color>"
   launcherAudioSourceRight: {fileID: 2330815458311549678}
   launcherAudioSourceLeft: {fileID: 2740191476147212289}
@@ -1251,7 +1252,7 @@ NavMeshObstacle:
   m_MoveThreshold: 0.1
   m_Carve: 1
   m_CarveOnlyStationary: 0
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0.363, z: 0}
   m_TimeToStationary: 0.5
 --- !u!1 &977510622321449625
 GameObject:
@@ -2056,16 +2057,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2726761679981963434, guid: 5a3d39c72e99c0d4691e7e528ed91244,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2726761679987264941, guid: 5a3d39c72e99c0d4691e7e528ed91244,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5a3d39c72e99c0d4691e7e528ed91244, type: 3}
 --- !u!4 &4531113869133275480 stripped
@@ -2163,16 +2154,6 @@ PrefabInstance:
     - target: {fileID: 2119228045548834819, guid: 5a3d39c72e99c0d4691e7e528ed91244,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2726761679981963434, guid: 5a3d39c72e99c0d4691e7e528ed91244,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2726761679987264941, guid: 5a3d39c72e99c0d4691e7e528ed91244,
-        type: 3}
-      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

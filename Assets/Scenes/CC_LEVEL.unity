@@ -4917,10 +4917,6 @@ PrefabInstance:
       propertyPath: treatsSpawner
       value: 
       objectReference: {fileID: 239547139}
-    - target: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70, type: 3}
-      propertyPath: defaultDisplayText
-      value: ^ <rotate="-90">3</rotate> ^
-      objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -4975,16 +4971,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.637
-      objectReference: {fileID: 0}
-    - target: {fileID: 9153070864054079722, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_Center.y
-      value: 0.363
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
@@ -5340,18 +5326,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 931458332}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &931458334 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 52129874680991923, guid: fecc3e7bef70e5d40bea89bb8def4502,
-    type: 3}
-  m_PrefabInstance: {fileID: 931458332}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40e2e1222a2d25546b00d44052851683, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &936875938
 GameObject:
   m_ObjectHideFlags: 0
@@ -11355,16 +11329,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
         type: 3}
-      propertyPath: defendPoints.Array.size
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
-        type: 3}
-      propertyPath: defendPoints.Array.data[0]
-      value: 
-      objectReference: {fileID: 8717275795187336534}
-    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
-        type: 3}
       propertyPath: pregameCanvas
       value: 
       objectReference: {fileID: 509834972}
@@ -11438,11 +11402,6 @@ PrefabInstance:
       propertyPath: scoreParticlePool
       value: 
       objectReference: {fileID: 7440272166285416836}
-    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
-        type: 3}
-      propertyPath: defendPoints.Array.data[1]
-      value: 
-      objectReference: {fileID: 931458334}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1db9752d27168e44eb8c460b6c8bb8ee, type: 3}
 --- !u!1 &7090113561561907868 stripped
@@ -12070,15 +12029,3 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fecc3e7bef70e5d40bea89bb8def4502, type: 3}
---- !u!114 &8717275795187336534 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 52129874680991923, guid: fecc3e7bef70e5d40bea89bb8def4502,
-    type: 3}
-  m_PrefabInstance: {fileID: 8717275795187336533}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40e2e1222a2d25546b00d44052851683, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

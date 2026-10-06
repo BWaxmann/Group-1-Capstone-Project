@@ -32,7 +32,14 @@ public class PlayerInput : MonoBehaviour
 
     [SerializeField] 
     [Min(0)] 
-    float launchForce = 10f;
+    float launchForce = 6f;
+
+    [SerializeField]
+    bool enableAutofire = true;
+
+    [SerializeField]
+    [Min(0)]
+    float autofireRate = 4f;
 
     [SerializeField]
     TMP_Text ammoText;
@@ -67,6 +74,9 @@ public class PlayerInput : MonoBehaviour
     bool launchersActive;
     GrabbableLaunchers lastPerceivedLaunchers;
 
+    Coroutine rightHandAutofire;
+    Coroutine leftHandAutofire;
+
     bool instaKillActive;
     float instaKillTimer;
 
@@ -78,6 +88,7 @@ public class PlayerInput : MonoBehaviour
         handRight.gameObject.SetActive(true);
         launcherLeft.gameObject.SetActive(false);
         launcherRight.gameObject.SetActive(false);
+        GameManager.instance.GameEnd += StopLaunchers;
 
         ammoText.text = defaultDisplayText;
 
@@ -102,9 +113,24 @@ public class PlayerInput : MonoBehaviour
 #if UNITY_EDITOR
         if (launchersActive)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (enableAutofire)
             {
-                LaunchTreat(true);
+                if (Input.GetMouseButtonDown(0) && rightHandAutofire == null)
+                {
+                    rightHandAutofire = StartCoroutine(AutofireRoutine(true));
+                }
+                else if (Input.GetMouseButtonUp(0) && rightHandAutofire != null)
+                {
+                    StopCoroutine(rightHandAutofire);
+                    rightHandAutofire = null;
+                }
+            }
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    LaunchTreat(true);
+                }
             }
         }
         else
@@ -113,7 +139,7 @@ public class PlayerInput : MonoBehaviour
             {
                 if (TestForLaunchers(hit.transform))
                 {
-                    if (Input.GetMouseButton(0))
+                    if (Input.GetMouseButtonDown(0))
                     {
                         GetLaunchers();
                     }
@@ -134,13 +160,38 @@ public class PlayerInput : MonoBehaviour
 #else
         if (launchersActive)
         {
-            if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+            if (enableAutofire)
             {
-                LaunchTreat(true);
+                if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger) && rightHandAutofire == null)
+                {
+                    rightHandAutofire = StartCoroutine(AutofireRoutine(true));
+                }
+                else if (OVRInput.GetUp(OVRInput.Button.SecondaryIndexTrigger) && rightHandAutofire != null)
+                {
+                    StopCoroutine(rightHandAutofire);
+                    rightHandAutofire = null;
+                }
+
+                if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger) && leftHandAutofire == null)
+                {
+                    leftHandAutofire = StartCoroutine(AutofireRoutine(false));
+                }
+                else if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger) && leftHandAutofire != null)
+                {
+                    StopCoroutine(leftHandAutofire);
+                    leftHandAutofire = null;
+                }
             }
-            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+            else
             {
-                LaunchTreat(false);
+                if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+                {
+                    LaunchTreat(true);
+                }
+                if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+                {
+                    LaunchTreat(false);
+                }
             }
         }
         else
@@ -219,6 +270,16 @@ public class PlayerInput : MonoBehaviour
         GameManager.instance.GrabbedLaunchers();
     }
 
+    IEnumerator AutofireRoutine(bool rightHand)
+    {
+        WaitForSeconds wait = new WaitForSeconds(1f / autofireRate);
+        while (true)
+        {
+            LaunchTreat(rightHand);
+            yield return wait;
+        }
+    }
+
     void LaunchTreat(bool rightHand)
     {
         Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
@@ -272,5 +333,20 @@ public class PlayerInput : MonoBehaviour
         instaKillActive = true;
         instaKillTimer += duration;
         ammoText.text = instaKillText;
+    }
+
+    public void StopLaunchers()
+    {
+        if (rightHandAutofire != null)
+        {
+            StopCoroutine(rightHandAutofire);
+            rightHandAutofire = null;
+        }
+
+        if (leftHandAutofire != null)
+        {
+            StopCoroutine(leftHandAutofire);
+            leftHandAutofire = null;
+        }
     }
 }

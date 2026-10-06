@@ -49,8 +49,6 @@ MonoBehaviour:
   pregameCountdownTime: 3
   gameTime: 219.091
   fadeDuration: 1
-  defendPoints:
-  - {fileID: 0}
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}
   countdownEndText: GO!
@@ -70,6 +68,7 @@ MonoBehaviour:
   catsFedText: {fileID: 0}
   penaltyText: {fileID: 0}
   finalScoreText: {fileID: 0}
+  scoreParticlePool: {fileID: 0}
   soundEffectSource: {fileID: 893389621652222314}
   musicSource: {fileID: 5991186334920329714}
   countdownSound:
