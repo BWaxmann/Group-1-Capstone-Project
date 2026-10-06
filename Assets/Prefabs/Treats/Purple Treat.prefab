@@ -67,7 +67,7 @@ MonoBehaviour:
   audioSource: {fileID: 1849226287935849920}
   treatHittingFloorSound:
     _soundClip: {fileID: 8300000, guid: c2c0fdc3d9787334686ad4fee62e5ddf, type: 3}
-    _volume: 30
+    _volume: 20
     _pitch: 1
   instaKillOutline: {fileID: 7421021503792828352}
 --- !u!82 &1849226287935849920

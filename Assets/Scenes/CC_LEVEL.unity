@@ -7902,19 +7902,34 @@ MonoBehaviour:
   spawnPointRadius: 0.5
   afterFeedingReturnPoint: {fileID: 1096553779}
   spawnWavesData:
-  - _secondsAfterStartToBegin: 0.5
+  - _secondsAfterStartToBegin: 0
     _numberOfTimesToSpawn: 3
-    _delayBetweenSpawns: 2
+    _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 11
-    _numberOfTimesToSpawn: 8
-    _delayBetweenSpawns: 2
-    _onlySpawnSpecificVariations: 0
-    _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 40
-    _numberOfTimesToSpawn: 9
+  - _secondsAfterStartToBegin: 30
+    _numberOfTimesToSpawn: 2
     _delayBetweenSpawns: 20
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 90
+    _numberOfTimesToSpawn: 4
+    _delayBetweenSpawns: 8
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 122
+    _numberOfTimesToSpawn: 2
+    _delayBetweenSpawns: 16
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 180
+    _numberOfTimesToSpawn: 5
+    _delayBetweenSpawns: 6
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 210
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1632909069
@@ -9020,14 +9035,34 @@ MonoBehaviour:
   spawnPointRadius: 0.2
   afterFeedingReturnPoint: {fileID: 523086518}
   spawnWavesData:
-  - _secondsAfterStartToBegin: 10
-    _numberOfTimesToSpawn: 8
-    _delayBetweenSpawns: 2
+  - _secondsAfterStartToBegin: 5
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 30
-    _numberOfTimesToSpawn: 10
+  - _secondsAfterStartToBegin: 35
+    _numberOfTimesToSpawn: 2
     _delayBetweenSpawns: 20
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 94
+    _numberOfTimesToSpawn: 4
+    _delayBetweenSpawns: 8
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 126
+    _numberOfTimesToSpawn: 2
+    _delayBetweenSpawns: 16
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 183
+    _numberOfTimesToSpawn: 5
+    _delayBetweenSpawns: 6
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 213
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1846241328
@@ -9983,14 +10018,34 @@ MonoBehaviour:
   spawnPointRadius: 0.5
   afterFeedingReturnPoint: {fileID: 785176172}
   spawnWavesData:
-  - _secondsAfterStartToBegin: 5
-    _numberOfTimesToSpawn: 4
-    _delayBetweenSpawns: 1.5
+  - _secondsAfterStartToBegin: 2.5
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 35
-    _numberOfTimesToSpawn: 9
+  - _secondsAfterStartToBegin: 32.5
+    _numberOfTimesToSpawn: 2
     _delayBetweenSpawns: 20
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 92
+    _numberOfTimesToSpawn: 4
+    _delayBetweenSpawns: 8
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 124
+    _numberOfTimesToSpawn: 2
+    _delayBetweenSpawns: 16
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 181.5
+    _numberOfTimesToSpawn: 5
+    _delayBetweenSpawns: 6
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 211.5
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &2047316991
@@ -10346,14 +10401,34 @@ MonoBehaviour:
   spawnPointRadius: 0.2
   afterFeedingReturnPoint: {fileID: 136025908}
   spawnWavesData:
-  - _secondsAfterStartToBegin: 15
-    _numberOfTimesToSpawn: 11
-    _delayBetweenSpawns: 1
+  - _secondsAfterStartToBegin: 7.5
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 45
-    _numberOfTimesToSpawn: 9
+  - _secondsAfterStartToBegin: 37.5
+    _numberOfTimesToSpawn: 2
     _delayBetweenSpawns: 20
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 96
+    _numberOfTimesToSpawn: 4
+    _delayBetweenSpawns: 8
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 128
+    _numberOfTimesToSpawn: 2
+    _delayBetweenSpawns: 16
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 184.5
+    _numberOfTimesToSpawn: 5
+    _delayBetweenSpawns: 6
+    _onlySpawnSpecificVariations: 0
+    _variationsToSpawn: 
+  - _secondsAfterStartToBegin: 214.5
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!1001 &72467754742985996

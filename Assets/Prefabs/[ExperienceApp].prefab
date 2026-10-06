@@ -1226,7 +1226,8 @@ MonoBehaviour:
   treatLaunchPositionRight: {fileID: 1413999898784427255}
   treatLaunchPositionLeft: {fileID: 1567301619170872856}
   launchForce: 6
-  autofireRate: 4
+  enableAutofire: 1
+  autofireRate: 6
   ammoText: {fileID: 1442800102}
   eye: {fileID: 977510622112336780}
   _pickupMagnet: {fileID: 2402349129688171909}

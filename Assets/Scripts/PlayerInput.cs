@@ -39,7 +39,7 @@ public class PlayerInput : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float autofireRate = 4f;
+    float autofireRate = 6f;
 
     [SerializeField]
     TMP_Text ammoText;

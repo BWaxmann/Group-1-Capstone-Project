@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pregameDelay: 1
   pregameCountdownTime: 3
-  gameTime: 219.091
+  gameTime: 270
   fadeDuration: 1
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}
@@ -102,7 +102,7 @@ MonoBehaviour:
     _volume: 0.5
     _pitch: 1
   introLength: 12.65
-  outroLength: 12.773
+  outroLength: 3
   postgameMusic:
     _soundClip: {fileID: 8300000, guid: 0dce4ea5f2f8dad48a86a6a0e166767f, type: 3}
     _volume: 0.8

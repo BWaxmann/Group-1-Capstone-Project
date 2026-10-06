@@ -57,7 +57,6 @@ public class NinjaBossCat : BossCat
             {
                 if (shortCounter >= shortsBeforeLong)
                 {
-                    DisappearParticleEffect();
                     if (Random.Range(0f, 1f) < roamingToTargetingChance)
                     {
                         targetDefendPoint = GameManager.instance.GetRandomDefendPoint();
@@ -84,7 +83,6 @@ public class NinjaBossCat : BossCat
                 }
                 else
                 {
-                    DisappearParticleEffect();
                     TeleportTo(ninjaWaypoints[waypointSequence[shortCounter]]);
                     shortCounter++;
                     yield return shortWait;
@@ -138,10 +136,12 @@ public class NinjaBossCat : BossCat
 
     void TeleportTo(Transform target)
     {
+        DisappearParticleEffect();
         targetDestination = target.position;
         agent.Warp(targetDestination);
         agent.destination = targetDestination;
         transform.rotation = Quaternion.LookRotation(target.forward);
+        DisappearParticleEffect();
     }
 
     void GetNewWaypointSequence()

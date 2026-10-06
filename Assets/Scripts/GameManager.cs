@@ -262,7 +262,8 @@ public class GameManager : MonoBehaviour
         if (separateGameStartSound) PlaySoundEffect(gameStartSound);
         PlayMusic(gameMusicIntroAndOutro);
         Invoke(nameof(BeginLoop), introLength);
-        Invoke(nameof(PlayOutro), gameTime - outroLength);
+        //Invoke(nameof(PlayOutro), gameTime - outroLength);
+        StartCoroutine(FadeOutMusic());
         
         state = GameState.DuringGame;
         playerInputsEnabled = true;
@@ -396,6 +397,21 @@ public class GameManager : MonoBehaviour
     void PlayOutro()
     {
         PlayMusic(gameMusicIntroAndOutro, gameMusicIntroAndOutro.soundClip.length - outroLength, false);
+    }
+
+    IEnumerator FadeOutMusic()
+    {
+        yield return new WaitForSeconds(gameTime - outroLength);
+
+        float timer = outroLength;
+        float currentVolume = musicSource.volume;
+        while (timer > 0)
+        {
+            timer -= Time.deltaTime;
+            musicSource.volume = currentVolume * timer / outroLength;
+            yield return null;
+        }
+        musicSource.Stop();
     }
 
     void StopMusic()
