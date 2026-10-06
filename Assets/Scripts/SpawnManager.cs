@@ -44,25 +44,22 @@ public class SpawnManager : MonoBehaviour
         // Wait for delay before starting wave
         yield return new WaitForSeconds(data.secondsAfterStartToBegin);
 
+        WaitForSeconds wait = new WaitForSeconds(data.delayBetweenSpawns);
         for (int i = 0; i < data.numberOfTimesToSpawn; i++)
         {
-            int numberToSpawn = Random.Range(data.minimumNumberToSpawnAtATime, data.maximumNumberToSpawnAtATime + 1);
-            for (int j = 0; j < numberToSpawn; j++)
+            CatMovement cat = data.onlySpawnSpecificVariations
+                ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
+                : catSpawner.GetRandomObjectFromPool<CatMovement>();
+            if (cat == null)
             {
-                CatMovement cat = data.onlySpawnSpecificVariations 
-                    ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn) 
-                    : catSpawner.GetRandomObjectFromPool<CatMovement>();
-                if (cat == null)
-                {
-                    Debug.LogError("Failed to spawn cats.", this);
-                    break;
-                }
-                cat.gameObject.SetActive(true);
-                Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
-                cat.Initialise(afterFeedingReturnPoint, spawnPosition);
+                Debug.LogError("Failed to spawn cats.", this);
+                break;
             }
+            cat.gameObject.SetActive(true);
+            Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
+            cat.Initialise(afterFeedingReturnPoint, spawnPosition);
 
-            yield return new WaitForSeconds(Random.Range(data.minimumDelayBetweenSpawns, data.maximumDelayBetweenSpawns));
+            yield return wait;
         }
 
         wavesCompleted++;
@@ -90,20 +87,8 @@ public class SpawnManager : MonoBehaviour
         int _numberOfTimesToSpawn;
 
         [SerializeField]
-        [Min(1)]
-        int _minimumNumberToSpawnAtATime;
-
-        [SerializeField]
-        [Min(1)]
-        int _maximumNumberToSpawnAtATime;
-
-        [SerializeField]
         [Min(0)]
-        float _minimumDelayBetweenSpawns;
-
-        [SerializeField]
-        [Min(0)]
-        float _maximumDelayBetweenSpawns;
+        float _delayBetweenSpawns;
 
         [SerializeField]
         bool _onlySpawnSpecificVariations;
@@ -113,10 +98,7 @@ public class SpawnManager : MonoBehaviour
 
         public float secondsAfterStartToBegin { get { return _secondsAfterStartToBegin; } }
         public int numberOfTimesToSpawn { get { return _numberOfTimesToSpawn; } }
-        public int minimumNumberToSpawnAtATime { get { return _minimumNumberToSpawnAtATime; } }
-        public int maximumNumberToSpawnAtATime { get { return _maximumNumberToSpawnAtATime; } }
-        public float minimumDelayBetweenSpawns { get { return _minimumDelayBetweenSpawns; } }
-        public float maximumDelayBetweenSpawns { get { return _maximumDelayBetweenSpawns; } }
+        public float delayBetweenSpawns { get { return _delayBetweenSpawns; } }
         public bool onlySpawnSpecificVariations { get { return _onlySpawnSpecificVariations; } }
         public int[] variationsToSpawn { get { return _variationsToSpawn; } }
     }

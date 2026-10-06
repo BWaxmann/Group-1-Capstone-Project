@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class DefendPoint : MonoBehaviour
 {
@@ -25,6 +26,19 @@ public class DefendPoint : MonoBehaviour
     [SerializeField]
     SoundData shieldHitSound = new SoundData(1f, 1f);
 
+    [Header("Health Bar")]
+
+    [SerializeField]
+    Slider healthBar;
+
+    [SerializeField]
+    [Min(0)]
+    float healthLossPerHit = 0.01f;
+
+    [SerializeField]
+    [Min(0)]
+    float minimumDisplayedHealth = 0.165f;
+
     float shieldTimer;
 
     public Vector3 position => transform.position;
@@ -32,6 +46,7 @@ public class DefendPoint : MonoBehaviour
 
     void Start()
     {
+        healthBar.value = 1;
         RemoveShield();
         GameManager.instance.RegisterDefendPoint(this);
     }
@@ -59,6 +74,7 @@ public class DefendPoint : MonoBehaviour
             GameManager.instance.ReceivePenalty(hitScorePenalty, scoreDisplayPosition.position, false);
             ParticleManager.instance.ShowParticleEffect(hitParticlesIndex, position);
             hitSound.PlayOneShot(hitSource);
+            healthBar.value = Mathf.Max(healthBar.value * (1 - healthLossPerHit), minimumDisplayedHealth);
         }
     }
 

@@ -5318,6 +5318,31 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0.094
       objectReference: {fileID: 0}
+    - target: {fileID: 7937150854032968833, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3518327294532747277, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3518327294532747277, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3518327294532747277, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5015741413470403143, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fecc3e7bef70e5d40bea89bb8def4502, type: 3}
 --- !u!4 &931458333 stripped
@@ -7878,27 +7903,18 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 1096553779}
   spawnWavesData:
   - _secondsAfterStartToBegin: 0.5
-    _numberOfTimesToSpawn: 2
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 1.5
-    _maximumDelayBetweenSpawns: 2.5
+    _numberOfTimesToSpawn: 3
+    _delayBetweenSpawns: 2
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
-  - _secondsAfterStartToBegin: 12
-    _numberOfTimesToSpawn: 3
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 2
-    _maximumDelayBetweenSpawns: 3.5
+  - _secondsAfterStartToBegin: 11
+    _numberOfTimesToSpawn: 8
+    _delayBetweenSpawns: 2
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 40
     _numberOfTimesToSpawn: 9
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 20
-    _maximumDelayBetweenSpawns: 20
+    _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1632909069
@@ -9005,19 +9021,13 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 523086518}
   spawnWavesData:
   - _secondsAfterStartToBegin: 10
-    _numberOfTimesToSpawn: 2
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 10
-    _maximumDelayBetweenSpawns: 10
+    _numberOfTimesToSpawn: 8
+    _delayBetweenSpawns: 2
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 30
     _numberOfTimesToSpawn: 10
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 20
-    _maximumDelayBetweenSpawns: 20
+    _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &1846241328
@@ -9974,19 +9984,13 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 785176172}
   spawnWavesData:
   - _secondsAfterStartToBegin: 5
-    _numberOfTimesToSpawn: 2
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 2
-    _minimumDelayBetweenSpawns: 1.8
-    _maximumDelayBetweenSpawns: 3.2
+    _numberOfTimesToSpawn: 4
+    _delayBetweenSpawns: 1.5
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 35
     _numberOfTimesToSpawn: 9
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 20
-    _maximumDelayBetweenSpawns: 20
+    _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!4 &2047316991
@@ -10343,19 +10347,13 @@ MonoBehaviour:
   afterFeedingReturnPoint: {fileID: 136025908}
   spawnWavesData:
   - _secondsAfterStartToBegin: 15
-    _numberOfTimesToSpawn: 2
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 10
-    _maximumDelayBetweenSpawns: 10
+    _numberOfTimesToSpawn: 11
+    _delayBetweenSpawns: 1
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 45
     _numberOfTimesToSpawn: 9
-    _minimumNumberToSpawnAtATime: 1
-    _maximumNumberToSpawnAtATime: 1
-    _minimumDelayBetweenSpawns: 20
-    _maximumDelayBetweenSpawns: 20
+    _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
 --- !u!1001 &72467754742985996
@@ -12026,6 +12024,31 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalScale.z
       value: 4.367589
+      objectReference: {fileID: 0}
+    - target: {fileID: 7937150854032968833, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3518327294532747277, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3518327294532747277, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3518327294532747277, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5015741413470403143, guid: fecc3e7bef70e5d40bea89bb8def4502,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fecc3e7bef70e5d40bea89bb8def4502, type: 3}
