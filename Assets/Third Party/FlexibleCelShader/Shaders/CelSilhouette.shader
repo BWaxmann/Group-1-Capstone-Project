@@ -1,221 +1,413 @@
+
 Shader "FlexibleCelShader/Cel Silhouette"
 {
-	Properties
-	{
-		_Color("Global Color Modifier", Color) = (1, 1, 1, 1)
-		_MainTex("Texture", 2D) = "white" {}
-		_NormalTex("Normal", 2D) = "bump" {}
-		_EmmisTex("Emission", 2D) = "black" {}
+    Properties
+    {
+        _Color("Global Color Modifier", Color) = (1, 1, 1, 1)
+        _MainTex("Texture", 2D) = "white" {}
+        _NormalTex("Normal", 2D) = "bump" {}
+        _EmmisTex("Emission", 2D) = "black" {}
 
-		_RampLevels("Ramp Levels", Range(2, 50)) = 2
-		_LightScalar("Light Scalar", Range(0, 10)) = 1
+        _RampLevels("Ramp Levels", Range(2, 50)) = 2
+        _LightScalar("Light Scalar", Range(0, 10)) = 1
 
-		_HighColor("High Light Color", Color) = (1, 1, 1, 1)
-		_HighIntensity("High Light Intensity", Range(0, 10)) = 1.5
+        _HighColor("High Light Color", Color) = (1, 1, 1, 1)
+        _HighIntensity("High Light Intensity", Range(0, 10)) = 1.5
 
-		_LowColor("Low Light Color", Color) = (1, 1, 1, 1)
-		_LowIntensity("Low Light Intensity", Range(0, 10)) = 1
+        _LowColor("Low Light Color", Color) = (1, 1, 1, 1)
+        _LowIntensity("Low Light Intensity", Range(0, 10)) = 1
 
-		_OutlineColor("Outline Color", Color) = (0, 0, 0, 1)
-		_OutlineSize("Outline Size", float) = 10
+        _OutlineColor("Outline Color", Color) = (0, 0, 0, 1)
+        _OutlineSize("Outline Size", float) = 10
 
-		_RimColor("Hard Edge Light Color", Color) = (1, 1, 1, 1)
-		_RimAlpha("Hard Edge Light Brightness", Range(0, 1)) = 0
-		_RimPower("Hard Edge Light Size", Range(0,1)) = 0
-		_RimDropOff("Hard Edge Light Dropoff", range(0, 1)) = 0
+        _RimColor("Hard Edge Light Color", Color) = (1, 1, 1, 1)
+        _RimAlpha("Hard Edge Light Brightness", Range(0, 1)) = 0
+        _RimPower("Hard Edge Light Size", Range(0, 1)) = 0
+        _RimDropOff("Hard Edge Light Dropoff", Range(0, 1)) = 0
 
-		_FresnelColor("Soft Edge Light Color", Color) = (1,1,1,1)
-		_FresnelBrightness("Soft Edge Light Brightness", Range(0, 1)) = 0
-		_FresnelPower("Soft Edge Light Size", Range(0, 1)) = 0
-		_FresnelShadowDropoff("Soft Edge Light Dropoff", range(0, 1)) = 0
-	}
-	
-	SubShader
-	{
-		Tags{ "Queue" = "Transparent" }
-		
-		// This Pass Renders the outlines
-		Cull Front
-		ZWrite off
-		Pass
-		{
-			Blend SrcAlpha OneMinusSrcAlpha
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
+        _FresnelColor("Soft Edge Light Color", Color) = (1, 1, 1, 1)
+        _FresnelBrightness("Soft Edge Light Brightness", Range(0, 1)) = 0
+        _FresnelPower("Soft Edge Light Size", Range(0, 1)) = 0
+        _FresnelShadowDropoff("Soft Edge Light Dropoff", Range(0, 1)) = 0
+    }
 
-			#include "UnityCG.cginc"
+    SubShader
+    {
+        Tags { "Queue" = "Transparent" }
 
-			struct appdata
-			{
-				float4 vertex : POSITION;
-				float3 normal : NORMAL;
-			};
+        // Silhouette / outline pass.
+        Cull Front
+        ZWrite Off
 
-			struct v2f
-			{
-				float4 vertex : SV_POSITION;
-			};
+        Pass
+        {
+            Blend SrcAlpha OneMinusSrcAlpha
 
-			float _OutlineSize;
-			v2f vert(appdata v)
-			{
-				v2f o;
-				float4 worldPos = mul(unity_ObjectToWorld, v.vertex);
-				half3 worldNormal = UnityObjectToWorldNormal(v.normal);
-				worldPos.xyz = worldPos.xyz + worldNormal * _OutlineSize * 0.001;
-				o.vertex = mul(UNITY_MATRIX_VP, worldPos);
-				return o;
-			}
+            CGPROGRAM
+            #pragma vertex vertOutline
+            #pragma fragment fragOutline
 
-			float4 _OutlineColor;
-			fixed4 frag(v2f i) : SV_Target
-			{
-				return _OutlineColor;
-			}
+            #include "UnityCG.cginc"
 
-			ENDCG
-		}// End Outline Pass
+            struct appdataOutline
+            {
+                float4 vertex : POSITION;
+                float3 normal : NORMAL;
+            };
 
-		// This pass renders the object
-		Cull back
-		ZWrite On
-		Pass
-		{
-			Tags{ "LightMode" = "ForwardBase" }
+            struct v2fOutline
+            {
+                float4 vertex : SV_POSITION;
+            };
 
-			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-			#include "UnityCG.cginc"
-			#include "Lighting.cginc"
+            float _OutlineSize;
+            float4 _OutlineColor;
 
-			#pragma multi_compile_fwdbase nolightmap nodirlightmap nodynlightmap novertexlight
-			#include "AutoLight.cginc"
+            v2fOutline vertOutline(appdataOutline v)
+            {
+                v2fOutline o;
 
-			struct v2f
-			{
-				float2 uv : TEXCOORD0;
-				SHADOW_COORDS(1)
-				float3 worldNormal : TEXCOORD2;
-				float3 worldTangent : TEXCOORD3;
-				float3 worldBitangent : TEXCOORD4;
-				float4 worldPos : TEXCOORD5;
-				float4 pos : SV_POSITION;
-			};
+                float4 worldPos =
+                    mul(unity_ObjectToWorld, v.vertex);
 
-			v2f vert(appdata_tan v)
-			{
-				v2f o;
+                float3 worldNormal =
+                    UnityObjectToWorldNormal(v.normal);
 
-				// UV data
-				o.uv = v.texcoord;
+                worldPos.xyz +=
+                    worldNormal * _OutlineSize * 0.001;
 
-				// Position data
-				o.worldPos = mul(unity_ObjectToWorld, v.vertex);
-				o.pos = mul(UNITY_MATRIX_VP, o.worldPos);
+                o.vertex = mul(UNITY_MATRIX_VP, worldPos);
 
-				// Normal data
-				o.worldNormal = UnityObjectToWorldNormal(v.normal);
-				o.worldTangent = UnityObjectToWorldNormal(v.tangent);
-				o.worldBitangent = cross(o.worldTangent, o.worldNormal);
+                return o;
+            }
 
-				// Compute shadows data
-				TRANSFER_SHADOW(o);
+            fixed4 fragOutline(v2fOutline i) : SV_Target
+            {
+                return _OutlineColor;
+            }
+            ENDCG
+        }
 
-				return o;
-			}
+        // Main object lighting pass.
+        Cull Back
+        ZWrite On
 
-			float4    _Color;
-			sampler2D _MainTex;
-			uniform float4 _MainTex_ST;
-			sampler2D _NormalTex;
-			uniform float4 _NormalTex_ST;
-			sampler2D _EmmisTex;
-			uniform float4 _EmmisTex_ST;
-			int       _RampLevels;
-			float     _LightScalar;
-			float     _HighIntensity;
-			float4    _HighColor;
-			float     _LowIntensity;
-			float4    _LowColor;
-			float     _RimPower;
-			float	  _RimAlpha;
-			float4    _RimColor;
-			float     _RimDropOff;
-			float     _FresnelBrightness;
-			float     _FresnelPower;
-			float4    _FresnelColor;
-			float     _FresnelShadowDropoff;
+        Pass
+        {
+            Tags { "LightMode" = "ForwardBase" }
 
-			fixed4 frag(v2f i) : SV_Target
-			{
-				_RampLevels -= 1;
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #pragma multi_compile_fwdbase
 
-				// Get view direction && light direction for rim lighting
-				float3 viewDirection = normalize(_WorldSpaceCameraPos.xyz - i.worldPos.xyz);
-				float3 lightDirection = normalize(_WorldSpaceLightPos0.xyz);
+            #include "UnityCG.cginc"
+            #include "Lighting.cginc"
+            #include "AutoLight.cginc"
 
-				// Sample textures
-				fixed4 col = tex2D(_MainTex, i.uv * _MainTex_ST.xy + _MainTex_ST.zw);
-				fixed3 tangentNormal = tex2D(_NormalTex, i.uv * _NormalTex_ST.xy + _NormalTex_ST.zw) * 2 - 1;
-				fixed4 emmision = tex2D(_EmmisTex, i.uv * _EmmisTex_ST.xy + _EmmisTex_ST.zw);
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float3 worldNormal : TEXCOORD1;
+                float3 worldTangent : TEXCOORD2;
+                float3 worldBitangent : TEXCOORD3;
+                float3 worldPos : TEXCOORD4;
+                LIGHTING_COORDS(5, 6)
+                float4 pos : SV_POSITION;
+            };
 
-				// Get normal
-				float3 worldNormal = float3(i.worldTangent * tangentNormal.r + i.worldBitangent * tangentNormal.g + i.worldNormal * tangentNormal.b);
+            float4 _Color;
 
-				// Rim Lighting
-				half factor = dot(viewDirection, worldNormal);
-				half fresnelFactor = 1 - min(pow(max(1 - factor, 0), (1 - _FresnelPower) * 10), 1);
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
 
-				// Get shadow attenuation
-				fixed shadow = SHADOW_ATTENUATION(i);
+            sampler2D _NormalTex;
+            float4 _NormalTex_ST;
 
-				// Calculate light intensity
-				float intensity = dot(worldNormal, lightDirection);
-				intensity = clamp(intensity * _LightScalar, 0, 1);
+            sampler2D _EmmisTex;
+            float4 _EmmisTex_ST;
 
-				// Factor in the shadow
-				intensity *= shadow;
+            float _RampLevels;
+            float _LightScalar;
 
-				// Determine level
-				float rampLevel = round(intensity * _RampLevels);
+            float _HighIntensity;
+            float4 _HighColor;
 
-				// Get light multiplier based on level
-				float lightMultiplier = _LowIntensity + ((_HighIntensity - _LowIntensity) / (_RampLevels)) * rampLevel;
+            float _LowIntensity;
+            float4 _LowColor;
 
-				// Get color multiplier based on level
-				float4 highColor = (rampLevel / _RampLevels) * _HighColor;
-				float4 lowColor = ((_RampLevels - rampLevel) / _RampLevels) * _LowColor;
-				float4 mixColor = (highColor + lowColor) / 2;
+            float _RimPower;
+            float _RimAlpha;
+            float4 _RimColor;
+            float _RimDropOff;
 
-				// Apply light multiplier and color
-				col *= lightMultiplier;
-				col *= _Color * mixColor;
+            float _FresnelBrightness;
+            float _FresnelPower;
+            float4 _FresnelColor;
+            float _FresnelShadowDropoff;
 
-				// Apply soft Fresnel
-				float rampPercentSoftFresnel = 1 - ((1 - rampLevel / _RampLevels) * (1 - _FresnelShadowDropoff));
-				col.rgb = col.rgb + _FresnelColor * (_FresnelBrightness * 10 - fresnelFactor * _FresnelBrightness * 10) * rampPercentSoftFresnel;
+            v2f vert(appdata_tan v)
+            {
+                v2f o;
 
-				// Apply hard rim lighting
-				_RimAlpha *= 1 - ((1 - rampLevel / _RampLevels) * (1 - _RimDropOff));
-				if (factor <= _RimPower) {
-					col.rgb = _RimColor.rgb * _RimAlpha + col.rgb * (1 - _RimAlpha);
-				}
+                o.uv = v.texcoord;
+                o.pos = UnityObjectToClipPos(v.vertex);
 
-				// Apply emmision lighting
-				half eIntensity = max(emmision.r, emmision.g);
-				eIntensity = max(eIntensity, emmision.b);
-				col = emmision * eIntensity + col * (1 - eIntensity);
+                o.worldPos =
+                    mul(unity_ObjectToWorld, v.vertex).xyz;
 
-				return col;
-			}
+                o.worldNormal =
+                    UnityObjectToWorldNormal(v.normal);
 
-			ENDCG
-		} // End Main Pass
+                o.worldTangent =
+                    UnityObjectToWorldDir(v.tangent.xyz);
 
-		// Shadow casting
-		UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
-	}
+                o.worldBitangent =
+                    cross(o.worldNormal, o.worldTangent)
+                    * v.tangent.w;
 
+                TRANSFER_VERTEX_TO_FRAGMENT(o);
+
+                return o;
+            }
+
+            fixed4 frag(v2f i) : SV_Target
+            {
+                float rampLevels = max(_RampLevels - 1.0, 1.0);
+
+                // Supports directional and positional light directions.
+                float3 lightVector =
+                    _WorldSpaceLightPos0.xyz -
+                    i.worldPos * _WorldSpaceLightPos0.w;
+
+                float3 lightDirection = normalize(lightVector);
+
+                float3 viewDirection = normalize(
+                    _WorldSpaceCameraPos.xyz - i.worldPos
+                );
+
+                fixed4 col = tex2D(
+                    _MainTex,
+                    i.uv * _MainTex_ST.xy + _MainTex_ST.zw
+                );
+
+                fixed3 tangentNormal = tex2D(
+                    _NormalTex,
+                    i.uv * _NormalTex_ST.xy + _NormalTex_ST.zw
+                ).rgb * 2 - 1;
+
+                fixed4 emission = tex2D(
+                    _EmmisTex,
+                    i.uv * _EmmisTex_ST.xy + _EmmisTex_ST.zw
+                );
+
+                float3 worldNormal = normalize(
+                    i.worldTangent * tangentNormal.r +
+                    i.worldBitangent * tangentNormal.g +
+                    i.worldNormal * tangentNormal.b
+                );
+
+                // Rim and Fresnel calculations.
+                float factor = dot(viewDirection, worldNormal);
+
+                float fresnelFactor = 1 - min(
+                    pow(max(1 - factor, 0),
+                    (1 - _FresnelPower) * 10), 1
+                );
+
+                UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
+
+                float intensity = saturate(
+                    dot(worldNormal, lightDirection) * _LightScalar
+                );
+
+                intensity *= atten;
+
+                float rampLevel = round(intensity * rampLevels);
+
+                float lightMultiplier = _LowIntensity +
+                    ((_HighIntensity - _LowIntensity) / rampLevels)
+                    * rampLevel;
+
+                float4 highColor =
+                    (rampLevel / rampLevels) * _HighColor;
+
+                float4 lowColor =
+                    ((rampLevels - rampLevel) / rampLevels) * _LowColor;
+
+                float4 mixColor = (highColor + lowColor) / 2;
+
+                col *= lightMultiplier;
+                col *= _Color * mixColor;
+
+                // Soft Fresnel lighting.
+                float softRamp = 1 -
+                    ((1 - rampLevel / rampLevels) *
+                    (1 - _FresnelShadowDropoff));
+
+                col.rgb += _FresnelColor.rgb *
+                    (_FresnelBrightness * 10 -
+                    fresnelFactor * _FresnelBrightness * 10)
+                    * softRamp;
+
+                // Hard rim lighting.
+                float rimAlpha = _RimAlpha *
+                    (1 - ((1 - rampLevel / rampLevels) *
+                    (1 - _RimDropOff)));
+
+                if (factor <= _RimPower)
+                {
+                    col.rgb = _RimColor.rgb * rimAlpha +
+                              col.rgb * (1 - rimAlpha);
+                }
+
+                // Emission.
+                half emissionIntensity = max(
+                    emission.r, max(emission.g, emission.b)
+                );
+
+                col.rgb = emission.rgb * emissionIntensity +
+                          col.rgb * (1 - emissionIntensity);
+
+                return col;
+            }
+            ENDCG
+        }
+
+        // Additional lights: point lights and spotlights.
+        Pass
+        {
+            Tags { "LightMode" = "ForwardAdd" }
+
+            Blend One One
+            ZWrite Off
+            Cull Back
+
+            CGPROGRAM
+            #pragma vertex vertAdd
+            #pragma fragment fragAdd
+            #pragma multi_compile_fwdadd_fullshadows
+
+            #include "UnityCG.cginc"
+            #include "Lighting.cginc"
+            #include "AutoLight.cginc"
+
+            struct v2fAdd
+            {
+                float2 uv : TEXCOORD0;
+                float3 worldNormal : TEXCOORD1;
+                float3 worldTangent : TEXCOORD2;
+                float3 worldBitangent : TEXCOORD3;
+                float3 worldPos : TEXCOORD4;
+                LIGHTING_COORDS(5, 6)
+                float4 pos : SV_POSITION;
+            };
+
+            float4 _Color;
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+
+            sampler2D _NormalTex;
+            float4 _NormalTex_ST;
+
+            float _RampLevels;
+            float _LightScalar;
+
+            float _HighIntensity;
+            float4 _HighColor;
+
+            float _LowIntensity;
+            float4 _LowColor;
+
+            v2fAdd vertAdd(appdata_tan v)
+            {
+                v2fAdd o;
+
+                o.uv = v.texcoord;
+                o.pos = UnityObjectToClipPos(v.vertex);
+
+                o.worldPos =
+                    mul(unity_ObjectToWorld, v.vertex).xyz;
+
+                o.worldNormal =
+                    UnityObjectToWorldNormal(v.normal);
+
+                o.worldTangent =
+                    UnityObjectToWorldDir(v.tangent.xyz);
+
+                o.worldBitangent =
+                    cross(o.worldNormal, o.worldTangent)
+                    * v.tangent.w;
+
+                TRANSFER_VERTEX_TO_FRAGMENT(o);
+
+                return o;
+            }
+
+            fixed4 fragAdd(v2fAdd i) : SV_Target
+            {
+                float rampLevels = max(_RampLevels - 1.0, 1.0);
+
+                float3 lightVector =
+                    _WorldSpaceLightPos0.xyz -
+                    i.worldPos * _WorldSpaceLightPos0.w;
+
+                float3 lightDirection = normalize(lightVector);
+
+                fixed4 col = tex2D(
+                    _MainTex,
+                    i.uv * _MainTex_ST.xy + _MainTex_ST.zw
+                );
+
+                fixed3 tangentNormal = tex2D(
+                    _NormalTex,
+                    i.uv * _NormalTex_ST.xy + _NormalTex_ST.zw
+                ).rgb * 2 - 1;
+
+                float3 worldNormal = normalize(
+                    i.worldTangent * tangentNormal.r +
+                    i.worldBitangent * tangentNormal.g +
+                    i.worldNormal * tangentNormal.b
+                );
+
+                UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
+
+                // Keep the ramp independent of attenuation.
+                // Apply attenuation to the final contribution below.
+                float intensity = saturate(
+                    dot(worldNormal, lightDirection) * _LightScalar
+                );
+
+                float rampLevel = round(intensity * rampLevels);
+
+                float lightMultiplier = _LowIntensity +
+                    ((_HighIntensity - _LowIntensity) / rampLevels)
+                    * rampLevel;
+
+                float4 highColor =
+                    (rampLevel / rampLevels) * _HighColor;
+
+                float4 lowColor =
+                    ((rampLevels - rampLevel) / rampLevels) * _LowColor;
+
+                float4 mixColor = (highColor + lowColor) / 2;
+
+                col *= lightMultiplier;
+                col *= _Color * mixColor;
+
+                // Add the light's colour, range falloff and shadowing.
+                col.rgb *= _LightColor0.rgb * atten;
+
+                // Preserve the main pass alpha.
+                col.a = 0;
+
+                return col;
+            }
+            ENDCG
+        }
+
+        // Shadow casting.
+        UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
+    }
 }
