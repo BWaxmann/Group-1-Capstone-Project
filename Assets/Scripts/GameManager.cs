@@ -349,8 +349,12 @@ public class GameManager : MonoBehaviour
         if (scoreParticlePool != null)
         {
             ScoreParticle scoreParticle = scoreParticlePool.GetObjectFromPool<ScoreParticle>(0);
-            scoreParticle.gameObject.SetActive(true);
-            scoreParticle.Initialise(change, position);
+            if (scoreParticle != null)
+            {
+                scoreParticle.gameObject.SetActive(true);
+                scoreParticle.Initialise(change, position);
+
+            }
         }
     }
 

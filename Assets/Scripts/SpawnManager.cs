@@ -50,14 +50,12 @@ public class SpawnManager : MonoBehaviour
             CatMovement cat = data.onlySpawnSpecificVariations
                 ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
                 : catSpawner.GetRandomObjectFromPool<CatMovement>();
-            if (cat == null)
+            if (cat != null)
             {
-                Debug.LogError("Failed to spawn cats.", this);
-                break;
+                cat.gameObject.SetActive(true);
+                Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
+                cat.Initialise(afterFeedingReturnPoint, spawnPosition);
             }
-            cat.gameObject.SetActive(true);
-            Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
-            cat.Initialise(afterFeedingReturnPoint, spawnPosition);
 
             yield return wait;
         }

@@ -13,6 +13,10 @@ public class ObjectSpawner : MonoBehaviour
     [Min(0)]
     float initialPoolSpawnDelay;
 
+    [SerializeField]
+    [Min(0)]
+    float maxPoolSize = 100;
+
     List<GameObject>[] objectPools;
     List<int> variationsForRandomPick = new List<int>();
 
@@ -68,7 +72,11 @@ public class ObjectSpawner : MonoBehaviour
                 return obj;
             }
         }
-        return SpawnNewObjectForPool(variation);
+        if (objectPools[variation].Count < maxPoolSize)
+        {
+            return SpawnNewObjectForPool(variation);
+        }
+        return null;
     }
 
     public T GetObjectFromPool<T>(int variation) where T : MonoBehaviour

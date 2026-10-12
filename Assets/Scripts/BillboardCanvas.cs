@@ -12,8 +12,8 @@ public class BillboardCanvas : MonoBehaviour
         PlayerInput.TurnToFaceCamera -= UpdateBillboard;
     }
 
-    public void UpdateBillboard(Quaternion rotation)
+    public void UpdateBillboard(Vector3 position)
     {
-        transform.rotation = rotation;
+        transform.forward = (transform.position - position).normalized;
     }
 }

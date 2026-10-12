@@ -68,7 +68,7 @@ public class PlayerInput : MonoBehaviour
     [Tooltip("Sound to play when firing a treat.")]
     SoundData launcherFireSound = new SoundData(1f, 1f);
 
-    public delegate void FaceCamera(Quaternion rotation);
+    public delegate void FaceCamera(Vector3 position);
     public static event FaceCamera TurnToFaceCamera;
 
     bool launchersActive;
@@ -285,7 +285,6 @@ public class PlayerInput : MonoBehaviour
         Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
         if (treat == null)
         {
-            Debug.LogError("Failed to spawn treat to launch.", this);
             return;
         }
         treat.gameObject.SetActive(true);
@@ -316,7 +315,7 @@ public class PlayerInput : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(billboardUpdateFrequency);
         while (true)
         {
-            TurnToFaceCamera?.Invoke(eye.rotation);
+            TurnToFaceCamera?.Invoke(eye.position);
             if (billboardUpdateFrequency > Time.deltaTime)
             {
                 yield return billboardUpdateFrequency;

@@ -95,11 +95,11 @@ MonoBehaviour:
     _pitch: 1
   gameMusicIntroAndOutro:
     _soundClip: {fileID: 8300000, guid: cfedf26edd4ba7c42b7d10fe97f32059, type: 3}
-    _volume: 0.5
+    _volume: 0.8
     _pitch: 1
   gameMusicLoop:
     _soundClip: {fileID: 8300000, guid: d9e9e7745a219be44b9a4f8a2e1eaefb, type: 3}
-    _volume: 0.5
+    _volume: 0.8
     _pitch: 1
   introLength: 12.65
   outroLength: 3
