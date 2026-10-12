@@ -61,6 +61,7 @@ MonoBehaviour:
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 3
+  initialPoolSpawnDelay: 0.09090909
 --- !u!114 &1504073715
 MonoBehaviour:
   m_ObjectHideFlags: 0

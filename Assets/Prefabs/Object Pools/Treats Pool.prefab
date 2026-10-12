@@ -60,3 +60,4 @@ MonoBehaviour:
       type: 3}
     _excludeFromRandomSelection: 0
     _initialPoolSize: 5
+  initialPoolSpawnDelay: 0.11111111

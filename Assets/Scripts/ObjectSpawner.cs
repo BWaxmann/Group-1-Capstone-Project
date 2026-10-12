@@ -9,6 +9,10 @@ public class ObjectSpawner : MonoBehaviour
     [SerializeField]
     ObjectVariation[] objectsInPool;
 
+    [SerializeField]
+    [Min(0)]
+    float initialPoolSpawnDelay;
+
     List<GameObject>[] objectPools;
     List<int> variationsForRandomPick = new List<int>();
 
@@ -25,7 +29,7 @@ public class ObjectSpawner : MonoBehaviour
 
     IEnumerator SpawnInitial()
     {
-        yield return null;
+        yield return new WaitForSeconds(initialPoolSpawnDelay);
 
         objectPools = new List<GameObject>[objectsInPool.Length];
         variationsForRandomPick.Clear();

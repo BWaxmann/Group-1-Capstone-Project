@@ -27,6 +27,15 @@ public class BossCatSpawner : MonoBehaviour
             bossSpawnTimes.Sort();
         }
 
+        StartCoroutine(InitialiseRoutine());
+
+        GameManager.instance.GameStart += StartSpawnRoutine;
+    }
+
+    IEnumerator InitialiseRoutine()
+    {
+        yield return null;
+
         foreach (BossData boss in bossPrefabs)
         {
             if (boss.bossPrefab != null)
@@ -35,16 +44,14 @@ public class BossCatSpawner : MonoBehaviour
                 instance.gameObject.SetActive(false);
                 bossInstances.Add(instance);
                 bossSpawnPoints.Add(boss.spawnPoint);
+                yield return null;
             }
         }
 
         if (bossInstances.Count == 0)
         {
             gameObject.SetActive(false);
-            return;
         }
-
-        GameManager.instance.GameStart += StartSpawnRoutine;
     }
 
     public void StartSpawnRoutine()
