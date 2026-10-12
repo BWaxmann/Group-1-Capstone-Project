@@ -1,9 +1,14 @@
 fileFormatVersion: 2
-guid: e4422f1b2d8bb564390a26a4ab59d0c7
+guid: 4bec7debb9744aa458d29263d74672f8
 ModelImporter:
   serializedVersion: 25
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: MoonMat
+    second: {fileID: 2100000, guid: 82469f3d53b4e464fa14c39da7d27ab8, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -31,7 +36,7 @@ ModelImporter:
     extraExposedTransformPaths: []
     extraUserProperties: []
     clipAnimations: []
-    isReadable: 1
+    isReadable: 0
   meshes:
     lODScreenPercentages: []
     globalScale: 1
@@ -43,7 +48,7 @@ ModelImporter:
     importCameras: 1
     importLights: 1
     swapUVChannels: 0
-    generateSecondaryUV: 1
+    generateSecondaryUV: 0
     useFileUnits: 1
     keepQuads: 0
     weldVertices: 1
