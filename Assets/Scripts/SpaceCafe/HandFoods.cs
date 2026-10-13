@@ -2,9 +2,9 @@ using System.Collections;
 using UnityEngine;
 
 // Each hand's launcher fires its own food (left starts Blue, right starts Orange).
-// When more foods are on the menu, squeezing a grip switches that hand to the next food.
+// When more foods are on the menu, flicking that hand's thumbstick left/right switches its food.
 // A tin in the food's colour hangs under each launcher so you always know which is which.
-// In the editor, keys 1-3 set the right hand's food (the mouse only fires the right launcher).
+// In the editor, keys 1-3 or the scroll wheel set the right hand's food (the mouse only fires the right launcher).
 public class HandFoods : MonoBehaviour
 {
     [SerializeField]
@@ -66,10 +66,13 @@ public class HandFoods : MonoBehaviour
             Set(true, handFood[1], false);
         }
 
+        // Flick a thumbstick right for the next food, left for the previous one
         if (foodsAvailable > 1)
         {
-            if (player.GripPressed(false)) Set(false, (handFood[0] + 1) % foodsAvailable, true);
-            if (player.GripPressed(true)) Set(true, (handFood[1] + 1) % foodsAvailable, true);
+            int flickLeftHand = player.ThumbFlick(false);
+            int flickRightHand = player.ThumbFlick(true);
+            if (flickLeftHand != 0) Set(false, Wrap(handFood[0] + flickLeftHand), true);
+            if (flickRightHand != 0) Set(true, Wrap(handFood[1] + flickRightHand), true);
         }
 
 #if UNITY_EDITOR
@@ -78,6 +81,11 @@ public class HandFoods : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha1 + i)) Set(true, i, true);
         }
 #endif
+    }
+
+    int Wrap(int foodIndex)
+    {
+        return ((foodIndex % foodsAvailable) + foodsAvailable) % foodsAvailable;
     }
 
     void Set(bool rightHand, int foodIndex, bool feedback)

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Liminal.SDK.VR;
 using Liminal.SDK.VR.Input;
+using Valve.VR;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,7 +65,7 @@ public class PlayerInput : MonoBehaviour
     [Header("Barista Mode")]
 
     [SerializeField]
-    [Tooltip("Space Cafe: each hand's launcher fires its own food, and squeezing a grip switches that hand's food (no yarnballs).")]
+    [Tooltip("Space Cafe: each hand's launcher fires its own food, and flicking that hand's thumbstick left/right switches it (no yarnballs).")]
     bool baristaMode = false;
 
     [SerializeField]
@@ -161,6 +162,10 @@ public class PlayerInput : MonoBehaviour
     int loadedTreatVariationRight = -1;
     bool gripPressedLeft;
     bool gripPressedRight;
+    int flickLeft;
+    int flickRight;
+    bool stickHeldLeft;
+    bool stickHeldRight;
 
     public Vector3 pickupMagnet => _pickupMagnet.position;
 
@@ -171,6 +176,9 @@ public class PlayerInput : MonoBehaviour
     public int LoadedFood(bool rightHand) => rightHand ? loadedTreatVariationRight : loadedTreatVariationLeft;
     public Transform Launcher(bool rightHand) => rightHand ? launcherRight.transform : launcherLeft.transform;
     public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
+
+    // A firm left/right flick of that hand's thumbstick this frame: -1 left, +1 right, 0 none
+    public int ThumbFlick(bool rightHand) => rightHand ? flickRight : flickLeft;
 
     public void LoadFood(bool rightHand, int treatPoolVariation)
     {
@@ -240,6 +248,8 @@ public class PlayerInput : MonoBehaviour
         bool gripDownLeft = GripDown(false);
         gripPressedLeft = gripDownLeft;
         gripPressedRight = gripDownRight;
+        flickLeft = ReadThumbFlick(false);
+        flickRight = ReadThumbFlick(true);
 
         UpdateReticles();
 
@@ -390,6 +400,42 @@ public class PlayerInput : MonoBehaviour
     {
         IVRInputDevice input = GetHandInput(rightHand);
         return input != null && input.HasButton(VRButton.Four) && input.GetButtonDown(VRButton.Four);
+    }
+
+    // Index: uses SteamVR's thumbstick left/right flick (bound as snap-turn, which this game doesn't use).
+    // Quest: reads the thumbstick directly. Editor: the mouse scroll wheel flicks the right hand.
+    int ReadThumbFlick(bool rightHand)
+    {
+        int direction = 0;
+        IVRDevice device = VRDevice.Device;
+        if (device != null && device.Name == "OpenVR")
+        {
+            SteamVR_Input_Sources source = rightHand ? SteamVR_Input_Sources.RightHand : SteamVR_Input_Sources.LeftHand;
+            SteamVR_Action_Boolean flickRightAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "SnapTurnRight");
+            SteamVR_Action_Boolean flickLeftAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "SnapTurnLeft");
+            if (flickRightAction != null && flickRightAction.GetStateDown(source)) direction = 1;
+            else if (flickLeftAction != null && flickLeftAction.GetStateDown(source)) direction = -1;
+        }
+        else
+        {
+            IVRInputDevice input = GetHandInput(rightHand);
+            float x = input != null ? input.GetAxis2D(VRAxis.One).x : 0f;
+            bool held = Mathf.Abs(x) > 0.7f;
+            bool wasHeld = rightHand ? stickHeldRight : stickHeldLeft;
+            if (held && !wasHeld) direction = x > 0 ? 1 : -1;
+            if (rightHand) stickHeldRight = held;
+            else stickHeldLeft = held;
+        }
+
+#if UNITY_EDITOR
+        if (rightHand && direction == 0)
+        {
+            float scroll = Input.mouseScrollDelta.y;
+            if (scroll > 0.1f) direction = 1;
+            else if (scroll < -0.1f) direction = -1;
+        }
+#endif
+        return direction;
     }
 
     // Quest reports the grip as a button; Index reports it as an analogue squeeze, so it's turned into a press here.

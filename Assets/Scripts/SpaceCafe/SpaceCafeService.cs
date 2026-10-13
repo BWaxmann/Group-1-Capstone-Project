@@ -56,7 +56,7 @@ public class SpaceCafeService : MonoBehaviour
     {
         new Stage { startsAfterSeconds = 0, foodsOnMenu = 2, tableAngleLimit = 50, maxCustomers = 2, secondsBetweenCustomers = 2.5f },
         new Stage { startsAfterSeconds = 50, foodsOnMenu = 2, tableAngleLimit = 100, maxCustomers = 3, secondsBetweenCustomers = 2f, announcement = "MORE CUSTOMERS!" },
-        new Stage { startsAfterSeconds = 130, foodsOnMenu = 3, tableAngleLimit = 180, maxCustomers = 4, secondsBetweenCustomers = 1.6f, announcement = "NEW: PINK!\n<size=60%>Squeeze grip to switch</size>" }
+        new Stage { startsAfterSeconds = 130, foodsOnMenu = 3, tableAngleLimit = 180, maxCustomers = 4, secondsBetweenCustomers = 1.6f, announcement = "NEW: PINK!\n<size=60%>Flick a thumbstick to switch</size>" }
     };
 
     [Header("Finale (LAST ORDERS!)")]
