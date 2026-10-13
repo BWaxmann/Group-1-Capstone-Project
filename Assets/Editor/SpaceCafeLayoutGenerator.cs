@@ -31,7 +31,6 @@ public static class SpaceCafeLayoutGenerator
     const float TableHeight = 0.75f;
     const float TableWidth = 0.6f;
     const float TableRingOffset = 22.5f;   // leaves a gap straight ahead for the boards
-    const float RaiseBoards = 0.9f;        // lifts the instruction/score boards above the cats
     const float ChairHeight = 0.9f;
     const int TableCount = 8;
     const float PortalAboveChair = 0.85f;
@@ -117,7 +116,9 @@ public static class SpaceCafeLayoutGenerator
         }
 
         Vector3 centre = player.transform.position;
-        float floorY = centre.y;
+        // The player rig isn't necessarily on the floor (it's 0.6 m up in CC_LEVEL), so find the real floor
+        float floorY = FindFloor(centre, player);
+        log.AppendLine($"Floor found at y = {floorY:F2} (player rig at y = {centre.y:F2}).");
         Vector3 forward = player.transform.forward;
         forward.y = 0;
         if (forward.sqrMagnitude < 0.001f) forward = Vector3.forward;
@@ -142,7 +143,6 @@ public static class SpaceCafeLayoutGenerator
         float counterTop = BuildCounter(root.transform, floorY);
         Transform register = PlaceOnCounter(root.transform, RegisterPrefab, "Register", 45f, counterTop, 0.35f);
         MoveLaunchersToCounter(root.transform, counterTop, info, log);
-        RaiseBoardsAboveCats(info, log);
 
         // Decoration only: treats and the aim reticle pass straight through these
         int ghosted = MakeDecorationOnly(register != null ? register.gameObject : null, info);
@@ -164,7 +164,7 @@ public static class SpaceCafeLayoutGenerator
             gameSettings.ApplyModifiedProperties();
             log.AppendLine($"Round length set to {RoundLength} seconds.");
         }
-        log.AppendLine("Player set to Barista Mode (each hand fires its own food; grip switches food).");
+        log.AppendLine("Player set to Barista Mode (left hand Blue, right hand Yellow).");
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -178,6 +178,18 @@ public static class SpaceCafeLayoutGenerator
     {
         float r = degrees * Mathf.Deg2Rad;
         return new Vector3(Mathf.Sin(r) * radius, 0, Mathf.Cos(r) * radius);
+    }
+
+    // The highest surface under the player (ignoring the player rig itself)
+    static float FindFloor(Vector3 centre, PlayerInput player)
+    {
+        float floor = float.MinValue;
+        foreach (RaycastHit hit in Physics.RaycastAll(centre + Vector3.up * 2f, Vector3.down, 10f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.collider.transform.IsChildOf(player.transform.root)) continue;
+            if (hit.point.y <= centre.y + 0.05f && hit.point.y > floor) floor = hit.point.y;
+        }
+        return floor > float.MinValue ? floor : centre.y;
     }
 
     static bool TryGetBounds(GameObject go, out Bounds bounds)
@@ -278,12 +290,15 @@ public static class SpaceCafeLayoutGenerator
 
             Bounds b = rend.bounds;
             if (b.size.x > 3.5f || b.size.z > 3.5f) continue;      // floors, walls, ceilings
-            if (b.min.y > floorY + 2.0f) continue;                 // things up high
-            if (b.max.y < floorY + 0.03f) continue;                // flat floor decals
+            if (b.min.y > floorY + 1.0f) continue;                 // things mounted up on walls (e.g. the Cat_Box5 chalkboard)
+            if (b.max.y < floorY + 0.3f) continue;                 // rugs, carpet tufts and other low floor decorations
 
             float dx = Mathf.Max(b.min.x - centre.x, 0, centre.x - b.max.x);
             float dz = Mathf.Max(b.min.z - centre.z, 0, centre.z - b.max.z);
             if (Mathf.Sqrt(dx * dx + dz * dz) > clearRadius) continue;
+            // Large things whose middle is well outside the play area only clip it with their corners
+            float cx = b.center.x - centre.x, cz = b.center.z - centre.z;
+            if (Mathf.Sqrt(cx * cx + cz * cz) > clearRadius + 1f) continue;
 
             // Switch off the whole prop if it's a small prefab, otherwise just this part
             GameObject target = rend.gameObject;
@@ -407,18 +422,6 @@ public static class SpaceCafeLayoutGenerator
             count++;
         }
         return count;
-    }
-
-    // The instruction and score boards sit in front of the player; lift them so cats aren't hidden
-    static void RaiseBoardsAboveCats(SpaceCafeLayoutInfo info, StringBuilder log)
-    {
-        GameObject ui = GameObject.Find("UI");
-        if (ui == null) return;
-
-        info.movedObjects.Add(ui);
-        info.originalPositions.Add(ui.transform.position);
-        ui.transform.position += Vector3.up * RaiseBoards;
-        log.AppendLine($"Raised the UI boards by {RaiseBoards} m so they don't hide the cats.");
     }
 
     static void BuildTables(Transform root, float floorY, float tableRadius, float portalRadius)
