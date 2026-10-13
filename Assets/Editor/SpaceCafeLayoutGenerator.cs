@@ -107,6 +107,10 @@ public static class SpaceCafeLayoutGenerator
                 {
                     if (oldInfo.movedObjects[i] != null) oldInfo.movedObjects[i].transform.position = oldInfo.originalPositions[i];
                 }
+                foreach (Collider col in oldInfo.disabledColliders)
+                {
+                    if (col != null) col.enabled = true;
+                }
             }
             Object.DestroyImmediate(oldRoot);
         }
@@ -138,6 +142,11 @@ public static class SpaceCafeLayoutGenerator
         Transform register = PlaceOnCounter(root.transform, RegisterPrefab, "Register", 45f, counterTop, 0.35f);
         MoveLaunchersToCounter(root.transform, counterTop, info, log);
         RaiseBoardsAboveCats(info, log);
+
+        // Decoration only: treats and the aim reticle pass straight through these
+        int ghosted = MakeDecorationOnly(register != null ? register.gameObject : null, info);
+        ghosted += MakeDecorationOnly(GameObject.Find("UI"), info);
+        log.AppendLine($"Switched off {ghosted} colliders on the register and UI boards so they don't block treats.");
         BuildTables(root.transform, floorY, tableRadius, portalRadius);
         BuildService(root.transform, register, log);
 
@@ -371,6 +380,22 @@ public static class SpaceCafeLayoutGenerator
             go.transform.position += Vector3.up * (counterTop - b.min.y + 0.01f);
         }
         log.AppendLine("Moved the launchers onto the front of the counter.");
+    }
+
+    // Switches off solid colliders (not triggers) so the object can't block shots
+    static int MakeDecorationOnly(GameObject target, SpaceCafeLayoutInfo info)
+    {
+        if (target == null) return 0;
+
+        int count = 0;
+        foreach (Collider col in target.GetComponentsInChildren<Collider>(true))
+        {
+            if (col.isTrigger || !col.enabled) continue;
+            col.enabled = false;
+            info.disabledColliders.Add(col);
+            count++;
+        }
+        return count;
     }
 
     // The instruction and score boards sit in front of the player; lift them so cats aren't hidden

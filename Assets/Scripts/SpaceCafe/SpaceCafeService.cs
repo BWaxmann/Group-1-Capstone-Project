@@ -183,12 +183,14 @@ public class SpaceCafeService : MonoBehaviour
 
     void BeginFinale()
     {
+        Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: LAST ORDERS (all {foodCount} foods)");
         finale = true;
         if (handFoods != null) handFoods.SetFoodsAvailable(foodCount);
     }
 
     void EndService()
     {
+        Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: round over");
         StopAllCoroutines();
     }
 
@@ -227,6 +229,7 @@ public class SpaceCafeService : MonoBehaviour
         if (newStage == stageIndex) return;
 
         stageIndex = newStage;
+        Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: stage {stageIndex + 1} ({stages[stageIndex].foodsOnMenu} foods, {stages[stageIndex].tableAngleLimit} degrees)");
         if (handFoods != null) handFoods.SetFoodsAvailable(Mathf.Min(stages[stageIndex].foodsOnMenu, foodCount));
         if (announce && !string.IsNullOrEmpty(stages[stageIndex].announcement))
         {

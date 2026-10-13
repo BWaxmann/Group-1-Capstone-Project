@@ -52,7 +52,12 @@ public class HandFoods : MonoBehaviour
 
     public void SetFoodsAvailable(int count)
     {
-        foodsAvailable = Mathf.Max(1, count);
+        int newCount = Mathf.Max(1, count);
+        if (newCount != foodsAvailable)
+        {
+            Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: foods on the menu {foodsAvailable} -> {newCount}");
+        }
+        foodsAvailable = newCount;
     }
 
     void Update()
@@ -105,6 +110,7 @@ public class HandFoods : MonoBehaviour
 
         if (feedback)
         {
+            Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: {(rightHand ? "right" : "left")} hand switched to food {handFood[hand]} of {foodsAvailable}");
             Haptics.Pulse(rightHand, Haptics.Strength.Medium);
             switchSound.PlayOneShot(audioSource);
             StartCoroutine(Pop(handTin[hand].transform));

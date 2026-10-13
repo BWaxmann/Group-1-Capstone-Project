@@ -506,7 +506,11 @@ public class PlayerInput : MonoBehaviour
         Treat treat = variation >= 0
             ? treatsSpawner.GetObjectFromPool<Treat>(variation)
             : treatsSpawner.GetRandomObjectFromPool<Treat>();
-        if (treat == null) return;
+        if (treat == null)
+        {
+            Debug.LogWarning($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: no treat available to fire (food {variation}, {(rightHand ? "right" : "left")} hand)");
+            return;
+        }
         treat.foodVariation = variation;
         treat.gameObject.SetActive(true);
         treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, instaKillActive);

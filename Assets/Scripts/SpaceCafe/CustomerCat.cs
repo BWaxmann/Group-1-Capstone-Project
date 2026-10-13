@@ -170,6 +170,7 @@ public class CustomerCat : CatMovement
         }
         else
         {
+            Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: {name} wanted food {order}, got {treat.foodVariation}");
             WrongFood();
         }
     }
