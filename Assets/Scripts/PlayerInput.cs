@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using Liminal.SDK.VR;
+using Liminal.SDK.VR.Input;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -82,6 +84,11 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     bool yarnballReadyOnStart;
 
+    [SerializeField]
+    [Range(0f, 1f)]
+    [Tooltip("How far the grip must be squeezed to count as pressed on controllers with an analogue grip (e.g. Valve Index).")]
+    float gripPressThreshold = 0.7f;
+
     [Header("Sound Effects")]
 
     [SerializeField]
@@ -111,6 +118,9 @@ public class PlayerInput : MonoBehaviour
 
     bool yarnballReady;
     float yarnballRechargeTimer;
+
+    bool gripHeldRight;
+    bool gripHeldLeft;
 
     bool instaKillActive;
     float instaKillTimer;
@@ -159,89 +169,42 @@ public class PlayerInput : MonoBehaviour
             SetYarnballBar();
         }
 
+        // Grip state is tracked every frame so a press is only counted once
+        bool gripDownRight = GripDown(true);
+        bool gripDownLeft = GripDown(false);
+
         if (!GameManager.instance.enablePlayerInput) return;
 
-#if UNITY_EDITOR
+        // Input goes through Liminal's VRDevice so the same code works on Quest (OVR) and Valve Index (OpenVR).
+        // In the editor the mouse also works: left click = right trigger, right click = right grip.
         if (launchersActive)
         {
-            if (Input.GetMouseButtonDown(1) && yarnballReady)
+            if (gripDownRight && yarnballReady)
             {
                 LaunchYarnball(true);
             }
-
-            if (enableAutofire)
-            {
-                if (Input.GetMouseButtonDown(0) && rightHandAutofire == null)
-                {
-                    rightHandAutofire = StartCoroutine(AutofireRoutine(true));
-                }
-                else if (Input.GetMouseButtonUp(0) && rightHandAutofire != null)
-                {
-                    StopCoroutine(rightHandAutofire);
-                    rightHandAutofire = null;
-                }
-            }
-            else
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    LaunchTreat(true);
-                }
-            }
-        }
-        else
-        {
-            if (Physics.Raycast(handRight.position, handRight.forward, out RaycastHit hit, 20))
-            {
-                if (TestForLaunchers(hit.transform))
-                {
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        GetLaunchers();
-                    }
-                    else
-                    {
-                        lastPerceivedLaunchers.Highlight(true);
-                    }
-                    return;
-                }
-            }
-
-            if (lastPerceivedLaunchers != null)
-            {
-                lastPerceivedLaunchers.Highlight(false);
-                lastPerceivedLaunchers = null;
-            }
-        }
-#else
-        if (launchersActive)
-        {
-            if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger) && yarnballReady)
-            {
-                LaunchYarnball(true);
-            }
-            if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger) && yarnballReady)
+            if (gripDownLeft && yarnballReady)
             {
                 LaunchYarnball(false);
             }
 
             if (enableAutofire)
             {
-                if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger) && rightHandAutofire == null)
+                if (TriggerDown(true) && rightHandAutofire == null)
                 {
                     rightHandAutofire = StartCoroutine(AutofireRoutine(true));
                 }
-                else if (OVRInput.GetUp(OVRInput.Button.SecondaryIndexTrigger) && rightHandAutofire != null)
+                else if (TriggerUp(true) && rightHandAutofire != null)
                 {
                     StopCoroutine(rightHandAutofire);
                     rightHandAutofire = null;
                 }
 
-                if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger) && leftHandAutofire == null)
+                if (TriggerDown(false) && leftHandAutofire == null)
                 {
                     leftHandAutofire = StartCoroutine(AutofireRoutine(false));
                 }
-                else if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger) && leftHandAutofire != null)
+                else if (TriggerUp(false) && leftHandAutofire != null)
                 {
                     StopCoroutine(leftHandAutofire);
                     leftHandAutofire = null;
@@ -249,11 +212,11 @@ public class PlayerInput : MonoBehaviour
             }
             else
             {
-                if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
+                if (TriggerDown(true))
                 {
                     LaunchTreat(true);
                 }
-                if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
+                if (TriggerDown(false))
                 {
                     LaunchTreat(false);
                 }
@@ -268,8 +231,7 @@ public class PlayerInput : MonoBehaviour
                 if (TestForLaunchers(hit.transform))
                 {
                     launchersFound = true;
-                    if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger)
-                        || OVRInput.GetDown(OVRInput.Button.Three))
+                    if (TriggerDown(false) || FaceButtonDown(false))
                     {
                         GetLaunchers();
                         return;
@@ -285,8 +247,7 @@ public class PlayerInput : MonoBehaviour
                 if (TestForLaunchers(hit.transform))
                 {
                     launchersFound = true;
-                    if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger)
-                        || OVRInput.GetDown(OVRInput.Button.One))
+                    if (TriggerDown(true) || FaceButtonDown(true))
                     {
                         GetLaunchers();
                         return;
@@ -304,7 +265,63 @@ public class PlayerInput : MonoBehaviour
                 lastPerceivedLaunchers = null;
             }
         }
+    }
+
+    IVRInputDevice GetHandInput(bool rightHand)
+    {
+        IVRDevice device = VRDevice.Device;
+        if (device == null) return null;
+        return rightHand ? device.PrimaryInputDevice : device.SecondaryInputDevice;
+    }
+
+    bool TriggerDown(bool rightHand)
+    {
+        IVRInputDevice input = GetHandInput(rightHand);
+        bool pressed = input != null && input.GetButtonDown(VRButton.Trigger);
+#if UNITY_EDITOR
+        if (rightHand) pressed |= Input.GetMouseButtonDown(0);
 #endif
+        return pressed;
+    }
+
+    bool TriggerUp(bool rightHand)
+    {
+        IVRInputDevice input = GetHandInput(rightHand);
+        bool released = input != null && input.GetButtonUp(VRButton.Trigger);
+#if UNITY_EDITOR
+        if (rightHand) released |= Input.GetMouseButtonUp(0);
+#endif
+        return released;
+    }
+
+    // A / X on Quest controllers. Index controllers don't map this, so the trigger is used there instead.
+    bool FaceButtonDown(bool rightHand)
+    {
+        IVRInputDevice input = GetHandInput(rightHand);
+        return input != null && input.HasButton(VRButton.Four) && input.GetButtonDown(VRButton.Four);
+    }
+
+    // Quest reports the grip as a button; Index reports it as an analogue squeeze, so it's turned into a press here.
+    bool GripDown(bool rightHand)
+    {
+        IVRInputDevice input = GetHandInput(rightHand);
+        bool held = false;
+        if (input != null)
+        {
+            held = input.HasButton(VRButton.Three)
+                ? input.GetButton(VRButton.Three)
+                : input.GetAxis1D(VRAxis.Three) >= gripPressThreshold;
+        }
+
+        bool wasHeld = rightHand ? gripHeldRight : gripHeldLeft;
+        if (rightHand) gripHeldRight = held;
+        else gripHeldLeft = held;
+
+        bool pressed = held && !wasHeld;
+#if UNITY_EDITOR
+        if (rightHand) pressed |= Input.GetMouseButtonDown(1);
+#endif
+        return pressed;
     }
 
     bool TestForLaunchers(Transform other)

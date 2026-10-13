@@ -1317,6 +1317,7 @@ MonoBehaviour:
   yarnballRechargingColour: {r: 0.5, g: 0, b: 0, a: 1}
   yarnballReadyColour: {r: 0, g: 1, b: 0, a: 1}
   yarnballReadyOnStart: 1
+  gripPressThreshold: 0.7
   launcherAudioSourceRight: {fileID: 2330815458311549678}
   launcherAudioSourceLeft: {fileID: 2740191476147212289}
   launcherFireSound:
@@ -1850,7 +1851,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BuildType: 2
-  EditorType: 1
+  EditorType: 3
 --- !u!1 &2084092611746225450
 GameObject:
   m_ObjectHideFlags: 0
