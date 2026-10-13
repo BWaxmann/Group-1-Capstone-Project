@@ -61,6 +61,12 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     string rapidFireText = "<color=#FF7310><size=1.2em>RAPID!</size></color>";
 
+    [Header("Barista Mode")]
+
+    [SerializeField]
+    [Tooltip("Space Cafe: one launcher in the right hand, and the left hand stays free to load food tins.")]
+    bool baristaMode = false;
+
     [SerializeField]
     TMP_Text ammoText;
 
@@ -150,7 +156,24 @@ public class PlayerInput : MonoBehaviour
     float rapidFireTimer;
     bool rapidFireActive => rapidFireTimer > 0;
 
+    int loadedTreatVariation = -1;
+
     public Vector3 pickupMagnet => _pickupMagnet.position;
+
+    // Barista mode
+    public bool isBaristaMode => baristaMode;
+    public bool hasLaunchers => launchersActive;
+    public int loadedFood => loadedTreatVariation;
+    public Transform leftHand => handLeft;
+    public Transform rightLauncher => launcherRight.transform;
+    public bool leftGripPressed { get; private set; }
+    public bool leftGripHeld => gripHeldLeft;
+
+    // Which treat (by position in the treat pool) the launcher fires. -1 = random, as before.
+    public void LoadFood(int treatPoolVariation)
+    {
+        loadedTreatVariation = treatPoolVariation;
+    }
 
     void Start()
     {
@@ -212,6 +235,7 @@ public class PlayerInput : MonoBehaviour
         // Grip state is tracked every frame so a press is only counted once
         bool gripDownRight = GripDown(true);
         bool gripDownLeft = GripDown(false);
+        leftGripPressed = gripDownLeft;
 
         UpdateReticles();
 
@@ -225,7 +249,8 @@ public class PlayerInput : MonoBehaviour
             {
                 LaunchYarnball(true);
             }
-            if (gripDownLeft && yarnballReady)
+            // In barista mode the left hand only loads food tins
+            if (gripDownLeft && yarnballReady && !baristaMode)
             {
                 LaunchYarnball(false);
             }
@@ -242,7 +267,7 @@ public class PlayerInput : MonoBehaviour
                     rightHandAutofire = null;
                 }
 
-                if (TriggerDown(false) && leftHandAutofire == null)
+                if (TriggerDown(false) && leftHandAutofire == null && !baristaMode)
                 {
                     leftHandAutofire = StartCoroutine(AutofireRoutine(false));
                 }
@@ -258,7 +283,7 @@ public class PlayerInput : MonoBehaviour
                 {
                     LaunchTreat(true);
                 }
-                if (TriggerDown(false))
+                if (TriggerDown(false) && !baristaMode)
                 {
                     LaunchTreat(false);
                 }
@@ -406,9 +431,10 @@ public class PlayerInput : MonoBehaviour
 
         lastPerceivedLaunchers.gameObject.SetActive(false);
         lastPerceivedLaunchers = null;
-        handLeft.gameObject.SetActive(false);
+        // Barista mode keeps the left hand free for loading food tins
+        handLeft.gameObject.SetActive(baristaMode);
         handRight.gameObject.SetActive(false);
-        launcherLeft.gameObject.SetActive(true);
+        launcherLeft.gameObject.SetActive(!baristaMode);
         launcherRight.gameObject.SetActive(true);
         Haptics.PulseBoth(Haptics.Strength.Medium);
 
@@ -427,8 +453,11 @@ public class PlayerInput : MonoBehaviour
 
     void LaunchTreat(bool rightHand)
     {
-        Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
+        Treat treat = loadedTreatVariation >= 0
+            ? treatsSpawner.GetObjectFromPool<Treat>(loadedTreatVariation)
+            : treatsSpawner.GetRandomObjectFromPool<Treat>();
         if (treat == null) return;
+        treat.foodVariation = loadedTreatVariation;
         treat.gameObject.SetActive(true);
         treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, instaKillActive);
         if (straightShots) treat.MakeStraightShot();

@@ -457,17 +457,22 @@ public class GameManager : MonoBehaviour
         GameEnd?.Invoke();
     }
 
-    void StartFinale()
+    // Big announcement text in front of the player (uses the countdown canvas)
+    public void ShowBanner(string text, float duration)
     {
-        finaleStarted = true;
-
         if (countdownText != null && pregameCanvas != null)
         {
             CancelInvoke(nameof(HidePregameCanvas));
-            countdownText.text = finaleBannerText;
+            countdownText.text = text;
             pregameCanvas.SetActive(true);
-            Invoke(nameof(HidePregameCanvas), finaleBannerDuration);
+            Invoke(nameof(HidePregameCanvas), duration);
         }
+    }
+
+    void StartFinale()
+    {
+        finaleStarted = true;
+        ShowBanner(finaleBannerText, finaleBannerDuration);
 
         PlaySoundEffect(finaleSound);
         Haptics.PulseBoth(Haptics.Strength.Strong);

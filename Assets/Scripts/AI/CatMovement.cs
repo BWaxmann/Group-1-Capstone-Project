@@ -446,6 +446,12 @@ public class CatMovement : MonoBehaviour
         moodDisplayRoutineInstance = null;
     }
 
+    // Called when a treat lands on this cat. Customer cats check the food matches their order.
+    public virtual void HitByTreat(Treat treat)
+    {
+        FeedCat(treat.isInstaKill);
+    }
+
     public virtual void FeedCat(bool instaKill)
     {
         if (isFullyFed) return;

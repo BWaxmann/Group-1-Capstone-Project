@@ -11,6 +11,11 @@ public class Treat : Launchable
 
     bool instaKill;
 
+    public bool isInstaKill => instaKill;
+
+    // Which food this treat is (its position in the treat pool), or -1 if not set
+    public int foodVariation { get; set; } = -1;
+
     public override void Launch(Transform launchPosition, float force, bool instaKill)
     {
         base.Launch(launchPosition, force, instaKill);
@@ -34,7 +39,7 @@ public class Treat : Launchable
             {
                 if (!cat.isFullyFed)
                 {
-                    cat.FeedCat(instaKill);
+                    cat.HitByTreat(this);
                     Despawn();
                 }
                 else

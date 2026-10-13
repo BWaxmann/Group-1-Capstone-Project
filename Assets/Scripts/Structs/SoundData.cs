@@ -28,6 +28,13 @@ public struct SoundData
         _pitch = pitch;
     }
 
+    public SoundData(AudioClip clip, float volume, float pitch)
+    {
+        _soundClip = clip;
+        _volume = volume;
+        _pitch = pitch;
+    }
+
     public void PlayOneShot(AudioSource source)
     {
         PlayOneShot(source, 1f);
