@@ -18,10 +18,16 @@ public class ScoreParticle : MonoBehaviour
 
     public void Initialise(float scoreValue, Vector3 position)
     {
+        Initialise(scoreValue, position, null);
+    }
+
+    // label is shown above the score, e.g. "PURR-FECT!"
+    public void Initialise(float scoreValue, Vector3 position, string label)
+    {
         if (scoreValue > 0)
         {
             scoreText.color = plusScoreColour;
-            scoreText.text = $"+{scoreValue}";
+            scoreText.text = string.IsNullOrEmpty(label) ? $"+{scoreValue}" : $"{label}\n+{scoreValue}";
         }
         else if (scoreValue < 0)
         {

@@ -33,12 +33,29 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     Transform treatLaunchPositionLeft;
 
-    [SerializeField] 
-    [Min(0)] 
+    [SerializeField]
+    [Min(0)]
     float launchForce = 6f;
 
     [SerializeField]
+    [Tooltip("Treats fly in a straight line until they hit something. When off, they arc using Launch Force.")]
+    bool straightShots = true;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How fast straight shots travel, in metres per second.")]
+    float straightShotSpeed = 15f;
+
+    [SerializeField]
+    [Tooltip("Show a ring where each launcher's shot will land.")]
+    bool showAimReticle = true;
+
+    [SerializeField]
     bool enableAutofire = true;
+
+    [SerializeField]
+    [Tooltip("Rhythm mode: one treat per trigger pull, and shots on the beat score more. Overrides autofire.")]
+    bool rhythmMode = true;
 
     [SerializeField]
     [Min(0)]
@@ -122,6 +139,11 @@ public class PlayerInput : MonoBehaviour
     bool gripHeldRight;
     bool gripHeldLeft;
 
+    AimReticle reticleRight;
+    AimReticle reticleLeft;
+
+    float shotSpeed => straightShots ? straightShotSpeed : launchForce;
+
     bool instaKillActive;
     float instaKillTimer;
 
@@ -173,6 +195,8 @@ public class PlayerInput : MonoBehaviour
         bool gripDownRight = GripDown(true);
         bool gripDownLeft = GripDown(false);
 
+        UpdateReticles();
+
         if (!GameManager.instance.enablePlayerInput) return;
 
         // Input goes through Liminal's VRDevice so the same code works on Quest (OVR) and Valve Index (OpenVR).
@@ -188,7 +212,7 @@ public class PlayerInput : MonoBehaviour
                 LaunchYarnball(false);
             }
 
-            if (enableAutofire)
+            if (enableAutofire && !rhythmMode)
             {
                 if (TriggerDown(true) && rightHandAutofire == null)
                 {
@@ -264,6 +288,26 @@ public class PlayerInput : MonoBehaviour
                 lastPerceivedLaunchers.Highlight(false);
                 lastPerceivedLaunchers = null;
             }
+        }
+    }
+
+    void UpdateReticles()
+    {
+        bool show = showAimReticle && launchersActive && GameManager.instance.enablePlayerInput;
+
+        if (show && reticleRight == null)
+        {
+            // Ignore the player's own hands and launchers when working out where shots land
+            reticleRight = AimReticle.Create(treatLaunchPositionRight, transform, "Aim Reticle Right");
+            reticleLeft = AimReticle.Create(treatLaunchPositionLeft, transform, "Aim Reticle Left");
+        }
+
+        if (reticleRight != null)
+        {
+            reticleRight.Configure(shotSpeed, !straightShots);
+            reticleLeft.Configure(shotSpeed, !straightShots);
+            reticleRight.SetVisible(show);
+            reticleLeft.SetVisible(show);
         }
     }
 
@@ -350,6 +394,12 @@ public class PlayerInput : MonoBehaviour
         launcherRight.gameObject.SetActive(true);
         Haptics.PulseBoth(Haptics.Strength.Medium);
 
+        if (rhythmMode)
+        {
+            BeatPulse.AddTo(launcherLeft, 0.12f);
+            BeatPulse.AddTo(launcherRight, 0.12f);
+        }
+
         GameManager.instance.GrabbedLaunchers();
     }
 
@@ -368,9 +418,33 @@ public class PlayerInput : MonoBehaviour
         Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
         if (treat == null) return;
         treat.gameObject.SetActive(true);
-        treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
+        treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, instaKillActive);
+        if (straightShots) treat.MakeStraightShot();
         PlaySound(launcherFireSound, rightHand);
-        Haptics.Pulse(rightHand, Haptics.Strength.Light);
+
+        if (rhythmMode && BeatClock.instance != null && BeatClock.instance.isRunning)
+        {
+            BeatClock.ShotQuality quality = BeatClock.instance.JudgeTiming();
+            treat.shotQuality = quality;
+
+            // The better the timing, the bigger the kick
+            switch (quality)
+            {
+                case BeatClock.ShotQuality.Perfect:
+                    Haptics.Pulse(rightHand, Haptics.Strength.Strong);
+                    break;
+                case BeatClock.ShotQuality.Great:
+                    Haptics.Pulse(rightHand, Haptics.Strength.Medium);
+                    break;
+                default:
+                    Haptics.Pulse(rightHand, Haptics.Strength.Light);
+                    break;
+            }
+        }
+        else
+        {
+            Haptics.Pulse(rightHand, Haptics.Strength.Light);
+        }
     }
 
     void LaunchYarnball(bool rightHand)
@@ -378,7 +452,8 @@ public class PlayerInput : MonoBehaviour
         Yarnball yarnball = treatsSpawner.GetObjectFromPool<Yarnball>(yarnballTreatSpawnerIndex);
         if (yarnball == null) return;
         yarnball.gameObject.SetActive(true);
-        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, false);
+        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, false);
+        if (straightShots) yarnball.MakeStraightShot();
         PlaySound(launcherYarnballSound, rightHand);
         Haptics.Pulse(rightHand, Haptics.Strength.Strong);
 

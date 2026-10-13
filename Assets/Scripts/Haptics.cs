@@ -60,20 +60,20 @@ public class Haptics : MonoBehaviour
         switch (strength)
         {
             case Strength.Light:
-                amplitude = 0.15f;
-                duration = 0.03f;
+                amplitude = 0.35f;
+                duration = 0.05f;
                 break;
             case Strength.Medium:
-                amplitude = 0.45f;
-                duration = 0.08f;
+                amplitude = 0.7f;
+                duration = 0.12f;
                 break;
             case Strength.Strong:
-                amplitude = 0.8f;
-                duration = 0.18f;
+                amplitude = 1f;
+                duration = 0.25f;
                 break;
             default:
                 amplitude = 1f;
-                duration = 0.5f;
+                duration = 0.6f;
                 break;
         }
     }

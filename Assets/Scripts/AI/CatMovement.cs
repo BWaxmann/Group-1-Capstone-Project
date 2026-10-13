@@ -202,6 +202,9 @@ public class CatMovement : MonoBehaviour
             voiceSource = GetComponentInChildren<AudioSource>();
         }
 
+        // Cats bob to the music
+        BeatPulse.AddTo(gameObject, 0.1f, true);
+
         agent.Warp(spawnPosition);
         transform.rotation = spawnPoint.rotation;
         agent.updatePosition = true;
@@ -411,6 +414,15 @@ public class CatMovement : MonoBehaviour
 
         moodCanvas.SetActive(false);
         moodDisplayRoutineInstance = null;
+    }
+
+    // Feeds the cat several bites at once (e.g. a Perfect on-beat shot)
+    public void FeedCat(bool instaKill, int bites)
+    {
+        for (int i = 0; i < bites && !isFullyFed; i++)
+        {
+            FeedCat(instaKill);
+        }
     }
 
     public virtual void FeedCat(bool instaKill)
