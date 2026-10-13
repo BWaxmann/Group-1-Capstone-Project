@@ -148,9 +148,16 @@ public class TinRack : MonoBehaviour
         tin.localScale = size;
     }
 
+    // Liminal switches the player rig on a little after the scene starts, so look for it when needed
+    bool FindPlayer()
+    {
+        if (player == null) player = FindObjectOfType<PlayerInput>();
+        return player != null;
+    }
+
     void Update()
     {
-        if (player == null || !player.isBaristaMode || !player.hasLaunchers) return;
+        if (!FindPlayer() || !player.isBaristaMode || !player.hasLaunchers) return;
 
 #if UNITY_EDITOR
         // Desktop testing without a headset
@@ -225,7 +232,7 @@ public class TinRack : MonoBehaviour
     public void Load(int foodIndex)
     {
         SpaceCafeService service = SpaceCafeService.instance;
-        if (service == null || foodIndex < 0 || foodIndex >= service.foodCount) return;
+        if (service == null || foodIndex < 0 || foodIndex >= service.foodCount || !FindPlayer()) return;
 
         player.LoadFood(service.FoodVariation(foodIndex));
 

@@ -176,13 +176,15 @@ public class SpaceCafeService : MonoBehaviour
         coins = 0;
         finale = false;
         stageIndex = -1;
+
+        // Customers first, so nothing below can stop the service from starting
+        StartCoroutine(ServiceRoutine());
         UpdateStage(0, false);
 
         // Start with the first food already loaded, so the first customers just need aiming
+        if (player == null) player = FindObjectOfType<PlayerInput>();
         if (tinRack != null) tinRack.Load(0);
         else if (player != null) player.LoadFood(FoodVariation(0));
-
-        StartCoroutine(ServiceRoutine());
     }
 
     void BeginFinale()
