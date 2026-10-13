@@ -297,7 +297,8 @@ MonoBehaviour:
   jiggleAnimationLayer: Jiggle Layer
   treatsUntilFull: 3
   moodCanvas: {fileID: 380663845529205776}
-  moodImage: {fileID: 7133352173263501868}
+  moodImage: {fileID: 6256468546335303603}
+  healthBar: {fileID: 3413221452085715467}
   moodSprites:
   - {fileID: 21300000, guid: 13f29d1fd654792409165a2957d3ad8a, type: 3}
   - {fileID: 21300000, guid: 9a49549adbb502445a90dbe7c8bcf9bb, type: 3}
@@ -3634,9 +3635,21 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 7102241139457686202}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7133352173263501868 stripped
+--- !u!114 &3413221452085715467 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 31235673841975446, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+  m_CorrespondingSourceObject: {fileID: 5606427916901914801, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+    type: 3}
+  m_PrefabInstance: {fileID: 7102241139457686202}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -113659843, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6256468546335303603 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3765935426342362377, guid: 94bbdedc2d45f7045be180ad3c546eb0,
     type: 3}
   m_PrefabInstance: {fileID: 7102241139457686202}
   m_PrefabAsset: {fileID: 0}
