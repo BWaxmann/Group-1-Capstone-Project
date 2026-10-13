@@ -1,53 +1,30 @@
 ﻿using UnityEngine;
 
-public class Treat : MonoBehaviour
+public class Treat : Launchable
 {
     [SerializeField]
     [Min(0)]
     float treatOnFloorLifetime = 1.5f;
 
     [SerializeField]
-    AudioSource audioSource;
-
-    [SerializeField]
-    SoundData treatHittingFloorSound = new SoundData(1f, 1f);
-
-    [SerializeField]
     Outline instaKillOutline;
-
-    Rigidbody rb;
-    bool isActive;
 
     bool instaKill;
 
-    public void LaunchTreat(Transform launchPosition, float force, bool instaKill)
+    public override void Launch(Transform launchPosition, float force, bool instaKill)
     {
-        if (rb == null)
-        {
-            rb = GetComponent<Rigidbody>();
-        }
+        base.Launch(launchPosition, force, instaKill);
 
         this.instaKill = instaKill;
         if (instaKillOutline != null)
         {
             instaKillOutline.enabled = instaKill;
         }
-
-        transform.position = launchPosition.position;
-        transform.rotation = launchPosition.rotation;
-        rb.velocity = Vector3.zero;
-        rb.AddForce(force * launchPosition.forward, ForceMode.Impulse);
-        isActive = true;
     }
 
-    void DespawnTreat()
-    {     
-        gameObject.SetActive(false);
-    }
-
-    public void OnCollisionEnter(Collision other)
+    public override void OnCollisionEnter(Collision other)
     {
-        if (isActive && other.gameObject.GetComponentInParent<Treat>() == null
+        if (isActive && other.gameObject.GetComponentInParent<Launchable>() == null
                 && other.gameObject.GetComponentInParent<PlayerInput>() == null)
         {
             isActive = false;
@@ -57,7 +34,7 @@ public class Treat : MonoBehaviour
                 if (!cat.isFullyFed)
                 {
                     cat.FeedCat(instaKill);
-                    DespawnTreat();
+                    Despawn();
                 }
                 else
                 {
@@ -73,7 +50,7 @@ public class Treat : MonoBehaviour
                     {
                         pickup.OnPickup();
                         pickup.gameObject.SetActive(false);
-                        DespawnTreat();
+                        Despawn();
                     }
                     else
                     {
@@ -82,7 +59,7 @@ public class Treat : MonoBehaviour
                 }
                 else
                 {
-                    Invoke(nameof(DespawnTreat), treatOnFloorLifetime);
+                    Invoke(nameof(Despawn), treatOnFloorLifetime);
                     if (audioSource != null && treatHittingFloorSound.soundClip != null)
                     {
                         treatHittingFloorSound.PlayOneShot(audioSource);

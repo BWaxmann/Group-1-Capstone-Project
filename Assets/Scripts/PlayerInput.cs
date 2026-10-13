@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInput : MonoBehaviour
 {
@@ -56,6 +57,31 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     string instaKillText = "<color=#FFD700><size=1.5em>∞</size></color>";
 
+    [Header("Yarnball")]
+
+    [SerializeField]
+    [Min(0)]
+    int yarnballTreatSpawnerIndex = 4;
+
+    [SerializeField]
+    [Min(0)]
+    float yarnballRechargeTime = 15f;
+
+    [SerializeField]
+    Slider yarnballRechargeBar;
+
+    [SerializeField]
+    Image yarnballRechargeBarImage;
+
+    [SerializeField]
+    Color yarnballRechargingColour = new Color(0.5f, 0, 0);
+
+    [SerializeField]
+    Color yarnballReadyColour = Color.green;
+
+    [SerializeField]
+    bool yarnballReadyOnStart;
+
     [Header("Sound Effects")]
 
     [SerializeField]
@@ -68,6 +94,12 @@ public class PlayerInput : MonoBehaviour
     [Tooltip("Sound to play when firing a treat.")]
     SoundData launcherFireSound = new SoundData(1f, 1f);
 
+    [SerializeField]
+    SoundData launcherYarnballSound = new SoundData(1f, 1f);
+
+    [SerializeField]
+    SoundData yarnballRechargedSound = new SoundData(1f, 1f);
+
     public delegate void FaceCamera(Vector3 position);
     public static event FaceCamera TurnToFaceCamera;
 
@@ -76,6 +108,9 @@ public class PlayerInput : MonoBehaviour
 
     Coroutine rightHandAutofire;
     Coroutine leftHandAutofire;
+
+    bool yarnballReady;
+    float yarnballRechargeTimer;
 
     bool instaKillActive;
     float instaKillTimer;
@@ -91,6 +126,10 @@ public class PlayerInput : MonoBehaviour
         GameManager.instance.GameEnd += StopLaunchers;
 
         ammoText.text = defaultDisplayText;
+
+        yarnballReady = yarnballReadyOnStart;
+        yarnballRechargeTimer = yarnballReady ? yarnballRechargeTime : 0;
+        SetYarnballBar();
 
         StartCoroutine(UpdateBillboardsRoutine());
     }
@@ -108,11 +147,28 @@ public class PlayerInput : MonoBehaviour
             }
         }
 
+        if (!yarnballReady)
+        {
+            yarnballRechargeTimer += Time.deltaTime;
+            if (yarnballRechargeTimer >= yarnballRechargeTime)
+            {
+                yarnballRechargeTimer = yarnballRechargeTime;
+                yarnballReady = true;
+                yarnballRechargedSound.PlayOneShot(launcherAudioSourceRight);
+            }
+            SetYarnballBar();
+        }
+
         if (!GameManager.instance.enablePlayerInput) return;
 
 #if UNITY_EDITOR
         if (launchersActive)
         {
+            if (Input.GetMouseButtonDown(1) && yarnballReady)
+            {
+                LaunchYarnball(true);
+            }
+
             if (enableAutofire)
             {
                 if (Input.GetMouseButtonDown(0) && rightHandAutofire == null)
@@ -160,6 +216,15 @@ public class PlayerInput : MonoBehaviour
 #else
         if (launchersActive)
         {
+            if (OVRInput.GetDown(OVRInput.Button.SecondaryHandTrigger) && yarnballReady)
+            {
+                LaunchYarnball(true);
+            }
+            if (OVRInput.GetDown(OVRInput.Button.PrimaryHandTrigger) && yarnballReady)
+            {
+                LaunchYarnball(false);
+            }
+
             if (enableAutofire)
             {
                 if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger) && rightHandAutofire == null)
@@ -283,13 +348,22 @@ public class PlayerInput : MonoBehaviour
     void LaunchTreat(bool rightHand)
     {
         Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
-        if (treat == null)
-        {
-            return;
-        }
+        if (treat == null) return;
         treat.gameObject.SetActive(true);
-        treat.LaunchTreat(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
+        treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
         PlaySound(launcherFireSound, rightHand);
+    }
+
+    void LaunchYarnball(bool rightHand)
+    {
+        Yarnball yarnball = treatsSpawner.GetObjectFromPool<Yarnball>(yarnballTreatSpawnerIndex);
+        if (yarnball == null) return;
+        yarnball.gameObject.SetActive(true);
+        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, false);
+        PlaySound(launcherYarnballSound, rightHand);
+
+        yarnballReady = false;
+        yarnballRechargeTimer = 0;
     }
 
     void PlaySound(SoundData sound, bool rightHand)
@@ -347,5 +421,11 @@ public class PlayerInput : MonoBehaviour
             StopCoroutine(leftHandAutofire);
             leftHandAutofire = null;
         }
+    }
+
+    void SetYarnballBar()
+    {
+        yarnballRechargeBar.value = Mathf.Clamp01(yarnballRechargeTimer / yarnballRechargeTime);
+        yarnballRechargeBarImage.color = yarnballReady ? yarnballReadyColour : yarnballRechargingColour;
     }
 }
