@@ -37,6 +37,7 @@ public class SpawnManager : MonoBehaviour
 
     int wavesCompleted = 0;
     bool finaleDone;
+    bool wavesStarted;
 
     void Start()
     {
@@ -57,7 +58,7 @@ public class SpawnManager : MonoBehaviour
 
     void StartFinaleRush()
     {
-        if (finaleSpawnCount > 0 && isActiveAndEnabled)
+        if (finaleSpawnCount > 0 && isActiveAndEnabled && wavesStarted)
         {
             StartCoroutine(FinaleRush());
         }
@@ -96,6 +97,10 @@ public class SpawnManager : MonoBehaviour
 
     public void StartSpawningWaves()
     {
+        // Switched off (e.g. by the peekaboo prototype)
+        if (!enabled) return;
+
+        wavesStarted = true;
         foreach (SpawnData data in spawnWavesData)
         {
             StartCoroutine(SpawnWave(data));

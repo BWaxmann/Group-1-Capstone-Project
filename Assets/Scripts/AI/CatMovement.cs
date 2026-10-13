@@ -137,7 +137,35 @@ public class CatMovement : MonoBehaviour
     [SerializeField]
     protected SoundData shrinkSound = new SoundData(1f, 1f);
 
+    [Header("Feel")]
+
+    [SerializeField]
+    [Tooltip("Happy Launch: the fed cat freezes for a moment, then flies up spinning and pops into confetti. Classic: the original shrink.")]
+    protected FinisherStyle finisherStyle = FinisherStyle.HappyLaunch;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How long the cat freezes on the final treat before launching (hit-pause).")]
+    protected float finisherFreeze = 0.09f;
+
+    [SerializeField]
+    [Min(0)]
+    protected float launchUpSpeed = 4.5f;
+
+    [SerializeField]
+    [Min(0)]
+    protected float launchSpinSpeed = 900f;
+
+    [SerializeField]
+    [Min(0.1f)]
+    protected float launchDuration = 0.6f;
+
+    [SerializeField]
+    [Tooltip("Particle effect for the final pop (index in the Particle Manager; 2 = confetti). -1 = none.")]
+    protected int launchPopParticleIndex = 2;
+
     protected NavMeshAgent agent;
+    protected CatJuice juice;
     protected AIState currentState;
     protected Vector3 targetDestination;
     protected DefendPoint targetDefendPoint;
@@ -158,7 +186,7 @@ public class CatMovement : MonoBehaviour
     protected PlayerInput player;
     protected Coroutine moodDisplayRoutineInstance;
 
-    public bool isMoving => agent.velocity.magnitude > 0;
+    public bool isMoving => agent != null && agent.isActiveAndEnabled && agent.velocity.magnitude > 0;
     public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
     public virtual bool isBoss => false;
 
@@ -181,6 +209,8 @@ public class CatMovement : MonoBehaviour
     protected virtual void OnDisable()
     {
         StopAllCoroutines();
+        // In case the cat was switched off during the finisher freeze
+        if (animator != null) animator.speed = 1f;
     }
 
     public virtual void Initialise(Transform spawnPoint, Vector3 spawnPosition)
@@ -201,7 +231,10 @@ public class CatMovement : MonoBehaviour
         {
             voiceSource = GetComponentInChildren<AudioSource>();
         }
+        PrepareFeel();
 
+        // The happy launch switches the agent off while the cat flies
+        if (!agent.enabled) agent.enabled = true;
         agent.Warp(spawnPosition);
         transform.rotation = spawnPoint.rotation;
         agent.updatePosition = true;
@@ -449,12 +482,18 @@ public class CatMovement : MonoBehaviour
 
         if (animator != null && animator.runtimeAnimatorController != null)
         {
-            animator.SetTrigger(jiggleTriggerHash);  
+            animator.SetTrigger(jiggleTriggerHash);
         }
+
+        // Squish, head bobble, and a pop that gets higher with each treat
+        PrepareFeel();
+        juice.Hit(instaKill ? 1.6f : 1f);
+        int bitesTaken = treatsUntilFull - currentHealth;
+        GameManager.instance.PlayCatHitSound(bodySource != null ? bodySource : voiceSource, 1f + (bitesTaken - 1) * 0.12f);
 
         if (currentHealth <= 0)
         {
-            Haptics.PulseBoth(isBoss ? Haptics.Strength.Huge : Haptics.Strength.Medium);
+            Haptics.PulseBoth(isBoss ? Haptics.Strength.Huge : Haptics.Strength.Strong);
             GameManager.instance.FeedCat(feedingScore, scoreDisplayPosition.position);
             BeginVanish();
         }
@@ -491,14 +530,86 @@ public class CatMovement : MonoBehaviour
     protected virtual void BeginVanish()
     {
         currentState = AIState.Full;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
+
+        if (finisherStyle == FinisherStyle.HappyLaunch)
+        {
+            // Stop walking/turning so they don't fight the flight
+            StopAllCoroutines();
+            StartCoroutine(HappyLaunchRoutine());
+            return;
+        }
+
         shrinkSound.PlayOneShot(bodySource);
         if (animator != null && animator.runtimeAnimatorController != null)
         {
             animator.SetTrigger(eatingTreatTriggerHash);
         }
-        agent.isStopped = true;
         DisappearParticleEffect();
         StartCoroutine(VanishRoutine());
+    }
+
+    protected void PrepareFeel()
+    {
+        if (juice == null)
+        {
+            juice = CatJuice.AddTo(this, animator != null ? animator : GetComponentInChildren<Animator>());
+        }
+        juice.enabled = true;
+    }
+
+    // The fed cat freezes for a beat, then flies up spinning and pops into confetti
+    protected IEnumerator HappyLaunchRoutine()
+    {
+        PrepareFeel();
+        juice.Hit(2f);
+
+        // Hit-pause: the cat holds still for a split second so the final hit lands
+        float animatorSpeed = animator != null ? animator.speed : 1f;
+        if (animator != null) animator.speed = 0f;
+        yield return new WaitForSeconds(finisherFreeze);
+        if (animator != null) animator.speed = animatorSpeed;
+
+        // Take the cat off the floor so it can fly
+        if (agent != null) agent.enabled = false;
+        juice.ResetPose();
+        juice.enabled = false;
+        GameManager.instance.PlayCatLaunchSound(bodySource != null ? bodySource : voiceSource);
+
+        Vector3 sideways = Random.insideUnitSphere * 0.8f;
+        sideways.y = 0;
+        Vector3 velocity = Vector3.up * launchUpSpeed + sideways;
+        Vector3 spinAxis = new Vector3(Random.Range(-0.3f, 0.3f), 1f, Random.Range(-0.3f, 0.3f)).normalized;
+        Vector3 startScale = transform.localScale;
+
+        float timer = 0;
+        while (timer < launchDuration)
+        {
+            float dt = Time.deltaTime;
+            timer += dt;
+            velocity += Physics.gravity * 0.5f * dt;
+            transform.position += velocity * dt;
+            transform.Rotate(spinAxis, launchSpinSpeed * dt, Space.World);
+
+            // Puffs up just before popping
+            float t = timer / launchDuration;
+            transform.localScale = startScale * (1f + 0.35f * t * t);
+            yield return null;
+        }
+
+        transform.localScale = startScale;
+        if (launchPopParticleIndex >= 0)
+        {
+            ParticleManager.instance.ShowParticleEffect(launchPopParticleIndex, transform.position);
+        }
+        DisappearParticleEffect();
+        GameManager.instance.PlayCatPopSound(transform.position);
+
+        if (animator != null) animator.SetLayerWeight(jiggleLayerIndex, 0f);
+        Vanish();
     }
 
     protected virtual IEnumerator VanishRoutine()
@@ -551,6 +662,8 @@ public class CatMovement : MonoBehaviour
 
     public virtual void GetStunned(float duration)
     {
+        if (isFullyFed) return;
+
         isStunned = true;
         stunTimer = Mathf.Max(stunTimer, duration * stunDurationMultiplier);
         previousStoppedState = agent.isStopped;
@@ -576,6 +689,12 @@ public class CatMovement : MonoBehaviour
         {
             animator.SetBool(stunnedBoolHash, false);
         }
+    }
+
+    public enum FinisherStyle
+    {
+        HappyLaunch,
+        Classic
     }
 
     public enum AIState

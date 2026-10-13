@@ -130,6 +130,20 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     SoundData postgameMusic = new SoundData(1f, 1f);
 
+    [Header("Cat Feel")]
+
+    [SerializeField]
+    [Tooltip("A random one plays each time a treat hits a cat, a little higher for each treat.")]
+    SoundData[] catHitSounds;
+
+    [SerializeField]
+    [Tooltip("Plays as a fed cat launches into the air.")]
+    SoundData catLaunchSound = new SoundData(1f, 1f);
+
+    [SerializeField]
+    [Tooltip("Plays when a launched cat pops into confetti.")]
+    SoundData catPopSound = new SoundData(1f, 1f);
+
     [Header("Combo")]
 
     [SerializeField]
@@ -674,6 +688,25 @@ public class GameManager : MonoBehaviour
                 scoreParticle.Initialise(change, position);
 
             }
+        }
+    }
+
+    public void PlayCatHitSound(AudioSource source, float pitchMultiplier)
+    {
+        if (catHitSounds == null || catHitSounds.Length == 0 || source == null) return;
+        catHitSounds[Random.Range(0, catHitSounds.Length)].PlayOneShot(source, pitchMultiplier * Random.Range(0.95f, 1.05f));
+    }
+
+    public void PlayCatLaunchSound(AudioSource source)
+    {
+        catLaunchSound.PlayOneShot(source, Random.Range(0.9f, 1.15f));
+    }
+
+    public void PlayCatPopSound(Vector3 position)
+    {
+        if (catPopSound.soundClip != null)
+        {
+            AudioSource.PlayClipAtPoint(catPopSound.soundClip, position, catPopSound.volume);
         }
     }
 

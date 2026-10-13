@@ -1389,6 +1389,55 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 5821738896459023128}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &313074330
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 313074331}
+  - component: {fileID: 313074332}
+  m_Layer: 0
+  m_Name: Cat Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &313074331
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 313074330}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.877, y: -0.775, z: -0.28}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1154175004}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &313074332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 313074330}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac92205225941378e22a5d71e353d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popOutDistance: 0.12
+  catScale: 1
+  rattleTarget: {fileID: 1154175004}
+  rattleAmount: 0.015
+  showEyes: 1
+  eyeColour: {r: 1, g: 0.85, b: 0.2, a: 1}
 --- !u!1 &329146580
 GameObject:
   m_ObjectHideFlags: 0
@@ -1698,6 +1747,55 @@ OffMeshLink:
   m_BiDirectional: 1
   m_Activated: 1
   m_AutoUpdatePositions: 0
+--- !u!1 &420214622
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 420214623}
+  - component: {fileID: 420214624}
+  m_Layer: 0
+  m_Name: Cat Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &420214623
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420214622}
+  m_LocalRotation: {x: -0.000000089406946, y: -0.00000005960463, z: -0.54481006, w: 0.83855957}
+  m_LocalPosition: {x: 0.011, y: 0.708, z: 0.362}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1154175067}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -66.023}
+--- !u!114 &420214624
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420214622}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac92205225941378e22a5d71e353d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popOutDistance: 0.12
+  catScale: 1
+  rattleTarget: {fileID: 1154175067}
+  rattleAmount: 0.015
+  showEyes: 1
+  eyeColour: {r: 1, g: 0.85, b: 0.2, a: 1}
 --- !u!1001 &422920033
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4065,6 +4163,55 @@ Transform:
   m_Father: {fileID: 520542186}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &960590946
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 960590947}
+  - component: {fileID: 960590948}
+  m_Layer: 0
+  m_Name: Cat Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &960590947
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 960590946}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.658, y: -0.11, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1154174938}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &960590948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 960590946}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac92205225941378e22a5d71e353d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popOutDistance: 0.12
+  catScale: 1
+  rattleTarget: {fileID: 1154174938}
+  rattleAmount: 0.015
+  showEyes: 1
+  eyeColour: {r: 1, g: 0.85, b: 0.2, a: 1}
 --- !u!1 &974753055
 GameObject:
   m_ObjectHideFlags: 0
@@ -5286,6 +5433,56 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 4294967295
       objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -8.225
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 1.613
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.6135811
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -436.292
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.11904575
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.7737067
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.10355794
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -162.161
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -183.441
+      objectReference: {fileID: 0}
+    - target: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.14
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b01bfc7a32091a74c80ce4c51c65c2e0, type: 3}
 --- !u!1 &1154174833 stripped
@@ -6248,6 +6445,42 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 14
   m_Mesh: {fileID: -7860970787427425400, guid: b01bfc7a32091a74c80ce4c51c65c2e0, type: 3}
+--- !u!4 &1154174938 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3790740219211191083, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1154174832}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1154175004 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -7964582761736136706, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1154174832}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1154175019 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1250302038036753304, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1154174832}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1154175058 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7348436746166524477, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1154174832}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1154175061 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6271648414918440970, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1154174832}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1154175067 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3938042159427582871, guid: b01bfc7a32091a74c80ce4c51c65c2e0,
+    type: 3}
+  m_PrefabInstance: {fileID: 1154174832}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1167789036
 GameObject:
   m_ObjectHideFlags: 0
@@ -6414,6 +6647,55 @@ Transform:
   m_Father: {fileID: 1884961782}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1189688107
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1189688108}
+  - component: {fileID: 1189688109}
+  m_Layer: 0
+  m_Name: Cat Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1189688108
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1189688107}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.754}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1154175058}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1189688109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1189688107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac92205225941378e22a5d71e353d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popOutDistance: 0.12
+  catScale: 1
+  rattleTarget: {fileID: 1154175058}
+  rattleAmount: 0.015
+  showEyes: 1
+  eyeColour: {r: 1, g: 0.85, b: 0.2, a: 1}
 --- !u!1 &1196350129
 GameObject:
   m_ObjectHideFlags: 0
@@ -7682,6 +7964,8 @@ MonoBehaviour:
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
+  finaleSpawnCount: 4
+  finaleDelayBetweenSpawns: 3
 --- !u!4 &1632909069
 Transform:
   m_ObjectHideFlags: 0
@@ -8705,6 +8989,8 @@ MonoBehaviour:
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
+  finaleSpawnCount: 4
+  finaleDelayBetweenSpawns: 3
 --- !u!4 &1846241328
 Transform:
   m_ObjectHideFlags: 0
@@ -8909,6 +9195,55 @@ OffMeshLink:
   m_BiDirectional: 1
   m_Activated: 1
   m_AutoUpdatePositions: 0
+--- !u!1 &1872203971
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1872203972}
+  - component: {fileID: 1872203973}
+  m_Layer: 0
+  m_Name: Cat Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1872203972
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872203971}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.312, y: -0.414, z: 1.831}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1154175019}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1872203973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872203971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac92205225941378e22a5d71e353d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popOutDistance: 0.12
+  catScale: 1
+  rattleTarget: {fileID: 1154175019}
+  rattleAmount: 0.015
+  showEyes: 1
+  eyeColour: {r: 1, g: 0.85, b: 0.2, a: 1}
 --- !u!1 &1884961781
 GameObject:
   m_ObjectHideFlags: 0
@@ -8959,6 +9294,55 @@ OffMeshLink:
   m_BiDirectional: 1
   m_Activated: 1
   m_AutoUpdatePositions: 0
+--- !u!1 &1885536209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1885536210}
+  - component: {fileID: 1885536211}
+  m_Layer: 0
+  m_Name: Cat Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1885536210
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885536209}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.023, y: 0.6, z: 0.561}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1154175061}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1885536211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885536209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ac92205225941378e22a5d71e353d56, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  popOutDistance: 0.12
+  catScale: 1
+  rattleTarget: {fileID: 1154175061}
+  rattleAmount: 0.015
+  showEyes: 1
+  eyeColour: {r: 1, g: 0.85, b: 0.2, a: 1}
 --- !u!1 &1889216309
 GameObject:
   m_ObjectHideFlags: 0
@@ -9538,6 +9922,8 @@ MonoBehaviour:
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
+  finaleSpawnCount: 4
+  finaleDelayBetweenSpawns: 3
 --- !u!4 &2047316991
 Transform:
   m_ObjectHideFlags: 0
@@ -10084,6 +10470,8 @@ MonoBehaviour:
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
+  finaleSpawnCount: 4
+  finaleDelayBetweenSpawns: 3
 --- !u!1001 &72467754742985996
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -11128,6 +11516,11 @@ PrefabInstance:
       propertyPath: scoreParticlePool
       value: 
       objectReference: {fileID: 7440272166285416836}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
+      propertyPath: gameTime
+      value: 60
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1db9752d27168e44eb8c460b6c8bb8ee, type: 3}
 --- !u!1 &7090113561561907868 stripped
