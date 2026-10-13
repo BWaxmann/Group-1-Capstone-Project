@@ -30,6 +30,12 @@ public class SpaceCafeService : MonoBehaviour
         public float tableAngleLimit = 60;
         [Min(1)] public int maxCustomers = 2;
         [Min(0.1f)] public float secondsBetweenCustomers = 2.5f;
+        [Min(1)]
+        [Tooltip("Shortest order (number of treats in a row) in this stage.")]
+        public int shortestOrder = 1;
+        [Min(1)]
+        [Tooltip("Longest order in this stage.")]
+        public int longestOrder = 1;
         [Tooltip("Banner shown when this stage starts. Leave empty for none.")]
         public string announcement;
     }
@@ -49,14 +55,20 @@ public class SpaceCafeService : MonoBehaviour
 
     [SerializeField]
     [Min(1)]
-    float customerPatience = 14f;
+    [Tooltip("Seconds a cat waits for a one-treat order.")]
+    float customerPatience = 12f;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("Extra seconds of patience for each additional treat in an order.")]
+    float patiencePerExtraTreat = 4f;
 
     [SerializeField]
     Stage[] stages = new Stage[]
     {
-        new Stage { startsAfterSeconds = 0, foodsOnMenu = 2, tableAngleLimit = 50, maxCustomers = 2, secondsBetweenCustomers = 2.5f },
-        new Stage { startsAfterSeconds = 50, foodsOnMenu = 2, tableAngleLimit = 100, maxCustomers = 3, secondsBetweenCustomers = 2f, announcement = "MORE CUSTOMERS!" },
-        new Stage { startsAfterSeconds = 130, foodsOnMenu = 3, tableAngleLimit = 180, maxCustomers = 4, secondsBetweenCustomers = 1.6f, announcement = "NEW: PINK!\n<size=60%>Flick a thumbstick to switch</size>" }
+        new Stage { startsAfterSeconds = 0, foodsOnMenu = 2, tableAngleLimit = 70, maxCustomers = 3, secondsBetweenCustomers = 2f, shortestOrder = 1, longestOrder = 1 },
+        new Stage { startsAfterSeconds = 40, foodsOnMenu = 2, tableAngleLimit = 115, maxCustomers = 4, secondsBetweenCustomers = 1.8f, shortestOrder = 1, longestOrder = 2, announcement = "COMBO ORDERS!" },
+        new Stage { startsAfterSeconds = 90, foodsOnMenu = 2, tableAngleLimit = 180, maxCustomers = 5, secondsBetweenCustomers = 1.5f, shortestOrder = 2, longestOrder = 3, announcement = "THE CAFE IS PACKED!" }
     };
 
     [Header("Finale (LAST ORDERS!)")]
@@ -208,7 +220,8 @@ public class SpaceCafeService : MonoBehaviour
             int maxCustomers = stage.maxCustomers + (finale ? finaleExtraCustomers : 0);
             if (spawnTimer <= 0 && CustomersOut() < maxCustomers)
             {
-                if (SendCustomer(finale ? 180f : stage.tableAngleLimit, finale ? foodCount : stage.foodsOnMenu))
+                if (SendCustomer(finale ? 180f : stage.tableAngleLimit, finale ? foodCount : stage.foodsOnMenu,
+                                 stage.shortestOrder, stage.longestOrder))
                 {
                     spawnTimer = stage.secondsBetweenCustomers * (finale ? finaleSpawnSpeedMultiplier : 1f);
                 }
@@ -254,7 +267,7 @@ public class SpaceCafeService : MonoBehaviour
         return count;
     }
 
-    bool SendCustomer(float angleLimit, int foodsOnMenu)
+    bool SendCustomer(float angleLimit, int foodsOnMenu, int shortestOrder, int longestOrder)
     {
         List<CustomerTable> free = new List<CustomerTable>();
         foreach (CustomerTable table in CustomerTable.all)
@@ -269,10 +282,21 @@ public class SpaceCafeService : MonoBehaviour
         CustomerCat cat = GetCustomer();
         if (cat == null) return false;
 
-        int food = Random.Range(0, Mathf.Clamp(foodsOnMenu, 1, foodCount));
+        // A sequence of treats, e.g. Yellow, Yellow, Blue
+        int menu = Mathf.Clamp(foodsOnMenu, 1, foodCount);
+        int length = Random.Range(Mathf.Max(1, shortestOrder), Mathf.Max(shortestOrder, longestOrder) + 1);
+        int[] order = new int[length];
+        List<OrderBubble.Item> icons = new List<OrderBubble.Item>();
+        for (int i = 0; i < length; i++)
+        {
+            int food = Random.Range(0, menu);
+            order[i] = FoodVariation(food);
+            icons.Add(new OrderBubble.Item(foods[food].treatPrefab, foods[food].colour));
+        }
+
         CustomerTable chosen = free[Random.Range(0, free.Count)];
         cat.gameObject.SetActive(true);
-        cat.Arrive(chosen, FoodVariation(food), foods[food].treatPrefab, foods[food].colour, customerPatience);
+        cat.Arrive(chosen, order, icons, customerPatience + patiencePerExtraTreat * (length - 1));
         return true;
     }
 

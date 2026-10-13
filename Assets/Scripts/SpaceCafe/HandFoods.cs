@@ -18,6 +18,10 @@ public class HandFoods : MonoBehaviour
     [SerializeField]
     SoundData switchSound = new SoundData(1f, 1f);
 
+    [SerializeField]
+    [Tooltip("Let a thumbstick flick switch that hand's food. Off when each hand keeps one food for the whole round.")]
+    bool allowSwitching = false;
+
     PlayerInput player;
     AudioSource audioSource;
     int foodsAvailable = 1;
@@ -74,7 +78,7 @@ public class HandFoods : MonoBehaviour
         }
 
         // Flick a thumbstick right for the next food, left for the previous one (only while playing)
-        if (foodsAvailable > 1 && GameManager.instance != null && GameManager.instance.enablePlayerInput)
+        if (allowSwitching && foodsAvailable > 1 && GameManager.instance != null && GameManager.instance.enablePlayerInput)
         {
             int flickLeftHand = player.ThumbFlick(false);
             int flickRightHand = player.ThumbFlick(true);

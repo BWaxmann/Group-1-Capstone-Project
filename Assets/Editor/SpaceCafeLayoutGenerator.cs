@@ -27,6 +27,7 @@ public static class SpaceCafeLayoutGenerator
     const float CounterRadius = 0.85f;
     const float CounterHeight = 0.95f;
     const float CounterDepth = 0.45f;
+    const float RoundLength = 180f;
     const float TableHeight = 0.75f;
     const float TableWidth = 0.6f;
     const float TableRingOffset = 22.5f;   // leaves a gap straight ahead for the boards
@@ -153,6 +154,16 @@ public static class SpaceCafeLayoutGenerator
         SerializedObject playerSettings = new SerializedObject(player);
         playerSettings.FindProperty("baristaMode").boolValue = true;
         playerSettings.ApplyModifiedProperties();
+
+        // A 3-minute round (Liminal's minimum), which the Space Cafe's stages are timed for
+        GameManager gameManager = Object.FindObjectOfType<GameManager>();
+        if (gameManager != null)
+        {
+            SerializedObject gameSettings = new SerializedObject(gameManager);
+            gameSettings.FindProperty("gameTime").floatValue = RoundLength;
+            gameSettings.ApplyModifiedProperties();
+            log.AppendLine($"Round length set to {RoundLength} seconds.");
+        }
         log.AppendLine("Player set to Barista Mode (each hand fires its own food; grip switches food).");
 
         EditorSceneManager.MarkSceneDirty(scene);
@@ -464,9 +475,9 @@ public static class SpaceCafeLayoutGenerator
 
         SpaceCafeService.Food[] foods =
         {
+            // Left hand Blue, right hand Yellow (the "Orange" treat). Pink is set aside for now.
             MakeFood("Blue", 0, "Assets/Prefabs/Treats/Blue Treat.prefab", new Color(0.3f, 0.6f, 1f)),
-            MakeFood("Orange", 1, "Assets/Prefabs/Treats/Orange Treat.prefab", new Color(1f, 0.6f, 0.15f)),
-            MakeFood("Pink", 2, "Assets/Prefabs/Treats/Pink Treat.prefab", new Color(1f, 0.45f, 0.75f))
+            MakeFood("Yellow", 1, "Assets/Prefabs/Treats/Orange Treat.prefab", new Color(1f, 0.78f, 0.15f))
         };
 
         List<CustomerCat> customers = new List<CustomerCat>();

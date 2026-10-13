@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -26,6 +27,16 @@ public class CustomerCat : CatMovement
     [Tooltip("How far above the cat's head the order bubble floats.")]
     float bubbleHeight = 0.2f;
 
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How long the angry face shows after a wrong treat.")]
+    float wrongFoodFaceDuration = 0.5f;
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("How long the happy face shows before a served cat portals out.")]
+    float happyFaceDuration = 0.4f;
+
     CustomerTable table;
     OrderBubble bubble;
     Vector3 baseScale;
@@ -33,12 +44,18 @@ public class CustomerCat : CatMovement
     float patienceTimer;
     bool waitingForOrder;
     bool leaving;
+    int baseFeedingScore;
 
-    public int order { get; private set; } = -1;
+    // The treats this cat wants, in order (as treat pool variations), and how far through it the player is
+    int[] order = new int[0];
+    int orderStep;
+
+    public int wantsNow => orderStep < order.Length ? order[orderStep] : -1;
 
     void Awake()
     {
         baseScale = transform.localScale;
+        baseFeedingScore = feedingScore;
 
         // Customers never walk, so switch off everything that drives walking
         NavMeshAgent navAgent = GetComponent<NavMeshAgent>();
@@ -69,11 +86,15 @@ public class CustomerCat : CatMovement
         gameObject.SetActive(false);
     }
 
-    public void Arrive(CustomerTable atTable, int foodVariation, GameObject foodPrefab, Color foodColour, float patienceSeconds)
+    // foodVariations: the treats wanted, in order. icons: how to show each one in the bubble.
+    public void Arrive(CustomerTable atTable, int[] foodVariations, List<OrderBubble.Item> icons, float patienceSeconds)
     {
         table = atTable;
         table.customer = this;
-        order = foodVariation;
+        order = foodVariations;
+        orderStep = 0;
+        // Bigger orders are worth more
+        feedingScore = baseFeedingScore * Mathf.Max(1, order.Length);
         patience = patienceSeconds;
         patienceTimer = patienceSeconds;
         waitingForOrder = false;
@@ -91,10 +112,10 @@ public class CustomerCat : CatMovement
         transform.position = table.portalRing.transform.position;
         FacePlayer();
 
-        StartCoroutine(ArriveRoutine(foodPrefab, foodColour));
+        StartCoroutine(ArriveRoutine(icons));
     }
 
-    IEnumerator ArriveRoutine(GameObject foodPrefab, Color foodColour)
+    IEnumerator ArriveRoutine(List<OrderBubble.Item> icons)
     {
         table.portalRing.Open();
         SpaceCafeService.instance.PlayPortalSound(transform.position);
@@ -120,7 +141,7 @@ public class CustomerCat : CatMovement
         {
             roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource);
         }
-        bubble.Show(foodPrefab, foodColour, Vector3.up * (HeadHeight() + bubbleHeight));
+        bubble.Show(icons, Vector3.up * (HeadHeight() + bubbleHeight));
         waitingForOrder = true;
 
         while (patienceTimer > 0)
@@ -164,24 +185,42 @@ public class CustomerCat : CatMovement
     {
         if (!waitingForOrder || leaving) return;
 
-        if (order < 0 || treat.foodVariation == order)
+        int wanted = wantsNow;
+        if (wanted >= 0 && treat.foodVariation != wanted)
         {
+            Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: {name} wanted food {wanted}, got {treat.foodVariation}");
+            WrongFood();
+            return;
+        }
+
+        orderStep++;
+        if (orderStep >= order.Length)
+        {
+            // Whole order served
             FeedCat(treat.isInstaKill);
         }
         else
         {
-            Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: {name} wanted food {order}, got {treat.foodVariation}");
-            WrongFood();
+            // One down, more to go: a happy squish and the next treat moves into the big bubble
+            juice.Hit(0.9f);
+            GameManager.instance.PlayCatHitSound(bodySource != null ? bodySource : voiceSource, 1f + orderStep * 0.15f);
+            Haptics.PulseBoth(Haptics.Strength.Light);
+            bubble.Advance();
         }
     }
 
     void WrongFood()
     {
-        // "Blep": head shake, bubble wobble, a silly sound. No penalty.
+        // "Blep": head shake, bubble wobble with an angry face, a silly sound. No penalty.
         juice.Hit(0.8f);
         bubble.Shake();
+        bubble.FlashFace(AngryFace(), wrongFoodFaceDuration);
         SpaceCafeService.instance.PlayWrongFoodSound(transform.position);
     }
+
+    // The cat's mood faces run from happiest (first) to grumpiest (last)
+    Sprite HappyFace() => moodSprites != null && moodSprites.Length > 0 ? moodSprites[0] : null;
+    Sprite AngryFace() => moodSprites != null && moodSprites.Length > 0 ? moodSprites[moodSprites.Length - 1] : null;
 
     // Served! (Called by FeedCat once full, and at the end of the round)
     protected override void BeginVanish()
@@ -195,18 +234,20 @@ public class CustomerCat : CatMovement
         currentState = AIState.Full;
         StopAllCoroutines();
         waitingForOrder = false;
-        bubble.Hide();
         SpaceCafeService.instance.CustomerServed(this);
         StartCoroutine(HappyExitRoutine());
     }
 
     IEnumerator HappyExitRoutine()
     {
-        // A happy bounce, then back through the portal
+        // A happy bounce and a happy face in the bubble, then back through the portal
         juice.Hit(1.6f);
+        bubble.FlashFace(HappyFace(), 0f);
         if (animator != null) animator.speed = 0f;
         yield return new WaitForSeconds(finisherFreeze);
         if (animator != null) animator.speed = 1f;
+        yield return new WaitForSeconds(happyFaceDuration);
+        bubble.Hide();
         yield return LeaveRoutine(true);
     }
 
