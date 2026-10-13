@@ -22,13 +22,76 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     SpawnData[] spawnWavesData;
 
+    [Header("Finale Rush")]
+
+    [SerializeField]
+    [Min(0)]
+    [Tooltip("Extra cats this spawner sends in once the finale starts.")]
+    int finaleSpawnCount = 4;
+
+    [SerializeField]
+    [Min(0)]
+    float finaleDelayBetweenSpawns = 3f;
+
     public bool allWavesCompleted { get { return wavesCompleted >= spawnWavesData.Length; } }
 
     int wavesCompleted = 0;
+    bool finaleDone;
 
     void Start()
     {
         GameManager.instance.GameStart += StartSpawningWaves;
+        GameManager.instance.FinaleStart += StartFinaleRush;
+        GameManager.instance.GameEnd += StopSpawning;
+    }
+
+    void OnDestroy()
+    {
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.GameStart -= StartSpawningWaves;
+            GameManager.instance.FinaleStart -= StartFinaleRush;
+            GameManager.instance.GameEnd -= StopSpawning;
+        }
+    }
+
+    void StartFinaleRush()
+    {
+        if (finaleSpawnCount > 0 && isActiveAndEnabled)
+        {
+            StartCoroutine(FinaleRush());
+        }
+    }
+
+    IEnumerator FinaleRush()
+    {
+        WaitForSeconds wait = new WaitForSeconds(finaleDelayBetweenSpawns);
+        for (int i = 0; i < finaleSpawnCount; i++)
+        {
+            SpawnCat(catSpawner.GetRandomObjectFromPool<CatMovement>());
+            yield return wait;
+        }
+        finaleDone = true;
+
+        if (allWavesCompleted)
+        {
+            SpawnerShutDown();
+        }
+    }
+
+    void StopSpawning()
+    {
+        StopAllCoroutines();
+    }
+
+    void SpawnCat(CatMovement cat)
+    {
+        if (cat != null)
+        {
+            cat.gameObject.SetActive(true);
+            Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
+            cat.Initialise(afterFeedingReturnPoint, spawnPosition);
+        }
     }
 
     public void StartSpawningWaves()
@@ -50,19 +113,15 @@ public class SpawnManager : MonoBehaviour
             CatMovement cat = data.onlySpawnSpecificVariations
                 ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
                 : catSpawner.GetRandomObjectFromPool<CatMovement>();
-            if (cat != null)
-            {
-                cat.gameObject.SetActive(true);
-                Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
-                cat.Initialise(afterFeedingReturnPoint, spawnPosition);
-            }
+            SpawnCat(cat);
 
             yield return wait;
         }
 
         wavesCompleted++;
-        if (wavesCompleted >= spawnWavesData.Length)
-        {            
+        // Stay active until the finale rush has run, or it would be cut off
+        if (wavesCompleted >= spawnWavesData.Length && (finaleSpawnCount == 0 || finaleDone))
+        {
             SpawnerShutDown();
         }
     }

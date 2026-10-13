@@ -348,6 +348,7 @@ public class PlayerInput : MonoBehaviour
         handRight.gameObject.SetActive(false);
         launcherLeft.gameObject.SetActive(true);
         launcherRight.gameObject.SetActive(true);
+        Haptics.PulseBoth(Haptics.Strength.Medium);
 
         GameManager.instance.GrabbedLaunchers();
     }
@@ -369,6 +370,7 @@ public class PlayerInput : MonoBehaviour
         treat.gameObject.SetActive(true);
         treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
         PlaySound(launcherFireSound, rightHand);
+        Haptics.Pulse(rightHand, Haptics.Strength.Light);
     }
 
     void LaunchYarnball(bool rightHand)
@@ -378,6 +380,7 @@ public class PlayerInput : MonoBehaviour
         yarnball.gameObject.SetActive(true);
         yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, false);
         PlaySound(launcherYarnballSound, rightHand);
+        Haptics.Pulse(rightHand, Haptics.Strength.Strong);
 
         yarnballReady = false;
         yarnballRechargeTimer = 0;

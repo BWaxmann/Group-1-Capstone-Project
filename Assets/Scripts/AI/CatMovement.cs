@@ -454,9 +454,25 @@ public class CatMovement : MonoBehaviour
 
         if (currentHealth <= 0)
         {
+            Haptics.PulseBoth(isBoss ? Haptics.Strength.Huge : Haptics.Strength.Medium);
             GameManager.instance.FeedCat(feedingScore, scoreDisplayPosition.position);
             BeginVanish();
         }
+    }
+
+    // Used when the round ends: every cat still in the cafe leaves happy, without adding score.
+    public virtual void CelebrateAndVanish()
+    {
+        if (isFullyFed || !gameObject.activeInHierarchy) return;
+
+        StopAllCoroutines();
+        if (moodCanvas != null && moodSprites != null && moodSprites.Length > 0)
+        {
+            currentHealth = 0;
+            moodCanvas.SetActive(true);
+            SetMoodImage();
+        }
+        BeginVanish();
     }
 
     protected virtual void SetMoodImage()
