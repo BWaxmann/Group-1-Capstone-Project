@@ -50,6 +50,8 @@ public class HandFoods : MonoBehaviour
         Set(true, Mathf.Min(1, foodsAvailable - 1), false);
     }
 
+    public int foodsOnMenu => foodsAvailable;
+
     public void SetFoodsAvailable(int count)
     {
         int newCount = Mathf.Max(1, count);
@@ -71,8 +73,8 @@ public class HandFoods : MonoBehaviour
             Set(true, handFood[1], false);
         }
 
-        // Flick a thumbstick right for the next food, left for the previous one
-        if (foodsAvailable > 1)
+        // Flick a thumbstick right for the next food, left for the previous one (only while playing)
+        if (foodsAvailable > 1 && GameManager.instance != null && GameManager.instance.enablePlayerInput)
         {
             int flickLeftHand = player.ThumbFlick(false);
             int flickRightHand = player.ThumbFlick(true);

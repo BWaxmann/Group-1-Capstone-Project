@@ -11516,11 +11516,6 @@ PrefabInstance:
       propertyPath: scoreParticlePool
       value: 
       objectReference: {fileID: 7440272166285416836}
-    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
-        type: 3}
-      propertyPath: gameTime
-      value: 60
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1db9752d27168e44eb8c460b6c8bb8ee, type: 3}
 --- !u!1 &7090113561561907868 stripped

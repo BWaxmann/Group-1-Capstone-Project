@@ -230,7 +230,13 @@ public class SpaceCafeService : MonoBehaviour
 
         stageIndex = newStage;
         Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: stage {stageIndex + 1} ({stages[stageIndex].foodsOnMenu} foods, {stages[stageIndex].tableAngleLimit} degrees)");
-        if (handFoods != null) handFoods.SetFoodsAvailable(Mathf.Min(stages[stageIndex].foodsOnMenu, foodCount));
+        // The menu only ever grows: a later stage (or a short test round where LAST ORDERS
+        // comes before a stage) must never take a food away
+        if (handFoods != null)
+        {
+            int menu = finale ? foodCount : Mathf.Min(stages[stageIndex].foodsOnMenu, foodCount);
+            handFoods.SetFoodsAvailable(Mathf.Max(menu, handFoods.foodsOnMenu));
+        }
         if (announce && !string.IsNullOrEmpty(stages[stageIndex].announcement))
         {
             GameManager.instance.ShowBanner(stages[stageIndex].announcement, 3f);
