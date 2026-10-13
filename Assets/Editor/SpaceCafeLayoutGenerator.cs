@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -135,17 +135,16 @@ public static class SpaceCafeLayoutGenerator
         ClearSpace(root.transform, player, centre, floorY, portalRadius + 0.5f, info, log);
 
         float counterTop = BuildCounter(root.transform, floorY);
-        TinRack rack = BuildTinRack(root.transform, counterTop);
         Transform register = PlaceOnCounter(root.transform, RegisterPrefab, "Register", 45f, counterTop, 0.35f);
         MoveLaunchersToCounter(root.transform, counterTop, info, log);
         RaiseBoardsAboveCats(info, log);
         BuildTables(root.transform, floorY, tableRadius, portalRadius);
-        BuildService(root.transform, rack, register, log);
+        BuildService(root.transform, register, log);
 
         SerializedObject playerSettings = new SerializedObject(player);
         playerSettings.FindProperty("baristaMode").boolValue = true;
         playerSettings.ApplyModifiedProperties();
-        log.AppendLine("Player set to Barista Mode (right-hand launcher, left hand loads tins).");
+        log.AppendLine("Player set to Barista Mode (each hand fires its own food; grip switches food).");
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -334,27 +333,6 @@ public static class SpaceCafeLayoutGenerator
         return top;
     }
 
-    static TinRack BuildTinRack(Transform root, float counterTop)
-    {
-        GameObject rackObject = new GameObject("Tin Rack");
-        rackObject.transform.SetParent(root, false);
-
-        // Three slots on the counter, to the player's left
-        float[] angles = { -40f, -58f, -76f };
-        Transform[] slots = new Transform[angles.Length];
-        for (int i = 0; i < angles.Length; i++)
-        {
-            Transform slot = new GameObject($"Tin Slot {i + 1}").transform;
-            slot.SetParent(rackObject.transform, false);
-            slot.localPosition = AngleToLocal(angles[i], CounterRadius) + Vector3.up * (counterTop - root.position.y + 0.005f);
-            slots[i] = slot;
-        }
-
-        TinRack rack = rackObject.AddComponent<TinRack>();
-        rack.Setup(slots, AssetDatabase.LoadAssetAtPath<GameObject>(TinPrefab));
-        EditorUtility.SetDirty(rack);
-        return rack;
-    }
 
     static Transform PlaceOnCounter(Transform root, string path, string name, float angle, float counterTop, float largestSize)
     {
@@ -448,11 +426,16 @@ public static class SpaceCafeLayoutGenerator
         }
     }
 
-    static void BuildService(Transform root, TinRack rack, Transform register, StringBuilder log)
+    static void BuildService(Transform root, Transform register, StringBuilder log)
     {
         GameObject serviceObject = new GameObject("Space Cafe Service");
         serviceObject.transform.SetParent(root, false);
         SpaceCafeService service = serviceObject.AddComponent<SpaceCafeService>();
+
+        // Each hand's food, shown as a tin under its launcher
+        HandFoods hands = serviceObject.AddComponent<HandFoods>();
+        hands.Setup(AssetDatabase.LoadAssetAtPath<GameObject>(TinPrefab), Sound("Assets/Audio/Treats/Reload.wav", 0.8f));
+        EditorUtility.SetDirty(hands);
 
         SpaceCafeService.Food[] foods =
         {
@@ -470,11 +453,10 @@ public static class SpaceCafeLayoutGenerator
         }
         log.AppendLine($"{customers.Count} customer cat types, {foods.Length} foods.");
 
-        service.Setup(foods, customers.ToArray(), rack, register,
+        service.Setup(foods, customers.ToArray(), hands, register,
             Sound("Assets/Audio/UI/ChimeUp01.mp3", 0.5f),
             Sound("Assets/Audio/Treats/DullThunk.mp3", 0.8f),
-            Sound("Assets/Audio/UI/Pop03.mp3", 0.5f),
-            Sound("Assets/Audio/Treats/Reload.wav", 0.8f));
+            Sound("Assets/Audio/UI/Pop03.mp3", 0.5f));
         EditorUtility.SetDirty(service);
     }
 

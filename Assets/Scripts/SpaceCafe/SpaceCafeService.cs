@@ -41,7 +41,7 @@ public class SpaceCafeService : MonoBehaviour
     CustomerCat[] customerPrefabs;
 
     [SerializeField]
-    TinRack tinRack;
+    HandFoods handFoods;
 
     [SerializeField]
     [Tooltip("Where the coins fly to (the register or tip jar).")]
@@ -54,9 +54,9 @@ public class SpaceCafeService : MonoBehaviour
     [SerializeField]
     Stage[] stages = new Stage[]
     {
-        new Stage { startsAfterSeconds = 0, foodsOnMenu = 1, tableAngleLimit = 50, maxCustomers = 2, secondsBetweenCustomers = 2.5f },
-        new Stage { startsAfterSeconds = 50, foodsOnMenu = 2, tableAngleLimit = 100, maxCustomers = 3, secondsBetweenCustomers = 2f, announcement = "NEW ON THE MENU!" },
-        new Stage { startsAfterSeconds = 130, foodsOnMenu = 3, tableAngleLimit = 180, maxCustomers = 4, secondsBetweenCustomers = 1.6f, announcement = "THE CAFE IS PACKED!" }
+        new Stage { startsAfterSeconds = 0, foodsOnMenu = 2, tableAngleLimit = 50, maxCustomers = 2, secondsBetweenCustomers = 2.5f },
+        new Stage { startsAfterSeconds = 50, foodsOnMenu = 2, tableAngleLimit = 100, maxCustomers = 3, secondsBetweenCustomers = 2f, announcement = "MORE CUSTOMERS!" },
+        new Stage { startsAfterSeconds = 130, foodsOnMenu = 3, tableAngleLimit = 180, maxCustomers = 4, secondsBetweenCustomers = 1.6f, announcement = "NEW: PINK!\n<size=60%>Squeeze grip to switch</size>" }
     };
 
     [Header("Finale (LAST ORDERS!)")]
@@ -93,9 +93,6 @@ public class SpaceCafeService : MonoBehaviour
     [SerializeField]
     SoundData coinSound = new SoundData(1f, 1f);
 
-    [SerializeField]
-    SoundData loadTinSound = new SoundData(1f, 1f);
-
     public static SpaceCafeService instance;
 
     public event Action<int> CoinsChanged;
@@ -110,17 +107,16 @@ public class SpaceCafeService : MonoBehaviour
     Transform coinTargetPunch;
     Vector3 coinTargetScale;
 
-    public void Setup(Food[] menu, CustomerCat[] customers, TinRack rack, Transform coinsGoTo,
-                      SoundData portal, SoundData wrongFood, SoundData coin, SoundData loadTin)
+    public void Setup(Food[] menu, CustomerCat[] customers, HandFoods hands, Transform coinsGoTo,
+                      SoundData portal, SoundData wrongFood, SoundData coin)
     {
         foods = menu;
         customerPrefabs = customers;
-        tinRack = rack;
+        handFoods = hands;
         coinTarget = coinsGoTo;
         portalSound = portal;
         wrongFoodSound = wrongFood;
         coinSound = coin;
-        loadTinSound = loadTin;
     }
 
     void Awake()
@@ -141,7 +137,6 @@ public class SpaceCafeService : MonoBehaviour
         GameManager.instance.GameStart += BeginService;
         GameManager.instance.FinaleStart += BeginFinale;
         GameManager.instance.GameEnd += EndService;
-        if (tinRack != null) tinRack.SetLoadSound(loadTinSound);
 
         if (coinTarget != null)
         {
@@ -181,16 +176,15 @@ public class SpaceCafeService : MonoBehaviour
         StartCoroutine(ServiceRoutine());
         UpdateStage(0, false);
 
-        // Start with the first food already loaded, so the first customers just need aiming
-        if (player == null) player = FindObjectOfType<PlayerInput>();
-        if (tinRack != null) tinRack.Load(0);
-        else if (player != null) player.LoadFood(FoodVariation(0));
+        // Left hand gets the first food, right hand the second
+        if (handFoods == null) handFoods = gameObject.AddComponent<HandFoods>();
+        handFoods.Begin(Mathf.Min(stages[stageIndex].foodsOnMenu, foodCount));
     }
 
     void BeginFinale()
     {
         finale = true;
-        if (tinRack != null) tinRack.SetFoodsAvailable(foodCount);
+        if (handFoods != null) handFoods.SetFoodsAvailable(foodCount);
     }
 
     void EndService()
@@ -233,10 +227,10 @@ public class SpaceCafeService : MonoBehaviour
         if (newStage == stageIndex) return;
 
         stageIndex = newStage;
-        if (tinRack != null) tinRack.SetFoodsAvailable(Mathf.Min(stages[stageIndex].foodsOnMenu, foodCount));
+        if (handFoods != null) handFoods.SetFoodsAvailable(Mathf.Min(stages[stageIndex].foodsOnMenu, foodCount));
         if (announce && !string.IsNullOrEmpty(stages[stageIndex].announcement))
         {
-            GameManager.instance.ShowBanner(stages[stageIndex].announcement, 2f);
+            GameManager.instance.ShowBanner(stages[stageIndex].announcement, 3f);
             Haptics.PulseBoth(Haptics.Strength.Medium);
         }
     }
