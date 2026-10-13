@@ -29,6 +29,8 @@ public static class SpaceCafeLayoutGenerator
     const float CounterDepth = 0.45f;
     const float RoundLength = 180f;
     const string ChalkboardName = "Cat_Box5";
+    const float ResultsScale = 0.6f;
+    const float TimerHeightOnBoard = -0.55f;    // metres from the middle of the board (score sits about 0.9 above)
     const string StartupMessage = "Feed the space cats!\n<size=55%>Left = Blue   Right = Yellow\nPoint at the launchers and pull the trigger</size>";
     const float TableHeight = 0.75f;
     const float TableWidth = 0.6f;
@@ -108,8 +110,13 @@ public static class SpaceCafeLayoutGenerator
                 for (int i = 0; i < oldInfo.movedObjects.Count; i++)
                 {
                     if (oldInfo.movedObjects[i] == null) continue;
+                    if (i < oldInfo.originalParents.Count && oldInfo.movedObjects[i].transform.parent != oldInfo.originalParents[i])
+                    {
+                        oldInfo.movedObjects[i].transform.SetParent(oldInfo.originalParents[i], true);
+                    }
                     oldInfo.movedObjects[i].transform.position = oldInfo.originalPositions[i];
                     if (i < oldInfo.originalRotations.Count) oldInfo.movedObjects[i].transform.rotation = oldInfo.originalRotations[i];
+                    if (i < oldInfo.originalScales.Count) oldInfo.movedObjects[i].transform.localScale = oldInfo.originalScales[i];
                 }
                 foreach (Collider col in oldInfo.disabledColliders)
                 {
@@ -156,7 +163,7 @@ public static class SpaceCafeLayoutGenerator
         int ghosted = MakeDecorationOnly(register != null ? register.gameObject : null, info);
         ghosted += MakeDecorationOnly(GameObject.Find("UI"), info);
         log.AppendLine($"Switched off {ghosted} colliders on the register and UI boards so they don't block treats.");
-        PutAllInfoOnChalkboard(info, log);
+        PutAllInfoOnChalkboard(root.transform, info, log);
         BuildTables(root.transform, floorY, tableRadius, portalRadius);
         BuildService(root.transform, register, log);
 
@@ -422,6 +429,8 @@ public static class SpaceCafeLayoutGenerator
         info.movedObjects.Add(go);
         info.originalPositions.Add(go.transform.position);
         info.originalRotations.Add(go.transform.rotation);
+        info.originalScales.Add(go.transform.localScale);
+        info.originalParents.Add(go.transform.parent);
     }
 
     static GameObject FindInScene(string name)
@@ -449,7 +458,7 @@ public static class SpaceCafeLayoutGenerator
 
     // The chalkboard (Cat_Box5) already has the score on it. The countdown, announcements and results
     // move onto it too, and the separate instructions board is switched off.
-    static void PutAllInfoOnChalkboard(SpaceCafeLayoutInfo info, StringBuilder log)
+    static void PutAllInfoOnChalkboard(Transform root, SpaceCafeLayoutInfo info, StringBuilder log)
     {
         GameManager gameManager = Object.FindObjectOfType<GameManager>();
         if (gameManager == null) return;
@@ -462,16 +471,38 @@ public static class SpaceCafeLayoutGenerator
             return;
         }
 
+        // An anchor exactly on the board. The canvases are laid out relative to the "UI" group, which
+        // overrides direct moves, so they're attached to this anchor instead (put back on regenerate).
         Transform board = scoreText.canvas.rootCanvas.transform;
-        // A world-space canvas faces the player along its -Z, so "in front" is towards -Z
-        Vector3 inFront = board.position - board.forward * 0.03f;
+        Transform anchor = new GameObject("Chalkboard UI").transform;
+        anchor.SetParent(root, false);
+        anchor.SetPositionAndRotation(board.position, board.rotation);
 
+        // A world-space canvas faces the player along its -Z, so "in front of the board" is a little towards -Z
         foreach (string canvasProperty in new[] { "pregameCanvas", "postgameCanvas" })
         {
             GameObject canvas = settings.FindProperty(canvasProperty).objectReferenceValue as GameObject;
-            if (canvas == null) continue;
-            RecordMove(canvas, info);
-            canvas.transform.SetPositionAndRotation(inFront, board.rotation);
+            if (canvas != null) AttachToBoard(canvas.transform, anchor, Vector3.back * 0.03f, info);
+        }
+
+        // The results are taller than the board, so shrink them to fit, and drop the old "Penalty" line
+        GameObject results = settings.FindProperty("postgameCanvas").objectReferenceValue as GameObject;
+        if (results != null)
+        {
+            results.transform.localScale = results.transform.localScale * ResultsScale;
+            foreach (Transform t in results.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == "Defend Point Penalty" || t.name == "Penalty Value") Disable(t.gameObject, info);
+            }
+        }
+
+        // The timer goes under the score, where "Bonus" was (bonuses come from power-ups, which the Space Cafe doesn't use)
+        GameObject bonusDisplay = settings.FindProperty("bonusDisplay").objectReferenceValue as GameObject;
+        TMPro.TMP_Text timerText = settings.FindProperty("timerText").objectReferenceValue as TMPro.TMP_Text;
+        if (timerText != null && timerText.canvas != null)
+        {
+            AttachToBoard(timerText.canvas.rootCanvas.transform, anchor, new Vector3(0, TimerHeightOnBoard, -0.03f), info);
+            if (bonusDisplay != null) Disable(bonusDisplay, info);
         }
 
         InstructionsText instructions = Object.FindObjectOfType<InstructionsText>();
@@ -485,6 +516,22 @@ public static class SpaceCafeLayoutGenerator
         settings.FindProperty("bannerReplacesGameUI").boolValue = true;
         settings.ApplyModifiedProperties();
         log.AppendLine("Countdown, announcements and results now show on the chalkboard; the instructions board is switched off.");
+    }
+
+    static void AttachToBoard(Transform canvas, Transform anchor, Vector3 localPosition, SpaceCafeLayoutInfo info)
+    {
+        RecordMove(canvas.gameObject, info);
+        canvas.SetParent(anchor, true);
+        canvas.localPosition = localPosition;
+        canvas.localRotation = Quaternion.identity;
+
+        // UI canvases load their position from the anchored position, so set that to match too
+        RectTransform rect = canvas as RectTransform;
+        if (rect != null)
+        {
+            rect.anchorMin = rect.anchorMax = Vector2.zero;
+            rect.anchoredPosition3D = localPosition;
+        }
     }
 
     // Switches off solid colliders (not triggers) so the object can't block shots

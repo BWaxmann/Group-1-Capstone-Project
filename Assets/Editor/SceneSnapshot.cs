@@ -15,6 +15,17 @@ public static class SceneSnapshot
         Directory.CreateDirectory(folder);
 
         EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+        // Optionally hide some objects for the pictures (e.g. canvases that only show at certain times)
+        foreach (string hideName in Argument("-hide", "").Split(','))
+        {
+            if (string.IsNullOrWhiteSpace(hideName)) continue;
+            foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
+            {
+                if (t.gameObject.scene.path == scenePath && t.name == hideName.Trim()) t.gameObject.SetActive(false);
+            }
+        }
+
         PlayerInput player = Object.FindObjectOfType<PlayerInput>();
         Vector3 centre = player != null ? player.transform.position : Vector3.zero;
         Vector3 forward = player != null ? player.transform.forward : Vector3.forward;

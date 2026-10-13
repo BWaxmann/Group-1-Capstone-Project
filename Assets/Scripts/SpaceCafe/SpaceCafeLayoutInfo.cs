@@ -15,4 +15,6 @@ public class SpaceCafeLayoutInfo : MonoBehaviour
     public List<GameObject> movedObjects = new List<GameObject>();
     public List<Vector3> originalPositions = new List<Vector3>();
     public List<Quaternion> originalRotations = new List<Quaternion>();
+    public List<Vector3> originalScales = new List<Vector3>();
+    public List<Transform> originalParents = new List<Transform>();
 }
