@@ -54,10 +54,6 @@ public class PlayerInput : MonoBehaviour
     bool enableAutofire = true;
 
     [SerializeField]
-    [Tooltip("Rhythm mode: one treat per trigger pull, and shots on the beat score more. Overrides autofire.")]
-    bool rhythmMode = true;
-
-    [SerializeField]
     [Min(0)]
     float autofireRate = 6f;
 
@@ -212,7 +208,7 @@ public class PlayerInput : MonoBehaviour
                 LaunchYarnball(false);
             }
 
-            if (enableAutofire && !rhythmMode)
+            if (enableAutofire)
             {
                 if (TriggerDown(true) && rightHandAutofire == null)
                 {
@@ -394,12 +390,6 @@ public class PlayerInput : MonoBehaviour
         launcherRight.gameObject.SetActive(true);
         Haptics.PulseBoth(Haptics.Strength.Medium);
 
-        if (rhythmMode)
-        {
-            BeatPulse.AddTo(launcherLeft, 0.12f);
-            BeatPulse.AddTo(launcherRight, 0.12f);
-        }
-
         GameManager.instance.GrabbedLaunchers();
     }
 
@@ -421,30 +411,7 @@ public class PlayerInput : MonoBehaviour
         treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, instaKillActive);
         if (straightShots) treat.MakeStraightShot();
         PlaySound(launcherFireSound, rightHand);
-
-        if (rhythmMode && BeatClock.instance != null && BeatClock.instance.isRunning)
-        {
-            BeatClock.ShotQuality quality = BeatClock.instance.JudgeTiming();
-            treat.shotQuality = quality;
-
-            // The better the timing, the bigger the kick
-            switch (quality)
-            {
-                case BeatClock.ShotQuality.Perfect:
-                    Haptics.Pulse(rightHand, Haptics.Strength.Strong);
-                    break;
-                case BeatClock.ShotQuality.Great:
-                    Haptics.Pulse(rightHand, Haptics.Strength.Medium);
-                    break;
-                default:
-                    Haptics.Pulse(rightHand, Haptics.Strength.Light);
-                    break;
-            }
-        }
-        else
-        {
-            Haptics.Pulse(rightHand, Haptics.Strength.Light);
-        }
+        Haptics.Pulse(rightHand, Haptics.Strength.Light);
     }
 
     void LaunchYarnball(bool rightHand)

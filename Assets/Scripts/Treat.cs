@@ -9,23 +9,13 @@ public class Treat : Launchable
     [SerializeField]
     Outline instaKillOutline;
 
-    [SerializeField]
-    [Min(1)]
-    [Tooltip("How many bites a Perfect (on-beat) shot counts as.")]
-    int perfectShotBites = 2;
-
     bool instaKill;
-    BeatClock.ShotQuality quality = BeatClock.ShotQuality.Good;
-
-    // How close to the beat this treat was fired. Set by PlayerInput after launching.
-    public BeatClock.ShotQuality shotQuality { set { quality = value; } }
 
     public override void Launch(Transform launchPosition, float force, bool instaKill)
     {
         base.Launch(launchPosition, force, instaKill);
 
         this.instaKill = instaKill;
-        quality = BeatClock.ShotQuality.Good;
         if (instaKillOutline != null)
         {
             instaKillOutline.enabled = instaKill;
@@ -44,8 +34,7 @@ public class Treat : Launchable
             {
                 if (!cat.isFullyFed)
                 {
-                    GameManager.instance.RegisterHit(quality, transform.position);
-                    cat.FeedCat(instaKill, quality == BeatClock.ShotQuality.Perfect ? perfectShotBites : 1);
+                    cat.FeedCat(instaKill);
                     Despawn();
                 }
                 else

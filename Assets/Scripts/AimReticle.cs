@@ -12,11 +12,11 @@ public class AimReticle : MonoBehaviour
 
     [SerializeField]
     [Tooltip("Ring size as a fraction of distance, so it looks the same size near and far.")]
-    float angularSize = 0.03f;
+    float angularSize = 0.015f;
 
     [SerializeField]
     [Min(0)]
-    float minimumRadius = 0.04f;
+    float minimumRadius = 0.02f;
 
     [SerializeField]
     Color normalColour = new Color(1f, 1f, 1f, 0.8f);
@@ -114,21 +114,27 @@ public class AimReticle : MonoBehaviour
 
         transform.position = hit.point + hit.normal * 0.01f;
         transform.rotation = Quaternion.LookRotation(hit.normal);
-        transform.localScale = Vector3.one * radius;
 
         Color colour = onCat ? onCatColour : normalColour;
         float width = radius * 0.15f;
-        SetLine(outerRing, colour, width);
-        SetLine(innerDot, colour, width);
+        SetLine(outerRing, colour, width, radius);
+        SetLine(innerDot, colour, width, radius * 0.2f);
         ShowRings(true);
     }
 
-    void SetLine(LineRenderer line, Color colour, float width)
+    // Line widths don't follow the object's scale, so the ring is redrawn at its real size instead
+    void SetLine(LineRenderer line, Color colour, float width, float radius)
     {
         line.startColor = colour;
         line.endColor = colour;
-        // Line width is in world units, but the ring is scaled, so undo the scale here
-        line.widthMultiplier = width / Mathf.Max(transform.localScale.x, 0.0001f);
+        line.widthMultiplier = width;
+
+        int segments = line.positionCount;
+        for (int i = 0; i < segments; i++)
+        {
+            float angle = i * Mathf.PI * 2f / segments;
+            line.SetPosition(i, new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * radius);
+        }
     }
 
     void ShowRings(bool show)

@@ -139,8 +139,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     [Min(1)]
-    [Tooltip("On-beat hits (Perfect or Great) and fed cats in a row needed to go up one combo level.")]
-    int catsPerComboLevel = 5;
+    [Tooltip("Cats fed in a row needed to go up one combo level.")]
+    int catsPerComboLevel = 3;
 
     [SerializeField]
     [Min(1)]
@@ -160,33 +160,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     Color comboTextColour = new Color(1f, 0.84f, 0f);
-
-    [Header("Rhythm Hits")]
-
-    [SerializeField]
-    [Min(0)]
-    int perfectHitScore = 15;
-
-    [SerializeField]
-    [Min(0)]
-    int greatHitScore = 8;
-
-    [SerializeField]
-    [Min(0)]
-    int goodHitScore = 3;
-
-    [SerializeField]
-    string perfectHitText = "PURR-FECT!";
-
-    [SerializeField]
-    string greatHitText = "Great!";
-
-    [SerializeField]
-    string goodHitText = "";
-
-    [SerializeField]
-    [Tooltip("Particle effect shown on a Perfect hit (index in the Particle Manager). -1 = none.")]
-    int perfectHitParticleIndex = 2;
 
     [Header("Finale")]
 
@@ -265,7 +238,6 @@ public class GameManager : MonoBehaviour
     bool finaleStarted;
 
     public bool enablePlayerInput => playerInputsEnabled;
-    public AudioSource musicAudioSource => musicSource;
 
     void Awake()
     {
@@ -297,11 +269,6 @@ public class GameManager : MonoBehaviour
             comboText.color = comboTextColour;
             comboText.gameObject.SetActive(false);
         }
-
-        // HUD bounces to the music
-        if (scoreText != null) BeatPulse.AddTo(scoreText.gameObject, 0.12f);
-        if (timerText != null) BeatPulse.AddTo(timerText.gameObject, 0.08f);
-        if (bonusText != null) BeatPulse.AddTo(bonusText.gameObject, 0.1f);
     }
 
     void Update()
@@ -671,7 +638,7 @@ public class GameManager : MonoBehaviour
 #endif
     }
 
-    void UpdateScore(int change, Vector3 position, bool playSoundFX = true, string label = null)
+    void UpdateScore(int change, Vector3 position, bool playSoundFX = true)
     {
         if (state != GameState.DuringGame) return;
 
@@ -704,7 +671,7 @@ public class GameManager : MonoBehaviour
             if (scoreParticle != null)
             {
                 scoreParticle.gameObject.SetActive(true);
-                scoreParticle.Initialise(change, position, label);
+                scoreParticle.Initialise(change, position);
 
             }
         }
@@ -713,49 +680,22 @@ public class GameManager : MonoBehaviour
     public void FeedCat(int scoreValue, Vector3 position)
     {
         catsFed++;
-        AddToCombo();
+
+        if (state == GameState.DuringGame)
+        {
+            comboCount++;
+            comboTimer = comboWindow;
+            int newLevel = Mathf.Min(1 + comboCount / catsPerComboLevel, maxComboLevel);
+            bool levelledUp = newLevel > comboLevel;
+            comboLevel = newLevel;
+            ShowCombo(levelledUp);
+            if (levelledUp)
+            {
+                Haptics.PulseBoth(Haptics.Strength.Strong);
+            }
+        }
+
         UpdateScore(scoreValue, position);
-    }
-
-    // Called when a treat hits a cat, with how close to the beat it was fired
-    public void RegisterHit(BeatClock.ShotQuality quality, Vector3 position)
-    {
-        if (state != GameState.DuringGame) return;
-
-        switch (quality)
-        {
-            case BeatClock.ShotQuality.Perfect:
-                AddToCombo();
-                if (perfectHitParticleIndex >= 0 && ParticleManager.instance != null)
-                {
-                    ParticleManager.instance.ShowParticleEffect(perfectHitParticleIndex, position);
-                }
-                UpdateScore(perfectHitScore, position, true, perfectHitText);
-                break;
-            case BeatClock.ShotQuality.Great:
-                AddToCombo();
-                UpdateScore(greatHitScore, position, false, greatHitText);
-                break;
-            default:
-                UpdateScore(goodHitScore, position, false, goodHitText);
-                break;
-        }
-    }
-
-    void AddToCombo()
-    {
-        if (state != GameState.DuringGame) return;
-
-        comboCount++;
-        comboTimer = comboWindow;
-        int newLevel = Mathf.Min(1 + comboCount / catsPerComboLevel, maxComboLevel);
-        bool levelledUp = newLevel > comboLevel;
-        comboLevel = newLevel;
-        ShowCombo(levelledUp);
-        if (levelledUp)
-        {
-            Haptics.PulseBoth(Haptics.Strength.Strong);
-        }
     }
 
     public void ReceivePenalty(int penaltyValue, Vector3 position, bool playSoundFX)
