@@ -51,11 +51,15 @@ public class PlayerInput : MonoBehaviour
     bool showAimReticle = true;
 
     [SerializeField]
-    bool enableAutofire = true;
+    [Tooltip("Always allow holding the trigger to fire. When off, it's one treat per pull unless Rapid Fire is active.")]
+    bool enableAutofire = false;
 
     [SerializeField]
     [Min(0)]
     float autofireRate = 6f;
+
+    [SerializeField]
+    string rapidFireText = "<color=#FF7310><size=1.2em>RAPID!</size></color>";
 
     [SerializeField]
     TMP_Text ammoText;
@@ -143,6 +147,9 @@ public class PlayerInput : MonoBehaviour
     bool instaKillActive;
     float instaKillTimer;
 
+    float rapidFireTimer;
+    bool rapidFireActive => rapidFireTimer > 0;
+
     public Vector3 pickupMagnet => _pickupMagnet.position;
 
     void Start()
@@ -171,7 +178,22 @@ public class PlayerInput : MonoBehaviour
             {
                 instaKillTimer = 0;
                 instaKillActive = false;
-                ammoText.text = defaultDisplayText;
+                RefreshAmmoText();
+            }
+        }
+
+        if (rapidFireActive)
+        {
+            rapidFireTimer -= Time.deltaTime;
+            if (!rapidFireActive)
+            {
+                rapidFireTimer = 0;
+                if (!enableAutofire)
+                {
+                    // Back to one shot per pull
+                    StopLaunchers();
+                }
+                RefreshAmmoText();
             }
         }
 
@@ -208,7 +230,7 @@ public class PlayerInput : MonoBehaviour
                 LaunchYarnball(false);
             }
 
-            if (enableAutofire)
+            if (enableAutofire || rapidFireActive)
             {
                 if (TriggerDown(true) && rightHandAutofire == null)
                 {
@@ -467,7 +489,21 @@ public class PlayerInput : MonoBehaviour
     {
         instaKillActive = true;
         instaKillTimer += duration;
-        ammoText.text = instaKillText;
+        RefreshAmmoText();
+    }
+
+    public void EnableRapidFire(float duration)
+    {
+        rapidFireTimer += duration;
+        Haptics.PulseBoth(Haptics.Strength.Strong);
+        RefreshAmmoText();
+    }
+
+    void RefreshAmmoText()
+    {
+        if (instaKillActive) ammoText.text = instaKillText;
+        else if (rapidFireActive) ammoText.text = rapidFireText;
+        else ammoText.text = defaultDisplayText;
     }
 
     public void StopLaunchers()

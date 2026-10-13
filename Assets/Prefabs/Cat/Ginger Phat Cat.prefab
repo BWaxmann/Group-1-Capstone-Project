@@ -757,6 +757,8 @@ MonoBehaviour:
     dropChance: 0.1
   - pickupIndex: 2
     dropChance: 0.1
+  - pickupIndex: 3
+    dropChance: 0.1
   pickupOffset: {x: 0, y: 0.5, z: 0}
   targetUpdateFrequency: 0.2
   stoppingDistance: 0.4
