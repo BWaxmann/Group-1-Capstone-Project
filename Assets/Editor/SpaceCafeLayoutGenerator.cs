@@ -30,7 +30,6 @@ public static class SpaceCafeLayoutGenerator
     const float RoundLength = 180f;
     const string ChalkboardName = "Cat_Box5";
     const float ResultsScale = 0.6f;
-    const float TimerHeightOnBoard = -0.55f;    // metres from the middle of the board (score sits about 0.9 above)
     const string StartupMessage = "Feed the space cats!\n<size=55%>Left = Blue   Right = Yellow\nPoint at the launchers and pull the trigger</size>";
     const float TableHeight = 0.75f;
     const float TableWidth = 0.6f;
@@ -496,14 +495,7 @@ public static class SpaceCafeLayoutGenerator
             }
         }
 
-        // The timer goes under the score, where "Bonus" was (bonuses come from power-ups, which the Space Cafe doesn't use)
-        GameObject bonusDisplay = settings.FindProperty("bonusDisplay").objectReferenceValue as GameObject;
-        TMPro.TMP_Text timerText = settings.FindProperty("timerText").objectReferenceValue as TMPro.TMP_Text;
-        if (timerText != null && timerText.canvas != null)
-        {
-            AttachToBoard(timerText.canvas.rootCanvas.transform, anchor, new Vector3(0, TimerHeightOnBoard, -0.03f), info);
-            if (bonusDisplay != null) Disable(bonusDisplay, info);
-        }
+        // The timer stays on the cat clock on the wall
 
         InstructionsText instructions = Object.FindObjectOfType<InstructionsText>();
         if (instructions != null)
