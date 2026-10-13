@@ -28,6 +28,8 @@ public static class SpaceCafeLayoutGenerator
     const float CounterHeight = 0.95f;
     const float CounterDepth = 0.45f;
     const float RoundLength = 180f;
+    const string ChalkboardName = "Cat_Box5";
+    const string StartupMessage = "Feed the space cats!\n<size=55%>Left = Blue   Right = Yellow\nPoint at the launchers and pull the trigger</size>";
     const float TableHeight = 0.75f;
     const float TableWidth = 0.6f;
     const float TableRingOffset = 22.5f;   // leaves a gap straight ahead for the boards
@@ -105,7 +107,9 @@ public static class SpaceCafeLayoutGenerator
                 }
                 for (int i = 0; i < oldInfo.movedObjects.Count; i++)
                 {
-                    if (oldInfo.movedObjects[i] != null) oldInfo.movedObjects[i].transform.position = oldInfo.originalPositions[i];
+                    if (oldInfo.movedObjects[i] == null) continue;
+                    oldInfo.movedObjects[i].transform.position = oldInfo.originalPositions[i];
+                    if (i < oldInfo.originalRotations.Count) oldInfo.movedObjects[i].transform.rotation = oldInfo.originalRotations[i];
                 }
                 foreach (Collider col in oldInfo.disabledColliders)
                 {
@@ -115,6 +119,13 @@ public static class SpaceCafeLayoutGenerator
             Object.DestroyImmediate(oldRoot);
         }
 
+        GameObject root = new GameObject(LayoutName);
+        SpaceCafeLayoutInfo info = root.AddComponent<SpaceCafeLayoutInfo>();
+
+        // Start the player facing the chalkboard, so the instructions and score are the first thing they see.
+        // Everything else is laid out around this direction.
+        FacePlayerToward(player, ChalkboardName, info, log);
+
         Vector3 centre = player.transform.position;
         // The player rig isn't necessarily on the floor (it's 0.6 m up in CC_LEVEL), so find the real floor
         float floorY = FindFloor(centre, player);
@@ -123,10 +134,7 @@ public static class SpaceCafeLayoutGenerator
         forward.y = 0;
         if (forward.sqrMagnitude < 0.001f) forward = Vector3.forward;
         forward.Normalize();
-
-        GameObject root = new GameObject(LayoutName);
         root.transform.SetPositionAndRotation(new Vector3(centre.x, floorY, centre.z), Quaternion.LookRotation(forward));
-        SpaceCafeLayoutInfo info = root.AddComponent<SpaceCafeLayoutInfo>();
 
         float roomRadius = MeasureRoomRadius(centre);
         float tableRadius = Mathf.Clamp(roomRadius - 1.5f, MinTableRadius, MaxTableRadius);
@@ -148,6 +156,7 @@ public static class SpaceCafeLayoutGenerator
         int ghosted = MakeDecorationOnly(register != null ? register.gameObject : null, info);
         ghosted += MakeDecorationOnly(GameObject.Find("UI"), info);
         log.AppendLine($"Switched off {ghosted} colliders on the register and UI boards so they don't block treats.");
+        PutAllInfoOnChalkboard(info, log);
         BuildTables(root.transform, floorY, tableRadius, portalRadius);
         BuildService(root.transform, register, log);
 
@@ -396,8 +405,7 @@ public static class SpaceCafeLayoutGenerator
         if (launchers == null) return;
 
         GameObject go = PrefabUtility.GetNearestPrefabInstanceRoot(launchers.gameObject) ?? launchers.gameObject;
-        info.movedObjects.Add(go);
-        info.originalPositions.Add(go.transform.position);
+        RecordMove(go, info);
 
         Vector3 target = root.TransformPoint(AngleToLocal(0f, CounterRadius));
         go.transform.position = new Vector3(target.x, go.transform.position.y, target.z);
@@ -406,6 +414,77 @@ public static class SpaceCafeLayoutGenerator
             go.transform.position += Vector3.up * (counterTop - b.min.y + 0.01f);
         }
         log.AppendLine("Moved the launchers onto the front of the counter.");
+    }
+
+    // Remembers where an object was, so regenerating can put it back
+    static void RecordMove(GameObject go, SpaceCafeLayoutInfo info)
+    {
+        info.movedObjects.Add(go);
+        info.originalPositions.Add(go.transform.position);
+        info.originalRotations.Add(go.transform.rotation);
+    }
+
+    static GameObject FindInScene(string name)
+    {
+        foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
+        {
+            if (t.name == name && t.gameObject.scene == SceneManager.GetActiveScene()) return t.gameObject;
+        }
+        return null;
+    }
+
+    static void FacePlayerToward(PlayerInput player, string objectName, SpaceCafeLayoutInfo info, StringBuilder log)
+    {
+        GameObject target = FindInScene(objectName);
+        if (target == null || !TryGetBounds(target, out Bounds b)) return;
+
+        Vector3 direction = b.center - player.transform.position;
+        direction.y = 0;
+        if (direction.sqrMagnitude < 0.01f) return;
+
+        RecordMove(player.gameObject, info);
+        player.transform.rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+        log.AppendLine($"Player now starts facing {objectName}.");
+    }
+
+    // The chalkboard (Cat_Box5) already has the score on it. The countdown, announcements and results
+    // move onto it too, and the separate instructions board is switched off.
+    static void PutAllInfoOnChalkboard(SpaceCafeLayoutInfo info, StringBuilder log)
+    {
+        GameManager gameManager = Object.FindObjectOfType<GameManager>();
+        if (gameManager == null) return;
+
+        SerializedObject settings = new SerializedObject(gameManager);
+        TMPro.TMP_Text scoreText = settings.FindProperty("scoreText").objectReferenceValue as TMPro.TMP_Text;
+        if (scoreText == null || scoreText.canvas == null)
+        {
+            log.AppendLine("Couldn't find the score canvas, so the UI was left where it was.");
+            return;
+        }
+
+        Transform board = scoreText.canvas.rootCanvas.transform;
+        // A world-space canvas faces the player along its -Z, so "in front" is towards -Z
+        Vector3 inFront = board.position - board.forward * 0.03f;
+
+        foreach (string canvasProperty in new[] { "pregameCanvas", "postgameCanvas" })
+        {
+            GameObject canvas = settings.FindProperty(canvasProperty).objectReferenceValue as GameObject;
+            if (canvas == null) continue;
+            RecordMove(canvas, info);
+            canvas.transform.SetPositionAndRotation(inFront, board.rotation);
+        }
+
+        InstructionsText instructions = Object.FindObjectOfType<InstructionsText>();
+        if (instructions != null)
+        {
+            Canvas instructionsCanvas = instructions.GetComponentInParent<Canvas>();
+            Disable(instructionsCanvas != null ? instructionsCanvas.rootCanvas.gameObject : instructions.gameObject, info);
+        }
+
+        settings.FindProperty("startupMessage").stringValue = StartupMessage;
+        settings.FindProperty("bannerReplacesGameUI").boolValue = true;
+        settings.ApplyModifiedProperties();
+        log.AppendLine("Countdown, announcements and results now show on the chalkboard; the instructions board is switched off.");
     }
 
     // Switches off solid colliders (not triggers) so the object can't block shots

@@ -29,6 +29,15 @@ public class GameManager : MonoBehaviour
     GameObject pregameCanvas;
 
     [SerializeField]
+    [TextArea]
+    [Tooltip("Optional. Shown on the countdown canvas before the round, until the countdown starts.")]
+    string startupMessage = "";
+
+    [SerializeField]
+    [Tooltip("When the countdown canvas shares a board with the score (e.g. the chalkboard), announcements hide the score while they show.")]
+    bool bannerReplacesGameUI = false;
+
+    [SerializeField]
     TMP_Text countdownText;
 
     [SerializeField]
@@ -271,6 +280,12 @@ public class GameManager : MonoBehaviour
         ShowGameCanvases(false);
         postgameCanvas.SetActive(false);
 
+        if (!string.IsNullOrEmpty(startupMessage) && countdownText != null)
+        {
+            countdownText.text = startupMessage;
+            pregameCanvas.SetActive(true);
+        }
+
         state = GameState.Initialising;
         playerInputsEnabled = true;
 
@@ -419,7 +434,8 @@ public class GameManager : MonoBehaviour
         bonusDisplay.SetActive(false);
         Invoke(nameof(HidePregameCanvas), countdownDisappearDelay);
 
-        ShowGameCanvases(true);
+        // On a shared board the score appears once "GO!" has cleared
+        ShowGameCanvases(!bannerReplacesGameUI);
         scoreText.text = "0";
 
         StartCoroutine(GameRoutine());
@@ -429,6 +445,7 @@ public class GameManager : MonoBehaviour
     void HidePregameCanvas()
     {
         pregameCanvas.SetActive(false);
+        if (bannerReplacesGameUI && state == GameState.DuringGame) ShowGameCanvases(true);
     }
 
     void ShowGameCanvases(bool show)
@@ -465,6 +482,7 @@ public class GameManager : MonoBehaviour
             CancelInvoke(nameof(HidePregameCanvas));
             countdownText.text = text;
             pregameCanvas.SetActive(true);
+            if (bannerReplacesGameUI && state == GameState.DuringGame) ShowGameCanvases(false);
             Invoke(nameof(HidePregameCanvas), duration);
         }
     }

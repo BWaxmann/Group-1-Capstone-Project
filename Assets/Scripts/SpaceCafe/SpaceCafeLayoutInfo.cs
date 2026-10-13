@@ -14,4 +14,5 @@ public class SpaceCafeLayoutInfo : MonoBehaviour
     [Tooltip("Scene objects the generator moved, and where they were before.")]
     public List<GameObject> movedObjects = new List<GameObject>();
     public List<Vector3> originalPositions = new List<Vector3>();
+    public List<Quaternion> originalRotations = new List<Quaternion>();
 }

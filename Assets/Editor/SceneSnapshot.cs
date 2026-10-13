@@ -52,6 +52,28 @@ public static class SceneSnapshot
         Save(cam, Path.Combine(folder, "5_top.png"), 1000, 1000);
         cam.orthographic = false;
 
+        // Optional close-up: from the eye position, looking at a named object
+        string lookAt = Argument("-lookAt", "");
+        if (!string.IsNullOrEmpty(lookAt))
+        {
+            foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
+            {
+                if (t.gameObject.scene.path != scenePath || t.name != lookAt) continue;
+                Renderer[] renderers = t.GetComponentsInChildren<Renderer>();
+                Vector3 target = t.position;
+                if (renderers.Length > 0)
+                {
+                    Bounds b = renderers[0].bounds;
+                    foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+                    target = b.center;
+                }
+                cam.fieldOfView = 45f;
+                cam.transform.SetPositionAndRotation(eye, Quaternion.LookRotation(target - eye));
+                Save(cam, Path.Combine(folder, "6_" + lookAt + ".png"), 1280, 800);
+                break;
+            }
+        }
+
         Object.DestroyImmediate(cam.gameObject);
         Debug.Log($"[Snapshot] Saved pictures to {Path.GetFullPath(folder)}");
     }
