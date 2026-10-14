@@ -17,7 +17,7 @@ public static class CatCafeRushGenerator
     const string ChalkboardName = "Cat_Box5";
     const float RoundLength = 180f;
     const float ResultsScale = 0.6f;
-    const string StartupMessage = "Feed the cats!\n<size=55%>Left = Blue   Right = Orange   Grip = catch\nPoint at the launchers and pull the trigger</size>";
+    const string StartupMessage = "Feed the cats!\n<size=60%>Left trigger = Blue\nRight trigger = Orange\nGrip = catch</size>\n<size=45%>Point at the launchers and pull the trigger</size>";
     const string TinPrefab = "Assets/Models/Environment/Pet Assets/Asset/Prefabs/Food2 V1.prefab";
     const string BlueTreat = "Assets/Prefabs/Treats/Blue Treat.prefab";
     const string OrangeTreat = "Assets/Prefabs/Treats/Orange Treat.prefab";
@@ -222,6 +222,24 @@ public static class CatCafeRushGenerator
         settings.FindProperty("startupMessage").stringValue = StartupMessage;
         settings.FindProperty("bannerReplacesGameUI").boolValue = true;
         settings.ApplyModifiedPropertiesWithoutUndo();
+
+        // The countdown text is sized for "3, 2, 1, GO!". Auto-size lets longer messages shrink to fit the board
+        // while short ones stay big. It also shows the start message in the editor, as it will in the game.
+        TMPro.TMP_Text countdown = settings.FindProperty("countdownText").objectReferenceValue as TMPro.TMP_Text;
+        if (countdown != null)
+        {
+            SerializedObject text = new SerializedObject(countdown);
+            text.FindProperty("m_enableAutoSizing").boolValue = true;
+            text.FindProperty("m_fontSizeMin").floatValue = 20f;
+            text.FindProperty("m_fontSizeMax").floatValue = 128f;
+            text.FindProperty("m_text").stringValue = StartupMessage;
+            text.ApplyModifiedPropertiesWithoutUndo();
+
+            // Use more of the board, so messages come out bigger
+            RectTransform area = countdown.rectTransform;
+            area.sizeDelta = new Vector2(Mathf.Max(area.sizeDelta.x, 430f), Mathf.Max(area.sizeDelta.y, 250f));
+            PrefabUtility.RecordPrefabInstancePropertyModifications(area);
+        }
         log.AppendLine("Countdown, announcements and results show on the chalkboard; the instructions board is off.");
     }
 

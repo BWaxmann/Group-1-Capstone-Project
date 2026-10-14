@@ -132,6 +132,14 @@ public class RushDirector : MonoBehaviour
     {
         playing = true;
 
+        // Liminal switches the player rig on after the scene starts, so it isn't always there at Start
+        if (player == null) player = FindObjectOfType<PlayerInput>();
+        if (player == null)
+        {
+            Debug.LogError("[Cat Cafe Rush] No player rig (PlayerInput) found when the round started.");
+            return;
+        }
+
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);
         player.LoadFood(true, rightFood);
