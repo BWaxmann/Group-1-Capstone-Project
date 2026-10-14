@@ -124,7 +124,9 @@ public static class QuestBuild
             PlayerSettings.SetVirtualRealitySDKs(BuildTargetGroup.Android, new[] { "Oculus" });
 
             PlayerSettings.Android.useCustomKeystore = true;
-            PlayerSettings.Android.keystoreName = Path.GetFullPath(KeystorePath);
+            // Forward slashes matter: 2019.1 stores a backslashed path inside the project as
+            // "{inproject}: C:\...", which the Android build then can't find
+            PlayerSettings.Android.keystoreName = Path.GetFullPath(KeystorePath).Replace('\\', '/');
             PlayerSettings.Android.keystorePass = password;
             PlayerSettings.Android.keyaliasName = KeyAlias;
             PlayerSettings.Android.keyaliasPass = password;
