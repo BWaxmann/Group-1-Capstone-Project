@@ -375,31 +375,49 @@ public class PlayerInput : MonoBehaviour
         return rightHand ? device.PrimaryInputDevice : device.SecondaryInputDevice;
     }
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+    // On the Quest, input is read straight from OVRInput (the same buttons Liminal maps), because
+    // Liminal's Quest controller builds a new button dictionary on every query, which causes stutters.
+    static OVRInput.Controller OvrHand(bool rightHand) => rightHand ? OVRInput.Controller.RTouch : OVRInput.Controller.LTouch;
+#endif
+
     bool TriggerDown(bool rightHand)
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        return OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OvrHand(rightHand));
+#else
         IVRInputDevice input = GetHandInput(rightHand);
         bool pressed = input != null && input.GetButtonDown(VRButton.Trigger);
 #if UNITY_EDITOR
         if (rightHand) pressed |= Input.GetMouseButtonDown(0);
 #endif
         return pressed;
+#endif
     }
 
     bool TriggerUp(bool rightHand)
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        return OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger, OvrHand(rightHand));
+#else
         IVRInputDevice input = GetHandInput(rightHand);
         bool released = input != null && input.GetButtonUp(VRButton.Trigger);
 #if UNITY_EDITOR
         if (rightHand) released |= Input.GetMouseButtonUp(0);
 #endif
         return released;
+#endif
     }
 
     // A / X on Quest controllers. Index controllers don't map this, so the trigger is used there instead.
     bool FaceButtonDown(bool rightHand)
     {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        return OVRInput.GetDown(OVRInput.Button.One, OvrHand(rightHand));
+#else
         IVRInputDevice input = GetHandInput(rightHand);
         return input != null && input.HasButton(VRButton.Four) && input.GetButtonDown(VRButton.Four);
+#endif
     }
 
     // Index: uses SteamVR's thumbstick left/right flick (bound as snap-turn, which this game doesn't use).
@@ -418,8 +436,12 @@ public class PlayerInput : MonoBehaviour
         }
         else
         {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            float x = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OvrHand(rightHand)).x;
+#else
             IVRInputDevice input = GetHandInput(rightHand);
             float x = input != null ? input.GetAxis2D(VRAxis.One).x : 0f;
+#endif
             bool held = Mathf.Abs(x) > 0.7f;
             bool wasHeld = rightHand ? stickHeldRight : stickHeldLeft;
             if (held && !wasHeld) direction = x > 0 ? 1 : -1;
@@ -441,14 +463,18 @@ public class PlayerInput : MonoBehaviour
     // Quest reports the grip as a button; Index reports it as an analogue squeeze, so it's turned into a press here.
     bool GripDown(bool rightHand)
     {
-        IVRInputDevice input = GetHandInput(rightHand);
         bool held = false;
+#if UNITY_ANDROID && !UNITY_EDITOR
+        held = OVRInput.Get(OVRInput.Button.PrimaryHandTrigger, OvrHand(rightHand));
+#else
+        IVRInputDevice input = GetHandInput(rightHand);
         if (input != null)
         {
             held = input.HasButton(VRButton.Three)
                 ? input.GetButton(VRButton.Three)
                 : input.GetAxis1D(VRAxis.Three) >= gripPressThreshold;
         }
+#endif
 
         bool wasHeld = rightHand ? gripHeldRight : gripHeldLeft;
         if (rightHand) gripHeldRight = held;

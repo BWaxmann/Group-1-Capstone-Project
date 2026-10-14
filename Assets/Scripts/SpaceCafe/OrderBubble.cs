@@ -29,6 +29,7 @@ public class OrderBubble : MonoBehaviour
     Transform queue;
     LineRenderer patienceRing;
     readonly List<Item> items = new List<Item>();
+    readonly List<Transform> spinners = new List<Transform>();
     Coroutine popRoutine;
     Coroutine shakeRoutine;
     Coroutine faceRoutine;
@@ -93,9 +94,11 @@ public class OrderBubble : MonoBehaviour
     {
         if (current != null) Destroy(current.gameObject);
         if (queue != null) Destroy(queue.gameObject);
+        spinners.Clear();
         if (items.Count == 0) return;
 
         current = MakeFoodIcon(bubble, items[0], 1f, "Current");
+        AddSpinner(current);
         current.localPosition = new Vector3(0, 0, -0.04f);
         // If a face is flashing, the treat reappears when it finishes
         if (faceRenderer != null && faceRenderer.gameObject.activeSelf) current.gameObject.SetActive(false);
@@ -116,6 +119,7 @@ public class OrderBubble : MonoBehaviour
             Item dimmed = items[i];
             dimmed.colour = Color.Lerp(dimmed.colour, new Color(0.45f, 0.45f, 0.5f), 0.35f);
             Transform icon = MakeFoodIcon(chip, dimmed, 1f, "Icon");
+            AddSpinner(icon);
             icon.localPosition = new Vector3(0, 0, -0.04f);
         }
     }
@@ -251,20 +255,17 @@ public class OrderBubble : MonoBehaviour
             transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.position);
         }
 
-        // Gently spin the treat models
-        SpinIcons(current);
-        if (queue != null)
+        // Gently spin the treat models (remembered when built, so nothing is searched or allocated per frame)
+        float step = 90f * Time.deltaTime;
+        for (int i = 0; i < spinners.Count; i++)
         {
-            foreach (Transform chip in queue) SpinIcons(chip);
+            if (spinners[i] != null) spinners[i].Rotate(0, step, 0, Space.Self);
         }
     }
 
-    void SpinIcons(Transform root)
+    void AddSpinner(Transform icon)
     {
-        if (root == null) return;
-        foreach (Transform t in root.GetComponentsInChildren<Transform>())
-        {
-            if (t.name == "Spin") t.Rotate(0, 90f * Time.deltaTime, 0, Space.Self);
-        }
+        Transform spin = icon.Find("Spin");
+        if (spin != null) spinners.Add(spin);
     }
 }

@@ -116,6 +116,7 @@ public class SpaceCafeService : MonoBehaviour
     PlayerInput player;
     int stageIndex = -1;
     bool finale;
+    Coroutine serviceRoutine;
     Transform coinTargetPunch;
     Vector3 coinTargetScale;
 
@@ -185,7 +186,7 @@ public class SpaceCafeService : MonoBehaviour
         stageIndex = -1;
 
         // Customers first, so nothing below can stop the service from starting
-        StartCoroutine(ServiceRoutine());
+        serviceRoutine = StartCoroutine(ServiceRoutine());
         UpdateStage(0, false);
 
         // Left hand gets the first food, right hand the second
@@ -203,7 +204,9 @@ public class SpaceCafeService : MonoBehaviour
     void EndService()
     {
         Debug.Log($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: round over");
-        StopAllCoroutines();
+        // Stop sending customers, but let coins already in the air land
+        if (serviceRoutine != null) StopCoroutine(serviceRoutine);
+        serviceRoutine = null;
     }
 
     IEnumerator ServiceRoutine()
