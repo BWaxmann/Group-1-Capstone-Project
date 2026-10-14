@@ -304,6 +304,28 @@ public static class CatCafeRushGenerator
 
     // ---------- Updating a hand-made layout ----------
 
+    // Turns the player (wherever they stand) to face the chalkboard. Run Update Open Scene afterwards.
+    [MenuItem("Catastrophe Cafe/Cat Cafe Rush/Face Player Toward Chalkboard", false, 82)]
+    static void FacePlayerFromMenu()
+    {
+        PlayerInput player = Object.FindObjectOfType<PlayerInput>();
+        if (player == null) return;
+        StringBuilder log = new StringBuilder();
+        FacePlayerToward(player, ChalkboardName, log);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        EditorUtility.DisplayDialog("Cat Cafe Rush", log.Length > 0 ? log + "Now run Update Open Scene (Keeps Layout)." : "Couldn't find the chalkboard.", "OK");
+    }
+
+    // Command line: turn the player toward the chalkboard, then update (-executeMethod CatCafeRushGenerator.BatchFaceAndUpdate)
+    public static void BatchFaceAndUpdate()
+    {
+        EditorSceneManager.OpenScene(RushScene, OpenSceneMode.Single);
+        PlayerInput player = Object.FindObjectOfType<PlayerInput>();
+        StringBuilder log = new StringBuilder();
+        if (player != null) FacePlayerToward(player, ChalkboardName, log);
+        Debug.Log("[Cat Cafe Rush] " + log + UpdateLayout());
+    }
+
     // Keeps the open Cat Cafe Rush scene exactly as laid out (anything moved, copied or added by hand) and fits the
     // cats to it: what's in front of the player, doors, the ninja's stops, piles, tables and the NavMesh.
     [MenuItem("Catastrophe Cafe/Cat Cafe Rush/Update Open Scene (Keeps Layout)", false, 81)]
@@ -335,6 +357,13 @@ public static class CatCafeRushGenerator
         forward.y = 0;
         forward.Normalize();
         float floorY = CatChaosSceneGenerator.FindFloor(eye, player);
+
+        GameObject chalkboard = GameObject.Find(ChalkboardName);
+        if (chalkboard != null && Mathf.Abs(CatChaosSceneGenerator.SignedAngle(forward, chalkboard.transform.position - eye)) > 90f)
+        {
+            done.AppendLine("NOTE: the chalkboard is behind the player, so \"in front\" may be the wrong way. " +
+                            "Use Face Player Toward Chalkboard (or turn [ExperienceApp]), then run this again.");
+        }
 
         // The launchers to pick up float just in front of wherever the player now stands
         foreach (GrabbableLaunchers launchers in Object.FindObjectsOfType<GrabbableLaunchers>())
