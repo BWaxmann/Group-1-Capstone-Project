@@ -135,7 +135,20 @@ public class FlyingProp : MonoBehaviour
         Vector3 toPlayer = playerPosition - transform.position;
         toPlayer.y = 0;
         if (toPlayer.sqrMagnitude < 0.01f) toPlayer = -transform.forward;
-        Vector3 drift = Quaternion.Euler(0, Random.Range(-settings.launchSpread, settings.launchSpread), 0) * toPlayer.normalized;
+        toPlayer.Normalize();
+
+        // A random direction within the spread, but not into a wall: try a few, else head towards the player
+        Vector3 drift = toPlayer;
+        Vector3 from = centre;
+        for (int attempt = 0; attempt < 6; attempt++)
+        {
+            Vector3 candidate = Quaternion.Euler(0, Random.Range(-settings.launchSpread, settings.launchSpread), 0) * toPlayer;
+            if (!Physics.Raycast(from, candidate, 2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                drift = candidate;
+                break;
+            }
+        }
 
         // Fast and high, but never up into the ceiling: v = sqrt(2 g h) reaches exactly the room left above it
         float headroom = Mathf.Max(0.3f, settings.floorHeight + settings.maxHeightAboveFloor - transform.position.y);
@@ -294,7 +307,15 @@ public class FlyingProp : MonoBehaviour
         if (fromViewer.magnitude < 1.4f) direction += fromViewer.normalized * 2f;
 
         direction.y = 0;
-        return direction.sqrMagnitude > 0.0001f ? direction.normalized * settings.driftSpeed * Random.Range(0.6f, 1.2f) : Vector3.zero;
+        if (direction.sqrMagnitude < 0.0001f) return Vector3.zero;
+        direction.Normalize();
+
+        // Not into a wall: if one's close that way, head back towards the action instead
+        if (Physics.Raycast(transform.position, direction, 0.8f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            direction = toCentre.sqrMagnitude > 0.0001f ? toCentre.normalized : -direction;
+        }
+        return direction * settings.driftSpeed * Random.Range(0.6f, 1.2f);
     }
 
     void Land(CatChaosSettings settings)

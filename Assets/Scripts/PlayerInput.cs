@@ -196,6 +196,29 @@ public class PlayerInput : MonoBehaviour
     public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
     public Transform LaunchPoint(bool rightHand) => rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
 
+    // Colours each launcher's aim reticle (e.g. the colour that hand fires); null = the reticle's own colours
+    public void SetReticleColours(Color left, Color right)
+    {
+        reticleColourLeft = left;
+        reticleColourRight = right;
+        ApplyReticleColours();
+    }
+
+    Color? reticleColourLeft;
+    Color? reticleColourRight;
+
+    void ApplyReticleColours()
+    {
+        if (reticleLeft != null && reticleColourLeft.HasValue) reticleLeft.SetColours(Faded(reticleColourLeft.Value), reticleColourLeft.Value);
+        if (reticleRight != null && reticleColourRight.HasValue) reticleRight.SetColours(Faded(reticleColourRight.Value), reticleColourRight.Value);
+    }
+
+    static Color Faded(Color colour)
+    {
+        colour.a = 0.75f;
+        return colour;
+    }
+
     // How fast straight shots fly, in m/s (a scene can speed them up)
     public float treatSpeed
     {
@@ -397,6 +420,7 @@ public class PlayerInput : MonoBehaviour
             // Ignore the player's own hands and launchers when working out where shots land
             reticleRight = AimReticle.Create(treatLaunchPositionRight, transform, "Aim Reticle Right");
             reticleLeft = AimReticle.Create(treatLaunchPositionLeft, transform, "Aim Reticle Left");
+            ApplyReticleColours();
         }
 
         if (reticleRight != null)

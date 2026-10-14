@@ -28,6 +28,13 @@ public class AimReticle : MonoBehaviour
     [Min(1)]
     float onCatScale = 1.4f;
 
+    // e.g. each launcher's reticle in the colour that launcher fires (it still grows over a cat)
+    public void SetColours(Color normal, Color onCat)
+    {
+        normalColour = normal;
+        onCatColour = onCat;
+    }
+
     Transform launchPoint;
     Transform ignoreRoot;
     float speed;

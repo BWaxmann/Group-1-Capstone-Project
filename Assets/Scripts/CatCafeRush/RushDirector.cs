@@ -219,6 +219,7 @@ public class RushDirector : MonoBehaviour
         }
 
         player.treatSpeed = treatSpeed;
+        player.SetReticleColours(leftColour, rightColour);
         KeepCatsOutOfPlayerSpace();
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
