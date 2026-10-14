@@ -68,19 +68,22 @@ public static class CatChaosSceneGenerator
         Create();
     }
 
-    // Keeps the open scene exactly as it's laid out (including anything moved or duplicated by hand) and only
-    // brings the Cat Chaos tuning numbers up to date with the scripts' current defaults.
-    [MenuItem("Catastrophe Cafe/Cat Chaos/Update Settings In Open Scene (Keeps Layout)", false, 61)]
+    // Keeps the open scene exactly as it's laid out (including anything moved or duplicated by hand). Brings the
+    // Cat Chaos tuning numbers up to date with the scripts' defaults, and fits the cats to the layout: NavMesh,
+    // jump links and waypoints for new tables, what's in front of the player, the UI and launchers by the player.
+    [MenuItem("Catastrophe Cafe/Cat Chaos/Update Open Scene (Keeps Layout)", false, 61)]
     static void UpdateSettingsFromMenu()
     {
         string report = UpdateSettings();
         EditorUtility.DisplayDialog("Cat Chaos", report, "OK");
     }
 
-    // Command line: -executeMethod CatChaosSceneGenerator.BatchUpdateSettings (opens the prototype scene first)
+    // Command line: -executeMethod CatChaosSceneGenerator.BatchUpdateSettings [-scene <path>] (opens the scene first)
     public static void BatchUpdateSettings()
     {
-        EditorSceneManager.OpenScene(PrototypeScene, OpenSceneMode.Single);
+        string[] args = System.Environment.GetCommandLineArgs();
+        int at = System.Array.IndexOf(args, "-scene");
+        EditorSceneManager.OpenScene(at >= 0 && at + 1 < args.Length ? args[at + 1] : PrototypeScene, OpenSceneMode.Single);
         Debug.Log("[Cat Chaos] " + UpdateSettings());
     }
 
@@ -90,6 +93,8 @@ public static class CatChaosSceneGenerator
         if (scene.path == SourceScene) return "This is CC_LEVEL. Open CatChaos_Prototype first.";
 
         StringBuilder done = new StringBuilder();
+        PlayerInput player = Object.FindObjectOfType<PlayerInput>();
+        if (player != null) FitToLayout(player, done);
         CatChaosSettings settings = Object.FindObjectOfType<CatChaosSettings>();
         if (settings != null)
         {
@@ -114,6 +119,317 @@ public static class CatChaosSceneGenerator
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
         return done + "Layout left as it was. Scene saved.";
+    }
+
+    // ---------- Fitting the cats to a hand-made layout ----------
+
+    static void FitToLayout(PlayerInput player, StringBuilder done)
+    {
+        Vector3 eye = player.transform.position;
+        Vector3 forward = player.transform.forward;
+        forward.y = 0;
+        forward.Normalize();
+        float floorY = FindFloor(eye, player);
+
+        // Props copied by hand that no pile knows about (e.g. a duplicated stack): each group becomes a pile of its own
+        int adopted = AdoptStrayProps();
+
+        // Piles whose props were moved by hand: put each pile's centre back under its props
+        int recentred = 0;
+        foreach (PropPile pile in Object.FindObjectsOfType<PropPile>())
+        {
+            if (RecentrePile(pile)) recentred++;
+        }
+
+        // Keep the action in front: drop roaming waypoints beside or behind the player, and their spawners
+        int dropped = DropWaypointsBehind(eye, forward, out List<string> droppedNames);
+        int spawnersOff = 0;
+        foreach (SpawnManager spawnManager in Object.FindObjectsOfType<SpawnManager>())
+        {
+            Transform spawn = new SerializedObject(spawnManager).FindProperty("spawnPointCentre").objectReferenceValue as Transform;
+            if (spawn != null && !InFront(eye, forward, spawn.position, 100f))
+            {
+                spawnManager.gameObject.SetActive(false);
+                spawnersOff++;
+            }
+        }
+
+        // Tables added by hand: let cats walk round them, jump up onto them, and visit them
+        int tables = 0;
+        foreach (GameObject table in FindTables())
+        {
+            if (FitTable(table, eye, floorY)) tables++;
+        }
+
+        // The NavMesh for this scene only (Brian's CC_LEVEL keeps its own)
+        UnityEditor.AI.NavMeshBuilder.BuildNavMesh();
+
+        int moved = BringUIToPlayer(eye, forward, floorY);
+
+        CatChaosDirector director = Object.FindObjectOfType<CatChaosDirector>();
+        if (director != null)
+        {
+            if (director.ninjaPrefab == null)
+            {
+                GameObject saved = AssetDatabase.LoadAssetAtPath<GameObject>(NinjaRushPath);
+                director.ninjaPrefab = saved != null ? saved.GetComponent<NinjaRushCat>() : MakeNinjaRush();
+            }
+            FindTopUpSpawns(director, player);
+            director.ninjaStops.Clear();
+            foreach (PropPile pile in Object.FindObjectsOfType<PropPile>())
+            {
+                if (pile.pile != null) AddNinjaStop(director, pile.pile.position);
+            }
+            int loose = 0;
+            foreach (FlyingProp prop in Object.FindObjectsOfType<FlyingProp>())
+            {
+                if (prop.isLoose && loose < 5 && InFront(eye, forward, prop.transform.position, 80f))
+                {
+                    AddNinjaStop(director, prop.transform.position);
+                    loose++;
+                }
+            }
+            EditorUtility.SetDirty(director);
+        }
+
+        done.AppendLine($"Layout: {adopted} new pile(s) made from copied props; {recentred} pile(s) re-centred on their props; " +
+                        $"{dropped} waypoint(s) beside/behind the player dropped" +
+                        (droppedNames.Count > 0 ? $" ({string.Join(", ", droppedNames)})" : "") +
+                        (spawnersOff > 0 ? $", {spawnersOff} spawner(s) behind switched off" : "") + ".");
+        done.AppendLine($"Tables: {tables} new table(s) given jump links and a waypoint on top. NavMesh rebaked for this scene.");
+        done.AppendLine($"Launchers and start/results boards moved back in front of the player: {moved}.");
+        if (director != null)
+        {
+            done.AppendLine($"Ninja: {(director.ninjaPrefab != null ? "linked" : "MISSING")}, {director.ninjaStops.Count} stops; top-up cats from {director.spawnPoints.Count} spawn points.");
+        }
+    }
+
+    static int AdoptStrayProps()
+    {
+        HashSet<FlyingProp> known = new HashSet<FlyingProp>();
+        foreach (PropPile pile in Object.FindObjectsOfType<PropPile>())
+        {
+            foreach (FlyingProp prop in pile.props)
+            {
+                if (prop != null) known.Add(prop);
+            }
+        }
+        List<FlyingProp> strays = new List<FlyingProp>();
+        foreach (FlyingProp prop in Object.FindObjectsOfType<FlyingProp>())
+        {
+            if (!prop.isLoose && !known.Contains(prop)) strays.Add(prop);
+        }
+
+        int made = 0;
+        int existing = Object.FindObjectsOfType<PropPile>().Length;
+        while (strays.Count > 0)
+        {
+            // Grow a group from one stray: everything within 0.5 m (sideways) of anything already in the group
+            List<FlyingProp> group = new List<FlyingProp> { strays[0] };
+            strays.RemoveAt(0);
+            for (int i = 0; i < group.Count; i++)
+            {
+                for (int j = strays.Count - 1; j >= 0; j--)
+                {
+                    if (Flat(strays[j].transform.position - group[i].transform.position).magnitude < 0.5f)
+                    {
+                        group.Add(strays[j]);
+                        strays.RemoveAt(j);
+                    }
+                }
+            }
+
+            Vector3 centre = Vector3.zero;
+            float lowest = float.MaxValue;
+            foreach (FlyingProp prop in group)
+            {
+                centre += prop.transform.position;
+                lowest = Mathf.Min(lowest, prop.transform.position.y);
+            }
+            centre /= group.Count;
+            centre.y = lowest;
+
+            made++;
+            GameObject holder = new GameObject($"Pile {existing + made}");
+            holder.transform.position = centre;
+            Transform pileTransform = new GameObject("Prop Pile").transform;
+            pileTransform.SetParent(holder.transform, false);
+            PropPile newPile = holder.AddComponent<PropPile>();
+            newPile.pile = pileTransform;
+            foreach (FlyingProp prop in group)
+            {
+                prop.transform.SetParent(pileTransform, true);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(prop.transform);
+                newPile.props.Add(prop);
+            }
+        }
+        return made;
+    }
+
+    static bool RecentrePile(PropPile pile)
+    {
+        if (pile.pile == null || pile.props.Count == 0) return false;
+        Vector3 sum = Vector3.zero;
+        float lowest = float.MaxValue;
+        int count = 0;
+        foreach (FlyingProp prop in pile.props)
+        {
+            if (prop == null) continue;
+            sum += prop.transform.position;
+            lowest = Mathf.Min(lowest, prop.transform.position.y);
+            count++;
+        }
+        if (count == 0) return false;
+        Vector3 centre = sum / count;
+        centre.y = lowest;
+        if (Vector3.Distance(centre, pile.pile.position) < 0.2f) return false;
+
+        // Move the pile without moving its props
+        List<Transform> children = new List<Transform>();
+        foreach (Transform child in pile.pile) children.Add(child);
+        foreach (Transform child in children) child.SetParent(null, true);
+        pile.pile.position = centre;
+        foreach (Transform child in children)
+        {
+            child.SetParent(pile.pile, true);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(child);
+        }
+        return true;
+    }
+
+    static int DropWaypointsBehind(Vector3 eye, Vector3 forward, out List<string> names)
+    {
+        names = new List<string>();
+        WaypointManager waypoints = Object.FindObjectOfType<WaypointManager>();
+        if (waypoints == null) return 0;
+        SerializedObject so = new SerializedObject(waypoints);
+        SerializedProperty list = so.FindProperty("roamingWaypoints");
+        int kept = 0;
+        for (int i = 0; i < list.arraySize; i++)
+        {
+            Transform t = list.GetArrayElementAtIndex(i).FindPropertyRelative("_waypoint").objectReferenceValue as Transform;
+            if (t != null && InFront(eye, forward, t.position, 80f)) kept++;
+        }
+        if (kept < 3) return 0;   // too few would leave the cats nowhere to go
+
+        for (int i = list.arraySize - 1; i >= 0; i--)
+        {
+            Transform t = list.GetArrayElementAtIndex(i).FindPropertyRelative("_waypoint").objectReferenceValue as Transform;
+            if (t == null || InFront(eye, forward, t.position, 80f)) continue;
+            names.Add(t.name);
+            list.DeleteArrayElementAtIndex(i);
+        }
+        so.ApplyModifiedPropertiesWithoutUndo();
+        return names.Count;
+    }
+
+    static List<GameObject> FindTables()
+    {
+        List<GameObject> tables = new List<GameObject>();
+        foreach (Transform t in Object.FindObjectsOfType<Transform>())
+        {
+            if (!t.name.StartsWith("Cafe_Table")) continue;
+            if (t.parent != null && t.parent.name.StartsWith("Cafe_Table")) continue;   // a part of a table, not the table
+            if (!TryGetBounds(t.gameObject, out Bounds b) || b.size.y < 0.4f || b.size.y > 1.3f) continue;
+            tables.Add(t.gameObject);
+        }
+        return tables;
+    }
+
+    // Gives a table jump links up onto it (unless it already has some) and a waypoint on top. False if it had them.
+    static bool FitTable(GameObject table, Vector3 eye, float floorY)
+    {
+        foreach (Transform part in table.GetComponentsInChildren<Transform>())
+        {
+            GameObjectUtility.SetStaticEditorFlags(part.gameObject, GameObjectUtility.GetStaticEditorFlags(part.gameObject) | StaticEditorFlags.NavigationStatic);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(part.gameObject);
+        }
+
+        TryGetBounds(table, out Bounds b);
+        Vector3 centre = b.center;
+        float top = b.max.y;
+        float radius = Mathf.Max(b.extents.x, b.extents.z);
+
+        foreach (UnityEngine.AI.OffMeshLink existing in Object.FindObjectsOfType<UnityEngine.AI.OffMeshLink>())
+        {
+            foreach (Transform end in new[] { existing.startTransform, existing.endTransform })
+            {
+                if (end != null && Flat(end.position - centre).magnitude <= radius && Mathf.Abs(end.position.y - top) < 0.2f) return false;
+            }
+        }
+
+        GameObject group = GameObject.Find("Cat Chaos Table Links") ?? new GameObject("Cat Chaos Table Links");
+        Vector3 toPlayer = Flat(eye - centre).normalized;
+        if (toPlayer.sqrMagnitude < 0.01f) toPlayer = Vector3.forward;
+        // One link on the player's side and one on the far side, both two-way
+        foreach (Vector3 side in new[] { toPlayer, -toPlayer, Vector3.Cross(Vector3.up, toPlayer) })
+        {
+            GameObject link = new GameObject($"Link to {table.name}");
+            link.transform.SetParent(group.transform, false);
+            Transform start = new GameObject("Start Point").transform;
+            start.SetParent(link.transform, false);
+            start.position = new Vector3(centre.x, floorY, centre.z) + side * (radius + 0.45f);
+            Transform end = new GameObject("End Point").transform;
+            end.SetParent(link.transform, false);
+            end.position = new Vector3(centre.x, top, centre.z) + side * (radius * 0.45f);
+            UnityEngine.AI.OffMeshLink offMeshLink = link.AddComponent<UnityEngine.AI.OffMeshLink>();
+            offMeshLink.startTransform = start;
+            offMeshLink.endTransform = end;
+            offMeshLink.biDirectional = true;
+            offMeshLink.costOverride = -1;
+            offMeshLink.autoUpdatePositions = false;
+        }
+
+        // A waypoint on the table top, so roaming cats go up there
+        WaypointManager waypoints = Object.FindObjectOfType<WaypointManager>();
+        if (waypoints != null)
+        {
+            Transform point = new GameObject($"Table Top: {table.name}").transform;
+            point.SetParent(waypoints.transform, false);
+            point.position = new Vector3(centre.x, top, centre.z);
+            SerializedObject so = new SerializedObject(waypoints);
+            SerializedProperty list = so.FindProperty("roamingWaypoints");
+            list.arraySize++;
+            SerializedProperty entry = list.GetArrayElementAtIndex(list.arraySize - 1);
+            entry.FindPropertyRelative("_waypoint").objectReferenceValue = point;
+            entry.FindPropertyRelative("_inFrontOfPlayer").boolValue = true;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+        return true;
+    }
+
+    // After the player has been moved: the launchers to pick up, and the start/banner/results boards, go back to the
+    // same spots in front of the player (the chalkboard score and the cat clock stay where they are)
+    static int BringUIToPlayer(Vector3 eye, Vector3 forward, float floorY)
+    {
+        int moved = 0;
+        foreach (GrabbableLaunchers launchers in Object.FindObjectsOfType<GrabbableLaunchers>())
+        {
+            if (Flat(launchers.transform.position - eye).magnitude <= 3f) continue;
+            launchers.transform.position = new Vector3(eye.x, floorY + 1.74f, eye.z) + forward * 1.52f;
+            PrefabUtility.RecordPrefabInstancePropertyModifications(launchers.transform);
+            moved++;
+        }
+        foreach (string name in new[] { "Pregame Canvas", "Postgame Canvas", "Instructions Canvas" })
+        {
+            GameObject canvas = GameObject.Find(name);
+            if (canvas == null || Flat(canvas.transform.position - eye).magnitude <= 5f) continue;
+            float distance = name == "Instructions Canvas" ? 2.7f : 3.5f;
+            Vector3 position = new Vector3(eye.x, canvas.transform.position.y, eye.z) + forward * distance;
+            canvas.transform.SetPositionAndRotation(position, Quaternion.LookRotation(forward));
+            // UI canvases load their position from the anchored position, so set that to match too
+            RectTransform rect = canvas.transform as RectTransform;
+            if (rect != null)
+            {
+                Vector3 local = rect.parent != null ? rect.parent.InverseTransformPoint(position) : position;
+                rect.anchorMin = rect.anchorMax = Vector2.zero;
+                rect.anchoredPosition3D = local;
+            }
+            // These are prefab instances: a change made from script is only saved if it is recorded as an override
+            PrefabUtility.RecordPrefabInstancePropertyModifications(canvas.transform);
+            moved++;
+        }
+        return moved;
     }
 
     // Copies a fresh component's values (the script's defaults) onto an existing one, except the named fields
@@ -453,18 +769,7 @@ public static class CatChaosSceneGenerator
             if (spawner.gameObject.name == "Cat Pool") director.catPool = spawner;
         }
 
-        // Top-up cats come in from Brian's spawn points that are roughly in front
-        Vector3 eye = player.transform.position;
-        Vector3 forward = player.transform.forward;
-        foreach (SpawnManager spawnManager in Object.FindObjectsOfType<SpawnManager>())
-        {
-            SerializedObject so = new SerializedObject(spawnManager);
-            Transform spawn = so.FindProperty("spawnPointCentre").objectReferenceValue as Transform;
-            Transform back = so.FindProperty("afterFeedingReturnPoint").objectReferenceValue as Transform;
-            if (spawn == null || Mathf.Abs(SignedAngle(forward, spawn.position - eye)) > 100f) continue;
-            director.spawnPoints.Add(spawn);
-            director.returnPoints.Add(back != null ? back : spawn);
-        }
+        FindTopUpSpawns(director, player);
 
         // Where the ninja can appear: on the NavMesh by each pile and some of the loose props
         foreach (Transform pile in piles) AddNinjaStop(director, pile.position);
@@ -473,6 +778,30 @@ public static class CatChaosSceneGenerator
         director.ninjaPrefab = MakeNinjaRush();
         log.AppendLine($"Director: top-ups from {director.spawnPoints.Count} spawn points ({(director.catPool != null ? "Cat Pool found" : "NO Cat Pool found")}); " +
                        $"ninja phase at {NinjaArrives} s with {director.ninjaStops.Count} stops, {NinjaTreats} treats to fill, gone after {NinjaGivesUpAfter} s if not fed.");
+    }
+
+    // Top-up cats come in from Brian's spawn points that are in front of the player (and not right next to them)
+    static void FindTopUpSpawns(CatChaosDirector director, PlayerInput player)
+    {
+        director.spawnPoints.Clear();
+        director.returnPoints.Clear();
+        Vector3 eye = player.transform.position;
+        Vector3 forward = player.transform.forward;
+        foreach (SpawnManager spawnManager in Object.FindObjectsOfType<SpawnManager>())
+        {
+            SerializedObject so = new SerializedObject(spawnManager);
+            Transform spawn = so.FindProperty("spawnPointCentre").objectReferenceValue as Transform;
+            Transform back = so.FindProperty("afterFeedingReturnPoint").objectReferenceValue as Transform;
+            if (spawn == null || !InFront(eye, forward, spawn.position, 100f)) continue;
+            director.spawnPoints.Add(spawn);
+            director.returnPoints.Add(back != null ? back : spawn);
+        }
+    }
+
+    // In front of the player (within maxAngle either side) and at least 2 m away
+    static bool InFront(Vector3 eye, Vector3 forward, Vector3 point, float maxAngle)
+    {
+        return Mathf.Abs(SignedAngle(forward, point - eye)) <= maxAngle && Flat(point - eye).magnitude >= 2f;
     }
 
     static void AddNinjaStop(CatChaosDirector director, Vector3 near)

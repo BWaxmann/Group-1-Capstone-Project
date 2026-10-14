@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// A pile of cafe props (plates, cups, jars...) that replaces a defend point's treat tin.
-// When a cat decides to go for it, the pile rattles and a ring under it glows, so the player gets a warning.
-// Each paw swipe that lands sends one prop flying (if the air isn't already full).
-[RequireComponent(typeof(DefendPoint))]
+// A pile of cafe props (plates, cups, jars...), usually replacing a defend point's treat tin.
+// Wandering cats that come near can knock its top prop flying (see CatChaosDirector). On a defend point, a cat that
+// marches over to attack it makes it rattle and glow as a warning, and each paw swipe sends the top prop flying.
 public class PropPile : MonoBehaviour
 {
+    static readonly List<CatMovement> noCats = new List<CatMovement>();
+
     [Tooltip("The object holding the props; it's what rattles.")]
     public Transform pile;
 
@@ -101,7 +102,8 @@ public class PropPile : MonoBehaviour
         {
             checkTimer = 0.2f;
             warning = 0;
-            foreach (CatMovement cat in CatMovement.active)
+            // Only a pile on a defend point can be marched on (a pile without one just gets knocked in passing)
+            foreach (CatMovement cat in defendPoint != null ? CatMovement.active : noCats)
             {
                 if (cat == null || cat.headingFor != defendPoint) continue;
                 float distance = Vector3.Distance(cat.transform.position, transform.position);
