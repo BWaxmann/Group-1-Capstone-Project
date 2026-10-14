@@ -185,6 +185,8 @@ MonoBehaviour:
     dropChance: 0.1
   - pickupIndex: 2
     dropChance: 0.1
+  - pickupIndex: 3
+    dropChance: 0.1
   pickupOffset: {x: 0, y: 0.5, z: 0}
   targetUpdateFrequency: 0.2
   stoppingDistance: 0.4
@@ -1035,16 +1037,6 @@ PrefabInstance:
       propertyPath: m_Value
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
         type: 3}
       propertyPath: m_AnchorMin.x
@@ -1056,6 +1048,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
         type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

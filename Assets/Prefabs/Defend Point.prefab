@@ -714,6 +714,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitScorePenalty: 1
   scoreDisplayPosition: {fileID: 9067766622185622172}
+  defendObject: {fileID: 9090203062003258221}
   hitParticlesIndex: 0
   hitSound:
     _soundClip: {fileID: 8300000, guid: c2c0fdc3d9787334686ad4fee62e5ddf, type: 3}

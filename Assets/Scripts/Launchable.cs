@@ -8,20 +8,26 @@ public abstract class Launchable : MonoBehaviour
     [SerializeField]
     protected SoundData treatHittingFloorSound = new SoundData(1f, 1f);
 
+    [SerializeField]
+    [Min(0)]
+    protected float initialOffset = 0.2f;
+
     protected Rigidbody rb;
     protected bool isActive;
 
-    public virtual void Launch(Transform launchPosition, float force, bool instaKill)
+    public virtual void Launch(Transform launchPosition, float force, float launchAngle, bool instaKill)
     {
         if (rb == null)
         {
             rb = GetComponent<Rigidbody>();
         }
 
-        transform.position = launchPosition.position;
-        transform.rotation = launchPosition.rotation;
+        Quaternion rotation = Quaternion.AngleAxis(launchAngle, launchPosition.up);
+        Vector3 direction = rotation * launchPosition.forward;
+        transform.position = launchPosition.position + initialOffset * direction;
+        transform.rotation = rotation * launchPosition.rotation;
         rb.velocity = Vector3.zero;
-        rb.AddForce(force * launchPosition.forward, ForceMode.Impulse);
+        rb.AddForce(force * direction, ForceMode.Impulse);
         isActive = true;
     }
 

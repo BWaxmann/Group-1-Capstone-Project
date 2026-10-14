@@ -52,6 +52,7 @@ MonoBehaviour:
     _soundClip: {fileID: 0}
     _volume: 1
     _pitch: 1
+  initialOffset: 0.2
   confettiParticleIndex: 2
   explosionRadius: 2
   stunDuration: 10

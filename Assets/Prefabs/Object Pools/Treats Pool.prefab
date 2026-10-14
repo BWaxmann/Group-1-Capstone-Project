@@ -47,19 +47,19 @@ MonoBehaviour:
   - _prefab: {fileID: 3732156247478064177, guid: a8ccadcda0e848c438374be3088a5317,
       type: 3}
     _excludeFromRandomSelection: 0
-    _initialPoolSize: 5
+    _initialPoolSize: 10
   - _prefab: {fileID: 3732156247478064177, guid: 56dd85f821a3981498aa3fbdf3d6ad1a,
       type: 3}
     _excludeFromRandomSelection: 0
-    _initialPoolSize: 5
+    _initialPoolSize: 10
   - _prefab: {fileID: 3732156247478064177, guid: 9809d599211ee0f47a3eadcb99a7865e,
       type: 3}
     _excludeFromRandomSelection: 0
-    _initialPoolSize: 5
+    _initialPoolSize: 10
   - _prefab: {fileID: 3732156247478064177, guid: 7790a16c116193f449712c11bee72660,
       type: 3}
     _excludeFromRandomSelection: 0
-    _initialPoolSize: 5
+    _initialPoolSize: 10
   - _prefab: {fileID: 8902882919912089219, guid: 63395de01485a014f8b5bc313f0042bf,
       type: 3}
     _excludeFromRandomSelection: 1

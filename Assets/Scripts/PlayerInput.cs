@@ -43,6 +43,14 @@ public class PlayerInput : MonoBehaviour
     float autofireRate = 6f;
 
     [SerializeField]
+    [Min(2)]
+    int numberOfShotsInSpread = 3;
+
+    [SerializeField]
+    [Range(0f, 90f)]
+    float maxSpreadAngle = 45f;
+
+    [SerializeField]
     TMP_Text ammoText;
 
     [SerializeField]
@@ -112,6 +120,9 @@ public class PlayerInput : MonoBehaviour
     bool yarnballReady;
     float yarnballRechargeTimer;
 
+    bool spreadActive;
+    float spreadTimer;
+
     bool instaKillActive;
     float instaKillTimer;
 
@@ -144,6 +155,16 @@ public class PlayerInput : MonoBehaviour
                 instaKillTimer = 0;
                 instaKillActive = false;
                 ammoText.text = defaultDisplayText;
+            }
+        }
+
+        if (spreadActive)
+        {
+            spreadTimer -= Time.deltaTime;
+            if (spreadTimer <= 0)
+            {
+                spreadTimer = 0;
+                spreadActive = false;
             }
         }
 
@@ -185,7 +206,17 @@ public class PlayerInput : MonoBehaviour
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    LaunchTreat(true);
+                    if (spreadActive)
+                    {
+                        for (int i = 0; i < numberOfShotsInSpread; i++)
+                        {
+                            LaunchTreat(true, (1 - 2 * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle);
+                        }
+                    }
+                    else
+                    {
+                        LaunchTreat(true);
+                    }
                 }
             }
         }
@@ -251,11 +282,31 @@ public class PlayerInput : MonoBehaviour
             {
                 if (OVRInput.GetDown(OVRInput.Button.SecondaryIndexTrigger))
                 {
-                    LaunchTreat(true);
+                    if (spreadActive)
+                    {
+                        for (int i = 0; i < numberOfShotsInSpread; i++)
+                        {
+                            LaunchTreat(true, (1 - 2 * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle);
+                        }
+                    }
+                    else
+                    {
+                        LaunchTreat(true);
+                    }
                 }
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
                 {
-                    LaunchTreat(false);
+                    if (spreadActive)
+                    {
+                        for (int i = 0; i < numberOfShotsInSpread; i++)
+                        {
+                            LaunchTreat(false, (1 - 2 * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle);
+                        }
+                    }
+                    else
+                    {
+                        LaunchTreat(false);
+                    }
                 }
             }
         }
@@ -340,17 +391,27 @@ public class PlayerInput : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(1f / autofireRate);
         while (true)
         {
-            LaunchTreat(rightHand);
+            if (spreadActive)
+            {
+                for (int i = 0; i < numberOfShotsInSpread; i++)
+                {
+                    LaunchTreat(rightHand, (1 - 2 * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle);
+                }
+            }
+            else
+            {
+                LaunchTreat(rightHand);
+            }
             yield return wait;
         }
     }
 
-    void LaunchTreat(bool rightHand)
+    void LaunchTreat(bool rightHand, float angle = 0)
     {
         Treat treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
         if (treat == null) return;
         treat.gameObject.SetActive(true);
-        treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, instaKillActive);
+        treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, angle, instaKillActive);
         PlaySound(launcherFireSound, rightHand);
     }
 
@@ -359,7 +420,7 @@ public class PlayerInput : MonoBehaviour
         Yarnball yarnball = treatsSpawner.GetObjectFromPool<Yarnball>(yarnballTreatSpawnerIndex);
         if (yarnball == null) return;
         yarnball.gameObject.SetActive(true);
-        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, false);
+        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, 0, false);
         PlaySound(launcherYarnballSound, rightHand);
 
         yarnballReady = false;
@@ -406,6 +467,12 @@ public class PlayerInput : MonoBehaviour
         instaKillActive = true;
         instaKillTimer += duration;
         ammoText.text = instaKillText;
+    }
+
+    public void ActivateSpread(float duration)
+    {
+        spreadActive = true;
+        spreadTimer += duration;
     }
 
     public void StopLaunchers()

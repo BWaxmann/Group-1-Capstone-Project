@@ -1222,7 +1222,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977510622188944123}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.637, z: -0}
+  m_LocalPosition: {x: 0, y: 0.3, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 977510621430673680}
@@ -1305,6 +1305,8 @@ MonoBehaviour:
   launchForce: 6
   enableAutofire: 1
   autofireRate: 6
+  numberOfShotsInSpread: 3
+  maxSpreadAngle: 45
   ammoText: {fileID: 1442800102}
   eye: {fileID: 977510622112336780}
   _pickupMagnet: {fileID: 2402349129688171909}
@@ -1719,7 +1721,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 10}
+  m_AnchoredPosition: {x: 0, y: 22.599998}
   m_SizeDelta: {x: -60, y: 50}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &2073910737862725459

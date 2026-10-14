@@ -11,9 +11,9 @@ public class Treat : Launchable
 
     bool instaKill;
 
-    public override void Launch(Transform launchPosition, float force, bool instaKill)
+    public override void Launch(Transform launchPosition, float force, float launchAngle, bool instaKill)
     {
-        base.Launch(launchPosition, force, instaKill);
+        base.Launch(launchPosition, force, launchAngle, instaKill);
 
         this.instaKill = instaKill;
         if (instaKillOutline != null)

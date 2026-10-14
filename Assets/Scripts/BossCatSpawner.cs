@@ -12,8 +12,12 @@ public class BossCatSpawner : MonoBehaviour
     [SerializeField]
     List<float> bossSpawnTimes = new List<float>();
 
+    [SerializeField]
+    AudioSource bossSpawnSoundSource;
+
     List<BossCat> bossInstances = new List<BossCat>();
     List<Transform> bossSpawnPoints = new List<Transform>();
+    List<SoundData> bossSpawnSounds = new List<SoundData>();
 
     void Start()
     {
@@ -44,6 +48,7 @@ public class BossCatSpawner : MonoBehaviour
                 instance.gameObject.SetActive(false);
                 bossInstances.Add(instance);
                 bossSpawnPoints.Add(boss.spawnPoint);
+                bossSpawnSounds.Add(boss.soundOnSpawn);
                 yield return null;
             }
         }
@@ -80,8 +85,11 @@ public class BossCatSpawner : MonoBehaviour
             Transform spawnPoint = bossSpawnPoints[index];
             boss.Initialise(spawnPoint, spawnPoint.position);
 
+            bossSpawnSounds[index].PlayOneShot(bossSpawnSoundSource);
+
             bossInstances.RemoveAt(index);
             bossSpawnPoints.RemoveAt(index);
+            bossSpawnSounds.RemoveAt(index);
         }
 
         GameManager.instance.GameStart -= StartSpawnRoutine;
@@ -96,7 +104,11 @@ public class BossCatSpawner : MonoBehaviour
         [SerializeField]
         Transform _spawnPoint;
 
+        [SerializeField]
+        SoundData _soundOnSpawn;
+
         public BossCat bossPrefab => _bossPrefab;
         public Transform spawnPoint => _spawnPoint;
+        public SoundData soundOnSpawn => _soundOnSpawn;
     }
 }

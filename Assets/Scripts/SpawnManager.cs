@@ -47,14 +47,17 @@ public class SpawnManager : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(data.delayBetweenSpawns);
         for (int i = 0; i < data.numberOfTimesToSpawn; i++)
         {
-            CatMovement cat = data.onlySpawnSpecificVariations
-                ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
-                : catSpawner.GetRandomObjectFromPool<CatMovement>();
-            if (cat != null)
+            for (int j = 0; j < data.numberToSpawnAtATime; j++)
             {
-                cat.gameObject.SetActive(true);
-                Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
-                cat.Initialise(afterFeedingReturnPoint, spawnPosition);
+                CatMovement cat = data.onlySpawnSpecificVariations
+                    ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
+                    : catSpawner.GetRandomObjectFromPool<CatMovement>();
+                if (cat != null)
+                {
+                    cat.gameObject.SetActive(true);
+                    Vector3 spawnPosition = spawnPointCentre.position + spawnPointCentre.right * Random.Range(-spawnPointRadius, spawnPointRadius);
+                    cat.Initialise(afterFeedingReturnPoint, spawnPosition);
+                }
             }
 
             yield return wait;
@@ -85,6 +88,10 @@ public class SpawnManager : MonoBehaviour
         int _numberOfTimesToSpawn;
 
         [SerializeField]
+        [Min(1)]
+        int _numberToSpawnAtATime;
+
+        [SerializeField]
         [Min(0)]
         float _delayBetweenSpawns;
 
@@ -96,6 +103,7 @@ public class SpawnManager : MonoBehaviour
 
         public float secondsAfterStartToBegin { get { return _secondsAfterStartToBegin; } }
         public int numberOfTimesToSpawn { get { return _numberOfTimesToSpawn; } }
+        public int numberToSpawnAtATime { get { return _numberToSpawnAtATime; } }
         public float delayBetweenSpawns { get { return _delayBetweenSpawns; } }
         public bool onlySpawnSpecificVariations { get { return _onlySpawnSpecificVariations; } }
         public int[] variationsToSpawn { get { return _variationsToSpawn; } }
