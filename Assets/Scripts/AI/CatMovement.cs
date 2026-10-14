@@ -597,6 +597,8 @@ public class CatMovement : MonoBehaviour
     // The fed cat freezes for a beat, then flies up spinning and pops into confetti
     protected IEnumerator HappyLaunchRoutine()
     {
+        // Any pickup drops where the cat was fed, not up where it pops (pickups wait in the air to be shot)
+        pickupDropPosition = transform.position;
         PrepareFeel();
         juice.Hit(2f);
 
@@ -670,6 +672,9 @@ public class CatMovement : MonoBehaviour
         ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, transform.position);
     }
 
+    // Set by the happy launch to where the cat was fed
+    protected Vector3? pickupDropPosition;
+
     protected virtual void DropPickup()
     {
         float max = 0;
@@ -687,7 +692,9 @@ public class CatMovement : MonoBehaviour
 
             if (rand < c)
             {
-                PickupManager.instance.SpawnPickup(pd.pickupIndex, pickupOffset + transform.position);
+                Vector3 dropAt = pickupDropPosition ?? transform.position;
+                pickupDropPosition = null;
+                PickupManager.instance.SpawnPickup(pd.pickupIndex, pickupOffset + dropAt);
                 return;
             }
         }

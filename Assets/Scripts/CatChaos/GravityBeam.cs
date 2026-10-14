@@ -25,7 +25,7 @@ public class GravityBeam : MonoBehaviour
     [Min(0)]
     [Tooltip("Seconds the beam has to stay on a prop before it grabs it (a ring fills up around the prop meanwhile). " +
              "Stops grip-spamming; 0 grabs instantly.")]
-    public float lockOnTime = 0.35f;
+    public float lockOnTime = 0f;
 
     [Min(0)]
     public int catchScore = 5;

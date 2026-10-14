@@ -68,6 +68,79 @@ public static class CatChaosSceneGenerator
         Create();
     }
 
+    // Keeps the open scene exactly as it's laid out (including anything moved or duplicated by hand) and only
+    // brings the Cat Chaos tuning numbers up to date with the scripts' current defaults.
+    [MenuItem("Catastrophe Cafe/Cat Chaos/Update Settings In Open Scene (Keeps Layout)", false, 61)]
+    static void UpdateSettingsFromMenu()
+    {
+        string report = UpdateSettings();
+        EditorUtility.DisplayDialog("Cat Chaos", report, "OK");
+    }
+
+    // Command line: -executeMethod CatChaosSceneGenerator.BatchUpdateSettings (opens the prototype scene first)
+    public static void BatchUpdateSettings()
+    {
+        EditorSceneManager.OpenScene(PrototypeScene, OpenSceneMode.Single);
+        Debug.Log("[Cat Chaos] " + UpdateSettings());
+    }
+
+    static string UpdateSettings()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        if (scene.path == SourceScene) return "This is CC_LEVEL. Open CatChaos_Prototype first.";
+
+        StringBuilder done = new StringBuilder();
+        CatChaosSettings settings = Object.FindObjectOfType<CatChaosSettings>();
+        if (settings != null)
+        {
+            ResetToDefaults(settings, "floorHeight", "knockSound", "landedSound", "respawnSound", "homeSound", "catchSound");
+            done.AppendLine("Flying props and cat knocks: updated.");
+        }
+        GravityBeam beam = Object.FindObjectOfType<GravityBeam>();
+        if (beam != null)
+        {
+            ResetToDefaults(beam, "beamColour");
+            done.AppendLine("Gravity beam: updated (grabs instantly).");
+        }
+        CatChaosDirector director = Object.FindObjectOfType<CatChaosDirector>();
+        if (director != null)
+        {
+            ResetToDefaults(director, "catPool", "spawnPoints", "returnPoints", "roundLength", "ninjaPrefab", "ninjaStops",
+                            "bossPhaseStart", "bossArrivesBanner", "bossFedBanner", "bossLeftBanner");
+            done.AppendLine("Director (top-up cats): updated.");
+        }
+        if (done.Length == 0) return "No Cat Chaos objects found in the open scene.";
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return done + "Layout left as it was. Scene saved.";
+    }
+
+    // Copies a fresh component's values (the script's defaults) onto an existing one, except the named fields
+    static void ResetToDefaults(Component target, params string[] keep)
+    {
+        GameObject temporary = new GameObject("Cat Chaos Defaults") { hideFlags = HideFlags.HideAndDontSave };
+        try
+        {
+            Component fresh = temporary.AddComponent(target.GetType());
+            SerializedObject from = new SerializedObject(fresh);
+            SerializedObject to = new SerializedObject(target);
+            SerializedProperty property = from.GetIterator();
+            bool enterChildren = true;
+            while (property.NextVisible(enterChildren))
+            {
+                enterChildren = false;
+                if (property.name == "m_Script" || System.Array.IndexOf(keep, property.name) >= 0) continue;
+                to.CopyFromSerializedProperty(property);
+            }
+            to.ApplyModifiedPropertiesWithoutUndo();
+        }
+        finally
+        {
+            Object.DestroyImmediate(temporary);
+        }
+    }
+
     // For running from the command line (Unity -batchmode -executeMethod CatChaosSceneGenerator.BatchCreate)
     public static void BatchCreate()
     {

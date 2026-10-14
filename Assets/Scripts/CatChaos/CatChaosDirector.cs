@@ -29,7 +29,7 @@ public class CatChaosDirector : MonoBehaviour
 
     [Min(0)]
     [Tooltip("...rising to this many by the end.")]
-    public int minimumCatsAtEnd = 5;
+    public int minimumCatsAtEnd = 4;
 
     [Min(0)]
     [Tooltip("No top-ups during the first few seconds, so the waves set the opening.")]
@@ -155,30 +155,80 @@ public class CatChaosDirector : MonoBehaviour
         lastTopUp = Time.time;
     }
 
-    // ---------- Loose props ----------
+    // ---------- Knocking things as cats wander past ----------
 
+    // A pile, or a single loose prop, that wandering cats can knock
+    class KnockSpot
+    {
+        public PropPile pile;
+        public FlyingProp prop;
+        public readonly HashSet<CatMovement> catsNear = new HashSet<CatMovement>();
+
+        public Vector3 position => pile != null ? pile.pile.position : prop.transform.position;
+    }
+
+    readonly List<KnockSpot> knockSpots = new List<KnockSpot>();
+    readonly List<CatMovement> leaving = new List<CatMovement>();
+    float lastKnock = -100f;
+
+    void FindKnockSpots()
+    {
+        knockSpots.Clear();
+        foreach (PropPile pile in FindObjectsOfType<PropPile>())
+        {
+            if (pile.pile != null) knockSpots.Add(new KnockSpot { pile = pile });
+        }
+        foreach (FlyingProp prop in FlyingProp.all)
+        {
+            if (prop != null && prop.isLoose) knockSpots.Add(new KnockSpot { prop = prop });
+        }
+    }
+
+    // Each time a cat comes near a pile or prop, there's a chance something goes flying
     void KnockLooseProps()
     {
         CatChaosSettings settings = CatChaosSettings.instance;
         if (settings == null) return;
+        if (knockSpots.Count == 0) FindKnockSpots();
 
-        foreach (FlyingProp prop in FlyingProp.all)
+        foreach (KnockSpot spot in knockSpots)
         {
-            if (prop == null || !prop.isLoose || prop.state != FlyingProp.State.Home || prop.timeAtHome < settings.looseRestTime) continue;
-
-            Vector3 propPosition = prop.transform.position;
+            Vector3 spotPosition = spot.position;
             foreach (CatMovement cat in CatMovement.active)
             {
                 if (cat == null || cat.isFullyFed || cat is NinjaRushCat) continue;
-                Vector3 offset = cat.transform.position - propPosition;
-                if (Mathf.Abs(offset.y) > 0.6f) continue;
-                offset.y = 0;
-                if (offset.sqrMagnitude > settings.looseKnockReach * settings.looseKnockReach) continue;
-
-                prop.Knock(Viewer());
-                break;
+                Vector3 offset = cat.transform.position - spotPosition;
+                bool near = Mathf.Abs(offset.y) <= settings.knockHeightReach &&
+                            new Vector2(offset.x, offset.z).sqrMagnitude <= settings.knockReach * settings.knockReach;
+                if (!near)
+                {
+                    spot.catsNear.Remove(cat);
+                }
+                else if (spot.catsNear.Add(cat))
+                {
+                    CatArrived(spot, settings);
+                }
             }
+
+            // Forget cats that have gone (fed, or switched off)
+            leaving.Clear();
+            foreach (CatMovement cat in spot.catsNear)
+            {
+                if (cat == null || !cat.isActiveAndEnabled || cat.isFullyFed) leaving.Add(cat);
+            }
+            foreach (CatMovement cat in leaving) spot.catsNear.Remove(cat);
         }
+    }
+
+    void CatArrived(KnockSpot spot, CatChaosSettings settings)
+    {
+        if (spot.pile != null) spot.pile.Rattle(0.5f);
+        if (Time.time - lastKnock < settings.knockGap || Random.value > settings.knockChance) return;
+
+        bool knocked = spot.pile != null
+            ? spot.pile.KnockTop(Viewer(), settings.propRestTime)
+            : spot.prop.state == FlyingProp.State.Home && spot.prop.timeAtHome >= settings.propRestTime && spot.prop.Knock(Viewer());
+        if (knocked) lastKnock = Time.time;
     }
 
     // ---------- Boss phase ----------

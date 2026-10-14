@@ -61,22 +61,34 @@ public class PropPile : MonoBehaviour
         if (defendPoint != null) defendPoint.Hit -= OnHit;
     }
 
+    // A paw swipe (from a cat that marched over to attack the pile)
     void OnHit()
     {
         Vector3 playerPosition = Viewer() != null ? viewer.position : transform.position - transform.forward;
+        if (!KnockTop(playerPosition, 0f)) shake = 1f;
+    }
 
-        // The topmost prop that's still home goes flying
+    // Sends the topmost prop that's home (and has been for restTime seconds) flying. False if nothing could go.
+    public bool KnockTop(Vector3 playerPosition, float restTime)
+    {
         FlyingProp top = null;
         foreach (FlyingProp prop in props)
         {
-            if (prop == null || prop.state != FlyingProp.State.Home) continue;
+            if (prop == null || prop.state != FlyingProp.State.Home || prop.timeAtHome < restTime) continue;
             if (top == null || prop.transform.position.y > top.transform.position.y) top = prop;
         }
-
-        if (top == null || !top.Knock(playerPosition))
+        if (top != null && top.Knock(playerPosition))
         {
-            shake = 1f;
+            shake = Mathf.Max(shake, 0.6f);
+            return true;
         }
+        return false;
+    }
+
+    // A wobble, e.g. when a cat brushes past
+    public void Rattle(float amount)
+    {
+        shake = Mathf.Max(shake, amount);
     }
 
     void Update()

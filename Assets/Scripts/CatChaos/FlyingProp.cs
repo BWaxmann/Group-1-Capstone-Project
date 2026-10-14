@@ -129,8 +129,10 @@ public class FlyingProp : MonoBehaviour
         if (toPlayer.sqrMagnitude < 0.01f) toPlayer = -transform.forward;
         Vector3 drift = Quaternion.Euler(0, Random.Range(-settings.launchSpread, settings.launchSpread), 0) * toPlayer.normalized;
 
-        velocity = Vector3.up * settings.launchUpSpeed * Random.Range(0.9f, 1.1f)
-                 + drift * settings.launchTowardPlayerSpeed * Random.Range(0.8f, 1.2f);
+        // Fast and high, but never up into the ceiling: v = sqrt(2 g h) reaches exactly the room left above it
+        float headroom = Mathf.Max(0.3f, settings.floorHeight + settings.maxHeightAboveFloor - transform.position.y);
+        float up = Mathf.Min(settings.launchUpSpeed * Random.Range(0.9f, 1.1f), Mathf.Sqrt(2f * settings.propGravity * headroom));
+        velocity = Vector3.up * up + drift * settings.launchTowardPlayerSpeed * Random.Range(0.8f, 1.2f);
         spinAxis = Random.onUnitSphere;
         spinSpeed = Random.Range(180f, 360f);
         flightTime = 0;

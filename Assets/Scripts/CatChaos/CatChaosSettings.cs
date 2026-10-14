@@ -9,40 +9,44 @@ public class CatChaosSettings : MonoBehaviour
     [Header("Flying props")]
 
     [Min(1)]
-    [Tooltip("Most props in the air (or held) at once. Extra paw swipes just rattle the pile.")]
-    public int maxAirborne = 6;
+    [Tooltip("Most props in the air (or held) at once. Kept low so there's time to feed cats too.")]
+    public int maxAirborne = 4;
 
     [Min(0)]
-    [Tooltip("Upward speed when knocked, in m/s. Higher = more hang time (and closer to the ceiling).")]
-    public float launchUpSpeed = 3.8f;
+    [Tooltip("Upward speed of the burst when knocked, in m/s (capped so props never reach the ceiling).")]
+    public float launchUpSpeed = 5.5f;
 
     [Min(0)]
-    [Tooltip("How fast a knocked prop drifts towards the player, in m/s.")]
-    public float launchTowardPlayerSpeed = 0.9f;
+    [Tooltip("How fast the burst throws a prop out towards the player, in m/s.")]
+    public float launchTowardPlayerSpeed = 2.2f;
 
     [Range(0, 60)]
-    [Tooltip("Random sideways spread of the drift, in degrees either side.")]
+    [Tooltip("Random sideways spread of the burst, in degrees either side.")]
     public float launchSpread = 30f;
 
     [Min(0.1f)]
-    [Tooltip("Gravity on knocked props while they burst upwards.")]
-    public float propGravity = 4.5f;
+    [Tooltip("Gravity on knocked props while they burst upwards (high = a short, snappy burst).")]
+    public float propGravity = 9f;
+
+    [Min(0.5f)]
+    [Tooltip("Props never fly higher than this above the floor, in metres (keeps them under the ceiling).")]
+    public float maxHeightAboveFloor = 2.6f;
 
     [Min(0)]
-    [Tooltip("Seconds after being knocked before a prop can be caught (stops grabbing things the instant they pop out).")]
-    public float catchableAfter = 0.5f;
+    [Tooltip("Seconds after being knocked before a prop can be caught. 0 = straight away.")]
+    public float catchableAfter = 0f;
 
     [Min(0.05f)]
     [Tooltip("Once a prop stops rising it drifts and falls slowly: its fall speed, in m/s.")]
-    public float driftFallSpeed = 0.7f;
+    public float driftFallSpeed = 0.6f;
 
     [Min(0)]
     [Tooltip("How fast a drifting prop swoops about sideways, in m/s.")]
-    public float driftSpeed = 1.1f;
+    public float driftSpeed = 0.8f;
 
     [Min(0.1f)]
     [Tooltip("Seconds between a drifting prop's changes of direction (picked at random up to this).")]
-    public float driftTurnTime = 0.8f;
+    public float driftTurnTime = 0.9f;
 
     [Tooltip("World height of the floor, where uncaught props land. Set by the scene generator.")]
     public float floorHeight = 0f;
@@ -58,16 +62,29 @@ public class CatChaosSettings : MonoBehaviour
     [Header("Cats")]
 
     [Range(0f, 1f)]
-    [Tooltip("Chance, at each stop while roaming, that a cat heads for a pile. Brian's cats use 0.2 (0.25 for bosses).")]
-    public float pileTargetingChance = 0.5f;
+    [Tooltip("Chance, at each stop while roaming, that a cat marches over to a pile to swipe at it. " +
+             "0 = cats just wander (and knock things as they pass). Brian's cats use 0.2.")]
+    public float pileTargetingChance = 0f;
 
     [Min(0.1f)]
-    [Tooltip("How close (in metres) a walking cat has to pass a loose prop to knock it flying.")]
-    public float looseKnockReach = 0.5f;
+    [Tooltip("How close (in metres, sideways) a wandering cat has to come to a pile or loose prop for a chance to knock it.")]
+    public float knockReach = 0.7f;
+
+    [Min(0.1f)]
+    [Tooltip("How far above or below a cat a prop can be and still get knocked (a cat bumping a table knocks what's on it).")]
+    public float knockHeightReach = 1.2f;
+
+    [Range(0f, 1f)]
+    [Tooltip("Chance that a cat coming near a pile or prop sends something flying.")]
+    public float knockChance = 0.45f;
 
     [Min(0)]
-    [Tooltip("Seconds a prop has to be back home before a passing cat can knock it again.")]
-    public float looseRestTime = 4f;
+    [Tooltip("Fewest seconds between any two knocks, so it never all goes up at once.")]
+    public float knockGap = 1.5f;
+
+    [Min(0)]
+    [Tooltip("Seconds a prop has to be back home before it can be knocked again.")]
+    public float propRestTime = 4f;
 
     [Header("Sounds")]
 
