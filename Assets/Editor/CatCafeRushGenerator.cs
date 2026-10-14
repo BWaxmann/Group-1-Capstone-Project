@@ -254,34 +254,20 @@ public static class CatCafeRushGenerator
         log.AppendLine("Countdown, announcements and results show on the chalkboard; the instructions board is off.");
     }
 
-    // The time stays on the cat clock: attach its canvas to the clock, so it moves with the clock
+    // The time stays on the cat clock's screen: its board is attached to the clock, so moving, turning or resizing
+    // the clock takes the time with it (already attached = left alone)
     static void AttachTimerToClock(StringBuilder log)
     {
         GameObject timer = GameObject.Find("Timer Canvas");
-        if (timer == null) return;
-        Vector3 at = timer.transform.position;
-
-        // Eleni's cat clock; failing that, the smallest model whose shape contains the timer's spot
-        GameObject named = GameObject.Find("Cat_clock");
-        Transform clock = named != null ? named.transform : null;
-        float smallest = float.MaxValue;
-        foreach (Renderer rend in clock == null ? Object.FindObjectsOfType<Renderer>() : new Renderer[0])
+        GameObject clock = GameObject.Find("Cat_clock");
+        if (timer == null || clock == null)
         {
-            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend.GetComponentInParent<Canvas>() != null) continue;
-            Bounds b = rend.bounds;
-            b.Expand(0.2f);
-            float size = rend.bounds.size.magnitude;
-            if (!b.Contains(at) || size > 4.5f || size >= smallest) continue;
-            smallest = size;
-            clock = rend.transform;
-        }
-        if (clock == null)
-        {
-            log.AppendLine("Couldn't find the cat clock under the timer; the timer stays where it is.");
+            log.AppendLine("Couldn't find the cat clock or its timer; the time stays where it is.");
             return;
         }
-        AttachKeepingPlace(timer.transform, clock);
-        log.AppendLine($"The timer is attached to {clock.name} (move the clock and the time goes with it).");
+        if (timer.transform.IsChildOf(clock.transform)) return;
+        AttachKeepingPlace(timer.transform, clock.transform);
+        log.AppendLine("The timer is attached to the cat clock (move the clock and the time goes with it).");
     }
 
     // Re-parents a canvas without moving it on screen
@@ -441,6 +427,9 @@ public static class CatCafeRushGenerator
         if (director.ninjaPrefab == null) director.ninjaPrefab = CatChaosSceneGenerator.MakeNinjaRush();
         EditorUtility.SetDirty(director);
         done.AppendLine($"NavMesh rebaked for this scene. Ninja: {director.ninjaStops.Count} stops.");
+        StringBuilder timerLog = new StringBuilder();
+        AttachTimerToClock(timerLog);
+        done.Append(timerLog);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);

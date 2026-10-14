@@ -114,6 +114,27 @@ public class RushDirector : MonoBehaviour
     [Tooltip("How sharply the aim assist can curve a treat, in degrees per second.")]
     public float aimAssistTurnSpeed = 120f;
 
+    [Header("Catching")]
+
+    [Tooltip("Knocked props burst outward in any direction (not just towards the player), then drift back in front as they fall.")]
+    [Range(0f, 180f)] public float burstSpread = 180f;
+    [Tooltip("How fast the burst throws a prop sideways, in m/s.")]
+    [Min(0f)] public float burstOutwardSpeed = 3.5f;
+    [Tooltip("How fast the burst throws a prop upwards, in m/s (less = flatter, more horizontal).")]
+    [Min(0f)] public float burstUpSpeed = 3.2f;
+    [Tooltip("Seconds a prop flies away before it can be caught.")]
+    [Min(0f)] public float catchableAfter = 0.3f;
+    [Tooltip("How slowly props sink once the burst is over, in m/s.")]
+    [Min(0.05f)] public float fallSpeed = 0.55f;
+
+    [Header("Player's space")]
+
+    [Tooltip("The ninja never appears closer than this to the player, in metres.")]
+    [Min(0f)] public float ninjaMinDistance = 2.5f;
+    [Tooltip("Floor area around the player that cats can't walk into (e.g. inside the counter). Width, height, depth in metres; " +
+             "kept low so cats can still jump up onto the counter top. Zero width = off.")]
+    public Vector3 playerSpace = new Vector3(2.2f, 0.6f, 2.2f);
+
     [Header("Look")]
 
     [Range(0.1f, 1f)]
@@ -151,6 +172,17 @@ public class RushDirector : MonoBehaviour
 
     void Start()
     {
+        // How knocked props fly in this mode
+        CatChaosSettings flight = CatChaosSettings.instance;
+        if (flight != null)
+        {
+            flight.launchSpread = burstSpread;
+            flight.launchTowardPlayerSpeed = burstOutwardSpeed;
+            flight.launchUpSpeed = burstUpSpeed;
+            flight.catchableAfter = catchableAfter;
+            flight.driftFallSpeed = fallSpeed;
+        }
+
         player = FindObjectOfType<PlayerInput>();
         GameManager.instance.GameStart += OnGameStart;
         GameManager.instance.GameEnd += OnGameEnd;
@@ -187,6 +219,7 @@ public class RushDirector : MonoBehaviour
         }
 
         player.treatSpeed = treatSpeed;
+        KeepCatsOutOfPlayerSpace();
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);
@@ -302,14 +335,40 @@ public class RushDirector : MonoBehaviour
         orders.Clear();
     }
 
+    // A cat-proof patch of floor where the player stands (cut out of the NavMesh while the round runs)
+    void KeepCatsOutOfPlayerSpace()
+    {
+        if (playerSpace.x <= 0 || playerSpace.z <= 0 || player == null) return;
+        GameObject space = new GameObject("Player Space (no cats)");
+        Vector3 at = player.transform.position;
+        if (NavMesh.SamplePosition(at, out NavMeshHit floor, 2f, NavMesh.AllAreas)) at.y = floor.position.y;
+        space.transform.SetPositionAndRotation(at, Quaternion.Euler(0, player.transform.eulerAngles.y, 0));
+        NavMeshObstacle obstacle = space.AddComponent<NavMeshObstacle>();
+        obstacle.shape = NavMeshObstacleShape.Box;
+        obstacle.size = playerSpace;
+        obstacle.center = new Vector3(0, playerSpace.y * 0.5f, 0);
+        obstacle.carving = true;
+        obstacle.carveOnlyStationary = true;
+    }
+
+    // Ninja stops far enough from the player (so nothing springs up right beside them)
+    List<Vector3> StopsAwayFromPlayer()
+    {
+        if (player == null || ninjaMinDistance <= 0) return ninjaStops;
+        Vector3 at = player.transform.position;
+        List<Vector3> away = ninjaStops.FindAll(stop => new Vector2(stop.x - at.x, stop.z - at.z).magnitude >= ninjaMinDistance);
+        return away.Count > 0 ? away : ninjaStops;
+    }
+
     void SummonNinja(bool boss)
     {
         if (ninja == null || ninjaStops.Count == 0) return;
+        List<Vector3> stops = StopsAwayFromPlayer();
         if (boss) ninja.Configure(true, bossKnocksPerStop, bossSitMin, bossSitMax);
         else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax);
-        ninja.stops = ninjaStops;
+        ninja.stops = stops;
         ninja.gameObject.SetActive(true);
-        ninja.Initialise(transform, ninjaStops[Random.Range(0, ninjaStops.Count)]);
+        ninja.Initialise(transform, stops[Random.Range(0, stops.Count)]);
         // The boss gets the same generous hit area as the other cats
         if (cleanShots && ninjaHitbox == null) ninjaHitbox = CatOrder.AddHitbox(ninja.gameObject, hitboxGenerosity);
     }
