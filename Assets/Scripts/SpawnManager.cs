@@ -35,6 +35,9 @@ public class SpawnManager : MonoBehaviour
 
     public bool allWavesCompleted { get { return wavesCompleted >= spawnWavesData.Length; } }
 
+    // While true, every spawner waits before sending its next cat (Cat Chaos pauses waves during its boss phase)
+    public static bool holdSpawns;
+
     int wavesCompleted = 0;
     bool finaleDone;
     bool wavesStarted;
@@ -69,6 +72,7 @@ public class SpawnManager : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(finaleDelayBetweenSpawns);
         for (int i = 0; i < finaleSpawnCount; i++)
         {
+            while (holdSpawns) yield return null;
             SpawnCat(catSpawner.GetRandomObjectFromPool<CatMovement>());
             yield return wait;
         }
@@ -115,6 +119,7 @@ public class SpawnManager : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(data.delayBetweenSpawns);
         for (int i = 0; i < data.numberOfTimesToSpawn; i++)
         {
+            while (holdSpawns) yield return null;
             CatMovement cat = data.onlySpawnSpecificVariations
                 ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
                 : catSpawner.GetRandomObjectFromPool<CatMovement>();

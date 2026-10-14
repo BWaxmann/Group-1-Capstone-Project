@@ -200,6 +200,12 @@ public class CatMovement : MonoBehaviour
     // Every cat currently switched on, so other scripts can check on them without searching the scene
     public static readonly List<CatMovement> active = new List<CatMovement>();
 
+    // A scene can override every cat's Roaming To Targeting Chance (Cat Chaos sends cats to the piles more often).
+    // Below 0 = use each cat's own value.
+    public static float targetingChanceOverride = -1f;
+
+    protected float targetingChance => targetingChanceOverride >= 0 ? targetingChanceOverride : roamingToTargetingChance;
+
     protected virtual void OnEnable()
     {
         if (!active.Contains(this)) active.Add(this);
@@ -304,7 +310,7 @@ public class CatMovement : MonoBehaviour
                             }
 
                             // Determines whether to go after a defend point or keep roaming
-                            if (Random.Range(0f, 1f) < roamingToTargetingChance)
+                            if (Random.Range(0f, 1f) < targetingChance)
                             {
                                 targetDefendPoint = GameManager.instance.GetRandomDefendPoint();
                                 if (targetDefendPoint != null)

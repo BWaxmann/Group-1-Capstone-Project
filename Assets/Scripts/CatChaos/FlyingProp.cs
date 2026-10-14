@@ -19,9 +19,51 @@ public class FlyingProp : MonoBehaviour
     // Props that are flying or being held. Kept short (see CatChaosSettings.maxAirborne) for the Quest.
     public static readonly List<FlyingProp> airborne = new List<FlyingProp>();
 
+    // Every prop in the scene
+    public static readonly List<FlyingProp> all = new List<FlyingProp>();
+
+    [Tooltip("Loose props sit along the cats' paths and get knocked by cats walking past (pile props get knocked by paw swipes).")]
+    public bool isLoose;
+
+    [Tooltip("Optional bits (leaves, cactus chunks...) that burst off when it's knocked and flutter to the floor. Decoration only.")]
+    public GameObject[] burstPieces;
+
+    [Min(0)]
+    public int burstCount = 4;
+
+    [Min(0.01f)]
+    [Tooltip("Size of each burst piece, in metres.")]
+    public float burstPieceSize = 0.14f;
+
     public State state { get; private set; } = State.Home;
     public bool isCatchable => state == State.Flying;
     public Vector3 centre => propRenderer != null ? propRenderer.bounds.center : transform.position;
+
+    // How long it's been sitting at home, so a prop that just came back isn't knocked again straight away
+    public float timeAtHome => state == State.Home ? Time.time - homeSince : 0f;
+
+    float homeSince = -100f;
+
+    // Knocks up to `count` props sitting at home within `reach` of a point, top ones first. Returns how many went up.
+    public static int KnockNear(Vector3 point, float reach, int count, Vector3 playerPosition)
+    {
+        int knocked = 0;
+        for (int n = 0; n < count; n++)
+        {
+            FlyingProp best = null;
+            foreach (FlyingProp prop in all)
+            {
+                if (prop == null || prop.state != State.Home) continue;
+                Vector3 offset = prop.transform.position - point;
+                offset.y *= 0.5f;   // reaching up or down a little is fine
+                if (offset.magnitude > reach) continue;
+                if (best == null || prop.transform.position.y > best.transform.position.y) best = prop;
+            }
+            if (best == null || !best.Knock(playerPosition)) break;
+            knocked++;
+        }
+        return knocked;
+    }
 
     Transform homeParent;
     Vector3 homeLocalPosition;
@@ -55,9 +97,15 @@ public class FlyingProp : MonoBehaviour
         if (homeParent == null) Setup();
     }
 
+    void OnEnable()
+    {
+        if (!all.Contains(this)) all.Add(this);
+    }
+
     void OnDisable()
     {
         airborne.Remove(this);
+        all.Remove(this);
     }
 
     // Sends the prop up on a slow arc, drifting towards the player. Returns false if it can't go right now.
@@ -83,6 +131,10 @@ public class FlyingProp : MonoBehaviour
         state = State.Flying;
         airborne.Add(this);
         settings.PlayKnock(transform.position);
+        if (burstPieces != null && burstPieces.Length > 0 && burstCount > 0)
+        {
+            FlutterPiece.Burst(burstPieces, burstCount, burstPieceSize, centre, settings.floorHeight);
+        }
         return true;
     }
 
@@ -181,6 +233,7 @@ public class FlyingProp : MonoBehaviour
         transform.localRotation = homeLocalRotation;
         transform.localScale = homeLocalScale;
         state = State.Home;
+        homeSince = Time.time;
     }
 
     Vector3 HomePosition() => homeParent != null ? homeParent.TransformPoint(homeLocalPosition) : homeLocalPosition;

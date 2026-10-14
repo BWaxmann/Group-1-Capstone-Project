@@ -39,6 +39,20 @@ public class CatChaosSettings : MonoBehaviour
     [Tooltip("Seconds a released prop takes to fly home.")]
     public float returnDuration = 0.8f;
 
+    [Header("Cats")]
+
+    [Range(0f, 1f)]
+    [Tooltip("Chance, at each stop while roaming, that a cat heads for a pile. Brian's cats use 0.2 (0.25 for bosses).")]
+    public float pileTargetingChance = 0.5f;
+
+    [Min(0.1f)]
+    [Tooltip("How close (in metres) a walking cat has to pass a loose prop to knock it flying.")]
+    public float looseKnockReach = 0.5f;
+
+    [Min(0)]
+    [Tooltip("Seconds a prop has to be back home before a passing cat can knock it again.")]
+    public float looseRestTime = 4f;
+
     [Header("Sounds")]
 
     public SoundData knockSound = new SoundData(0.6f, 1f);
@@ -50,11 +64,21 @@ public class CatChaosSettings : MonoBehaviour
     void Awake()
     {
         instance = this;
+        CatMovement.targetingChanceOverride = pileTargetingChance;
+    }
+
+    void OnValidate()
+    {
+        if (instance == this) CatMovement.targetingChanceOverride = pileTargetingChance;
     }
 
     void OnDestroy()
     {
-        if (instance == this) instance = null;
+        if (instance != this) return;
+        instance = null;
+        // These are shared by every scene, so put them back for CC_LEVEL and the rest
+        CatMovement.targetingChanceOverride = -1f;
+        SpawnManager.holdSpawns = false;
     }
 
     public void PlayKnock(Vector3 position) => Play(knockSound, position, Random.Range(0.9f, 1.15f));

@@ -15,6 +15,27 @@ public static class CatChaosSceneGenerator
     const string PrototypeScene = "Assets/Scenes/CatChaos_Prototype.unity";
     const string PrefabFolder = "Assets/Prefabs/CatChaos";
     const string MafiaVariantPath = PrefabFolder + "/Mafia Boss Cat (Cat Chaos).prefab";
+    const string NinjaSource = "Assets/Prefabs/Cat/Ninja Boss Cat.prefab";
+    const string NinjaRushPath = PrefabFolder + "/Ninja Rush Cat.prefab";
+    static readonly string[] PlantModels =
+    {
+        "Assets/Models/Environment/Plants/Models/cacti_plant_pot_small.fbx",
+        "Assets/Models/Environment/Plants/Models/monstera_plant_small_potted.fbx",
+    };
+    static readonly string[] MonsteraLeaves =
+    {
+        "Assets/Models/Environment/Plants/Models/monstera_leaf_small_A.fbx",
+        "Assets/Models/Environment/Plants/Models/monstera_leaf_small_B.fbx",
+        "Assets/Models/Environment/Plants/Models/monstera_leaf_small_C.fbx",
+        "Assets/Models/Environment/Plants/Models/monstera_leaf_medium_A.fbx",
+    };
+    static readonly string[] CactusBits =
+    {
+        "Assets/Models/Environment/Plants/Models/cactus_A.fbx",
+        "Assets/Models/Environment/Plants/Models/cactus_B.fbx",
+        "Assets/Models/Environment/Plants/Models/cactus_C.fbx",
+        "Assets/Models/Environment/Plants/Models/cactus_D.fbx",
+    };
 
     const string PlatePrefab = "Assets/Models/Environment/CoffeeShopStarterPack/Prefabs/PW_plate01.prefab";
     const string CookiePrefab = "Assets/Models/Environment/Cozy Cafe/Prefabs/Cafe_Cookie_1.prefab";
@@ -29,12 +50,20 @@ public static class CatChaosSceneGenerator
 
     // Sizes in metres. A little bigger than life, because the piles are 3-6 m from the player.
     const float PlateWidth = 0.3f;
-    const float CookieWidth = 0.1f;
+    const float CookieWidth = 0.17f;
     const float CupHeight = 0.14f;
     const float JarHeight = 0.26f;
+    const float PlantHeight = 0.5f;
 
     const float RoundLength = 180f;
+    const int LoosePropCount = 10;
+
+    // Bosses: the Mafia cat is parked for now; the ninja runs as a mid-round boss phase instead
+    const bool IncludeMafia = false;
     const float MafiaArrives = 90f;
+    const float NinjaArrives = 80f;
+    const int NinjaTreats = 12;
+    const float NinjaGivesUpAfter = 40f;
 
     [MenuItem("Catastrophe Cafe/Cat Chaos/Create Prototype Scene", false, 60)]
     static void CreateFromMenu()
@@ -88,7 +117,10 @@ public static class CatChaosSceneGenerator
         settings.floorHeight = floorY;
         SetSounds(settings);
 
-        BuildPiles(player, log);
+        // Same layout every time it's generated
+        Random.InitState(20261014);
+        List<Transform> piles = BuildPiles(player, log);
+        List<Vector3> looseSpots = BuildLooseProps(player, piles, floorY, log);
 
         // The grips now work the gravity beam, so the yarnball moves to A/X
         player.gameObject.AddComponent<GravityBeam>();
@@ -102,7 +134,9 @@ public static class CatChaosSceneGenerator
         gameSettings.ApplyModifiedPropertiesWithoutUndo();
         log.AppendLine($"Round length {RoundLength} s.");
 
-        SetUpMafia(log);
+        if (IncludeMafia) SetUpMafia(log);
+        else TurnOffBossSpawner(log);
+        BuildDirector(root, player, piles, looseSpots, log);
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -112,8 +146,9 @@ public static class CatChaosSceneGenerator
 
     // ---------- Piles ----------
 
-    static void BuildPiles(PlayerInput player, StringBuilder log)
+    static List<Transform> BuildPiles(PlayerInput player, StringBuilder log)
     {
+        List<Transform> piles = new List<Transform>();
         DefendPoint[] points = Object.FindObjectsOfType<DefendPoint>();
         // Order them right to left as seen from the player, so the right one gets the plates every time
         Vector3 eye = player.transform.position;
@@ -153,6 +188,7 @@ public static class CatChaosSceneGenerator
 
             PropPile propPile = point.gameObject.AddComponent<PropPile>();
             propPile.pile = pile;
+            piles.Add(pile);
             if (plates) BuildPlateStack(pile, propPile.props);
             else BuildCupsAndJars(pile, propPile.props);
 
@@ -160,6 +196,269 @@ public static class CatChaosSceneGenerator
             log.AppendLine($"{(plates ? "Plates and cookies" : "Cups and jars")} ({propPile.props.Count} props) at {Mathf.Abs(angle):F0} deg {(angle >= 0 ? "right" : "left")}, " +
                            $"{Vector3.Distance(eye, point.position):F1} m away.");
         }
+        return piles;
+    }
+
+    // ---------- Loose props ----------
+
+    // Cups, jars and potted plants along the routes cats take in front of the player, so roaming cats knock them flying.
+    // Spots come from Brian's roaming waypoints and the straight lines between them, snapped onto the NavMesh.
+    static List<Vector3> BuildLooseProps(PlayerInput player, List<Transform> piles, float floorY, StringBuilder log)
+    {
+        List<Vector3> chosen = new List<Vector3>();
+        WaypointManager waypoints = Object.FindObjectOfType<WaypointManager>();
+        if (waypoints == null)
+        {
+            log.AppendLine("No WaypointManager found; no loose props.");
+            return chosen;
+        }
+
+        Vector3 eye = player.transform.position;
+        Vector3 forward = player.transform.forward;
+
+        // Where cats go: Brian's roaming waypoints and the wave spawn points
+        List<Vector3> ends = new List<Vector3>();
+        List<Vector3> front = new List<Vector3>();
+        SerializedProperty list = new SerializedObject(waypoints).FindProperty("roamingWaypoints");
+        for (int i = 0; i < list.arraySize; i++)
+        {
+            Transform t = list.GetArrayElementAtIndex(i).FindPropertyRelative("_waypoint").objectReferenceValue as Transform;
+            if (t == null) continue;
+            ends.Add(t.position);
+            if (Mathf.Abs(SignedAngle(forward, t.position - eye)) <= 80f && Flat(t.position - eye).magnitude <= 7f) front.Add(t.position);
+        }
+        foreach (SpawnManager spawnManager in Object.FindObjectsOfType<SpawnManager>())
+        {
+            Transform spawn = new SerializedObject(spawnManager).FindProperty("spawnPointCentre").objectReferenceValue as Transform;
+            if (spawn != null) ends.Add(spawn.position);
+        }
+
+        // Candidates: the front waypoints, plus points every 0.7 m along the NavMesh routes between every pair of places
+        List<Vector3> candidates = new List<Vector3>(front);
+        UnityEngine.AI.NavMeshPath route = new UnityEngine.AI.NavMeshPath();
+        for (int a = 0; a < ends.Count; a++)
+        {
+            for (int b = a + 1; b < ends.Count; b++)
+            {
+                if (!UnityEngine.AI.NavMesh.SamplePosition(ends[a], out UnityEngine.AI.NavMeshHit from, 1f, UnityEngine.AI.NavMesh.AllAreas)) continue;
+                if (!UnityEngine.AI.NavMesh.SamplePosition(ends[b], out UnityEngine.AI.NavMeshHit to, 1f, UnityEngine.AI.NavMesh.AllAreas)) continue;
+                if (!UnityEngine.AI.NavMesh.CalculatePath(from.position, to.position, UnityEngine.AI.NavMesh.AllAreas, route)) continue;
+                Vector3[] corners = route.corners;
+                for (int c = 0; c + 1 < corners.Length; c++)
+                {
+                    if (Mathf.Abs(corners[c].y - corners[c + 1].y) > 0.3f) continue;   // a jump, not a walk
+                    int steps = Mathf.Max(1, Mathf.FloorToInt(Vector3.Distance(corners[c], corners[c + 1]) / 0.7f));
+                    for (int s = 0; s < steps; s++) candidates.Add(Vector3.Lerp(corners[c], corners[c + 1], s / (float)steps));
+                }
+            }
+        }
+        Shuffle(candidates);
+
+        Transform root = new GameObject("Loose Props").transform;
+        List<FlyingProp> made = new List<FlyingProp>();
+        int plants = 0, cups = 0, hidden = 0;
+        Vector3 eyeHeight = new Vector3(eye.x, floorY + 1.6f, eye.z);
+
+        // Lots of the furniture (the cat tunnel, for one) has no collider, so give every mesh a temporary one while
+        // checking what the player can see, and take them all away again afterwards
+        List<MeshCollider> temporary = AddTemporaryColliders(player);
+        try
+        {
+            foreach (Vector3 candidate in candidates)
+            {
+                if (chosen.Count >= LoosePropCount) break;
+                if (!UnityEngine.AI.NavMesh.SamplePosition(candidate, out UnityEngine.AI.NavMeshHit hit, 0.4f, UnityEngine.AI.NavMesh.AllAreas)) continue;
+                Vector3 spot = hit.position;
+
+                float angle = SignedAngle(forward, spot - eye);
+                float distance = Flat(spot - eye).magnitude;
+                if (Mathf.Abs(angle) > 80f || distance < 1.8f || distance > 7f) continue;   // in front, but not in the player's face
+                // Not under or inside something (the cats' route runs through the tunnel, where a prop would be hidden)
+                if (Physics.Raycast(spot + Vector3.up * 0.05f, Vector3.up, 0.8f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
+                bool tooClose = false;
+                foreach (Transform pile in piles) tooClose |= Flat(pile.position - spot).magnitude < 1f;
+                foreach (Vector3 other in chosen) tooClose |= Vector3.Distance(other, spot) < 0.9f;
+                if (tooClose) continue;
+
+                bool onFloor = spot.y < floorY + 0.3f;
+                // Floor props go on the real floor only (the tunnel floor is a little higher, and a prop in there is hidden)
+                if (onFloor && spot.y > floorY + 0.07f) continue;
+                GameObject prop;
+                int kind = onFloor ? plants % PlantModels.Length : cups;
+                if (onFloor)
+                {
+                    // A little to the side of the path, so it looks set down rather than in the way
+                    Vector3 side = Vector3.Cross(Vector3.up, spot - eye).normalized * Random.Range(-0.2f, 0.2f);
+                    prop = PlaceProp(PlantModels[kind], root, spot + side, Random.Range(0f, 360f), PlantModels[kind].Contains("cacti") ? PlantHeight * 0.7f : PlantHeight, 0, made);
+                }
+                else
+                {
+                    string path = kind % 3 == 2 ? JarPrefab : CupPrefabs[kind % CupPrefabs.Length];
+                    prop = PlaceProp(path, root, spot, Random.Range(0f, 360f), path == JarPrefab ? JarHeight : CupHeight, 0, made);
+                }
+                if (prop == null) continue;
+
+                // Only keep it if the player can actually see it from where they stand
+                TryGetBounds(prop, out Bounds shown);
+                if (Physics.Linecast(eyeHeight, shown.center + Vector3.up * shown.extents.y * 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                {
+                    made.Remove(prop.GetComponent<FlyingProp>());
+                    Object.DestroyImmediate(prop);
+                    hidden++;
+                    continue;
+                }
+
+                if (onFloor)
+                {
+                    // Bits fly off when it's knocked: leaves off the monstera, little chunks off the cactus
+                    FlyingProp flying = prop.GetComponent<FlyingProp>();
+                    bool cactus = PlantModels[kind].Contains("cacti");
+                    flying.burstPieces = LoadModels(cactus ? CactusBits : MonsteraLeaves);
+                    flying.burstCount = cactus ? 3 : 5;
+                    flying.burstPieceSize = cactus ? 0.08f : 0.16f;
+                    plants++;
+                }
+                else
+                {
+                    cups++;
+                }
+                chosen.Add(spot);
+            }
+        }
+        finally
+        {
+            foreach (MeshCollider col in temporary)
+            {
+                if (col != null) Object.DestroyImmediate(col);
+            }
+        }
+
+        foreach (FlyingProp prop in made) prop.isLoose = true;
+        log.AppendLine($"Loose props: {made.Count} along the cats' routes in front ({plants} plants on the floor, {cups} cups and jars up on furniture), " +
+                       $"from {candidates.Count} points on the cats' routes; {hidden} spots skipped as hidden from the player.");
+        return chosen;
+    }
+
+    static List<MeshCollider> AddTemporaryColliders(PlayerInput player)
+    {
+        List<MeshCollider> added = new List<MeshCollider>();
+        foreach (MeshFilter filter in Object.FindObjectsOfType<MeshFilter>())
+        {
+            if (filter.sharedMesh == null || filter.GetComponent<Collider>() != null) continue;
+            if (filter.transform.IsChildOf(player.transform.root)) continue;
+            Renderer rend = filter.GetComponent<Renderer>();
+            if (rend == null || !rend.enabled) continue;
+            MeshCollider col = filter.gameObject.AddComponent<MeshCollider>();
+            col.sharedMesh = filter.sharedMesh;
+            added.Add(col);
+        }
+        Physics.SyncTransforms();
+        return added;
+    }
+
+    static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0, v.z);
+
+    static GameObject[] LoadModels(string[] paths)
+    {
+        List<GameObject> models = new List<GameObject>();
+        foreach (string path in paths)
+        {
+            GameObject model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (model != null) models.Add(model);
+            else Debug.LogWarning($"[Cat Chaos] Missing model: {path}");
+        }
+        return models.ToArray();
+    }
+
+    static void Shuffle(List<Vector3> items)
+    {
+        for (int i = items.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            Vector3 swap = items[i];
+            items[i] = items[j];
+            items[j] = swap;
+        }
+    }
+
+    // ---------- Director and the ninja ----------
+
+    static void BuildDirector(GameObject root, PlayerInput player, List<Transform> piles, List<Vector3> looseSpots, StringBuilder log)
+    {
+        CatChaosDirector director = root.AddComponent<CatChaosDirector>();
+        director.roundLength = RoundLength;
+        director.bossPhaseStart = NinjaArrives;
+
+        foreach (ObjectSpawner spawner in Object.FindObjectsOfType<ObjectSpawner>())
+        {
+            if (spawner.gameObject.name == "Cat Pool") director.catPool = spawner;
+        }
+
+        // Top-up cats come in from Brian's spawn points that are roughly in front
+        Vector3 eye = player.transform.position;
+        Vector3 forward = player.transform.forward;
+        foreach (SpawnManager spawnManager in Object.FindObjectsOfType<SpawnManager>())
+        {
+            SerializedObject so = new SerializedObject(spawnManager);
+            Transform spawn = so.FindProperty("spawnPointCentre").objectReferenceValue as Transform;
+            Transform back = so.FindProperty("afterFeedingReturnPoint").objectReferenceValue as Transform;
+            if (spawn == null || Mathf.Abs(SignedAngle(forward, spawn.position - eye)) > 100f) continue;
+            director.spawnPoints.Add(spawn);
+            director.returnPoints.Add(back != null ? back : spawn);
+        }
+
+        // Where the ninja can appear: on the NavMesh by each pile and some of the loose props
+        foreach (Transform pile in piles) AddNinjaStop(director, pile.position);
+        for (int i = 0; i < looseSpots.Count && i < 5; i++) AddNinjaStop(director, looseSpots[i]);
+
+        director.ninjaPrefab = MakeNinjaRush();
+        log.AppendLine($"Director: top-ups from {director.spawnPoints.Count} spawn points ({(director.catPool != null ? "Cat Pool found" : "NO Cat Pool found")}); " +
+                       $"ninja phase at {NinjaArrives} s with {director.ninjaStops.Count} stops, {NinjaTreats} treats to fill, gone after {NinjaGivesUpAfter} s if not fed.");
+    }
+
+    static void AddNinjaStop(CatChaosDirector director, Vector3 near)
+    {
+        if (UnityEngine.AI.NavMesh.SamplePosition(near, out UnityEngine.AI.NavMeshHit hit, 0.8f, UnityEngine.AI.NavMesh.AllAreas))
+        {
+            director.ninjaStops.Add(hit.position);
+        }
+    }
+
+    // A copy of Brian's ninja with its brain swapped for the Ninja Rush one (his prefab and script stay as they are)
+    static NinjaRushCat MakeNinjaRush()
+    {
+        if (!AssetDatabase.IsValidFolder(PrefabFolder)) AssetDatabase.CreateFolder("Assets/Prefabs", "CatChaos");
+        if (File.Exists(NinjaRushPath)) AssetDatabase.DeleteAsset(NinjaRushPath);
+        AssetDatabase.CopyAsset(NinjaSource, NinjaRushPath);
+
+        GameObject contents = PrefabUtility.LoadPrefabContents(NinjaRushPath);
+        contents.name = "Ninja Rush Cat";
+        NinjaBossCat oldBrain = contents.GetComponent<NinjaBossCat>();
+        SerializedObject brain = new SerializedObject(oldBrain);
+        MonoScript rushScript = AssetDatabase.LoadAssetAtPath<MonoScript>("Assets/Scripts/CatChaos/NinjaRushCat.cs");
+        brain.FindProperty("m_Script").objectReferenceValue = rushScript;
+        brain.ApplyModifiedPropertiesWithoutUndo();
+
+        // Re-read it as the new script and set it up for a short boss phase
+        SerializedObject rush = new SerializedObject(contents.GetComponent<NinjaRushCat>());
+        rush.FindProperty("treatsUntilFull").intValue = NinjaTreats;
+        rush.FindProperty("despawnAfter").floatValue = NinjaGivesUpAfter;
+        rush.ApplyModifiedPropertiesWithoutUndo();
+
+        PrefabUtility.SaveAsPrefabAsset(contents, NinjaRushPath);
+        PrefabUtility.UnloadPrefabContents(contents);
+        return AssetDatabase.LoadAssetAtPath<GameObject>(NinjaRushPath).GetComponent<NinjaRushCat>();
+    }
+
+    static void TurnOffBossSpawner(StringBuilder log)
+    {
+        BossCatSpawner spawner = Object.FindObjectOfType<BossCatSpawner>();
+        if (spawner == null) return;
+        // With no spawn times it switches itself off at the start
+        SerializedObject so = new SerializedObject(spawner);
+        so.FindProperty("bossSpawnTimes").arraySize = 0;
+        so.ApplyModifiedPropertiesWithoutUndo();
+        log.AppendLine("Brian's boss spawner is off in this scene (Mafia parked); the director runs the ninja phase.");
     }
 
     static void BuildPlateStack(Transform pile, List<FlyingProp> props)
@@ -173,8 +472,9 @@ public static class CatChaosSceneGenerator
             TryGetBounds(plate, out Bounds b);
             y += b.size.y * 0.8f;
         }
-        PlaceProp(CookiePrefab, pile, new Vector3(-0.05f, y, 0.01f), Random.Range(0f, 360f), 0, CookieWidth, props);
-        PlaceProp(CookiePrefab, pile, new Vector3(0.05f, y, -0.02f), Random.Range(0f, 360f), 0, CookieWidth, props);
+        PlaceProp(CookiePrefab, pile, new Vector3(-0.06f, y, 0.03f), Random.Range(0f, 360f), 0, CookieWidth, props);
+        PlaceProp(CookiePrefab, pile, new Vector3(0.06f, y, 0.03f), Random.Range(0f, 360f), 0, CookieWidth, props);
+        PlaceProp(CookiePrefab, pile, new Vector3(0f, y, -0.06f), Random.Range(0f, 360f), 0, CookieWidth, props);
     }
 
     static void BuildCupsAndJars(Transform pile, List<FlyingProp> props)
