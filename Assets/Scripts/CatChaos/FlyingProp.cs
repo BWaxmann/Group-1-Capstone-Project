@@ -36,7 +36,9 @@ public class FlyingProp : MonoBehaviour
     public float burstPieceSize = 0.14f;
 
     public State state { get; private set; } = State.Home;
-    public bool isCatchable => state == State.Flying;
+
+    // Not straight away: it bursts out first, then drifts down slowly (that's the time to catch it)
+    public bool isCatchable => state == State.Flying && CatChaosSettings.instance != null && flightTime >= CatChaosSettings.instance.catchableAfter;
     public Vector3 centre => propRenderer != null ? propRenderer.bounds.center : transform.position;
 
     // How long it's been sitting at home, so a prop that just came back isn't knocked again straight away
@@ -76,6 +78,14 @@ public class FlyingProp : MonoBehaviour
     Vector3 spinAxis;
     float spinSpeed;
     float timer;
+
+    // Flight: a burst upwards, then an erratic drift down
+    float flightTime;
+    bool drifting;
+    float driftTimer;
+    Vector3 driftVelocity;
+    Vector3 viewer;
+    Vector3 actionCentre;
 
     // Holding and returning
     Vector3 holdTarget;
@@ -123,6 +133,13 @@ public class FlyingProp : MonoBehaviour
                  + drift * settings.launchTowardPlayerSpeed * Random.Range(0.8f, 1.2f);
         spinAxis = Random.onUnitSphere;
         spinSpeed = Random.Range(180f, 360f);
+        flightTime = 0;
+        drifting = false;
+        viewer = playerPosition;
+        // It drifts about over the space between the player and where it came from, so it stays in front of them
+        Vector3 fromPlayer = transform.position - playerPosition;
+        fromPlayer.y = 0;
+        actionCentre = playerPosition + fromPlayer * 0.6f;
 
         // Fly free of the pile (keeping its size), so the pile can rattle without dragging it along
         StopAllCoroutines();
@@ -171,7 +188,32 @@ public class FlyingProp : MonoBehaviour
         switch (state)
         {
             case State.Flying:
-                velocity += Vector3.down * settings.propGravity * dt;
+                flightTime += dt;
+                if (!drifting)
+                {
+                    // The burst: up fast, slowing under gravity
+                    velocity += Vector3.down * settings.propGravity * dt;
+                    if (velocity.y <= 0)
+                    {
+                        drifting = true;
+                        driftTimer = 0;
+                        spinSpeed *= 0.5f;
+                    }
+                }
+                else
+                {
+                    // The drift: swoops about, changing direction now and then, and sinks slowly
+                    driftTimer -= dt;
+                    if (driftTimer <= 0)
+                    {
+                        driftTimer = Random.Range(settings.driftTurnTime * 0.5f, settings.driftTurnTime);
+                        driftVelocity = PickDrift(settings);
+                    }
+                    Vector3 sideways = Vector3.Lerp(new Vector3(velocity.x, 0, velocity.z), driftVelocity, 1f - Mathf.Exp(-3f * dt));
+                    float sink = Mathf.MoveTowards(velocity.y, -settings.driftFallSpeed, settings.propGravity * dt);
+                    velocity = new Vector3(sideways.x, sink, sideways.z);
+                }
+
                 transform.position += velocity * dt;
                 transform.Rotate(spinAxis, spinSpeed * dt, Space.World);
                 if (velocity.y < 0 && transform.position.y <= settings.floorHeight + 0.05f)
@@ -214,6 +256,25 @@ public class FlyingProp : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    // A new random sideways direction, pulled back towards the action if it has wandered off
+    // (and kept from drifting into the player's face)
+    Vector3 PickDrift(CatChaosSettings settings)
+    {
+        Vector2 random = Random.insideUnitCircle.normalized;
+        Vector3 direction = new Vector3(random.x, 0, random.y);
+
+        Vector3 toCentre = actionCentre - transform.position;
+        toCentre.y = 0;
+        direction += toCentre * 0.6f;
+
+        Vector3 fromViewer = transform.position - viewer;
+        fromViewer.y = 0;
+        if (fromViewer.magnitude < 1.4f) direction += fromViewer.normalized * 2f;
+
+        direction.y = 0;
+        return direction.sqrMagnitude > 0.0001f ? direction.normalized * settings.driftSpeed * Random.Range(0.6f, 1.2f) : Vector3.zero;
     }
 
     void Land(CatChaosSettings settings)

@@ -334,10 +334,10 @@ MonoBehaviour:
   launchDuration: 0.6
   launchPopParticleIndex: 2
   despawnAfter: 40
-  minimumSit: 1.2
-  maximumSit: 1.8
+  minimumSit: 2
+  maximumSit: 2.8
   swipeDelay: 0.45
-  knocksPerStop: 2
+  knocksPerStop: 1
   reach: 1
   stops: []
 --- !u!195 &4121764387368476190

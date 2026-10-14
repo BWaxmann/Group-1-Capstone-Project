@@ -25,8 +25,24 @@ public class CatChaosSettings : MonoBehaviour
     public float launchSpread = 30f;
 
     [Min(0.1f)]
-    [Tooltip("Gravity on knocked props. Lower than real (9.8) so there's time to catch them.")]
+    [Tooltip("Gravity on knocked props while they burst upwards.")]
     public float propGravity = 4.5f;
+
+    [Min(0)]
+    [Tooltip("Seconds after being knocked before a prop can be caught (stops grabbing things the instant they pop out).")]
+    public float catchableAfter = 0.5f;
+
+    [Min(0.05f)]
+    [Tooltip("Once a prop stops rising it drifts and falls slowly: its fall speed, in m/s.")]
+    public float driftFallSpeed = 0.7f;
+
+    [Min(0)]
+    [Tooltip("How fast a drifting prop swoops about sideways, in m/s.")]
+    public float driftSpeed = 1.1f;
+
+    [Min(0.1f)]
+    [Tooltip("Seconds between a drifting prop's changes of direction (picked at random up to this).")]
+    public float driftTurnTime = 0.8f;
 
     [Tooltip("World height of the floor, where uncaught props land. Set by the scene generator.")]
     public float floorHeight = 0f;

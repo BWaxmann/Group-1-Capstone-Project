@@ -17,24 +17,13 @@ public static class CatChaosSceneGenerator
     const string MafiaVariantPath = PrefabFolder + "/Mafia Boss Cat (Cat Chaos).prefab";
     const string NinjaSource = "Assets/Prefabs/Cat/Ninja Boss Cat.prefab";
     const string NinjaRushPath = PrefabFolder + "/Ninja Rush Cat.prefab";
-    static readonly string[] PlantModels =
-    {
-        "Assets/Models/Environment/Plants/Models/cacti_plant_pot_small.fbx",
-        "Assets/Models/Environment/Plants/Models/monstera_plant_small_potted.fbx",
-    };
+    const string SmallPlant = "Assets/Models/Environment/Plants/Models/monstera_plant_small_potted.fbx";
     static readonly string[] MonsteraLeaves =
     {
         "Assets/Models/Environment/Plants/Models/monstera_leaf_small_A.fbx",
         "Assets/Models/Environment/Plants/Models/monstera_leaf_small_B.fbx",
         "Assets/Models/Environment/Plants/Models/monstera_leaf_small_C.fbx",
         "Assets/Models/Environment/Plants/Models/monstera_leaf_medium_A.fbx",
-    };
-    static readonly string[] CactusBits =
-    {
-        "Assets/Models/Environment/Plants/Models/cactus_A.fbx",
-        "Assets/Models/Environment/Plants/Models/cactus_B.fbx",
-        "Assets/Models/Environment/Plants/Models/cactus_C.fbx",
-        "Assets/Models/Environment/Plants/Models/cactus_D.fbx",
     };
 
     const string PlatePrefab = "Assets/Models/Environment/CoffeeShopStarterPack/Prefabs/PW_plate01.prefab";
@@ -53,7 +42,7 @@ public static class CatChaosSceneGenerator
     const float CookieWidth = 0.17f;
     const float CupHeight = 0.14f;
     const float JarHeight = 0.26f;
-    const float PlantHeight = 0.5f;
+    const float SmallPlantHeight = 0.3f;
 
     const float RoundLength = 180f;
     const int LoosePropCount = 10;
@@ -280,22 +269,15 @@ public static class CatChaosSceneGenerator
                 foreach (Vector3 other in chosen) tooClose |= Vector3.Distance(other, spot) < 0.9f;
                 if (tooClose) continue;
 
-                bool onFloor = spot.y < floorY + 0.3f;
-                // Floor props go on the real floor only (the tunnel floor is a little higher, and a prop in there is hidden)
-                if (onFloor && spot.y > floorY + 0.07f) continue;
-                GameObject prop;
-                int kind = onFloor ? plants % PlantModels.Length : cups;
-                if (onFloor)
-                {
-                    // A little to the side of the path, so it looks set down rather than in the way
-                    Vector3 side = Vector3.Cross(Vector3.up, spot - eye).normalized * Random.Range(-0.2f, 0.2f);
-                    prop = PlaceProp(PlantModels[kind], root, spot + side, Random.Range(0f, 360f), PlantModels[kind].Contains("cacti") ? PlantHeight * 0.7f : PlantHeight, 0, made);
-                }
-                else
-                {
-                    string path = kind % 3 == 2 ? JarPrefab : CupPrefabs[kind % CupPrefabs.Length];
-                    prop = PlaceProp(path, root, spot, Random.Range(0f, 360f), path == JarPrefab ? JarHeight : CupHeight, 0, made);
-                }
+                // Up on the furniture only (counter, couch, shelves): props dotted about the floor looked messy
+                if (spot.y < floorY + 0.3f) continue;
+
+                // Mostly cups, with a jar and a small potted plant in the mix
+                int kind = (cups + plants) % 4;
+                bool plant = kind == 3;
+                string path = plant ? SmallPlant : kind == 2 ? JarPrefab : CupPrefabs[cups % CupPrefabs.Length];
+                float height = plant ? SmallPlantHeight : kind == 2 ? JarHeight : CupHeight;
+                GameObject prop = PlaceProp(path, root, spot, Random.Range(0f, 360f), height, 0, made);
                 if (prop == null) continue;
 
                 // Only keep it if the player can actually see it from where they stand
@@ -308,14 +290,13 @@ public static class CatChaosSceneGenerator
                     continue;
                 }
 
-                if (onFloor)
+                if (plant)
                 {
-                    // Bits fly off when it's knocked: leaves off the monstera, little chunks off the cactus
+                    // Leaves fly off when it's knocked
                     FlyingProp flying = prop.GetComponent<FlyingProp>();
-                    bool cactus = PlantModels[kind].Contains("cacti");
-                    flying.burstPieces = LoadModels(cactus ? CactusBits : MonsteraLeaves);
-                    flying.burstCount = cactus ? 3 : 5;
-                    flying.burstPieceSize = cactus ? 0.08f : 0.16f;
+                    flying.burstPieces = LoadModels(MonsteraLeaves);
+                    flying.burstCount = 5;
+                    flying.burstPieceSize = 0.14f;
                     plants++;
                 }
                 else
@@ -334,7 +315,7 @@ public static class CatChaosSceneGenerator
         }
 
         foreach (FlyingProp prop in made) prop.isLoose = true;
-        log.AppendLine($"Loose props: {made.Count} along the cats' routes in front ({plants} plants on the floor, {cups} cups and jars up on furniture), " +
+        log.AppendLine($"Loose props: {made.Count} along the cats' routes in front ({cups} cups and jars, {plants} small plants, all up on furniture), " +
                        $"from {candidates.Count} points on the cats' routes; {hidden} spots skipped as hidden from the player.");
         return chosen;
     }
@@ -443,6 +424,10 @@ public static class CatChaosSceneGenerator
         SerializedObject rush = new SerializedObject(contents.GetComponent<NinjaRushCat>());
         rush.FindProperty("treatsUntilFull").intValue = NinjaTreats;
         rush.FindProperty("despawnAfter").floatValue = NinjaGivesUpAfter;
+        // One thing up per stop (the drifting props give plenty to do), and a longer sit to feed it in
+        rush.FindProperty("knocksPerStop").intValue = 1;
+        rush.FindProperty("minimumSit").floatValue = 2f;
+        rush.FindProperty("maximumSit").floatValue = 2.8f;
         rush.ApplyModifiedPropertiesWithoutUndo();
 
         PrefabUtility.SaveAsPrefabAsset(contents, NinjaRushPath);

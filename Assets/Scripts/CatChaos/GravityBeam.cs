@@ -23,6 +23,11 @@ public class GravityBeam : MonoBehaviour
     public float holdDistance = 1.3f;
 
     [Min(0)]
+    [Tooltip("Seconds the beam has to stay on a prop before it grabs it (a ring fills up around the prop meanwhile). " +
+             "Stops grip-spamming; 0 grabs instantly.")]
+    public float lockOnTime = 0.35f;
+
+    [Min(0)]
     public int catchScore = 5;
 
     public Color beamColour = new Color(0.72f, 0.38f, 1f);
@@ -32,9 +37,14 @@ public class GravityBeam : MonoBehaviour
         public bool isRight;
         public FlyingProp held;
         public float holdDistance;
+        public FlyingProp locking;
+        public float lockProgress;
         public LineRenderer beam;
         public LineRenderer glow;
+        public LineRenderer lockRing;
     }
+
+    const float LockRingRadius = 0.2f;
 
     const int BeamPoints = 12;
 
@@ -70,6 +80,8 @@ public class GravityBeam : MonoBehaviour
         if (!beamOn)
         {
             Let(hand);
+            hand.locking = null;
+            hand.lockRing.enabled = false;
             SetVisible(hand, false);
             return;
         }
@@ -79,27 +91,45 @@ public class GravityBeam : MonoBehaviour
         // Lost it some other way (e.g. the round ended)? Then look for something new
         if (hand.held != null && hand.held.state != FlyingProp.State.Held) hand.held = null;
 
-        if (hand.held == null)
-        {
-            FlyingProp target = FindTarget(muzzle);
-            if (target != null) Grab(hand, target, muzzle);
-        }
-
         Vector3 start = muzzle.position;
-        Vector3 end;
         if (hand.held != null)
         {
             // Reel the prop in to a comfortable distance, then it follows where the launcher points
             hand.holdDistance = Mathf.MoveTowards(hand.holdDistance, holdDistance, Time.deltaTime * 6f);
             hand.held.SetHoldTarget(muzzle.position + muzzle.forward * hand.holdDistance);
-            end = hand.held.centre;
-            DrawBeam(hand.beam, start, end, 0.03f, 1f);
+            DrawBeam(hand.beam, start, hand.held.centre, 0.03f, 1f);
+            hand.lockRing.enabled = false;
         }
         else
         {
-            // Nothing caught yet: a short, faint "searching" beam
-            end = start + muzzle.forward * 0.5f;
-            DrawBeam(hand.beam, start, end, 0.01f, 0.45f);
+            // Lock on: keep the beam on a prop while the ring fills, then it's grabbed
+            FlyingProp target = FindTarget(muzzle, hand.locking);
+            if (target != hand.locking)
+            {
+                hand.locking = target;
+                hand.lockProgress = 0;
+                if (target != null) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
+            }
+
+            if (target != null)
+            {
+                hand.lockProgress += Time.deltaTime;
+                float fraction = lockOnTime > 0 ? hand.lockProgress / lockOnTime : 1f;
+                DrawBeam(hand.beam, start, target.centre, Mathf.Lerp(0.008f, 0.02f, fraction), Mathf.Lerp(0.35f, 0.8f, fraction));
+                ShowLockRing(hand, target.centre, fraction);
+                if (fraction >= 1f)
+                {
+                    Grab(hand, target, muzzle);
+                    hand.locking = null;
+                    hand.lockRing.enabled = false;
+                }
+            }
+            else
+            {
+                // Nothing in reach: a short, faint "searching" beam
+                DrawBeam(hand.beam, start, start + muzzle.forward * 0.5f, 0.01f, 0.45f);
+                hand.lockRing.enabled = false;
+            }
         }
 
         float pulse = 0.75f + 0.25f * Mathf.Sin(Time.time * 10f);
@@ -108,21 +138,17 @@ public class GravityBeam : MonoBehaviour
         hand.glow.startColor = hand.glow.endColor = glowColour;
     }
 
-    FlyingProp FindTarget(Transform muzzle)
+    // The flying prop nearest to where the launcher points. The one already being locked on to keeps priority
+    // while it's still in reach, so the lock doesn't jump between props.
+    FlyingProp FindTarget(Transform muzzle, FlyingProp current)
     {
+        if (current != null && Score(muzzle, current) < float.MaxValue) return current;
+
         FlyingProp best = null;
         float bestScore = float.MaxValue;
         foreach (FlyingProp prop in FlyingProp.airborne)
         {
-            if (prop == null || !prop.isCatchable) continue;
-            Vector3 toProp = prop.centre - muzzle.position;
-            float distance = toProp.magnitude;
-            if (distance > range || distance < 0.05f) continue;
-            float angle = Vector3.Angle(muzzle.forward, toProp);
-            if (angle > aimAngle) continue;
-
-            // Mostly "closest to where you're pointing", nudged towards nearer props
-            float score = angle + distance * 0.5f;
+            float score = Score(muzzle, prop);
             if (score < bestScore)
             {
                 bestScore = score;
@@ -132,8 +158,32 @@ public class GravityBeam : MonoBehaviour
         return best;
     }
 
+    // Mostly "closest to where you're pointing", nudged towards nearer props. MaxValue = out of reach.
+    float Score(Transform muzzle, FlyingProp prop)
+    {
+        if (prop == null || !prop.isCatchable) return float.MaxValue;
+        Vector3 toProp = prop.centre - muzzle.position;
+        float distance = toProp.magnitude;
+        if (distance > range || distance < 0.05f) return float.MaxValue;
+        float angle = Vector3.Angle(muzzle.forward, toProp);
+        if (angle > aimAngle) return float.MaxValue;
+        return angle + distance * 0.5f;
+    }
+
+    void ShowLockRing(Hand hand, Vector3 at, float fraction)
+    {
+        Transform ring = hand.lockRing.transform;
+        ring.position = at;
+        if (Camera.main != null) ring.rotation = Quaternion.LookRotation(at - Camera.main.transform.position);
+        SpaceCafeVisuals.SetRing(hand.lockRing, LockRingRadius, fraction);
+        hand.lockRing.startColor = hand.lockRing.endColor = beamColour;
+        hand.lockRing.enabled = true;
+    }
+
     void Grab(Hand hand, FlyingProp prop, Transform muzzle)
     {
+        // The other hand may have just got it
+        if (!prop.isCatchable) return;
         hand.held = prop;
         hand.holdDistance = Vector3.Distance(muzzle.position, prop.centre);
         prop.Hold(prop.transform.position);
@@ -201,6 +251,10 @@ public class GravityBeam : MonoBehaviour
 
         // The purple glow on the launcher while its beam is on
         hand.glow = SpaceCafeVisuals.Ring(muzzle, "Gravity Glow", 0.045f / Mathf.Max(0.0001f, muzzle.lossyScale.x), 0.012f, beamColour);
+
+        // The ring that fills up around a prop while locking on (kept at the scene root so it isn't scaled)
+        hand.lockRing = SpaceCafeVisuals.Ring(null, isRight ? "Lock Ring Right" : "Lock Ring Left", LockRingRadius, 0.015f, beamColour);
+        hand.lockRing.enabled = false;
 
         SetVisible(hand, false);
         return hand;
