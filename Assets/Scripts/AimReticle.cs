@@ -35,6 +35,14 @@ public class AimReticle : MonoBehaviour
         onCatColour = onCat;
     }
 
+    float spreadDegrees;
+
+    // A spread shot's cone (degrees either side): the ring widens to show where the volley can land
+    public void SetSpread(float degrees)
+    {
+        spreadDegrees = Mathf.Max(0f, degrees);
+    }
+
     Transform launchPoint;
     Transform ignoreRoot;
     float speed;
@@ -117,7 +125,7 @@ public class AimReticle : MonoBehaviour
         bool onCat = cat != null && !cat.isFullyFed;
 
         float distance = Vector3.Distance(launchPoint.position, hit.point);
-        float radius = Mathf.Max(minimumRadius, distance * angularSize) * (onCat ? onCatScale : 1f);
+        float radius = Mathf.Max(minimumRadius, distance * angularSize, distance * Mathf.Tan(spreadDegrees * Mathf.Deg2Rad)) * (onCat ? onCatScale : 1f);
 
         transform.position = hit.point + hit.normal * 0.01f;
         transform.rotation = Quaternion.LookRotation(hit.normal);

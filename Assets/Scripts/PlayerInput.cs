@@ -196,6 +196,54 @@ public class PlayerInput : MonoBehaviour
     public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
     public Transform LaunchPoint(bool rightHand) => rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
 
+    // Fire styles (Cat Cafe Rush trial, finale only): each launcher can fire one treat, a wide scatter, or a tight
+    // short-range buckshot. Flicking that hand's thumbstick left/right swaps its style while they're unlocked.
+    public enum FireStyle
+    {
+        Single,
+        Scatter,
+        Buckshot
+    }
+
+    public bool fireStylesUnlocked { get; private set; }
+    FireStyle styleLeft;
+    FireStyle styleRight;
+    static int lastShotId;
+
+    public FireStyle Style(bool rightHand) => rightHand ? styleRight : styleLeft;
+
+    public void UnlockFireStyles(bool unlocked)
+    {
+        fireStylesUnlocked = unlocked;
+        if (!unlocked) styleLeft = styleRight = FireStyle.Single;
+        ShowStyles();
+    }
+
+    void SwapStyle(bool rightHand, int direction)
+    {
+        int count = System.Enum.GetValues(typeof(FireStyle)).Length;
+        FireStyle next = (FireStyle)(((int)Style(rightHand) + direction + count) % count);
+        if (rightHand) styleRight = next;
+        else styleLeft = next;
+        Haptics.Pulse(rightHand, Haptics.Strength.Medium);
+        ShowStyles();
+    }
+
+    // The launchers' little display shows each hand's style while they're unlocked
+    void ShowStyles()
+    {
+        if (!fireStylesUnlocked)
+        {
+            RefreshAmmoText();
+            return;
+        }
+        ammoText.text = $"<size=55%>{styleLeft.ToString().ToUpper()}  |  {styleRight.ToString().ToUpper()}</size>";
+    }
+
+    // Spread of each style (degrees either side) and pellets per shot
+    static float StyleSpread(FireStyle style) => style == FireStyle.Scatter ? 14f : style == FireStyle.Buckshot ? 5f : 0f;
+    static int StylePellets(FireStyle style) => style == FireStyle.Scatter ? 5 : style == FireStyle.Buckshot ? 7 : 1;
+
     // Colours each launcher's aim reticle (e.g. the colour that hand fires); null = the reticle's own colours
     public void SetReticleColours(Color left, Color right)
     {
@@ -309,6 +357,11 @@ public class PlayerInput : MonoBehaviour
         gripPressedRight = gripDownRight;
         flickLeft = ReadThumbFlick(false);
         flickRight = ReadThumbFlick(true);
+        if (fireStylesUnlocked && launchersActive && !baristaMode)
+        {
+            if (flickLeft != 0) SwapStyle(false, flickLeft);
+            if (flickRight != 0) SwapStyle(true, flickRight);
+        }
 
         UpdateReticles();
 
@@ -427,6 +480,8 @@ public class PlayerInput : MonoBehaviour
         {
             reticleRight.Configure(shotSpeed, !straightShots);
             reticleLeft.Configure(shotSpeed, !straightShots);
+            reticleRight.SetSpread(StyleSpread(styleRight));
+            reticleLeft.SetSpread(StyleSpread(styleLeft));
             reticleRight.SetVisible(show);
             reticleLeft.SetVisible(show);
         }
@@ -598,6 +653,52 @@ public class PlayerInput : MonoBehaviour
 
     void LaunchTreat(bool rightHand)
     {
+        FireStyle style = Style(rightHand);
+        int pellets = StylePellets(style);
+        float spread = StyleSpread(style);
+        int shotId = ++lastShotId;
+        Transform muzzle = rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+        for (int i = 0; i < pellets; i++)
+        {
+            // Spread the volley around the aim, inside a cone (the first pellet flies true)
+            Transform aim = muzzle;
+            if (spread > 0 && i > 0)
+            {
+                aim = SpreadAim(rightHand, muzzle);
+                Vector2 offset = Random.insideUnitCircle * spread;
+                aim.localRotation = Quaternion.Euler(-offset.y, offset.x, 0);
+            }
+            Treat treat = LaunchOneTreat(rightHand, aim, i == 0);
+            if (treat == null) return;
+            treat.shotId = shotId;
+            if (style == FireStyle.Buckshot) treat.ShortenLife(0.4f);
+        }
+    }
+
+    Transform spreadAimLeft;
+    Transform spreadAimRight;
+
+    // A pointer at the muzzle that can be turned, to aim a pellet off-centre
+    Transform SpreadAim(bool rightHand, Transform muzzle)
+    {
+        Transform aim = rightHand ? spreadAimRight : spreadAimLeft;
+        if (aim == null)
+        {
+            aim = new GameObject("Spread Aim").transform;
+            aim.SetParent(muzzle, false);
+            if (rightHand) spreadAimRight = aim;
+            else spreadAimLeft = aim;
+        }
+        return aim;
+    }
+
+    Treat LaunchOneTreat(bool rightHand)
+    {
+        return LaunchOneTreat(rightHand, rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, true);
+    }
+
+    Treat LaunchOneTreat(bool rightHand, Transform from, bool withFeedback)
+    {
         int variation = LoadedFood(rightHand);
         Treat treat = variation >= 0
             ? treatsSpawner.GetObjectFromPool<Treat>(variation)
@@ -605,14 +706,20 @@ public class PlayerInput : MonoBehaviour
         if (treat == null)
         {
             Debug.LogWarning($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: no treat available to fire (food {variation}, {(rightHand ? "right" : "left")} hand)");
-            return;
+            return null;
         }
         treat.foodVariation = variation;
+        treat.shotId = 0;
         treat.gameObject.SetActive(true);
-        treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, instaKillActive);
+        treat.Launch(from, shotSpeed, instaKillActive);
         if (straightShots) treat.MakeStraightShot();
-        PlaySound(launcherFireSound, rightHand);
-        Haptics.Pulse(rightHand, Haptics.Strength.Light);
+        // One sound and buzz per trigger pull, not per pellet
+        if (withFeedback)
+        {
+            PlaySound(launcherFireSound, rightHand);
+            Haptics.Pulse(rightHand, Haptics.Strength.Light);
+        }
+        return treat;
     }
 
     void LaunchYarnball(bool rightHand)

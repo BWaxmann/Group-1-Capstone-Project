@@ -288,6 +288,77 @@ public static class CatCafeRushGenerator
         PrefabUtility.RecordPrefabInstancePropertyModifications(canvas);
     }
 
+    // ---------- Trial scene ----------
+
+    const string TrialScene = "Assets/Scenes/CatCafeRushTrial.unity";
+
+    // A copy of Cat Cafe Rush (layout and all) with Eleni's trial ideas switched on: in feeding phases hungry cats
+    // attack the piles (each swipe tips a prop over, and the pile's health bar shows what's still standing), and in
+    // the boss finale each hand can swap between Single, Scatter and Buckshot. Cat Cafe Rush itself is unchanged.
+    [MenuItem("Catastrophe Cafe/Cat Cafe Rush/Create Trial Scene (Copy Of Rush)", false, 90)]
+    static void CreateTrialFromMenu()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        if (File.Exists(TrialScene) &&
+            !EditorUtility.DisplayDialog("Cat Cafe Rush", "This replaces CatCafeRushTrial with a fresh copy of CatCafeRush_Prototype " +
+                                         "(and any changes made to the trial by hand).", "Make it", "Cancel"))
+        {
+            return;
+        }
+        EditorUtility.DisplayDialog("Cat Cafe Rush", CreateTrial(), "OK");
+    }
+
+    // Command line: -executeMethod CatCafeRushGenerator.BatchCreateTrial
+    public static void BatchCreateTrial()
+    {
+        Debug.Log("[Cat Cafe Rush] " + CreateTrial());
+    }
+
+    static string CreateTrial()
+    {
+        if (File.Exists(TrialScene))
+        {
+            File.Copy(RushScene, TrialScene, true);
+            AssetDatabase.ImportAsset(TrialScene, ImportAssetOptions.ForceUpdate);
+        }
+        else if (!AssetDatabase.CopyAsset(RushScene, TrialScene))
+        {
+            return $"Couldn't copy {RushScene}.";
+        }
+        AssetDatabase.Refresh();
+        Scene scene = EditorSceneManager.OpenScene(TrialScene, OpenSceneMode.Single);
+
+        RushDirector director = Object.FindObjectOfType<RushDirector>();
+        if (director == null) return "No RushDirector in the copy.";
+        director.attacksTopple = true;
+        director.finaleFireStyles = true;
+        // Attacks get a little more likely as the round goes
+        float[] attackChances = { 0.3f, 0.35f, 0.4f };
+        int feed = 0;
+        foreach (RushDirector.Phase phase in director.phases)
+        {
+            if (phase.kind == RushDirector.Kind.Feed) phase.attackChance = attackChances[Mathf.Min(feed++, attackChances.Length - 1)];
+        }
+        EditorUtility.SetDirty(director);
+
+        // The piles' health bars come back (they show how much of each pile is still standing)
+        int bars = 0;
+        foreach (DefendPoint point in Object.FindObjectsOfType<DefendPoint>())
+        {
+            UnityEngine.UI.Slider slider = point.GetComponentInChildren<UnityEngine.UI.Slider>(true);
+            if (slider == null) continue;
+            Canvas[] canvases = slider.GetComponentsInParent<Canvas>(true);
+            Canvas canvas = canvases.Length > 0 ? canvases[canvases.Length - 1] : null;
+            (canvas != null ? canvas.gameObject : slider.gameObject).SetActive(true);
+            bars++;
+        }
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return $"CatCafeRushTrial made from Cat Cafe Rush: cats attack piles in feeding phases (30/35/40%), swipes tip props over, " +
+               $"{bars} pile health bar(s) shown, and fire styles in the finale (flick the thumbsticks).";
+    }
+
     // ---------- Updating a hand-made layout ----------
 
     // Turns the player (wherever they stand) to face the chalkboard. Run Update Open Scene afterwards.

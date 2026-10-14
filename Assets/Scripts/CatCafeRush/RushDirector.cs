@@ -30,6 +30,9 @@ public class RushDirector : MonoBehaviour
         [Min(1)] public int shortestOrder = 1;
         [Min(1)] public int longestOrder = 1;
         [TextArea] public string banner = "";
+        [Range(0f, 1f)]
+        [Tooltip("Feed: chance, at each stop while wandering, that a hungry cat goes to attack a pile. 0 = they just wander.")]
+        public float attackChance = 0f;
     }
 
     [Header("Round")]
@@ -127,6 +130,17 @@ public class RushDirector : MonoBehaviour
     [Tooltip("How slowly props sink once the burst is over, in m/s.")]
     [Min(0.05f)] public float fallSpeed = 0.55f;
 
+    [Header("Trials")]
+
+    [Tooltip("A cat attacking a pile tips its top prop over (not catchable) instead of sending it flying.")]
+    public bool attacksTopple = false;
+
+    [Tooltip("In the boss finale, each hand can flick its thumbstick to swap Single / Scatter / Buckshot.")]
+    public bool finaleFireStyles = false;
+
+    [TextArea]
+    public string fireStylesBanner = "NINJA BOSS!\n<size=50%>Flick the thumbsticks to swap shots!</size>";
+
     [Header("Player's space")]
 
     [Tooltip("The ninja never appears closer than this to the player, in metres.")]
@@ -199,6 +213,7 @@ public class RushDirector : MonoBehaviour
         PickupManager.allowed = null;
         Treat.cleanShots = false;
         Treat.aimAssistTarget = null;
+        PropPile.toppleOnHit = false;
         if (GameManager.instance != null)
         {
             GameManager.instance.GameStart -= OnGameStart;
@@ -247,7 +262,18 @@ public class RushDirector : MonoBehaviour
         {
             if (!playing) yield break;
             current = phase;
-            if (!string.IsNullOrEmpty(phase.banner)) GameManager.instance.ShowBanner(phase.banner, bannerSeconds);
+
+            // Hungry cats only go for the piles in feeding phases (and only if this phase says so)
+            CatMovement.targetingChanceOverride = phase.kind == Kind.Feed ? phase.attackChance : 0f;
+            PropPile.toppleOnHit = attacksTopple;
+
+            string banner = phase.banner;
+            if (phase.kind == Kind.Boss && finaleFireStyles)
+            {
+                player.UnlockFireStyles(true);
+                if (!string.IsNullOrEmpty(fireStylesBanner)) banner = fireStylesBanner;
+            }
+            if (!string.IsNullOrEmpty(banner)) GameManager.instance.ShowBanner(banner, bannerSeconds);
 
             switch (phase.kind)
             {

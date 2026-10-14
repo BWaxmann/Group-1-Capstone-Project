@@ -33,6 +33,16 @@ public class Treat : Launchable
 
     public Vector3 velocity => rb != null ? rb.velocity : Vector3.zero;
 
+    // Which trigger pull fired it (a scatter or buckshot volley shares one), 0 = not set
+    public int shotId { get; set; }
+
+    // Disappears sooner than usual (buckshot is short-range)
+    public void ShortenLife(float seconds)
+    {
+        CancelInvoke(nameof(Despawn));
+        Invoke(nameof(Despawn), seconds);
+    }
+
     public override void Launch(Transform launchPosition, float force, bool instaKill)
     {
         base.Launch(launchPosition, force, instaKill);

@@ -36,6 +36,7 @@ public class CatOrder : MonoBehaviour
     public static readonly List<CatOrder> all = new List<CatOrder>();
 
     SphereCollider hitbox;
+    int lastShotEaten;
 
     // A generous, invisible hit area around a cat's body, so a treat that looks like a hit counts as one
     // (some of the cats' own colliders are much smaller than their bodies). It's a trigger: it blocks nothing.
@@ -146,6 +147,13 @@ public class CatOrder : MonoBehaviour
     bool Eat(Treat treat)
     {
         if (runningOff || step >= order.Count) return false;
+
+        // A scatter or buckshot volley counts once per cat (the other pellets just vanish)
+        if (treat.shotId != 0)
+        {
+            if (treat.shotId == lastShotEaten) return false;
+            lastShotEaten = treat.shotId;
+        }
 
         if (treat.foodVariation != order[step].variation)
         {

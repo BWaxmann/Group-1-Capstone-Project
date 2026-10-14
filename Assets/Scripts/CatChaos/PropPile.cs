@@ -32,6 +32,7 @@ public class PropPile : MonoBehaviour
     float checkTimer;
     float shake;            // extra rattle from a swipe that couldn't knock anything off
     Transform viewer;
+    UnityEngine.UI.Slider healthBar;
 
     void Awake()
     {
@@ -62,11 +63,43 @@ public class PropPile : MonoBehaviour
         if (defendPoint != null) defendPoint.Hit -= OnHit;
     }
 
+    // Cat Cafe Rush trial: a paw swipe tips the top prop over instead of sending it flying
+    public static bool toppleOnHit;
+
     // A paw swipe (from a cat that marched over to attack the pile)
     void OnHit()
     {
         Vector3 playerPosition = Viewer() != null ? viewer.position : transform.position - transform.forward;
-        if (!KnockTop(playerPosition, 0f)) shake = 1f;
+        bool knocked = toppleOnHit ? ToppleTop() : KnockTop(playerPosition, 0f);
+        shake = knocked ? Mathf.Max(shake, 0.6f) : 1f;
+    }
+
+    // Tips the topmost prop that's home off the pile. False if nothing could go.
+    public bool ToppleTop()
+    {
+        FlyingProp top = null;
+        foreach (FlyingProp prop in props)
+        {
+            if (prop == null || prop.state != FlyingProp.State.Home) continue;
+            if (top == null || prop.transform.position.y > top.transform.position.y) top = prop;
+        }
+        return top != null && top.Topple();
+    }
+
+    // How much of the pile is standing (props at home), 0 to 1
+    public float standing
+    {
+        get
+        {
+            int home = 0, total = 0;
+            foreach (FlyingProp prop in props)
+            {
+                if (prop == null) continue;
+                total++;
+                if (prop.state == FlyingProp.State.Home) home++;
+            }
+            return total > 0 ? home / (float)total : 1f;
+        }
     }
 
     // Sends the topmost prop that's home (and has been for restTime seconds) flying. False if nothing could go.
@@ -95,6 +128,13 @@ public class PropPile : MonoBehaviour
     void Update()
     {
         if (pile == null) return;
+
+        // If the defend point's health bar is showing, it shows how much of the pile is standing
+        if (healthBar == null && defendPoint != null) healthBar = defendPoint.GetComponentInChildren<UnityEngine.UI.Slider>(true);
+        if (healthBar != null && healthBar.isActiveAndEnabled)
+        {
+            healthBar.value = Mathf.MoveTowards(healthBar.value, Mathf.Max(0.05f, standing), Time.deltaTime * 2f);
+        }
 
         // Checking every few frames is plenty for a warning
         checkTimer -= Time.deltaTime;

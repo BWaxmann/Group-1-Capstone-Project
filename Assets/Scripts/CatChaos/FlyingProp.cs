@@ -13,7 +13,8 @@ public class FlyingProp : MonoBehaviour
         Flying,
         Held,
         Returning,
-        Landed
+        Landed,
+        Toppled
     }
 
     // Props that are flying or being held. Kept short (see CatChaosSettings.maxAirborne) for the Quest.
@@ -179,6 +180,58 @@ public class FlyingProp : MonoBehaviour
             FlutterPiece.Burst(burstPieces, burstCount, burstPieceSize, centre, settings.floorHeight);
         }
         return true;
+    }
+
+    // A gentler knock: the prop tips off the side of its pile and lands on whatever's below (table or floor),
+    // lies there for a bit, then pops back home. Not catchable. Returns false if it can't go right now.
+    public bool Topple()
+    {
+        CatChaosSettings settings = CatChaosSettings.instance;
+        if (state != State.Home || settings == null) return false;
+
+        Vector2 random = Random.insideUnitCircle.normalized;
+        Vector3 side = new Vector3(random.x, 0, random.y);
+        Vector3 start = transform.position;
+        Vector3 over = start + side * Random.Range(0.25f, 0.45f);
+        // The highest surface below, ignoring cats (the swiping cat is usually right there)
+        float landY = settings.floorHeight;
+        foreach (RaycastHit hit in Physics.RaycastAll(over + Vector3.up * 0.3f, Vector3.down, 4f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (hit.collider.GetComponentInParent<CatMovement>() != null) continue;
+            if (hit.point.y > landY && hit.point.y <= start.y + 0.05f) landY = hit.point.y;
+        }
+        Vector3 land = new Vector3(over.x, landY, over.z);
+
+        StopAllCoroutines();
+        transform.localScale = homeLocalScale;
+        transform.SetParent(null, true);
+        state = State.Toppled;
+        settings.PlayKnock(start);
+        StartCoroutine(ToppleRoutine(start, land, side, settings));
+        return true;
+    }
+
+    System.Collections.IEnumerator ToppleRoutine(Vector3 start, Vector3 land, Vector3 side, CatChaosSettings settings)
+    {
+        Quaternion from = transform.rotation;
+        Quaternion lying = Quaternion.AngleAxis(90f, Vector3.Cross(Vector3.up, side)) * from;   // tipped over, away from the pile
+        float duration = Mathf.Clamp(0.25f + (start.y - land.y) * 0.3f, 0.3f, 0.7f);
+        float t = 0;
+        while (t < 1f)
+        {
+            t = Mathf.Min(1f, t + Time.deltaTime / duration);
+            Vector3 position = Vector3.Lerp(start, land, t * t);   // speeds up as it falls
+            position.y += Mathf.Sin(t * Mathf.PI) * 0.12f;         // a little hop off the edge
+            transform.position = position;
+            transform.rotation = Quaternion.Slerp(from, lying, t);
+            yield return null;
+        }
+        settings.PlayLanded(transform.position);
+
+        yield return new WaitForSeconds(settings.respawnDelay + 1f);
+        SettleHome();
+        settings.PlayRespawn(transform.position);
+        StartCoroutine(PopIn());
     }
 
     // The gravity beam has grabbed it

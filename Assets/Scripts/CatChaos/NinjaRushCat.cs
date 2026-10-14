@@ -48,9 +48,17 @@ public class NinjaRushCat : BossCat
         maximumSit = Mathf.Max(minimumSit, sitMax);
     }
 
+    int lastShotEaten;
+
     public override void HitByTreat(Treat treat)
     {
         if (!feedable) return;
+        // A scatter or buckshot volley counts once
+        if (treat.shotId != 0)
+        {
+            if (treat.shotId == lastShotEaten) return;
+            lastShotEaten = treat.shotId;
+        }
         base.HitByTreat(treat);
     }
 
