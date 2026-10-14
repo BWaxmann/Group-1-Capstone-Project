@@ -224,6 +224,8 @@ public class CatMovement : MonoBehaviour
             moodDisplayTimer = 0;
             moodDisplayRoutineInstance = null;
         }
+
+        GameManager.instance.CatSpawned();
     }
 
     protected virtual IEnumerator MoveToTargetRoutine()
@@ -509,6 +511,7 @@ public class CatMovement : MonoBehaviour
     protected virtual void Vanish()
     {
         DropPickup();
+        GameManager.instance.CatDespawned();
         // Setting the cat to inactive will automatically recycle in back into the pool for spawning
         gameObject.SetActive(false);
     }

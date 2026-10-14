@@ -26,4 +26,11 @@ public abstract class BossCat : CatMovement
             BeginVanish();
         }
     }
+
+    protected override void Vanish()
+    {
+        GameManager.instance.EndRoundEarly();
+
+        base.Vanish();
+    }
 }

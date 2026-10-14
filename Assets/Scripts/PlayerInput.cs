@@ -14,6 +14,9 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     Transform handLeft;
 
+    [SerializeField]
+    PickupManager pickupManagerPrefab;
+
     [Header("Treat Launcher")]
 
     [SerializeField] 
@@ -23,7 +26,7 @@ public class PlayerInput : MonoBehaviour
     GameObject launcherLeft;
 
     [SerializeField] 
-    ObjectSpawner treatsSpawner;
+    ObjectSpawner treatsSpawnerPrefab;
 
     [SerializeField] 
     Transform treatLaunchPositionRight;
@@ -61,9 +64,6 @@ public class PlayerInput : MonoBehaviour
 
     [SerializeField]
     string defaultDisplayText = "^ <rotate=\"-90\">3</rotate> ^";
-
-    [SerializeField]
-    string instaKillText = "<color=#FFD700><size=1.5em>∞</size></color>";
 
     [Header("Yarnball")]
 
@@ -116,6 +116,7 @@ public class PlayerInput : MonoBehaviour
 
     Coroutine rightHandAutofire;
     Coroutine leftHandAutofire;
+    ObjectSpawner treatsSpawner;
 
     bool yarnballReady;
     float yarnballRechargeTimer;
@@ -154,7 +155,6 @@ public class PlayerInput : MonoBehaviour
             {
                 instaKillTimer = 0;
                 instaKillActive = false;
-                ammoText.text = defaultDisplayText;
             }
         }
 
@@ -217,6 +217,7 @@ public class PlayerInput : MonoBehaviour
                     {
                         LaunchTreat(true);
                     }
+                    PlaySound(launcherFireSound, true);
                 }
             }
         }
@@ -293,6 +294,7 @@ public class PlayerInput : MonoBehaviour
                     {
                         LaunchTreat(true);
                     }
+                    PlaySound(launcherFireSound, true);
                 }
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger))
                 {
@@ -307,6 +309,7 @@ public class PlayerInput : MonoBehaviour
                     {
                         LaunchTreat(false);
                     }
+                    PlaySound(launcherFireSound, false);
                 }
             }
         }
@@ -384,6 +387,10 @@ public class PlayerInput : MonoBehaviour
         launcherRight.gameObject.SetActive(true);
 
         GameManager.instance.GrabbedLaunchers();
+
+        treatsSpawner = Instantiate(treatsSpawnerPrefab);
+        PickupManager pm = Instantiate(pickupManagerPrefab);
+        pm.SetPlayerVisionPoint(eye);
     }
 
     IEnumerator AutofireRoutine(bool rightHand)
@@ -402,6 +409,7 @@ public class PlayerInput : MonoBehaviour
             {
                 LaunchTreat(rightHand);
             }
+            PlaySound(launcherFireSound, rightHand);
             yield return wait;
         }
     }
@@ -412,7 +420,6 @@ public class PlayerInput : MonoBehaviour
         if (treat == null) return;
         treat.gameObject.SetActive(true);
         treat.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, launchForce, angle, instaKillActive);
-        PlaySound(launcherFireSound, rightHand);
     }
 
     void LaunchYarnball(bool rightHand)
@@ -466,7 +473,6 @@ public class PlayerInput : MonoBehaviour
     {
         instaKillActive = true;
         instaKillTimer += duration;
-        ammoText.text = instaKillText;
     }
 
     public void ActivateSpread(float duration)

@@ -46,24 +46,21 @@ public class Treat : Launchable
                 Pickup pickup = other.gameObject.GetComponentInParent<Pickup>();
                 if (pickup != null)
                 {
-                    if (pickup.activationMethod == Pickup.ActivationType.Shoot)
-                    {
-                        pickup.OnPickup();
-                        pickup.gameObject.SetActive(false);
-                        Despawn();
-                    }
-                    else
-                    {
-                        isActive = true;
-                    }
+                    pickup.OnPickup();
+                    pickup.gameObject.SetActive(false);
+                    Despawn();
                 }
                 else
                 {
-                    Invoke(nameof(Despawn), treatOnFloorLifetime);
+                    if (instaKillOutline != null)
+                    {
+                        instaKillOutline.enabled = false;
+                    }
                     if (audioSource != null && treatHittingFloorSound.soundClip != null)
                     {
                         treatHittingFloorSound.PlayOneShot(audioSource);
                     }
+                    Invoke(nameof(Despawn), treatOnFloorLifetime);
                 }
             }
         }

@@ -20,20 +20,17 @@ public class SpawnManager : MonoBehaviour
     Transform afterFeedingReturnPoint;
 
     [SerializeField]
-    SpawnData[] spawnWavesData;
-
-    public bool allWavesCompleted { get { return wavesCompleted >= spawnWavesData.Length; } }
-
-    int wavesCompleted = 0;
+    [Tooltip("Seperate first by round, then waves within the round.")]
+    RoundData[] spawnRoundsData;
 
     void Start()
     {
-        GameManager.instance.GameStart += StartSpawningWaves;
+        GameManager.instance.StartNewRound += StartSpawningWaves;
     }
 
-    public void StartSpawningWaves()
+    public void StartSpawningWaves(int round)
     {
-        foreach (SpawnData data in spawnWavesData)
+        foreach (SpawnData data in spawnRoundsData[round - 1].spawnWaves)
         {
             StartCoroutine(SpawnWave(data));
         }
@@ -62,18 +59,20 @@ public class SpawnManager : MonoBehaviour
 
             yield return wait;
         }
-
-        wavesCompleted++;
-        if (wavesCompleted >= spawnWavesData.Length)
-        {            
-            SpawnerShutDown();
-        }
     }
 
-    void SpawnerShutDown()
+    public void EndRound()
     {
-        GameManager.instance.GameStart -= StartSpawningWaves;
-        gameObject.SetActive(false);
+        StopAllCoroutines();
+    }
+
+    [Serializable]
+    public struct RoundData
+    {
+        [SerializeField]
+        SpawnData[] _spawnWaves;
+
+        public SpawnData[] spawnWaves => _spawnWaves;
     }
 
     [Serializable]

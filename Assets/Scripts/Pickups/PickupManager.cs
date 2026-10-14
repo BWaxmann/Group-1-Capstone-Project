@@ -5,10 +5,9 @@ public class PickupManager : MonoBehaviour
     [SerializeField]
     ObjectSpawner pickupSpawner;
 
-    [SerializeField]
-    Transform playerVisionPoint;
-
     public static PickupManager instance;
+
+    Transform playerVisionPoint;
 
     void Awake()
     {
@@ -41,5 +40,10 @@ public class PickupManager : MonoBehaviour
             obj.transform.SetPositionAndRotation(position, Quaternion.LookRotation(lookAtPosition - position));
             obj.GetComponent<Pickup>().Initialise();
         }
+    }
+
+    public void SetPlayerVisionPoint(Transform point)
+    {
+        playerVisionPoint = point;
     }
 }

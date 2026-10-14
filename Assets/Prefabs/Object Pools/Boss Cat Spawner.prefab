@@ -68,8 +68,8 @@ MonoBehaviour:
       _pitch: 1
   bossSpawnTimes:
   - 30
-  - 120
-  - 210
+  - 30
+  - 30
   bossSpawnSoundSource: {fileID: 3419070959316054903}
 --- !u!82 &3419070959316054903
 AudioSource:
