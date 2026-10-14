@@ -30,8 +30,12 @@ public class PickupManager : MonoBehaviour
         }
     }
 
+    // A scene can limit which pickups drop (e.g. Cat Cafe Rush keeps only x2 points). Null = all of them.
+    public static System.Predicate<int> allowed;
+
     public void SpawnPickup(int pickupIndex, Vector3 position)
     {
+        if (allowed != null && !allowed(pickupIndex)) return;
         GameObject obj = pickupSpawner.GetObjectFromPool(pickupIndex);
         if (obj != null)
         {

@@ -88,6 +88,16 @@ public class RushDirector : MonoBehaviour
     public string bossFedBanner = "NINJA FED!";
     public string bossLeftBanner = "THE NINJA VANISHED!";
 
+    [Header("Feel")]
+
+    [Min(1f)]
+    [Tooltip("How fast treats fly, in m/s (the original game uses 15).")]
+    public float treatSpeed = 25f;
+
+    [Tooltip("Which pickups cats can drop (0 = x2 points, 1 = InstaKill, 2 = Shield, 3 = Rapid Fire). " +
+             "InstaKill makes colour orders pointless and the shield protects nothing here, so only x2 by default.")]
+    public List<int> allowedPickups = new List<int> { 0 };
+
     [Header("Look")]
 
     [Range(0.1f, 1f)]
@@ -104,6 +114,7 @@ public class RushDirector : MonoBehaviour
     void Awake()
     {
         ParticleManager.effectScale = effectScale;
+        PickupManager.allowed = index => allowedPickups.Contains(index);
     }
 
     void Start()
@@ -121,6 +132,7 @@ public class RushDirector : MonoBehaviour
     void OnDestroy()
     {
         ParticleManager.effectScale = 1f;
+        PickupManager.allowed = null;
         if (GameManager.instance != null)
         {
             GameManager.instance.GameStart -= OnGameStart;
@@ -139,6 +151,8 @@ public class RushDirector : MonoBehaviour
             Debug.LogError("[Cat Cafe Rush] No player rig (PlayerInput) found when the round started.");
             return;
         }
+
+        player.treatSpeed = treatSpeed;
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);

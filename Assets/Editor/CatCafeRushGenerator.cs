@@ -79,13 +79,6 @@ public static class CatCafeRushGenerator
         forward.Normalize();
         float floorY = CatChaosSceneGenerator.FindFloor(eye, player);
 
-        // The launchers to pick up float just in front, a little below the chalkboard so they don't hide it
-        foreach (GrabbableLaunchers launchers in Object.FindObjectsOfType<GrabbableLaunchers>())
-        {
-            launchers.transform.position = new Vector3(eye.x, floorY + 1.45f, eye.z) + forward * 1.4f;
-            PrefabUtility.RecordPrefabInstancePropertyModifications(launchers.transform);
-        }
-
         GameObject root = new GameObject("Cat Cafe Rush");
 
         // Flying props: big and trailed so they're easy to spot. Cats don't knock them; only the ninja does.
@@ -151,6 +144,15 @@ public static class CatCafeRushGenerator
         gameSettings.ApplyModifiedPropertiesWithoutUndo();
 
         PutAllInfoOnChalkboard(root.transform, gameManager, log);
+        AttachTimerToClock(log);
+
+        // The launchers to pick up float just in front, a little below the chalkboard so they don't hide it.
+        // (Done last: their invisible hit sphere would otherwise block the "can the player see it?" checks above.)
+        foreach (GrabbableLaunchers launchers in Object.FindObjectsOfType<GrabbableLaunchers>())
+        {
+            launchers.transform.position = new Vector3(eye.x, floorY + 1.45f, eye.z) + forward * 1.4f;
+            PrefabUtility.RecordPrefabInstancePropertyModifications(launchers.transform);
+        }
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
@@ -192,6 +194,15 @@ public static class CatCafeRushGenerator
         Transform anchor = new GameObject("Chalkboard UI").transform;
         anchor.SetParent(root, false);
         anchor.SetPositionAndRotation(board.position, board.rotation);
+
+        // Hang the anchor and the score on the chalkboard itself, so moving the chalkboard takes all its writing with it
+        GameObject chalkboard = GameObject.Find(ChalkboardName);
+        if (chalkboard != null)
+        {
+            anchor.SetParent(chalkboard.transform, true);
+            AttachKeepingPlace(board, chalkboard.transform);
+            log.AppendLine("The chalkboard's writing is attached to the chalkboard (move the board and it all goes too).");
+        }
 
         // A world-space canvas faces the player along its -Z, so "in front of the board" is a little towards -Z
         foreach (string canvasProperty in new[] { "pregameCanvas", "postgameCanvas" })
@@ -241,6 +252,170 @@ public static class CatCafeRushGenerator
             PrefabUtility.RecordPrefabInstancePropertyModifications(area);
         }
         log.AppendLine("Countdown, announcements and results show on the chalkboard; the instructions board is off.");
+    }
+
+    // The time stays on the cat clock: attach its canvas to the clock, so it moves with the clock
+    static void AttachTimerToClock(StringBuilder log)
+    {
+        GameObject timer = GameObject.Find("Timer Canvas");
+        if (timer == null) return;
+        Vector3 at = timer.transform.position;
+
+        // Eleni's cat clock; failing that, the smallest model whose shape contains the timer's spot
+        GameObject named = GameObject.Find("Cat_clock");
+        Transform clock = named != null ? named.transform : null;
+        float smallest = float.MaxValue;
+        foreach (Renderer rend in clock == null ? Object.FindObjectsOfType<Renderer>() : new Renderer[0])
+        {
+            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend.GetComponentInParent<Canvas>() != null) continue;
+            Bounds b = rend.bounds;
+            b.Expand(0.2f);
+            float size = rend.bounds.size.magnitude;
+            if (!b.Contains(at) || size > 4.5f || size >= smallest) continue;
+            smallest = size;
+            clock = rend.transform;
+        }
+        if (clock == null)
+        {
+            log.AppendLine("Couldn't find the cat clock under the timer; the timer stays where it is.");
+            return;
+        }
+        AttachKeepingPlace(timer.transform, clock);
+        log.AppendLine($"The timer is attached to {clock.name} (move the clock and the time goes with it).");
+    }
+
+    // Re-parents a canvas without moving it on screen
+    static void AttachKeepingPlace(Transform canvas, Transform newParent)
+    {
+        Vector3 position = canvas.position;
+        Quaternion rotation = canvas.rotation;
+        canvas.SetParent(newParent, true);
+        canvas.SetPositionAndRotation(position, rotation);
+        RectTransform rect = canvas as RectTransform;
+        if (rect != null)
+        {
+            // UI canvases load their position from the anchored position, so set that to match too
+            Vector3 local = rect.localPosition;
+            rect.anchorMin = rect.anchorMax = Vector2.zero;
+            rect.anchoredPosition3D = local;
+        }
+        PrefabUtility.RecordPrefabInstancePropertyModifications(canvas);
+    }
+
+    // ---------- Updating a hand-made layout ----------
+
+    // Keeps the open Cat Cafe Rush scene exactly as laid out (anything moved, copied or added by hand) and fits the
+    // cats to it: what's in front of the player, doors, the ninja's stops, piles, tables and the NavMesh.
+    [MenuItem("Catastrophe Cafe/Cat Cafe Rush/Update Open Scene (Keeps Layout)", false, 81)]
+    static void UpdateFromMenu()
+    {
+        EditorUtility.DisplayDialog("Cat Cafe Rush", UpdateLayout(), "OK");
+    }
+
+    // Command line: -executeMethod CatCafeRushGenerator.BatchUpdate [-scene <path>]
+    public static void BatchUpdate()
+    {
+        string[] args = System.Environment.GetCommandLineArgs();
+        int at = System.Array.IndexOf(args, "-scene");
+        EditorSceneManager.OpenScene(at >= 0 && at + 1 < args.Length ? args[at + 1] : RushScene, OpenSceneMode.Single);
+        Debug.Log("[Cat Cafe Rush] " + UpdateLayout());
+    }
+
+    static string UpdateLayout()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        if (scene.path == SourceScene) return "This is CC_LEVEL. Open CatCafeRush_Prototype first.";
+        PlayerInput player = Object.FindObjectOfType<PlayerInput>();
+        RushDirector director = Object.FindObjectOfType<RushDirector>();
+        if (player == null || director == null) return "This doesn't look like a Cat Cafe Rush scene (no player or RushDirector).";
+
+        StringBuilder done = new StringBuilder();
+        Vector3 eye = player.transform.position;
+        Vector3 forward = player.transform.forward;
+        forward.y = 0;
+        forward.Normalize();
+        float floorY = CatChaosSceneGenerator.FindFloor(eye, player);
+
+        // The launchers to pick up float just in front of wherever the player now stands
+        foreach (GrabbableLaunchers launchers in Object.FindObjectsOfType<GrabbableLaunchers>())
+        {
+            launchers.transform.position = new Vector3(eye.x, floorY + 1.45f, eye.z) + forward * 1.4f;
+            PrefabUtility.RecordPrefabInstancePropertyModifications(launchers.transform);
+        }
+
+        // Props: copied ones get a pile of their own, moved piles are re-centred
+        int adopted = CatChaosSceneGenerator.AdoptStrayProps();
+        int recentred = 0;
+        foreach (PropPile pile in Object.FindObjectsOfType<PropPile>())
+        {
+            if (CatChaosSceneGenerator.RecentrePile(pile)) recentred++;
+        }
+        done.AppendLine($"Props: {adopted} new pile(s) from copied props, {recentred} pile(s) re-centred.");
+
+        // Tables added by hand: cats can jump up and visit them
+        int tables = 0;
+        foreach (GameObject table in CatChaosSceneGenerator.FindTables())
+        {
+            if (CatChaosSceneGenerator.FitTable(table, eye, floorY)) tables++;
+        }
+        done.AppendLine($"Tables: {tables} new table(s) given jump links and a waypoint on top.");
+
+        // Where cats wander and come in: only places in front of the player (picked afresh from all of them,
+        // so turning the player round brings back ones dropped earlier)
+        WaypointManager waypoints = Object.FindObjectOfType<WaypointManager>();
+        List<Transform> roam = new List<Transform>();
+        List<Transform> doors = new List<Transform>();
+        if (waypoints != null)
+        {
+            foreach (Transform place in waypoints.transform)
+            {
+                if (place.childCount > 0 || place.GetComponent<NinjaWaypoints>() != null) continue;   // the ninja's own group
+                if (CatChaosSceneGenerator.InFront(eye, forward, place.position, 80f)) roam.Add(place);
+                if ((place.name.StartsWith("Spawn") || place.name == "Door") && CatChaosSceneGenerator.InFront(eye, forward, place.position, 100f)) doors.Add(place);
+            }
+            if (roam.Count >= 3)
+            {
+                SerializedObject so = new SerializedObject(waypoints);
+                SerializedProperty list = so.FindProperty("roamingWaypoints");
+                list.arraySize = roam.Count;
+                for (int i = 0; i < roam.Count; i++)
+                {
+                    list.GetArrayElementAtIndex(i).FindPropertyRelative("_waypoint").objectReferenceValue = roam[i];
+                    list.GetArrayElementAtIndex(i).FindPropertyRelative("_inFrontOfPlayer").boolValue = true;
+                }
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+        }
+        if (doors.Count > 0) director.doors = doors;
+        done.AppendLine($"Cats wander between {roam.Count} places in front ({string.Join(", ", roam.ConvertAll(t => t.name))})" +
+                        (roam.Count < 3 ? " - too few, so the old list was kept" : "") +
+                        $" and come in through {director.doors.Count} door(s) ({string.Join(", ", director.doors.ConvertAll(t => t != null ? t.name : "?"))}).");
+
+        // The NavMesh for this scene only (CC_LEVEL keeps its own)
+        UnityEditor.AI.NavMeshBuilder.BuildNavMesh();
+
+        // The ninja appears by the piles and loose props in front
+        director.ninjaStops.Clear();
+        foreach (PropPile pile in Object.FindObjectsOfType<PropPile>())
+        {
+            if (pile.pile != null && CatChaosSceneGenerator.InFront(eye, forward, pile.pile.position, 90f)) AddStop(director.ninjaStops, pile.pile.position);
+        }
+        int loose = 0;
+        foreach (FlyingProp prop in Object.FindObjectsOfType<FlyingProp>())
+        {
+            if (prop.isLoose && loose < 5 && CatChaosSceneGenerator.InFront(eye, forward, prop.transform.position, 80f))
+            {
+                AddStop(director.ninjaStops, prop.transform.position);
+                loose++;
+            }
+        }
+        if (director.ninjaPrefab == null) director.ninjaPrefab = CatChaosSceneGenerator.MakeNinjaRush();
+        EditorUtility.SetDirty(director);
+        done.AppendLine($"NavMesh rebaked for this scene. Ninja: {director.ninjaStops.Count} stops.");
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return done + "Layout left as it was. Scene saved.";
     }
 
     static void AttachToBoard(Transform canvas, Transform anchor, Vector3 localPosition)

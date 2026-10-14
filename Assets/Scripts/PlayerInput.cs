@@ -196,6 +196,13 @@ public class PlayerInput : MonoBehaviour
     public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
     public Transform LaunchPoint(bool rightHand) => rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
 
+    // How fast straight shots fly, in m/s (a scene can speed them up)
+    public float treatSpeed
+    {
+        get => straightShotSpeed;
+        set => straightShotSpeed = Mathf.Max(1f, value);
+    }
+
     // True for as long as that hand's grip is squeezed (in the editor, the right mouse button is the right grip)
     public bool GripHeld(bool rightHand)
     {

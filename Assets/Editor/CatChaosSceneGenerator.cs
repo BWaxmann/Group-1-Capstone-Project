@@ -204,7 +204,7 @@ public static class CatChaosSceneGenerator
         }
     }
 
-    static int AdoptStrayProps()
+    internal static int AdoptStrayProps()
     {
         HashSet<FlyingProp> known = new HashSet<FlyingProp>();
         foreach (PropPile pile in Object.FindObjectsOfType<PropPile>())
@@ -266,7 +266,7 @@ public static class CatChaosSceneGenerator
         return made;
     }
 
-    static bool RecentrePile(PropPile pile)
+    internal static bool RecentrePile(PropPile pile)
     {
         if (pile.pile == null || pile.props.Count == 0) return false;
         Vector3 sum = Vector3.zero;
@@ -323,7 +323,7 @@ public static class CatChaosSceneGenerator
         return names.Count;
     }
 
-    static List<GameObject> FindTables()
+    internal static List<GameObject> FindTables()
     {
         List<GameObject> tables = new List<GameObject>();
         foreach (Transform t in Object.FindObjectsOfType<Transform>())
@@ -337,7 +337,7 @@ public static class CatChaosSceneGenerator
     }
 
     // Gives a table jump links up onto it (unless it already has some) and a waypoint on top. False if it had them.
-    static bool FitTable(GameObject table, Vector3 eye, float floorY)
+    internal static bool FitTable(GameObject table, Vector3 eye, float floorY)
     {
         foreach (Transform part in table.GetComponentsInChildren<Transform>())
         {
