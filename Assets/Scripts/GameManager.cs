@@ -754,6 +754,12 @@ public class GameManager : MonoBehaviour
         UpdateScore(scoreValue, position);
     }
 
+    // Points for something other than feeding a cat (e.g. catching a flying prop). Combo and multiplier still apply.
+    public void AddBonus(int scoreValue, Vector3 position)
+    {
+        UpdateScore(scoreValue, position);
+    }
+
     public void ReceivePenalty(int penaltyValue, Vector3 position, bool playSoundFX)
     {
         penalties += penaltyValue;

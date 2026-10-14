@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -193,6 +194,17 @@ public class CatMovement : MonoBehaviour
     public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
     public virtual bool isBoss => false;
 
+    // The defend point this cat is on its way to (or attacking), if any. Cat Chaos piles use it to warn the player.
+    public DefendPoint headingFor => currentState == AIState.Targeting ? targetDefendPoint : null;
+
+    // Every cat currently switched on, so other scripts can check on them without searching the scene
+    public static readonly List<CatMovement> active = new List<CatMovement>();
+
+    protected virtual void OnEnable()
+    {
+        if (!active.Contains(this)) active.Add(this);
+    }
+
     protected virtual void Start()
     {
         eatingTreatTriggerHash = Animator.StringToHash(fullyFedAnimationTrigger);
@@ -211,6 +223,7 @@ public class CatMovement : MonoBehaviour
 
     protected virtual void OnDisable()
     {
+        active.Remove(this);
         StopAllCoroutines();
         // In case the cat was switched off during the finisher freeze
         if (animator != null) animator.speed = 1f;

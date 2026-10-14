@@ -62,6 +62,13 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     string rapidFireText = "<color=#FF7310><size=1.2em>RAPID!</size></color>";
 
+    [SerializeField]
+    [Tooltip("Which launchers fire treats with their trigger.")]
+    bool shootWithLeft = true;
+
+    [SerializeField]
+    bool shootWithRight = true;
+
     [Header("Barista Mode")]
 
     [SerializeField]
@@ -84,6 +91,10 @@ public class PlayerInput : MonoBehaviour
     string instaKillText = "<color=#FFD700><size=1.5em>∞</size></color>";
 
     [Header("Yarnball")]
+
+    [SerializeField]
+    [Tooltip("Grip as in the original game, the A/X button (frees the grip for the gravity beam), or off.")]
+    YarnballButton yarnballButton = YarnballButton.Grip;
 
     [SerializeField]
     [Min(0)]
@@ -134,6 +145,13 @@ public class PlayerInput : MonoBehaviour
     public delegate void FaceCamera(Vector3 position);
     public static event FaceCamera TurnToFaceCamera;
 
+    public enum YarnballButton
+    {
+        Grip,
+        FaceButton,
+        Off
+    }
+
     bool launchersActive;
     GrabbableLaunchers lastPerceivedLaunchers;
 
@@ -176,6 +194,17 @@ public class PlayerInput : MonoBehaviour
     public int LoadedFood(bool rightHand) => rightHand ? loadedTreatVariationRight : loadedTreatVariationLeft;
     public Transform Launcher(bool rightHand) => rightHand ? launcherRight.transform : launcherLeft.transform;
     public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
+    public Transform LaunchPoint(bool rightHand) => rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+
+    // True for as long as that hand's grip is squeezed (in the editor, the right mouse button is the right grip)
+    public bool GripHeld(bool rightHand)
+    {
+        bool held = rightHand ? gripHeldRight : gripHeldLeft;
+#if UNITY_EDITOR
+        if (rightHand) held |= Input.GetMouseButton(1);
+#endif
+        return held;
+    }
 
     // A firm left/right flick of that hand's thumbstick this frame: -1 left, +1 right, 0 none
     public int ThumbFlick(bool rightHand) => rightHand ? flickRight : flickLeft;
@@ -260,18 +289,22 @@ public class PlayerInput : MonoBehaviour
         if (launchersActive)
         {
             // In barista mode the grips switch food instead (handled by the Space Cafe)
-            if (gripDownRight && yarnballReady && !baristaMode)
+            if (yarnballReady && !baristaMode && yarnballButton != YarnballButton.Off)
             {
-                LaunchYarnball(true);
-            }
-            if (gripDownLeft && yarnballReady && !baristaMode)
-            {
-                LaunchYarnball(false);
+                bool useGrip = yarnballButton == YarnballButton.Grip;
+                if (useGrip ? gripDownRight : FaceButtonDown(true))
+                {
+                    LaunchYarnball(true);
+                }
+                else if (useGrip ? gripDownLeft : FaceButtonDown(false))
+                {
+                    LaunchYarnball(false);
+                }
             }
 
             if (enableAutofire || rapidFireActive)
             {
-                if (TriggerDown(true) && rightHandAutofire == null)
+                if (shootWithRight && TriggerDown(true) && rightHandAutofire == null)
                 {
                     rightHandAutofire = StartCoroutine(AutofireRoutine(true));
                 }
@@ -281,7 +314,7 @@ public class PlayerInput : MonoBehaviour
                     rightHandAutofire = null;
                 }
 
-                if (TriggerDown(false) && leftHandAutofire == null)
+                if (shootWithLeft && TriggerDown(false) && leftHandAutofire == null)
                 {
                     leftHandAutofire = StartCoroutine(AutofireRoutine(false));
                 }
@@ -293,11 +326,11 @@ public class PlayerInput : MonoBehaviour
             }
             else
             {
-                if (TriggerDown(true))
+                if (shootWithRight && TriggerDown(true))
                 {
                     LaunchTreat(true);
                 }
-                if (TriggerDown(false))
+                if (shootWithLeft && TriggerDown(false))
                 {
                     LaunchTreat(false);
                 }
@@ -409,12 +442,18 @@ public class PlayerInput : MonoBehaviour
 #endif
     }
 
-    // A / X on Quest controllers. Index controllers don't map this, so the trigger is used there instead.
+    // A / X on Quest controllers. On the Index, A is bound to SteamVR's "Secondary" action (bindings_knuckles.json).
     bool FaceButtonDown(bool rightHand)
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
         return OVRInput.GetDown(OVRInput.Button.One, OvrHand(rightHand));
 #else
+        IVRDevice device = VRDevice.Device;
+        if (device != null && device.Name == "OpenVR")
+        {
+            SteamVR_Action_Boolean secondary = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "Secondary");
+            return secondary != null && secondary.GetStateDown(rightHand ? SteamVR_Input_Sources.RightHand : SteamVR_Input_Sources.LeftHand);
+        }
         IVRInputDevice input = GetHandInput(rightHand);
         return input != null && input.HasButton(VRButton.Four) && input.GetButtonDown(VRButton.Four);
 #endif

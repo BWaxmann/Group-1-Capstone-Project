@@ -44,6 +44,9 @@ public class DefendPoint : MonoBehaviour
     public Vector3 position => transform.position;
     public bool shieldActive => shieldTimer > 0;
 
+    // Raised each time a cat's paw lands on this point while it's unshielded (Cat Chaos props listen for it)
+    public event System.Action Hit;
+
     void Start()
     {
         healthBar.value = 1;
@@ -71,7 +74,12 @@ public class DefendPoint : MonoBehaviour
         }
         else
         {
-            GameManager.instance.ReceivePenalty(hitScorePenalty, scoreDisplayPosition.position, false);
+            // A penalty of 0 shows nothing (rather than a "0" popping up on every hit)
+            if (hitScorePenalty > 0)
+            {
+                GameManager.instance.ReceivePenalty(hitScorePenalty, scoreDisplayPosition.position, false);
+            }
+            Hit?.Invoke();
             ParticleManager.instance.ShowParticleEffect(hitParticlesIndex, position);
             hitSound.PlayOneShot(hitSource);
             healthBar.value = Mathf.Max(healthBar.value * (1 - healthLossPerHit), minimumDisplayedHealth);

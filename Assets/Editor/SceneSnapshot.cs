@@ -62,6 +62,7 @@ public static class SceneSnapshot
         cam.transform.SetPositionAndRotation(centre + Vector3.up * 9f, Quaternion.LookRotation(Vector3.down, forward));
         Save(cam, Path.Combine(folder, "5_top.png"), 1000, 1000);
         cam.orthographic = false;
+        cam.nearClipPlane = 0.05f;
 
         // Optional close-up: from the eye position, looking at a named object
         string lookAt = Argument("-lookAt", "");
