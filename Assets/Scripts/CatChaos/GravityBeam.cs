@@ -30,6 +30,13 @@ public class GravityBeam : MonoBehaviour
     [Min(0)]
     public int catchScore = 5;
 
+    [Min(1)]
+    [Tooltip("Catches in a row (without anything hitting the floor) multiply the catch score, up to this. 1 = no streak bonus.")]
+    public int maxStreakMultiplier = 1;
+
+    // Catches in a row since something last hit the floor uncaught
+    public static int catchStreak;
+
     public Color beamColour = new Color(0.72f, 0.38f, 1f);
 
     class Hand
@@ -58,11 +65,19 @@ public class GravityBeam : MonoBehaviour
         left = MakeHand(false);
         right = MakeHand(true);
         GameManager.instance.GameEnd += ReleaseAll;
+        catchStreak = 0;
+        FlyingProp.Landed += EndStreak;
     }
 
     void OnDestroy()
     {
         if (GameManager.instance != null) GameManager.instance.GameEnd -= ReleaseAll;
+        FlyingProp.Landed -= EndStreak;
+    }
+
+    static void EndStreak(FlyingProp landed)
+    {
+        catchStreak = 0;
     }
 
     void Update()
@@ -188,7 +203,8 @@ public class GravityBeam : MonoBehaviour
         hand.holdDistance = Vector3.Distance(muzzle.position, prop.centre);
         prop.Hold(prop.transform.position);
 
-        GameManager.instance.AddBonus(catchScore, prop.centre);
+        catchStreak++;
+        GameManager.instance.AddBonus(catchScore * Mathf.Min(catchStreak, maxStreakMultiplier), prop.centre);
         Haptics.Pulse(hand.isRight, Haptics.Strength.Medium);
         if (CatChaosSettings.instance != null) CatChaosSettings.instance.PlayCatch(prop.centre);
     }

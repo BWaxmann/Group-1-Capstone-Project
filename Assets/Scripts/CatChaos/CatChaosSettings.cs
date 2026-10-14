@@ -51,6 +51,15 @@ public class CatChaosSettings : MonoBehaviour
     [Tooltip("World height of the floor, where uncaught props land. Set by the scene generator.")]
     public float floorHeight = 0f;
 
+    [Min(1f)]
+    [Tooltip("How much bigger props get while they're in the air, so they're easy to spot (1 = no change).")]
+    public float airborneScale = 1f;
+
+    [Tooltip("A bright trail behind props while they're in the air.")]
+    public bool airborneTrail = false;
+
+    public Color trailColour = new Color(1f, 0.9f, 0.4f, 0.9f);
+
     [Min(0)]
     [Tooltip("Seconds before a landed prop pops back onto its pile.")]
     public float respawnDelay = 2.5f;

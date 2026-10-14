@@ -297,7 +297,7 @@ public static class CatChaosSceneGenerator
         return true;
     }
 
-    static int DropWaypointsBehind(Vector3 eye, Vector3 forward, out List<string> names)
+    internal static int DropWaypointsBehind(Vector3 eye, Vector3 forward, out List<string> names)
     {
         names = new List<string>();
         WaypointManager waypoints = Object.FindObjectOfType<WaypointManager>();
@@ -529,7 +529,7 @@ public static class CatChaosSceneGenerator
 
     // ---------- Piles ----------
 
-    static List<Transform> BuildPiles(PlayerInput player, StringBuilder log)
+    internal static List<Transform> BuildPiles(PlayerInput player, StringBuilder log)
     {
         List<Transform> piles = new List<Transform>();
         DefendPoint[] points = Object.FindObjectsOfType<DefendPoint>();
@@ -586,7 +586,7 @@ public static class CatChaosSceneGenerator
 
     // Cups, jars and potted plants along the routes cats take in front of the player, so roaming cats knock them flying.
     // Spots come from Brian's roaming waypoints and the straight lines between them, snapped onto the NavMesh.
-    static List<Vector3> BuildLooseProps(PlayerInput player, List<Transform> piles, float floorY, StringBuilder log)
+    internal static List<Vector3> BuildLooseProps(PlayerInput player, List<Transform> piles, float floorY, StringBuilder log)
     {
         List<Vector3> chosen = new List<Vector3>();
         WaypointManager waypoints = Object.FindObjectOfType<WaypointManager>();
@@ -731,7 +731,7 @@ public static class CatChaosSceneGenerator
         return added;
     }
 
-    static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0, v.z);
+    internal static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0, v.z);
 
     static GameObject[] LoadModels(string[] paths)
     {
@@ -799,12 +799,12 @@ public static class CatChaosSceneGenerator
     }
 
     // In front of the player (within maxAngle either side) and at least 2 m away
-    static bool InFront(Vector3 eye, Vector3 forward, Vector3 point, float maxAngle)
+    internal static bool InFront(Vector3 eye, Vector3 forward, Vector3 point, float maxAngle)
     {
         return Mathf.Abs(SignedAngle(forward, point - eye)) <= maxAngle && Flat(point - eye).magnitude >= 2f;
     }
 
-    static void AddNinjaStop(CatChaosDirector director, Vector3 near)
+    internal static void AddNinjaStop(CatChaosDirector director, Vector3 near)
     {
         if (UnityEngine.AI.NavMesh.SamplePosition(near, out UnityEngine.AI.NavMeshHit hit, 0.8f, UnityEngine.AI.NavMesh.AllAreas))
         {
@@ -813,7 +813,7 @@ public static class CatChaosSceneGenerator
     }
 
     // A copy of Brian's ninja with its brain swapped for the Ninja Rush one (his prefab and script stay as they are)
-    static NinjaRushCat MakeNinjaRush()
+    internal static NinjaRushCat MakeNinjaRush()
     {
         if (!AssetDatabase.IsValidFolder(PrefabFolder)) AssetDatabase.CreateFolder("Assets/Prefabs", "CatChaos");
         // Brian's prefab is only loaded into memory here, never saved. Saving over our existing copy (rather than
@@ -1002,7 +1002,7 @@ public static class CatChaosSceneGenerator
 
     // ---------- Helpers ----------
 
-    static void SetSounds(CatChaosSettings settings)
+    internal static void SetSounds(CatChaosSettings settings)
     {
         SerializedObject so = new SerializedObject(settings);
         SetSound(so, "knockSound", "Assets/Audio/floraphonic-metal-hit-49-193314.mp3", 0.45f);
@@ -1023,7 +1023,7 @@ public static class CatChaosSceneGenerator
         sound.FindPropertyRelative("_pitch").floatValue = 1f;
     }
 
-    static float SignedAngle(Vector3 forward, Vector3 direction)
+    internal static float SignedAngle(Vector3 forward, Vector3 direction)
     {
         forward.y = 0;
         direction.y = 0;
@@ -1043,7 +1043,7 @@ public static class CatChaosSceneGenerator
     }
 
     // The highest surface under the player (ignoring the player rig itself)
-    static float FindFloor(Vector3 centre, PlayerInput player)
+    internal static float FindFloor(Vector3 centre, PlayerInput player)
     {
         float floor = float.MinValue;
         foreach (RaycastHit hit in Physics.RaycastAll(centre + Vector3.up * 2f, Vector3.down, 10f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
@@ -1054,7 +1054,7 @@ public static class CatChaosSceneGenerator
         return floor > float.MinValue ? floor : centre.y;
     }
 
-    static bool TryGetBounds(GameObject go, out Bounds bounds)
+    internal static bool TryGetBounds(GameObject go, out Bounds bounds)
     {
         bounds = new Bounds();
         bool any = false;

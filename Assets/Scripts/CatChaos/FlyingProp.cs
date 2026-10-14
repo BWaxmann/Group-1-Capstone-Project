@@ -92,6 +92,14 @@ public class FlyingProp : MonoBehaviour
     Vector3 returnStart;
     Quaternion returnStartRotation;
 
+    // Growing while airborne, and the trail
+    Vector3 flyingScale;
+    float grow;
+    TrailRenderer trail;
+
+    // Raised when a prop hits the floor uncaught (e.g. to end a catch streak)
+    public static event System.Action<FlyingProp> Landed;
+
     public void Setup()
     {
         homeParent = transform.parent;
@@ -147,6 +155,9 @@ public class FlyingProp : MonoBehaviour
         StopAllCoroutines();
         transform.localScale = homeLocalScale;
         transform.SetParent(null, true);
+        flyingScale = transform.localScale;
+        grow = 0;
+        SetTrail(settings, true);
         state = State.Flying;
         airborne.Add(this);
         settings.PlayKnock(transform.position);
@@ -186,6 +197,13 @@ public class FlyingProp : MonoBehaviour
         CatChaosSettings settings = CatChaosSettings.instance;
         if (settings == null) return;
         float dt = Time.deltaTime;
+
+        // Bigger while it's in the air or held, so it's easy to spot; back to normal on the way home
+        if (settings.airborneScale > 1f && (state == State.Flying || state == State.Held || state == State.Returning))
+        {
+            grow = state == State.Returning ? Mathf.Clamp01(1f - timer / settings.returnDuration) : Mathf.MoveTowards(grow, 1f, dt * 5f);
+            transform.localScale = flyingScale * Mathf.Lerp(1f, settings.airborneScale, grow);
+        }
 
         switch (state)
         {
@@ -285,7 +303,31 @@ public class FlyingProp : MonoBehaviour
         state = State.Landed;
         timer = 0;
         SetVisible(false);
+        SetTrail(settings, false);
         settings.PlayLanded(transform.position);
+        Landed?.Invoke(this);
+    }
+
+    void SetTrail(CatChaosSettings settings, bool on)
+    {
+        if (on && settings != null && settings.airborneTrail && trail == null)
+        {
+            trail = gameObject.AddComponent<TrailRenderer>();
+            trail.sharedMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
+            trail.time = 0.35f;
+            trail.minVertexDistance = 0.04f;
+            trail.widthMultiplier = 0.12f;
+            trail.widthCurve = AnimationCurve.Linear(0, 1, 1, 0);
+            Gradient gradient = new Gradient();
+            gradient.SetKeys(new[] { new GradientColorKey(settings.trailColour, 0), new GradientColorKey(settings.trailColour, 1) },
+                             new[] { new GradientAlphaKey(settings.trailColour.a, 0), new GradientAlphaKey(0, 1) });
+            trail.colorGradient = gradient;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+        }
+        if (trail == null) return;
+        if (on) trail.Clear();
+        trail.emitting = on;
     }
 
     void SettleHome()
@@ -297,6 +339,11 @@ public class FlyingProp : MonoBehaviour
         transform.localScale = homeLocalScale;
         state = State.Home;
         homeSince = Time.time;
+        if (trail != null)
+        {
+            trail.emitting = false;
+            trail.Clear();
+        }
     }
 
     Vector3 HomePosition() => homeParent != null ? homeParent.TransformPoint(homeLocalPosition) : homeLocalPosition;

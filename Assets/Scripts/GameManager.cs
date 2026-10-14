@@ -490,7 +490,8 @@ public class GameManager : MonoBehaviour
     void StartFinale()
     {
         finaleStarted = true;
-        ShowBanner(finaleBannerText, finaleBannerDuration);
+        // An empty banner text means another script announces the finale itself
+        if (!string.IsNullOrEmpty(finaleBannerText)) ShowBanner(finaleBannerText, finaleBannerDuration);
 
         PlaySoundEffect(finaleSound);
         Haptics.PulseBoth(Haptics.Strength.Strong);

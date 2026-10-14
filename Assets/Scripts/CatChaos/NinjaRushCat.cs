@@ -36,6 +36,32 @@ public class NinjaRushCat : BossCat
     // Places on the NavMesh next to piles and loose props (set by the director)
     public List<Vector3> stops = new List<Vector3>();
 
+    // Cat Cafe Rush's catch phases use it purely as a knocker: treats don't feed it then
+    public bool feedable = true;
+
+    // Changes how it behaves for its next appearance (Cat Cafe Rush uses it both as a quick knocker and as the boss)
+    public void Configure(bool canBeFed, int knocks, float sitMin, float sitMax)
+    {
+        feedable = canBeFed;
+        knocksPerStop = Mathf.Max(1, knocks);
+        minimumSit = Mathf.Max(0.2f, sitMin);
+        maximumSit = Mathf.Max(minimumSit, sitMax);
+    }
+
+    public override void HitByTreat(Treat treat)
+    {
+        if (!feedable) return;
+        base.HitByTreat(treat);
+    }
+
+    // Disappears in a puff (no score, no pickup), e.g. when its phase ends
+    public void Leave()
+    {
+        if (!gameObject.activeInHierarchy) return;
+        DisappearParticleEffect();
+        gameObject.SetActive(false);
+    }
+
     protected override IEnumerator MoveToTargetRoutine()
     {
         WaitForSeconds updateWait = new WaitForSeconds(targetUpdateFrequency);

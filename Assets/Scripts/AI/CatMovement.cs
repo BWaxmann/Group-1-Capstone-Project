@@ -471,8 +471,17 @@ public class CatMovement : MonoBehaviour
     // Called when a treat lands on this cat. Customer cats check the food matches their order.
     public virtual void HitByTreat(Treat treat)
     {
+        // Something else can decide which treats this cat eats (e.g. a colour order); false = not eaten
+        if (treatGate != null && !treatGate(treat)) return;
         FeedCat(treat.isInstaKill);
     }
+
+    public System.Func<Treat, bool> treatGate;
+
+    // The cat's face pictures and its pop-up mood display, for other scripts that show the cat's mood their own way
+    public Sprite happiestFace => moodSprites != null && moodSprites.Length > 0 ? moodSprites[0] : null;
+    public Sprite grumpiestFace => moodSprites != null && moodSprites.Length > 0 ? moodSprites[moodSprites.Length - 1] : null;
+    public GameObject moodDisplay => moodCanvas;
 
     public virtual void FeedCat(bool instaKill)
     {
