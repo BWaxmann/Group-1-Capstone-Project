@@ -76,8 +76,13 @@ public static class CatChaosSceneGenerator
 
     static void Create()
     {
-        if (File.Exists(PrototypeScene)) AssetDatabase.DeleteAsset(PrototypeScene);
-        if (!AssetDatabase.CopyAsset(SourceScene, PrototypeScene))
+        // Copy CC_LEVEL's contents over the prototype (keeping the prototype scene's own ID) or make it the first time
+        if (File.Exists(PrototypeScene))
+        {
+            File.Copy(SourceScene, PrototypeScene, true);
+            AssetDatabase.ImportAsset(PrototypeScene, ImportAssetOptions.ForceUpdate);
+        }
+        else if (!AssetDatabase.CopyAsset(SourceScene, PrototypeScene))
         {
             Debug.LogError($"[Cat Chaos] Couldn't copy {SourceScene}.");
             return;
@@ -409,10 +414,9 @@ public static class CatChaosSceneGenerator
     static NinjaRushCat MakeNinjaRush()
     {
         if (!AssetDatabase.IsValidFolder(PrefabFolder)) AssetDatabase.CreateFolder("Assets/Prefabs", "CatChaos");
-        if (File.Exists(NinjaRushPath)) AssetDatabase.DeleteAsset(NinjaRushPath);
-        AssetDatabase.CopyAsset(NinjaSource, NinjaRushPath);
-
-        GameObject contents = PrefabUtility.LoadPrefabContents(NinjaRushPath);
+        // Brian's prefab is only loaded into memory here, never saved. Saving over our existing copy (rather than
+        // deleting and remaking it) keeps the copy's ID, so the scene's link to it survives regenerating.
+        GameObject contents = PrefabUtility.LoadPrefabContents(NinjaSource);
         contents.name = "Ninja Rush Cat";
         NinjaBossCat oldBrain = contents.GetComponent<NinjaBossCat>();
         SerializedObject brain = new SerializedObject(oldBrain);
@@ -578,7 +582,6 @@ public static class CatChaosSceneGenerator
     static MafiaBossCat MakeMafiaVariant(MafiaBossCat original)
     {
         if (!AssetDatabase.IsValidFolder(PrefabFolder)) AssetDatabase.CreateFolder("Assets/Prefabs", "CatChaos");
-        if (File.Exists(MafiaVariantPath)) AssetDatabase.DeleteAsset(MafiaVariantPath);
 
         GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(original.gameObject);
         SerializedObject boss = new SerializedObject(instance.GetComponent<MafiaBossCat>());
