@@ -92,6 +92,9 @@ public class CatMovement : MonoBehaviour
     protected Image moodImage;
 
     [SerializeField]
+    protected Slider healthBar;
+
+    [SerializeField]
     [Tooltip("This should be ordered from happiest to grumpiest.")]
     protected Sprite[] moodSprites;
 
@@ -530,6 +533,11 @@ public class CatMovement : MonoBehaviour
             {
                 moodImage.sprite = sp;
             }
+        }
+
+        if (healthBar != null)
+        {
+            healthBar.value = currentHealth / (float)treatsUntilFull;
         }
     }
 
