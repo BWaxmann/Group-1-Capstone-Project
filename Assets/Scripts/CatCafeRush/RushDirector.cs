@@ -98,6 +98,22 @@ public class RushDirector : MonoBehaviour
              "InstaKill makes colour orders pointless and the shield protects nothing here, so only x2 by default.")]
     public List<int> allowedPickups = new List<int> { 0 };
 
+    [Tooltip("Treats fly through furniture and only count when they reach a cat (or a pickup).")]
+    public bool cleanShots = true;
+
+    [Range(0.3f, 2f)]
+    [Tooltip("Size of the invisible hit area around each cat's body (1 = about the body's size). 0.3 turns it off.")]
+    public float hitboxGenerosity = 0.9f;
+
+    [Range(0f, 20f)]
+    [Tooltip("Light aim assist: a treat that's already within this many degrees of a cat wanting its colour curves " +
+             "towards it. 0 = off.")]
+    public float aimAssistAngle = 6f;
+
+    [Min(0f)]
+    [Tooltip("How sharply the aim assist can curve a treat, in degrees per second.")]
+    public float aimAssistTurnSpeed = 120f;
+
     [Header("Look")]
 
     [Range(0.1f, 1f)]
@@ -107,6 +123,7 @@ public class RushDirector : MonoBehaviour
     readonly List<CatOrder> orders = new List<CatOrder>();
     PlayerInput player;
     NinjaRushCat ninja;
+    SphereCollider ninjaHitbox;
     Phase current;
     float lastArrival = -100f;
     bool playing;
@@ -115,6 +132,21 @@ public class RushDirector : MonoBehaviour
     {
         ParticleManager.effectScale = effectScale;
         PickupManager.allowed = index => allowedPickups.Contains(index);
+        Treat.cleanShots = cleanShots;
+        Treat.aimAssistTurnSpeed = aimAssistTurnSpeed;
+        Treat.aimAssistTarget = aimAssistAngle > 0 ? (System.Func<Treat, Vector3?>)AssistTarget : null;
+    }
+
+    // Where a treat should curve to: a hungry cat wanting its colour, or the ninja boss while it can be fed
+    Vector3? AssistTarget(Treat treat)
+    {
+        Vector3? target = CatOrder.AssistTarget(treat, aimAssistAngle);
+        if (target == null && ninja != null && ninja.feedable && ninja.gameObject.activeInHierarchy && !ninja.isFullyFed)
+        {
+            Vector3 point = ninjaHitbox != null ? ninjaHitbox.transform.TransformPoint(ninjaHitbox.center) : ninja.transform.position + Vector3.up * 0.3f;
+            if (Vector3.Angle(treat.velocity, point - treat.transform.position) <= aimAssistAngle) target = point;
+        }
+        return target;
     }
 
     void Start()
@@ -133,6 +165,8 @@ public class RushDirector : MonoBehaviour
     {
         ParticleManager.effectScale = 1f;
         PickupManager.allowed = null;
+        Treat.cleanShots = false;
+        Treat.aimAssistTarget = null;
         if (GameManager.instance != null)
         {
             GameManager.instance.GameStart -= OnGameStart;
@@ -247,7 +281,7 @@ public class RushDirector : MonoBehaviour
                 icon = new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour)
             });
         }
-        orders.Add(CatOrder.Give(cat, foods, bubbleScale));
+        orders.Add(CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f));
         lastArrival = Time.time;
     }
 
@@ -276,5 +310,7 @@ public class RushDirector : MonoBehaviour
         ninja.stops = ninjaStops;
         ninja.gameObject.SetActive(true);
         ninja.Initialise(transform, ninjaStops[Random.Range(0, ninjaStops.Count)]);
+        // The boss gets the same generous hit area as the other cats
+        if (cleanShots && ninjaHitbox == null) ninjaHitbox = CatOrder.AddHitbox(ninja.gameObject, hitboxGenerosity);
     }
 }

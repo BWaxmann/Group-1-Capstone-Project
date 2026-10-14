@@ -16,6 +16,23 @@ public class Treat : Launchable
     // Which food this treat is (its position in the treat pool), or -1 if not set
     public int foodVariation { get; set; } = -1;
 
+    // "Clean shots" (Cat Cafe Rush): treats fly through furniture and only count when they reach a cat or a pickup.
+    // Each physics step checks the whole stretch the treat just flew, so fast treats can't skip past a cat.
+    public static bool cleanShots;
+
+    // Light aim assist (clean shots only): a treat curves gently towards the point this returns, if any
+    // (Cat Cafe Rush gives the nearest cat that wants this colour, when the shot is already close)
+    public static System.Func<Treat, Vector3?> aimAssistTarget;
+    public static float aimAssistTurnSpeed = 120f;   // degrees per second
+
+    const float SweepRadius = 0.05f;
+
+    Collider[] ownColliders;
+    bool[] ownTriggerSettings;
+    Vector3 lastPosition;
+
+    public Vector3 velocity => rb != null ? rb.velocity : Vector3.zero;
+
     public override void Launch(Transform launchPosition, float force, bool instaKill)
     {
         base.Launch(launchPosition, force, instaKill);
@@ -25,6 +42,77 @@ public class Treat : Launchable
         {
             instaKillOutline.enabled = instaKill;
         }
+
+        // Clean shots don't bump into anything; the sweep below decides what they hit
+        if (ownColliders == null)
+        {
+            ownColliders = GetComponentsInChildren<Collider>(true);
+            ownTriggerSettings = new bool[ownColliders.Length];
+            for (int i = 0; i < ownColliders.Length; i++) ownTriggerSettings[i] = ownColliders[i].isTrigger;
+        }
+        for (int i = 0; i < ownColliders.Length; i++) ownColliders[i].isTrigger = cleanShots || ownTriggerSettings[i];
+        lastPosition = transform.position;
+    }
+
+    void FixedUpdate()
+    {
+        if (!cleanShots || !isActive || rb == null) return;
+
+        // The transform, not rb.position: this project doesn't auto-sync transforms, so right after a launch the
+        // rigidbody still holds the treat's old spot until the next physics step
+        Vector3 now = transform.position;
+
+        // Aim assist: turn a little towards a cat that wants this treat
+        if (aimAssistTarget != null)
+        {
+            Vector3? target = aimAssistTarget(this);
+            if (target.HasValue)
+            {
+                Vector3 speed = rb.velocity;
+                Vector3 toTarget = (target.Value - now).normalized * speed.magnitude;
+                rb.velocity = Vector3.RotateTowards(speed, toTarget, aimAssistTurnSpeed * Mathf.Deg2Rad * Time.fixedDeltaTime, 0f);
+            }
+        }
+
+        // What did it fly through since the last step? The nearest cat or pickup on that stretch is hit.
+        // (A jump far longer than one step's flight means it was moved, not flown: skip that stretch.)
+        Vector3 travelled = now - lastPosition;
+        float distance = travelled.magnitude;
+        if (distance > 0.0001f && distance < 3f)
+        {
+            RaycastHit[] hits = Physics.SphereCastAll(lastPosition, SweepRadius, travelled / distance, distance,
+                                                      Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.transform.IsChildOf(transform)) continue;
+                if (CleanHit(hit.collider)) return;
+            }
+        }
+        lastPosition = now;
+    }
+
+    bool CleanHit(Collider other)
+    {
+        CatMovement cat = other.GetComponentInParent<CatMovement>();
+        if (cat != null)
+        {
+            if (cat.isFullyFed) return false;
+            isActive = false;
+            cat.HitByTreat(this);
+            Despawn();
+            return true;
+        }
+        Pickup pickup = other.GetComponentInParent<Pickup>();
+        if (pickup != null && pickup.activationMethod == Pickup.ActivationType.Shoot)
+        {
+            isActive = false;
+            pickup.OnPickup();
+            pickup.gameObject.SetActive(false);
+            Despawn();
+            return true;
+        }
+        return false;
     }
 
     public override void OnCollisionEnter(Collision other)

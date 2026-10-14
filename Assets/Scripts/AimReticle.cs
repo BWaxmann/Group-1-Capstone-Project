@@ -174,19 +174,28 @@ public class AimReticle : MonoBehaviour
     bool CastSegment(Vector3 origin, Vector3 direction, float distance, out RaycastHit closest)
     {
         closest = default(RaycastHit);
-        RaycastHit[] hits = Physics.RaycastAll(origin, direction, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        // With clean shots, treats fly through furniture, so the ring shows on a cat behind it (cat hitboxes are triggers)
+        bool cleanShots = Treat.cleanShots;
+        RaycastHit[] hits = Physics.RaycastAll(origin, direction, distance, Physics.DefaultRaycastLayers,
+                                               cleanShots ? QueryTriggerInteraction.Collide : QueryTriggerInteraction.Ignore);
 
         bool found = false;
+        bool foundCat = false;
         float closestDistance = float.MaxValue;
         foreach (RaycastHit hit in hits)
         {
-            if (hit.distance >= closestDistance) continue;
             if (ignoreRoot != null && hit.collider.transform.IsChildOf(ignoreRoot)) continue;
             if (hit.collider.GetComponentInParent<Launchable>() != null) continue;
+            bool isCat = cleanShots && hit.collider.GetComponentInParent<CatMovement>() != null;
+            if (!isCat && hit.collider.isTrigger) continue;
+            // A cat anywhere along the shot beats anything else; otherwise the nearest thing
+            if (foundCat && !isCat) continue;
+            if (hit.distance >= closestDistance && !(isCat && !foundCat)) continue;
 
             closest = hit;
             closestDistance = hit.distance;
             found = true;
+            foundCat |= isCat;
         }
         return found;
     }
