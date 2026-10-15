@@ -44,6 +44,22 @@ public class NinjaRushCat : BossCat
     public List<PropPile> piles = new List<PropPile>();
     public bool explodePiles;
 
+    // While true it stays where it is instead of blinking about (Cat Cafe Waves: while the first catch is explained)
+    public bool holdStill;
+
+    // Appears at `position` in a puff, facing the player
+    public void BlinkTo(Vector3 position)
+    {
+        Blink(position);
+    }
+
+    // A paw swipe with its sound (the director decides what it sends flying)
+    public void Swipe()
+    {
+        if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger(attackTriggerHash);
+        hitDefendPointSound.PlayOneShot(attackSource);
+    }
+
     // Changes how it behaves for its next appearance (Cat Cafe Rush uses it both as a quick knocker and as the boss)
     public void Configure(bool canBeFed, int knocks, float sitMin, float sitMax, bool explode = false)
     {
@@ -112,6 +128,12 @@ public class NinjaRushCat : BossCat
             {
                 stunTimer -= targetUpdateFrequency;
                 if (stunTimer <= 0) EndStun();
+                yield return updateWait;
+                continue;
+            }
+
+            if (holdStill)
+            {
                 yield return updateWait;
                 continue;
             }

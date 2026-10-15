@@ -476,8 +476,16 @@ public class RushDirector : MonoBehaviour
                     CatRaid.CancelAll();
                     SendCatsAway();
                     if (catchIntro && !catchIntroDone) yield return CatchIntro();
-                    yield return new WaitForSeconds(1f);
-                    SummonNinja(false);
+                    if (ninja != null && ninja.gameObject.activeInHierarchy && ninja.holdStill)
+                    {
+                        // The ninja that opened the catch intro gets going
+                        ninja.holdStill = false;
+                    }
+                    else
+                    {
+                        yield return new WaitForSeconds(1f);
+                        SummonNinja(false);
+                    }
                     yield return new WaitForSeconds(Mathf.Max(0, phase.seconds - 1f));
                     if (ninja != null) ninja.Leave();
                     break;
@@ -906,6 +914,21 @@ public class RushDirector : MonoBehaviour
         Transform eye = player != null ? player.eyePoint : null;
         Vector3 viewer = eye != null ? eye.position : (player != null ? player.transform.position : transform.position);
         FlyingProp prop = PropInView(eye);
+
+        // The ninja appears right beside it and flicks it up: its opening move (then it waits until it's caught)
+        if (prop != null && ninja != null)
+        {
+            Vector3 towards = Flat(viewer - prop.centre);
+            towards = towards.sqrMagnitude > 0.001f ? towards.normalized : Vector3.forward;
+            if (NavMesh.SamplePosition(prop.centre + towards * 0.4f, out NavMeshHit beside, 1f, NavMesh.AllAreas))
+            {
+                SummonNinja(false, beside.position);
+                yield return new WaitForSeconds(0.6f);
+                if (ninja.gameObject.activeInHierarchy) ninja.Swipe();
+                yield return new WaitForSeconds(0.15f);
+            }
+        }
+
         if (prop != null && prop.Knock(new Vector3(viewer.x, prop.transform.position.y, viewer.z), true))
         {
             GameObject hint = FloatingWord.Make(catchIntroHint, new Color(1f, 0.85f, 0.2f), 2.2f);
@@ -1281,7 +1304,8 @@ public class RushDirector : MonoBehaviour
         return away.Count > 0 ? away : ninjaStops;
     }
 
-    void SummonNinja(bool boss)
+    // Brings the ninja in at one of its stops; or at `holdAt`, where it stays put until told to go (holdStill)
+    void SummonNinja(bool boss, Vector3? holdAt = null)
     {
         if (ninja == null) return;
         List<Vector3> stops;
@@ -1300,8 +1324,13 @@ public class RushDirector : MonoBehaviour
             else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax);
         }
         ninja.stops = stops;
+        ninja.holdStill = holdAt.HasValue;   // before it starts, or its first move happens straight away
+        // Blowing up piles, its phase sends it away when it's over (a long phase or a slow catch intro mustn't time it
+        // out early); otherwise it keeps its own timer, as in Cat Cafe Rush
+        ninja.despawnAfterOverride = ninjaExplodesPiles ? 300f : 0f;
         ninja.gameObject.SetActive(true);
-        ninja.Initialise(transform, stops[Random.Range(0, stops.Count)]);
+        ninja.Initialise(transform, holdAt ?? stops[Random.Range(0, stops.Count)]);
+        if (holdAt.HasValue) ninja.BlinkTo(holdAt.Value);
         // The boss gets the same generous hit area as the other cats
         if (cleanShots && ninjaHitbox == null) ninjaHitbox = CatOrder.AddHitbox(ninja.gameObject, hitboxGenerosity);
     }
