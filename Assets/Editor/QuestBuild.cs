@@ -10,17 +10,18 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
 
-// Builds the Space Cafe as a normal Android APK that peers can sideload onto a standalone Quest.
+// Builds a prototype (the Space Cafe, or Cat Cafe Waves) as a normal Android APK that peers can sideload onto a standalone Quest.
 // The Liminal SDK's own Build Window only makes .limapp packages for the Liminal platform app, which
 // testers don't have; a plain APK works because [ExperienceApp] starts itself when there's no platform.
 //
 // Everything this changes for the build (scripting backend, 64-bit, graphics API, VR SDK list, signing,
 // headset type) is put back afterwards, so the team's project settings and build list are untouched.
-// Menu: Catastrophe Cafe > Build Space Cafe for Quest (APK)
-// Command line: Unity -batchmode -quit -buildTarget Android -executeMethod QuestBuild.BatchBuild
+// Menu: Catastrophe Cafe > Build Space Cafe for Quest (APK), or Build Cat Cafe Waves for Quest (APK)
+// Command line: Unity -batchmode -quit -buildTarget Android -executeMethod QuestBuild.BatchBuild (or BatchBuildWaves)
 public static class QuestBuild
 {
-    const string Scene = "Assets/Scenes/SpaceCafe_Prototype.unity";
+    const string SpaceCafeScene = "Assets/Scenes/SpaceCafe_Prototype.unity";
+    const string WavesScene = "Assets/Scenes/CatCafeWaves.unity";
     const string OutputFolder = "Builds/Quest";
     const string KeystorePath = OutputFolder + "/catcafe-playtest.keystore";
     const string KeystorePasswordPath = OutputFolder + "/catcafe-playtest.keystore.password";
@@ -31,6 +32,17 @@ public static class QuestBuild
 
     [MenuItem("Catastrophe Cafe/Build Space Cafe for Quest (APK)", false, 21)]
     static void BuildFromMenu()
+    {
+        BuildFromMenu(SpaceCafeScene, "FeedingFrenzy");
+    }
+
+    [MenuItem("Catastrophe Cafe/Build Cat Cafe Waves for Quest (APK)", false, 22)]
+    static void BuildWavesFromMenu()
+    {
+        BuildFromMenu(WavesScene, "Waves");
+    }
+
+    static void BuildFromMenu(string scene, string name)
     {
         if (!CheckAndroidTools(interactive: true)) return;
 
@@ -49,7 +61,7 @@ public static class QuestBuild
 
             // The Oculus build steps only load once Unity has recompiled for Android, so don't build in this same click
             EditorUtility.DisplayDialog("Build for Quest",
-                "Switched to Android. When Unity has finished compiling, choose Catastrophe Cafe > Build Space Cafe for Quest (APK) again to build.",
+                "Switched to Android. When Unity has finished compiling, choose the Quest build in the Catastrophe Cafe menu again to build.",
                 "OK");
             return;
         }
@@ -59,12 +71,22 @@ public static class QuestBuild
             return;
         }
 
-        string apk = Build();
+        string apk = Build(scene, name);
         if (apk != null) EditorUtility.RevealInFinder(apk);
     }
 
     // For command-line builds (e.g. from a separate Quest-only copy of the project)
     public static void BatchBuild()
+    {
+        BatchBuild(SpaceCafeScene, "FeedingFrenzy");
+    }
+
+    public static void BatchBuildWaves()
+    {
+        BatchBuild(WavesScene, "Waves");
+    }
+
+    static void BatchBuild(string scene, string name)
     {
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
         {
@@ -72,16 +94,16 @@ public static class QuestBuild
             EditorApplication.Exit(1);
             return;
         }
-        bool ok = CheckAndroidTools(interactive: false) && Build() != null;
+        bool ok = CheckAndroidTools(interactive: false) && Build(scene, name) != null;
         EditorApplication.Exit(ok ? 0 : 1);
     }
 
     // Returns the APK path, or null if the build failed
-    static string Build()
+    static string Build(string scene, string name)
     {
-        if (!File.Exists(Scene))
+        if (!File.Exists(scene))
         {
-            Debug.LogError($"[Quest Build] {Scene} is missing. Run Catastrophe Cafe > Space Cafe > Create Prototype Scene first.");
+            Debug.LogError($"[Quest Build] {scene} is missing.");
             return null;
         }
         if (!EnsureKeystore(out string password)) return null;
@@ -135,12 +157,12 @@ public static class QuestBuild
             if (emulator != null) SetBuildType(emulator, (int)ESDKType.OVR);
 
             Directory.CreateDirectory(OutputFolder);
-            string apk = $"{OutputFolder}/CatCafe-FeedingFrenzy-{DateTime.Now:yyyyMMdd-HHmm}.apk";
+            string apk = $"{OutputFolder}/CatCafe-{name}-{DateTime.Now:yyyyMMdd-HHmm}.apk";
 
             building = true;
             BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
-                scenes = new[] { Scene },
+                scenes = new[] { scene },
                 locationPathName = apk,
                 target = BuildTarget.Android,
                 options = BuildOptions.None
