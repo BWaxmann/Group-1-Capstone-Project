@@ -179,6 +179,8 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Coins that fly from a fed cat into a tip jar on the counter, for each treat in its order. 0 = no tip jar.")]
     public int coinsPerTreat = 0;
     [Min(0)] public int bossCoins = 8;
+    [Tooltip("Optional: where the tip jar stands. Empty = on the counter beside the cat clock.")]
+    public Transform tipJarSpot;
 
     readonly List<CatOrder> orders = new List<CatOrder>();
     PlayerInput player;
@@ -453,29 +455,90 @@ public class RushDirector : MonoBehaviour
         }
     }
 
-    // On the counter, in front of the player and off to the right (out of the way of shots at the room)
+    // On the counter beside the cat clock (it stands on the counter), on whichever side is nearer the player's front
+    // right, so it's in view but out of the way of shots at the room. A Tip Jar Spot, if set, wins.
     void PlaceTipJar()
     {
         Transform eye = player.eyePoint != null ? player.eyePoint : (Camera.main != null ? Camera.main.transform : null);
         Vector3 head = eye != null ? eye.position : player.transform.position + Vector3.up * 1.6f;
+        if (tipJarSpot != null)
+        {
+            tipJar = TipJar.Create(tipJarSpot.position, head);
+            return;
+        }
+
         Vector3 forward = player.transform.forward;
         forward.y = 0;
         forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
         Vector3 right = Vector3.Cross(Vector3.up, forward);
-        Vector3 spot = head + forward * 0.5f + right * 0.45f;
+        Vector3 wanted = head + forward * 0.8f + right * 0.5f;
 
-        // Stand it on whatever is below (the counter), or about counter height if nothing's there
-        float y = head.y - 0.65f;
-        RaycastHit[] hits = Physics.RaycastAll(spot, Vector3.down, 1.6f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        Vector3? spot = BesideTheClock(wanted);
+        if (spot == null)
+        {
+            Debug.LogWarning("[Cat Cafe Waves] No Cat_clock on a counter to put the tip jar beside; it's guessing the counter height.");
+            spot = new Vector3(wanted.x, head.y - 0.65f, wanted.z);
+        }
+        tipJar = TipJar.Create(spot.Value, head);
+    }
+
+    Vector3? BesideTheClock(Vector3 wanted)
+    {
+        GameObject clock = GameObject.Find("Cat_clock");
+        if (clock == null) return null;
+
+        // The counter top is where the clock's base sits
+        float top = clock.transform.position.y;
+        bool any = false;
+        foreach (Renderer rend in clock.GetComponentsInChildren<Renderer>())
+        {
+            if (rend.GetComponentInParent<Canvas>() != null) continue;
+            top = any ? Mathf.Min(top, rend.bounds.min.y) : rend.bounds.min.y;
+            any = true;
+        }
+        Vector3 centre = clock.transform.position;
+        centre.y = top;
+
+        // Spots around the clock where the counter is clear (a ray down lands on a surface at the counter's height),
+        // the one nearest where we'd like it
+        Vector3? best = null;
+        float bestDistance = float.MaxValue;
+        for (float distance = 0.3f; distance <= 0.61f; distance += 0.15f)
+        {
+            for (int angle = 0; angle < 360; angle += 30)
+            {
+                Vector3 spot = centre + Quaternion.Euler(0, angle, 0) * Vector3.forward * distance;
+                if (!ClearCounterAt(spot, top, clock.transform)) continue;
+                float off = new Vector2(spot.x - wanted.x, spot.z - wanted.z).magnitude;
+                if (off < bestDistance)
+                {
+                    bestDistance = off;
+                    best = spot;
+                }
+            }
+        }
+
+        // Nothing to test against (no colliders): just beside the clock, towards where we'd like it
+        if (best == null)
+        {
+            Vector3 towards = wanted - centre;
+            towards.y = 0;
+            best = centre + (towards.sqrMagnitude > 0.001f ? towards.normalized : Vector3.right) * 0.3f;
+        }
+        return best;
+    }
+
+    static bool ClearCounterAt(Vector3 spot, float top, Transform clock)
+    {
+        RaycastHit[] hits = Physics.RaycastAll(spot + Vector3.up * 0.6f, Vector3.down, 1.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        float highest = float.MinValue;
         foreach (RaycastHit hit in hits)
         {
-            if (hit.collider.GetComponentInParent<PlayerInput>() != null) continue;
-            if (hit.point.y < head.y - 0.3f) y = hit.point.y;
-            break;
+            if (hit.collider.transform.IsChildOf(clock) || hit.collider.GetComponentInParent<CatMovement>() != null) continue;
+            highest = Mathf.Max(highest, hit.point.y);
         }
-        spot.y = y;
-        tipJar = TipJar.Create(spot, head);
+        // The highest thing there is the counter top itself (not the floor below it, and nothing standing on it)
+        return Mathf.Abs(highest - top) < 0.04f;
     }
 
     // Every hungry cat heads for the nearest door and leaves
