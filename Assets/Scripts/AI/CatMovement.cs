@@ -585,7 +585,12 @@ public class CatMovement : MonoBehaviour
     // The cat's puff of dust/smoke, sized (1 = as usual)
     public void DustPuff(float size)
     {
-        ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, transform.position, size);
+        DustPuff(size, transform.position);
+    }
+
+    public void DustPuff(float size, Vector3 at)
+    {
+        ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, at, size);
     }
 
     // The happy pop of confetti (and its sound) where the cat is, without it leaving

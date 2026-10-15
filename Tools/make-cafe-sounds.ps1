@@ -2,6 +2,7 @@
 #   ninja_sting.wav  two taiko drum hits and a sword "shing" (played before the ninja's callouts)
 #   coin.wav         a bright coin clink (each coin landing in the tip jar)
 #   windup.wav       a rising cartoon wind-up (a cat getting ready to raid)
+#   boing.wav        a springy boing (a pop-up cat about to spring out of its hole)
 # Swap them for real sounds later (same names), no code changes needed.
 #   powershell -File Tools/make-cafe-sounds.ps1
 
@@ -122,6 +123,24 @@ public static class CafeSynth
         Save(path, buffer);
     }
 
+    // A springy cartoon boing: a quick swoop up with a wobble that rings out
+    public static void Boing(string path)
+    {
+        float[] buffer = Buffer(0.5);
+        double phase = 0;
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            double t = i / (double)Rate;
+            double swoop = 180 + 520 * (1 - Math.Exp(-t / 0.05));
+            double wobble = 1 + 0.12 * Math.Sin(2 * Math.PI * 22 * t) * Math.Exp(-t / 0.2);
+            phase += 2 * Math.PI * swoop * wobble / Rate;
+            double tone = Math.Sin(phase) + 0.3 * Math.Sin(phase * 2) + 0.15 * Math.Sin(phase * 3);
+            double envelope = Math.Min(1, t / 0.005) * Math.Exp(-t / 0.16);
+            buffer[i] = (float)(tone * envelope);
+        }
+        Save(path, buffer);
+    }
+
     public static void NinjaSting(string path)
     {
         float[] buffer = Buffer(1.8);
@@ -164,4 +183,5 @@ public static class CafeSynth
 [CafeSynth]::NinjaSting((Join-Path $folder 'ninja_sting.wav'))
 [CafeSynth]::Coin((Join-Path $folder 'coin.wav'))
 [CafeSynth]::WindUp((Join-Path $folder 'windup.wav'))
+[CafeSynth]::Boing((Join-Path $folder 'boing.wav'))
 Get-ChildItem $folder -Filter *.wav | ForEach-Object { "made $($_.Name) ($([math]::Round($_.Length / 1024)) KB)" }

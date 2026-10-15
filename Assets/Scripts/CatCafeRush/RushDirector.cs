@@ -222,6 +222,24 @@ public class RushDirector : MonoBehaviour
     [Min(0)] public int kittenScore = 2;
     [Min(0)] public int kittenCoins = 1;
 
+    [Header("Pop-up Cats (Pop-up phases)")]
+
+    [Min(1)]
+    [Tooltip("Holes cats pop out of: the entry holes in front of the player, plus extra ones opened for the phase.")]
+    public int popUpHoles = 5;
+    [Min(0.3f)]
+    [Tooltip("Seconds between pops at the start of the phase...")]
+    public float popGapStart = 1.8f;
+    [Min(0.3f)]
+    [Tooltip("...and by the end.")]
+    public float popGapEnd = 1.0f;
+    [Range(0f, 1f)]
+    [Tooltip("How far through the phase two cats can be out at once (1 = never).")]
+    public float doublePopsFrom = 0.6f;
+    public PopUpCat.Settings popUp = new PopUpCat.Settings();
+    [Min(0)] public int popUpScore = 5;
+    [Min(0)] public int popUpCoins = 2;
+
     [Tooltip("The first catch phase starts by knocking up one prop that hangs in the air, with a hint, and the clock " +
              "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
     public bool catchIntro = false;
@@ -258,14 +276,21 @@ public class RushDirector : MonoBehaviour
     Vector3? AssistTarget(Treat treat)
     {
         Vector3? target = CatOrder.AssistTarget(treat, aimAssistAngle);
-        if (target == null && KittenRun.running.Count > 0)
+        if (target == null && (KittenRun.running.Count > 0 || PopUpCat.active.Count > 0))
         {
-            // Any kitten will do (no colours in a stampede)
+            // Any kitten or popped-up cat will do (no colours in those waves)
             float best = aimAssistAngle;
             foreach (KittenRun kitten in KittenRun.running)
             {
-                if (kitten.isFed) continue;
-                Vector3 point = kitten.aimPoint;
+                if (!kitten.isFed) Consider(kitten.aimPoint);
+            }
+            foreach (PopUpCat pop in PopUpCat.active)
+            {
+                if (pop.isOut) Consider(pop.aimPoint);
+            }
+
+            void Consider(Vector3 point)
+            {
                 float angle = Vector3.Angle(treat.velocity, point - treat.transform.position);
                 if (angle <= best)
                 {
@@ -376,6 +401,7 @@ public class RushDirector : MonoBehaviour
         current = null;
         CatRaid.CancelAll();
         KittenRun.EndAll();
+        PopUpCat.EndAll();
         if (player != null) player.ForceFireStyle(null);
         if (ninja != null) ninja.Leave();
         Say(closingLine);
@@ -449,18 +475,100 @@ public class RushDirector : MonoBehaviour
                     break;
 
                 case Kind.PopUp:
-                    // Not built yet: plays as ordinary feeding for now (with its own banner and callout)
-                    Debug.LogWarning($"[Cat Cafe Rush] {phase.kind} phase isn't built yet; it plays as feeding for {phase.seconds:F0} s.");
-                    yield return new WaitForSeconds(phase.seconds);
+                    Haptics.PulseBoth(Haptics.Strength.Strong);
+                    CatRaid.CancelAll();
+                    SendCatsAway();
+                    yield return PopUps(phase);
                     break;
             }
         }
     }
 
-    // Phases where hungry cats with orders keep coming in (Pop-up too, until it's built)
+    // Phases where hungry cats with orders keep coming in
     static bool HasOrders(Kind kind)
     {
-        return kind == Kind.Feed || kind == Kind.Boss || kind == Kind.PopUp;
+        return kind == Kind.Feed || kind == Kind.Boss;
+    }
+
+    // ---------- Cat Cafe Waves: pop-up cats ----------
+
+    // Whack-a-mole in the air: cats spring up out of holes in front of the player, faster as the phase goes on
+    // (and two at once near the end); any treat pops one while it's out
+    IEnumerator PopUps(Phase phase)
+    {
+        float start = Time.time;
+        float end = start + phase.seconds;
+        List<GameObject> extraHoles = new List<GameObject>();
+        List<Vector3> spots = PopUpSpots(extraHoles);
+        yield return new WaitForSeconds(1.5f);   // the callout lands first
+
+        Transform eye = player != null ? player.eyePoint : null;
+        int lastSpot = -1;
+        while (playing && Time.time < end - 1.5f && spots.Count > 0)
+        {
+            float progress = (Time.time - start) / phase.seconds;
+            int allowed = progress >= doublePopsFrom ? 2 : 1;
+            if (PopUpCat.active.Count < allowed)
+            {
+                // A hole nobody's in, and not the one just used (so it moves about)
+                List<int> free = new List<int>();
+                for (int i = 0; i < spots.Count; i++)
+                {
+                    if (i == lastSpot && spots.Count > 1) continue;
+                    if (PopUpCat.active.Exists(pop => (pop.holePosition - spots[i]).sqrMagnitude < 0.01f)) continue;
+                    free.Add(i);
+                }
+                CatMovement cat = free.Count > 0 && catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+                if (cat != null)
+                {
+                    lastSpot = free[Random.Range(0, free.Count)];
+                    PopUpCat.Launch(cat, spots[lastSpot], eye, popUp, PopUpHit);
+                }
+            }
+            float gap = Mathf.Lerp(popGapStart, popGapEnd, progress);
+            yield return new WaitForSeconds(gap * Random.Range(0.8f, 1.2f));
+        }
+        while (playing && Time.time < end) yield return null;
+
+        PopUpCat.EndAll();
+        foreach (GameObject hole in extraHoles)
+        {
+            if (hole != null) Destroy(hole);
+        }
+    }
+
+    void PopUpHit(PopUpCat pop)
+    {
+        Vector3 at = pop.aimPoint;
+        GameManager.instance.FeedCat(popUpScore, at);
+        if (tipJar != null && popUpCoins > 0) tipJar.AddCoins(at, popUpCoins);
+        Haptics.PulseBoth(Haptics.Strength.Medium);
+    }
+
+    // The entry holes, plus extra holes opened on clear floor in front of the player (not under a table, not too
+    // close together) until there are enough
+    List<Vector3> PopUpSpots(List<GameObject> extraHoles)
+    {
+        List<Vector3> spots = new List<Vector3>(holes);
+        if (player == null) return spots;
+        Transform eye = player.eyePoint;
+        Vector3 head = eye != null ? eye.position : player.transform.position;
+        Vector3 forward = Flat(player.transform.forward);
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        float floorY = player.transform.position.y;
+
+        for (int attempt = 0; attempt < 60 && spots.Count < popUpHoles; attempt++)
+        {
+            Vector3 probe = head + Quaternion.Euler(0, Random.Range(-55f, 55f), 0) * forward * Random.Range(2.5f, 6f);
+            probe.y = floorY;
+            if (!NavMesh.SamplePosition(probe, out NavMeshHit floor, 0.5f, NavMesh.AllAreas)) continue;
+            if (Mathf.Abs(floor.position.y - floorY) > 0.15f) continue;
+            if (Physics.Raycast(floor.position + Vector3.up * 0.1f, Vector3.up, 2.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
+            if (spots.Exists(spot => Flat(spot - floor.position).magnitude < 1.4f)) continue;
+            spots.Add(floor.position);
+            extraHoles.Add(HoleVisual(floor.position));
+        }
+        return spots;
     }
 
     // ---------- Cat Cafe Waves: kitten stampede ----------
@@ -777,14 +885,20 @@ public class RushDirector : MonoBehaviour
             Vector3 at = door.position;
             if (NavMesh.SamplePosition(at, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) at = hit.position;
             holes.Add(at);
-
-            GameObject rim = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Cat Hole", new Color(0.18f, 0.11f, 0.06f));
-            rim.transform.localScale = new Vector3(0.62f, 0.002f, 0.62f);
-            rim.transform.position = at + Vector3.up * 0.004f;
-            GameObject hole = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, rim.transform, "Dark", Color.black);
-            hole.GetComponent<Renderer>().sharedMaterial.renderQueue = 3001;
-            hole.transform.localScale = new Vector3(0.82f, 1.2f, 0.82f);
+            HoleVisual(at);
         }
+    }
+
+    // A dark round hole with a rim, flat on the floor
+    GameObject HoleVisual(Vector3 at)
+    {
+        GameObject rim = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Cat Hole", new Color(0.18f, 0.11f, 0.06f));
+        rim.transform.localScale = new Vector3(0.62f, 0.002f, 0.62f);
+        rim.transform.position = at + Vector3.up * 0.004f;
+        GameObject hole = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, rim.transform, "Dark", Color.black);
+        hole.GetComponent<Renderer>().sharedMaterial.renderQueue = 3001;
+        hole.transform.localScale = new Vector3(0.82f, 1.2f, 0.82f);
+        return rim;
     }
 
     // On the counter beside the cat clock (it stands on the counter), on whichever side is nearer the player's front
