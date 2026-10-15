@@ -709,6 +709,7 @@ MonoBehaviour:
   bossLeftLine: boss_left
   ninjaSting: ninja_sting
   fedCatsUseHoles: 1
+  entryArc: 70
   coinsPerTreat: 1
   bossCoins: 8
   raids: 1

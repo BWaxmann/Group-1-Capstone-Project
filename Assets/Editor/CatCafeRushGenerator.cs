@@ -421,6 +421,7 @@ public static class CatCafeRushGenerator
         // The manager on the speaker, fed cats leaving through holes, tips, and raids (instead of random pile attacks)
         director.announcer = true;
         director.fedCatsUseHoles = true;
+        director.entryArc = 70f;   // cats come in through the holes in front, not the doors off to the side
         director.coinsPerTreat = 1;
         director.raids = true;
         director.catSpeedMultiplier = 1.3f;

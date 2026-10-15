@@ -175,8 +175,13 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Played before the ninja's catch and boss lines (from Resources/CafeSounds).")]
     public string ninjaSting = "ninja_sting";
 
-    [Tooltip("Fed cats run off to a hole in the floor (one at each door) and dive in, instead of launching.")]
+    [Tooltip("Fed cats run off to a hole in the floor (one at each door cats come in by) and dive in, instead of launching.")]
     public bool fedCatsUseHoles = false;
+
+    [Range(0f, 180f)]
+    [Tooltip("Cats only come in by doors within this many degrees of where the player faces; the others are only ways " +
+             "out (for cats sent away). 180 = any door.")]
+    public float entryArc = 180f;
 
     [Min(0)]
     [Tooltip("Coins that fly from a fed cat into a tip jar on the counter, for each treat in its order. 0 = no tip jar.")]
@@ -234,6 +239,7 @@ public class RushDirector : MonoBehaviour
     Announcer voice;
     TipJar tipJar;
     readonly List<Vector3> holes = new List<Vector3>();
+    readonly List<Transform> entryDoors = new List<Transform>();
     readonly List<DefendPoint> piles = new List<DefendPoint>();
     float nextRaid;
     bool raidJarNext = true;
@@ -346,6 +352,7 @@ public class RushDirector : MonoBehaviour
         player.treatSpeed = treatSpeed;
         player.SetReticleColours(leftColour, rightColour);
         KeepCatsOutOfPlayerSpace();
+        PickEntryDoors();
         if (fedCatsUseHoles) MakeHoles();
         if (coinsPerTreat > 0 || bossCoins > 0) PlaceTipJar();
         piles.Clear();
@@ -490,7 +497,7 @@ public class RushDirector : MonoBehaviour
             {
                 KittenRun.Launch(cat, path, Random.Range(-0.6f, 0.6f), speed * Random.Range(0.92f, 1.08f),
                                  kittenScale, kittenHitRadius, KittenFed);
-                if (i == 0) cat.DisappearParticleEffect();   // a puff of dust as the herd bursts in
+                if (i == 0) cat.DustPuff(KittenRun.DustSize);   // a puff of dust as the herd bursts in
             }
             yield return new WaitForSeconds(Random.Range(0.12f, 0.3f));
         }
@@ -553,11 +560,12 @@ public class RushDirector : MonoBehaviour
 
     void SendInCat()
     {
-        if (catPool == null || doors.Count == 0) return;
+        List<Transform> ways = entryDoors.Count > 0 ? entryDoors : doors;
+        if (catPool == null || ways.Count == 0) return;
         CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
         if (cat == null) return;
 
-        Transform door = doors[Random.Range(0, doors.Count)];
+        Transform door = ways[Random.Range(0, ways.Count)];
         Vector3 position = door.position;
         if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) position = hit.position;
         cat.gameObject.SetActive(true);
@@ -745,11 +753,25 @@ public class RushDirector : MonoBehaviour
         return best;
     }
 
-    // A dark round hole in the floor at each door (cats come out of them, and fed cats dive back in)
+    // The doors cats come in by: the ones in front of the player (so they arrive where the player is looking)
+    void PickEntryDoors()
+    {
+        entryDoors.Clear();
+        Vector3 facing = player != null ? Flat(player.transform.forward) : Vector3.zero;
+        foreach (Transform door in doors)
+        {
+            if (door == null) continue;
+            Vector3 to = player != null ? Flat(door.position - player.transform.position) : Vector3.zero;
+            if (entryArc >= 180f || facing.sqrMagnitude < 0.001f || Vector3.Angle(facing, to) <= entryArc) entryDoors.Add(door);
+        }
+        if (entryDoors.Count == 0) entryDoors.AddRange(doors.FindAll(door => door != null));
+    }
+
+    // A dark round hole in the floor at each door cats come in by (they come out of them, and fed cats dive back in)
     void MakeHoles()
     {
         holes.Clear();
-        foreach (Transform door in doors)
+        foreach (Transform door in entryDoors)
         {
             if (door == null) continue;
             Vector3 at = door.position;
@@ -863,7 +885,11 @@ public class RushDirector : MonoBehaviour
             {
                 if (nearest == null || (door.position - cat).sqrMagnitude < (nearest.position - cat).sqrMagnitude) nearest = door;
             }
-            if (nearest != null) order.RunOff(nearest.position);
+            if (nearest == null) continue;
+            // The floor at that door (some door markers sit a little above it)
+            Vector3 exit = nearest.position;
+            if (NavMesh.SamplePosition(exit, out NavMeshHit floor, 1.5f, NavMesh.AllAreas)) exit = floor.position;
+            order.RunOff(exit);
         }
         orders.Clear();
     }

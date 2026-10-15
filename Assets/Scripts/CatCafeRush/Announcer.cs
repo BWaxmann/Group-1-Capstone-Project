@@ -54,6 +54,7 @@ public class Announcer : MonoBehaviour
     AudioSource source;
 
     RectTransform subtitle;
+    RectTransform subtitlePanel;
     CanvasGroup subtitleGroup;
     TextMeshProUGUI subtitleText;
     bool subtitleShowing;
@@ -188,24 +189,37 @@ public class Announcer : MonoBehaviour
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.sortingOrder = 100;
         subtitle = (RectTransform)root.transform;
-        subtitle.sizeDelta = new Vector2(Width, 100);
+        subtitle.sizeDelta = new Vector2(Width, MaxHeight);
         subtitle.localScale = Vector3.one * CanvasScale;
         subtitleGroup = root.AddComponent<CanvasGroup>();
         subtitleGroup.alpha = 0;
         subtitleGroup.blocksRaycasts = false;
         subtitleGroup.interactable = false;
 
+        // The panel grows to fit the words: Unity's layout measures them (wrapped to the panel's width) every time
         GameObject panel = new GameObject("Panel", typeof(RectTransform));
         panel.transform.SetParent(root.transform, false);
-        Stretch((RectTransform)panel.transform, 0);
+        subtitlePanel = (RectTransform)panel.transform;
+        subtitlePanel.anchorMin = subtitlePanel.anchorMax = subtitlePanel.pivot = new Vector2(0.5f, 0.5f);
+        subtitlePanel.sizeDelta = new Vector2(Width, 100);
         Image back = panel.AddComponent<Image>();
         back.color = new Color(0f, 0f, 0f, 0.65f);
         back.raycastTarget = false;
         back.material = OnTop(new Material(Shader.Find("UI/Default")));
+        VerticalLayoutGroup layout = panel.AddComponent<VerticalLayoutGroup>();
+        int pad = Mathf.RoundToInt(Padding);
+        layout.padding = new RectOffset(pad, pad, pad, pad);
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        ContentSizeFitter fit = panel.AddComponent<ContentSizeFitter>();
+        fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        fit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         GameObject textObject = new GameObject("Text", typeof(RectTransform));
         textObject.transform.SetParent(panel.transform, false);
-        Stretch((RectTransform)textObject.transform, Padding);
         subtitleText = textObject.AddComponent<TextMeshProUGUI>();
         subtitleText.fontSize = FontSize;
         subtitleText.alignment = TextAlignmentOptions.Center;
@@ -226,14 +240,6 @@ public class Announcer : MonoBehaviour
         return material;
     }
 
-    static void Stretch(RectTransform rect, float inset)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.one;
-        rect.offsetMin = new Vector2(inset, inset);
-        rect.offsetMax = new Vector2(-inset, -inset);
-    }
-
     void ShowSubtitle(string text)
     {
         string name = string.IsNullOrEmpty(speakerName) ? "" :
@@ -242,22 +248,12 @@ public class Announcer : MonoBehaviour
         subtitleShowing = true;
         subtitle.gameObject.SetActive(true);
 
-        // Lay the text out in a roomy panel first, measure what it actually drew, then shrink the panel around it
-        subtitleText.enableAutoSizing = false;
-        subtitleText.fontSize = FontSize;
+        // A short line gets a narrower panel; anything longer wraps inside the full width. The layout then sizes
+        // the panel's height to the wrapped words.
         subtitleText.text = name + text;
-        subtitle.sizeDelta = new Vector2(Width, MaxHeight);
-        Canvas.ForceUpdateCanvases();
-        subtitleText.ForceMeshUpdate();
-        Vector2 drawn = subtitleText.GetRenderedValues(true);
-        float width = Mathf.Clamp(drawn.x + Padding * 2 + 12f, 200f, Width);
-        float height = Mathf.Clamp(drawn.y + Padding * 2 + 8f, 60f, MaxHeight);
-        subtitle.sizeDelta = new Vector2(width, height);
-
-        // Whatever happens, the words stay inside the panel (they shrink a little rather than spill out)
-        subtitleText.fontSizeMax = FontSize;
-        subtitleText.fontSizeMin = FontSize * 0.6f;
-        subtitleText.enableAutoSizing = true;
+        float oneLine = subtitleText.GetPreferredValues(subtitleText.text, 100000f, 100000f).x;   // unwrapped
+        subtitlePanel.sizeDelta = new Vector2(Mathf.Clamp(oneLine + Padding * 2 + 16f, 200f, Width), subtitlePanel.sizeDelta.y);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(subtitlePanel);
     }
 
     void LateUpdate()

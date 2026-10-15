@@ -28,6 +28,11 @@ public class AimReticle : MonoBehaviour
     [Min(1)]
     float onCatScale = 1.4f;
 
+    [SerializeField]
+    [Min(1)]
+    [Tooltip("A spread shot widens the ring, but never past this many times its usual size (a full-size cone is distracting).")]
+    float maxSpreadGrowth = 1.6f;
+
     // e.g. each launcher's reticle in the colour that launcher fires (it still grows over a cat)
     public void SetColours(Color normal, Color onCat)
     {
@@ -125,7 +130,9 @@ public class AimReticle : MonoBehaviour
         bool onCat = cat != null && !cat.isFullyFed;
 
         float distance = Vector3.Distance(launchPoint.position, hit.point);
-        float radius = Mathf.Max(minimumRadius, distance * angularSize, distance * Mathf.Tan(spreadDegrees * Mathf.Deg2Rad)) * (onCat ? onCatScale : 1f);
+        float usual = Mathf.Max(minimumRadius, distance * angularSize);
+        float spread = Mathf.Min(distance * Mathf.Tan(spreadDegrees * Mathf.Deg2Rad), usual * maxSpreadGrowth);
+        float radius = Mathf.Max(usual, spread) * (onCat ? onCatScale : 1f);
 
         transform.position = hit.point + hit.normal * 0.01f;
         transform.rotation = Quaternion.LookRotation(hit.normal);

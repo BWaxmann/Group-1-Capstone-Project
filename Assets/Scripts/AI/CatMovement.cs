@@ -582,6 +582,12 @@ public class CatMovement : MonoBehaviour
         if (moodCanvas != null) moodCanvas.SetActive(false);
     }
 
+    // The cat's puff of dust/smoke, sized (1 = as usual)
+    public void DustPuff(float size)
+    {
+        ParticleManager.instance.ShowParticleEffect(disappearParticleIndex, transform.position, size);
+    }
+
     // The happy pop of confetti (and its sound) where the cat is, without it leaving
     public void PopConfetti()
     {

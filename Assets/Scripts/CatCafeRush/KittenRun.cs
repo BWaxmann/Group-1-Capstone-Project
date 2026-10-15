@@ -11,6 +11,9 @@ public class KittenRun : MonoBehaviour
 {
     public static readonly List<KittenRun> running = new List<KittenRun>();
 
+    // Kittens' dust puffs, compared with a cat's usual puff
+    public const float DustSize = 0.85f;
+
     CatMovement cat;
     Animator animator;
     TrailRenderer dust;
@@ -97,7 +100,7 @@ public class KittenRun : MonoBehaviour
         if (travelled >= pathLength)
         {
             // Made it across: off it dashes
-            cat.DisappearParticleEffect();
+            cat.DustPuff(DustSize);
             Finish();
             return;
         }
@@ -148,7 +151,7 @@ public class KittenRun : MonoBehaviour
         foreach (KittenRun run in running.ToArray())
         {
             if (run.fed) continue;
-            run.cat.DisappearParticleEffect();
+            run.cat.DustPuff(DustSize);
             run.Finish();
         }
     }
@@ -208,7 +211,7 @@ public class KittenRun : MonoBehaviour
         }
         if (dust == null) return;
         // The trail is sized in the world, whatever size the cat is
-        dust.widthMultiplier = 0.22f;
+        dust.widthMultiplier = 0.19f;
         dust.Clear();
         dust.emitting = on;
     }

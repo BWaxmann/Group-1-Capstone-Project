@@ -255,12 +255,35 @@ public class CatOrder : MonoBehaviour
             agent.speed = normalSpeed * 1.8f;
             agent.updateRotation = true;
             agent.isStopped = false;
+
+            // Up on the furniture with no way down from there (e.g. the couch): it hops down to the floor first
+            if (!CanWalkTo(exit) && FloorSpotTowards(exit, out Vector3 floor)) yield return HopDown(floor);
             agent.SetDestination(exit);
 
             float timer = 0;
-            while (timer < 5f && agent.isOnNavMesh && (agent.pathPending || agent.remainingDistance > 0.4f))
+            float closest = float.MaxValue;
+            float stuck = 0;
+            while (timer < 6f && agent.isOnNavMesh && (agent.pathPending || agent.remainingDistance > 0.4f))
             {
                 timer += Time.deltaTime;
+                // Not getting any closer (caught on a jump, say): hop down towards the exit and carry on
+                Vector3 gap = exit - transform.position;
+                gap.y = 0;
+                if (gap.magnitude < closest - 0.05f)
+                {
+                    closest = gap.magnitude;
+                    stuck = 0;
+                }
+                else if ((stuck += Time.deltaTime) > 1.2f)
+                {
+                    stuck = 0;
+                    closest = float.MaxValue;
+                    if (FloorSpotTowards(exit, out floor))
+                    {
+                        yield return HopDown(floor);
+                        agent.SetDestination(exit);
+                    }
+                }
                 yield return null;
             }
         }
@@ -286,6 +309,61 @@ public class CatOrder : MonoBehaviour
 
         cat.DisappearParticleEffect();
         gameObject.SetActive(false);   // back to the pool
+    }
+
+    bool CanWalkTo(Vector3 exit)
+    {
+        NavMeshPath path = new NavMeshPath();
+        return agent.CalculatePath(exit, path) && path.status == NavMeshPathStatus.PathComplete;
+    }
+
+    // The nearest spot on the exit's floor, close by, that has a clear walk to the exit
+    bool FloorSpotTowards(Vector3 exit, out Vector3 spot)
+    {
+        spot = Vector3.zero;
+        NavMeshPath path = new NavMeshPath();
+        for (float radius = 0.5f; radius <= 2.51f; radius += 0.5f)
+        {
+            float best = float.MaxValue;
+            for (int angle = 0; angle < 360; angle += 30)
+            {
+                Vector3 probe = transform.position + Quaternion.Euler(0, angle, 0) * Vector3.forward * radius;
+                probe.y = exit.y;
+                if (!NavMesh.SamplePosition(probe, out NavMeshHit hit, 0.4f, NavMesh.AllAreas)) continue;
+                if (Mathf.Abs(hit.position.y - exit.y) > 0.3f) continue;
+                if (!NavMesh.CalculatePath(hit.position, exit, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
+                // Of the spots this far out, the one most on the way to the exit
+                float score = Vector3.Distance(hit.position, exit);
+                if (score < best)
+                {
+                    best = score;
+                    spot = hit.position;
+                }
+            }
+            if (best < float.MaxValue) return true;
+        }
+        return false;
+    }
+
+    // A quick hop off whatever it's on, down to `floor`
+    IEnumerator HopDown(Vector3 floor)
+    {
+        agent.enabled = false;
+        Vector3 from = transform.position;
+        Vector3 look = floor - from;
+        look.y = 0;
+        if (look.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(look);
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / 0.4f;
+            float eased = Mathf.Min(t, 1f);
+            transform.position = Vector3.Lerp(from, floor, eased) + Vector3.up * Mathf.Sin(eased * Mathf.PI) * 0.35f;
+            yield return null;
+        }
+        agent.enabled = true;
+        agent.Warp(floor);
+        agent.isStopped = false;
     }
 
     void LateUpdate()
