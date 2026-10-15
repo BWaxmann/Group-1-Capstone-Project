@@ -127,13 +127,23 @@ public class TipJar : MonoBehaviour
 
         coins++;
         SetFill(coins / FullAfter);
-        if (clink != null)
-        {
-            clinkSource.pitch = Random.Range(0.95f, 1.05f) + Mathf.Min(index, 6) * 0.06f;
-            clinkSource.PlayOneShot(clink);
-        }
+        Clink(Random.Range(0.78f, 0.84f) + Mathf.Min(index, 4) * 0.03f, CoinVolume);
         if (punch != null) StopCoroutine(punch);
         punch = StartCoroutine(Punch());
+    }
+
+    // Coin clinks: soft and a little low, and never more than one every ClinkGap seconds, so a shower of coins (a
+    // stampede pays out a lot at once) jingles instead of overloading the ears
+    const float CoinVolume = 0.45f;
+    const float ClinkGap = 0.07f;
+    float lastClink = -10f;
+
+    void Clink(float pitch, float volume)
+    {
+        if (clink == null || Time.time - lastClink < ClinkGap) return;
+        lastClink = Time.time;
+        clinkSource.pitch = pitch;
+        clinkSource.PlayOneShot(clink, volume);
     }
 
     // A cat swatted the jar (from `from`): it rocks over and up to `count` coins spill out. Returns how many were lost.
@@ -173,11 +183,7 @@ public class TipJar : MonoBehaviour
         coin.transform.position = top;
         Vector3 sideways = Vector3.Cross(Vector3.up, away) * Random.Range(-0.7f, 0.7f);
         Vector3 velocity = away * Random.Range(0.8f, 1.6f) + sideways + Vector3.up * Random.Range(1.2f, 2f);
-        if (clink != null)
-        {
-            clinkSource.pitch = Random.Range(0.8f, 1.2f);
-            clinkSource.PlayOneShot(clink, 0.7f);
-        }
+        Clink(Random.Range(0.7f, 0.9f), CoinVolume * 0.8f);
 
         float timer = 0;
         while (timer < 1f)

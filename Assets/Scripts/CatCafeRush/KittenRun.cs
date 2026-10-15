@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using Random = UnityEngine.Random;
 
 // Cat Cafe Waves' kitten stampede: one kitten (a pooled cat, shrunk) galloping along a path across the room with a
 // dust trail. Any treat that reaches it feeds it: a happy hop, a pop of confetti, and it's gone. One that makes it
@@ -13,6 +14,12 @@ public class KittenRun : MonoBehaviour
 
     // Kittens' dust puffs, compared with a cat's usual puff
     public const float DustSize = 0.85f;
+
+    // Kittens squeak: the cats' own meows, pitched up. No two closer together than this (seconds), so a whole
+    // herd doesn't turn into noise.
+    const float MeowGap = 0.12f;
+    static float lastMeow = -10f;
+    float nextMeow;
 
     CatMovement cat;
     Animator animator;
@@ -70,7 +77,16 @@ public class KittenRun : MonoBehaviour
         }
         run.SetHitbox(hitRadius);
         run.SetDust(true);
+        // Most squeak as they burst in; the rest a little later
+        run.nextMeow = Time.time + (Random.value < 0.7f ? Random.Range(0f, 0.6f) : Random.Range(1f, 2f));
         return run;
+    }
+
+    void TryMeow(float pitchMin, float pitchMax)
+    {
+        if (Time.time - lastMeow < MeowGap) return;
+        lastMeow = Time.time;
+        cat.Meow(Random.Range(pitchMin, pitchMax));
     }
 
     void OnEnable()
@@ -88,6 +104,7 @@ public class KittenRun : MonoBehaviour
     {
         if (fed) return false;
         fed = true;
+        TryMeow(1.75f, 2.05f);   // a happy squeak
         onFed?.Invoke(this);
         StartCoroutine(HappyPop());
         return false;
@@ -96,6 +113,11 @@ public class KittenRun : MonoBehaviour
     void Update()
     {
         if (fed) return;
+        if (Time.time >= nextMeow)
+        {
+            TryMeow(1.45f, 1.85f);
+            nextMeow = Time.time + Random.Range(1.2f, 2.5f);
+        }
         travelled += speed * Time.deltaTime;
         if (travelled >= pathLength)
         {

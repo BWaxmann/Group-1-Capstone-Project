@@ -582,6 +582,15 @@ public class CatMovement : MonoBehaviour
         if (moodCanvas != null) moodCanvas.SetActive(false);
     }
 
+    // One of the cat's own meows (the ones it makes while wandering), pitched (kittens squeak higher)
+    public void Meow(float pitch)
+    {
+        if (roamingSounds == null || roamingSounds.Length == 0) return;
+        if (voiceSource == null) voiceSource = GetComponentInChildren<AudioSource>();
+        if (voiceSource == null) return;
+        roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource, pitch);
+    }
+
     // The cat's puff of dust/smoke, sized (1 = as usual)
     public void DustPuff(float size)
     {
