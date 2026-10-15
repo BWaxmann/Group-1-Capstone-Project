@@ -408,12 +408,12 @@ public static class CatCafeRushGenerator
         director.phases = new List<RushDirector.Phase>
         {
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
-                                     raidEvery = 10, banner = "FEED THE CATS!", line = "feed_first" },
+                                     raidEvery = 8, banner = "FEED THE CATS!", line = "feed_first" },
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 4, shortestOrder = 1, longestOrder = 2,
-                                     raidEvery = 7, banner = "COMBO ORDERS!", line = "feed_combo" },
+                                     raidEvery = 5.5f, banner = "COMBO ORDERS!", line = "feed_combo" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 15, cats = 4, shortestOrder = 2, longestOrder = 3,
-                                     raidEvery = 7, banner = "BIGGER APPETITES!", line = "feed_three" },
+                                     raidEvery = 5.5f, banner = "BIGGER APPETITES!", line = "feed_three" },
             new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Use the alternative trigger to catch what flies</size>",
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
@@ -440,6 +440,16 @@ public static class CatCafeRushGenerator
         director.tidyBonusScore = 30;
         director.catchAimAngle = 14f;
         director.fallSpeed = 0.65f;
+        // Bursts fly nearly to the ceiling, and the ninja leaves time to catch one pile before blowing up the next
+        director.burstUpSpeed = 7f;
+        director.maxBurstHeight = 5f;
+        director.catchSitMin = 2.4f;
+        director.catchSitMax = 3f;
+        director.bossSitMin = 2.4f;
+        director.bossSitMax = 3.2f;
+        // Raids hit harder: quicker sprint, more coins lost
+        director.raid.sprintMultiplier = 3f;
+        director.raidSpillCoins = 5;
         // The tip jar takes the place of the coffee bottle on the counter, a bit bigger; raids go for it
         director.tipJarReplaces = "Cafe_Bottle_with_Coffee_3";
         director.tipJarScale = 1.4f;

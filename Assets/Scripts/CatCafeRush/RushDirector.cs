@@ -134,6 +134,8 @@ public class RushDirector : MonoBehaviour
     [Min(0f)] public float burstOutwardSpeed = 3.5f;
     [Tooltip("How fast the burst throws a prop upwards, in m/s (less = flatter, more horizontal).")]
     [Min(0f)] public float burstUpSpeed = 3.2f;
+    [Tooltip("Highest a prop can fly, in metres above the floor (it never goes into the ceiling). 0 = leave as is.")]
+    [Min(0f)] public float maxBurstHeight = 0f;
     [Tooltip("Seconds a prop flies away before it can be caught.")]
     [Min(0f)] public float catchableAfter = 0.3f;
     [Tooltip("How slowly props sink once the burst is over, in m/s.")]
@@ -342,6 +344,7 @@ public class RushDirector : MonoBehaviour
             flight.launchSpread = burstSpread;
             flight.launchTowardPlayerSpeed = burstOutwardSpeed;
             flight.launchUpSpeed = burstUpSpeed;
+            if (maxBurstHeight > 0) flight.maxHeightAboveFloor = maxBurstHeight;
             flight.catchableAfter = catchableAfter;
             flight.driftFallSpeed = fallSpeed;
             flight.catchableGlow = catchGlow;
@@ -638,6 +641,7 @@ public class RushDirector : MonoBehaviour
         float floorY = player.transform.position.y;
 
         List<Vector3> found = new List<Vector3>();
+        List<bool> onCouch = new List<bool>();
         foreach (Transform thing in FindObjectsOfType<Transform>())
         {
             if (!IsSeat(thing.name)) continue;
@@ -652,14 +656,26 @@ public class RushDirector : MonoBehaviour
             float half = Mathf.Max(bounds.size.x, bounds.size.z) * 0.25f;
             foreach (Vector3 point in couch ? new[] { bounds.center - along * half, bounds.center + along * half } : new[] { bounds.center })
             {
-                if (SeatTop(point, bounds, floorY, out Vector3 seat)) found.Add(seat);
+                // Only seats the player can see a cat on (a table or the back of a couch can hide it)
+                if (SeatTop(point, bounds, floorY, out Vector3 seat) && CanSee(head, seat + Vector3.up * 0.4f))
+                {
+                    found.Add(seat);
+                    onCouch.Add(couch);
+                }
             }
         }
 
-        // The nearest seats to the middle of the view first, keeping cats apart
-        found.Sort((a, b) => Vector3.Angle(forward, Flat(a - head)).CompareTo(Vector3.Angle(forward, Flat(b - head))));
-        foreach (Vector3 seat in found)
+        // Couches first (cats on them are easy to see), then the nearest to the middle of the view, keeping cats apart
+        List<int> order = new List<int>();
+        for (int i = 0; i < found.Count; i++) order.Add(i);
+        order.Sort((a, b) =>
         {
+            if (onCouch[a] != onCouch[b]) return onCouch[a] ? -1 : 1;
+            return Vector3.Angle(forward, Flat(found[a] - head)).CompareTo(Vector3.Angle(forward, Flat(found[b] - head)));
+        });
+        foreach (int i in order)
+        {
+            Vector3 seat = found[i];
             if (seats.Count >= popUpSeats) break;
             if (seats.Exists(other => Flat(other - seat).magnitude < 0.7f)) continue;
             seats.Add(seat);
@@ -677,6 +693,20 @@ public class RushDirector : MonoBehaviour
             seats.Add(floor.position);
         }
         return seats;
+    }
+
+    // Nothing solid between the player's eye and `point` (cats, props and the player's own rig don't count)
+    static bool CanSee(Vector3 eye, Vector3 point)
+    {
+        Vector3 to = point - eye;
+        foreach (RaycastHit hit in Physics.RaycastAll(eye, to.normalized, to.magnitude - 0.05f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            Collider other = hit.collider;
+            if (other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null ||
+                other.GetComponentInParent<PlayerInput>() != null) continue;
+            return false;
+        }
+        return true;
     }
 
     static bool IsSeat(string name)

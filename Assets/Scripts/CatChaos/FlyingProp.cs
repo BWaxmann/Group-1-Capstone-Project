@@ -157,7 +157,7 @@ public class FlyingProp : MonoBehaviour
         }
 
         // Fast and high, but never up into the ceiling: v = sqrt(2 g h) reaches exactly the room left above it
-        float headroom = Mathf.Max(0.3f, settings.floorHeight + settings.maxHeightAboveFloor - transform.position.y);
+        float headroom = Mathf.Max(0.3f, Mathf.Min(settings.floorHeight + settings.maxHeightAboveFloor, CeilingAbove() - 0.3f) - transform.position.y);
         float up = Mathf.Min(settings.launchUpSpeed * Random.Range(0.9f, 1.1f), Mathf.Sqrt(2f * settings.propGravity * headroom));
         velocity = Vector3.up * up + drift * settings.launchTowardPlayerSpeed * Random.Range(0.8f, 1.2f);
         spinAxis = Random.onUnitSphere;
@@ -416,6 +416,20 @@ public class FlyingProp : MonoBehaviour
             step = next - transform.position;
         }
         return step;
+    }
+
+    // Height of whatever's overhead (the ceiling, a shelf...), ignoring props and cats; very high if nothing is
+    float CeilingAbove()
+    {
+        int count = Physics.RaycastNonAlloc(centre, Vector3.up, wallHits, 10f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        float lowest = float.MaxValue;
+        for (int i = 0; i < count; i++)
+        {
+            Collider other = wallHits[i].collider;
+            if (other.GetComponentInParent<FlyingProp>() != null || other.GetComponentInParent<CatMovement>() != null) continue;
+            lowest = Mathf.Min(lowest, wallHits[i].point.y);
+        }
+        return lowest;
     }
 
     static readonly RaycastHit[] wallHits = new RaycastHit[16];
