@@ -33,6 +33,11 @@ public class PropPile : MonoBehaviour
     float shake;            // extra rattle from a swipe that couldn't knock anything off
     Transform viewer;
     UnityEngine.UI.Slider healthBar;
+    GameObject barHolder;       // the canvas the health bar is on
+    Vector3 barHolderScale;
+    bool barShown;
+    float barPop = 1f;          // 0 to 1 as the bar pops in
+    bool wasWhole = true;
 
     void Awake()
     {
@@ -128,7 +133,37 @@ public class PropPile : MonoBehaviour
             if (prop != null && prop.state == FlyingProp.State.Home && prop.Knock(playerPosition, false, true)) sent++;
         }
         shake = 1f;
+        if (sent > 0 && barsWaitForNinja && !barShown) ShowBar();
         return sent;
+    }
+
+    // Cat Cafe Waves: a pile's bar stays hidden until the ninja first blows the pile up. Then it pops in empty and
+    // fills back up as the props are caught and put back.
+    public static bool barsWaitForNinja;
+
+    void ShowBar()
+    {
+        barShown = true;
+        FindBar();
+        if (barHolder == null) return;
+        barHolder.SetActive(true);
+        healthBar.value = 0;
+        barPop = 0;
+        wasWhole = false;
+    }
+
+    void FindBar()
+    {
+        if (healthBar != null || defendPoint == null) return;
+        healthBar = defendPoint.GetComponentInChildren<UnityEngine.UI.Slider>(true);
+        if (healthBar == null) return;
+        // The topmost canvas between the bar and the defend point (GetComponent finds it even while it's hidden)
+        barHolder = healthBar.gameObject;
+        for (Transform up = healthBar.transform; up != null && up != defendPoint.transform; up = up.parent)
+        {
+            if (up.GetComponent<Canvas>() != null) barHolder = up.gameObject;
+        }
+        barHolderScale = barHolder.transform.localScale;
     }
 
     // Props still sitting on the pile
@@ -156,10 +191,34 @@ public class PropPile : MonoBehaviour
         if (pile == null) return;
 
         // If the defend point's health bar is showing, it shows how much of the pile is standing
-        if (healthBar == null && defendPoint != null) healthBar = defendPoint.GetComponentInChildren<UnityEngine.UI.Slider>(true);
+        FindBar();
+        if (barsWaitForNinja && barHolder != null)
+        {
+            if (!barShown)
+            {
+                if (barHolder.activeSelf) barHolder.SetActive(false);
+            }
+            else if (barPop < 1f)
+            {
+                // Pops in with a little overshoot
+                barPop = Mathf.MoveTowards(barPop, 1f, Time.deltaTime / 0.3f);
+                float back = barPop - 1f;
+                float size = 1f + 2.7f * back * back * back + 1.7f * back * back;
+                barHolder.transform.localScale = barHolderScale * Mathf.LerpUnclamped(0.2f, 1f, size);
+            }
+        }
         if (healthBar != null && healthBar.isActiveAndEnabled)
         {
-            healthBar.value = Mathf.MoveTowards(healthBar.value, Mathf.Max(0.05f, standing), Time.deltaTime * 2f);
+            float target = standing;
+            healthBar.value = Mathf.MoveTowards(healthBar.value, barsWaitForNinja ? target : Mathf.Max(0.05f, target), Time.deltaTime * 2f);
+
+            // Every prop caught and back on the pile: a little cheer
+            bool whole = target >= 0.999f;
+            if (barsWaitForNinja && barShown && whole && !wasWhole)
+            {
+                FloatingWord.Show("Tidy!", healthBar.transform.position + Vector3.up * 0.15f, new Color(0.4f, 1f, 0.5f), 3f, 1.2f);
+            }
+            wasWhole = whole;
         }
 
         // Checking every few frames is plenty for a warning

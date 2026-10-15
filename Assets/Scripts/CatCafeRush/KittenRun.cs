@@ -32,11 +32,12 @@ public class KittenRun : MonoBehaviour
     bool fed;
     Action<KittenRun> onFed;
     Vector3 normalScale;
+    Transform homeParent;
     CatRunAnimation runAnimation;
     static readonly int RunSpeed = Animator.StringToHash("RunSpeed");
 
     // Sets the run cycle's speed on whichever of the cat's animators has one (0 = holds still)
-    void SetLegs(float runSpeed)
+    public void SetLegs(float runSpeed)
     {
         foreach (Animator legs in GetComponentsInChildren<Animator>())
         {
@@ -57,6 +58,12 @@ public class KittenRun : MonoBehaviour
     // Where a treat should aim (the middle of its hit area)
     public Vector3 aimPoint => hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.15f;
     public bool isFed => fed;
+    // False for a kitten launched with no hit area (a launcher kitten): treats go straight through it
+    public bool feedable { get; private set; }
+    // Stopped running (another script has it now, e.g. a launcher kitten leaping), or waiting at the end of its path
+    public bool held { get; private set; }
+    // Waits at the end of its path instead of dashing off
+    public bool holdAtEnd;
 
     // Sends a pooled cat (switched off) galloping along `path`, `offset` metres to the side of it
     public static KittenRun Launch(CatMovement cat, List<Vector3> path, float offset, float speed, float scale, float hitRadius,
@@ -74,6 +81,9 @@ public class KittenRun : MonoBehaviour
         run.onFed = onFed;
         run.travelled = 0;
         run.fed = false;
+        run.held = false;
+        run.holdAtEnd = false;
+        run.homeParent = cat.transform.parent;
         run.pathLength = 0;
         for (int i = 1; i < path.Count; i++) run.pathLength += Vector3.Distance(path[i - 1], path[i]);
 
@@ -92,14 +102,16 @@ public class KittenRun : MonoBehaviour
         run.runAnimation = cat.GetComponent<CatRunAnimation>();
         if (run.runAnimation != null) run.runAnimation.enabled = false;
         run.SetLegs(speed / Mathf.Max(0.1f, scale));
-        run.SetHitbox(hitRadius);
+        run.feedable = hitRadius > 0;
+        if (run.feedable) run.SetHitbox(hitRadius);
+        else if (run.hitbox != null) run.hitbox.enabled = false;
         run.SetDust(true);
         // Most squeak as they burst in; the rest a little later
         run.nextMeow = Time.time + (Random.value < 0.7f ? Random.Range(0f, 0.6f) : Random.Range(1f, 2f));
         return run;
     }
 
-    void TryMeow(float pitchMin, float pitchMax)
+    public void TryMeow(float pitchMin, float pitchMax)
     {
         if (Time.time - lastMeow < MeowGap) return;
         lastMeow = Time.time;
@@ -119,7 +131,7 @@ public class KittenRun : MonoBehaviour
     // Any treat feeds a kitten (no colours in a stampede)
     bool Eat(Treat treat)
     {
-        if (fed) return false;
+        if (fed || !feedable) return false;
         fed = true;
         TryMeow(1.75f, 2.05f);   // a happy squeak
         onFed?.Invoke(this);
@@ -129,7 +141,7 @@ public class KittenRun : MonoBehaviour
 
     void Update()
     {
-        if (fed) return;
+        if (fed || held) return;
         if (Time.time >= nextMeow)
         {
             TryMeow(1.45f, 1.85f);
@@ -138,6 +150,11 @@ public class KittenRun : MonoBehaviour
         travelled += speed * Time.deltaTime;
         if (travelled >= pathLength)
         {
+            if (holdAtEnd)
+            {
+                Hold();
+                return;
+            }
             // Made it across: off it dashes
             cat.DustPuff(DustSize);
             Finish();
@@ -155,8 +172,25 @@ public class KittenRun : MonoBehaviour
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(heading), Time.deltaTime * 12f);
     }
 
+    // Stops it running along its path (it stays where it is, legs and all, for whoever has it now)
+    public void Hold()
+    {
+        held = true;
+        SetDust(false);
+    }
+
+    // Off it goes in a puff of dust, back to the pool
+    public void Dismiss()
+    {
+        if (!enabled) return;
+        cat.DustPuff(DustSize);
+        Finish();
+    }
+
     IEnumerator HappyPop()
     {
+        // Off whatever it was clinging to first (a launcher kitten), so it pops where it is
+        if (transform.parent != homeParent) transform.SetParent(homeParent, true);
         Vector3 start = transform.position;
         Vector3 small = transform.localScale;
         float t = 0;
@@ -180,6 +214,7 @@ public class KittenRun : MonoBehaviour
         SetLegs(0f);
         if (runAnimation != null) runAnimation.enabled = true;   // back to following the navigation agent
         cat.treatGate = null;
+        if (transform.parent != homeParent) transform.SetParent(homeParent, true);
         transform.localScale = normalScale;
         enabled = false;
         cat.gameObject.SetActive(false);
@@ -190,9 +225,7 @@ public class KittenRun : MonoBehaviour
     {
         foreach (KittenRun run in running.ToArray())
         {
-            if (run.fed) continue;
-            run.cat.DustPuff(DustSize);
-            run.Finish();
+            if (!run.fed) run.Dismiss();
         }
     }
 

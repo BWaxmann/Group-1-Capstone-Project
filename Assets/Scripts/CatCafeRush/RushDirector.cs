@@ -42,6 +42,9 @@ public class RushDirector : MonoBehaviour
         [Min(0)]
         [Tooltip("Raids: about how often a hungry cat makes a run at the tip jar or a pile, in seconds. 0 = none.")]
         public float raidEvery = 0f;
+        [Min(0)]
+        [Tooltip("Feed: about how often a kitten bolts at the player and leaps onto a launcher, in seconds. 0 = none.")]
+        public float latchEvery = 0f;
     }
 
     [Header("Round")]
@@ -197,7 +200,8 @@ public class RushDirector : MonoBehaviour
 
     [Header("Ninja and the piles (Cat Cafe Waves)")]
 
-    [Tooltip("The ninja only goes to the prop piles, and sends a whole pile flying at once.")]
+    [Tooltip("The ninja only goes to the prop piles, and sends a whole pile flying at once. Each pile's bar stays hidden " +
+             "until the ninja first blows it up, then fills as its props are caught and put back.")]
     public bool ninjaExplodesPiles = false;
     [Tooltip("Props that hit the floor stay broken for the rest of the round; the piles' bars show what's left.")]
     public bool missedPropsStayDown = false;
@@ -270,6 +274,14 @@ public class RushDirector : MonoBehaviour
     [Min(0)] public int kittenScore = 2;
     [Min(0)] public int kittenCoins = 1;
 
+    [Header("Launcher kittens (Feed phases with a Latch Every time)")]
+
+    [Tooltip("A kitten runs in from a door in front of the player and leaps onto a launcher: that hand can't fire until " +
+             "it's shaken off. There's no stopping it: treats go straight through.")]
+    public LauncherKitten.Settings launcherKitten = new LauncherKitten.Settings();
+    [Tooltip("Announcer line the first time a kitten gets on a launcher. Empty = none.")]
+    public string latchLine = "latch";
+
     [Header("Pop-up Cats (Pop-up phases)")]
 
     [Min(1)]
@@ -309,6 +321,8 @@ public class RushDirector : MonoBehaviour
     readonly List<DefendPoint> piles = new List<DefendPoint>();
     readonly List<PropPile> propPiles = new List<PropPile>();
     float nextRaid;
+    float nextLatch;
+    bool latchLineSaid;
     bool raidJarNext = true;
     bool catchIntroDone;
 
@@ -319,6 +333,7 @@ public class RushDirector : MonoBehaviour
         Treat.cleanShots = cleanShots;
         Treat.aimAssistTurnSpeed = aimAssistTurnSpeed;
         Treat.aimAssistTarget = aimAssistAngle > 0 ? (System.Func<Treat, Vector3?>)AssistTarget : null;
+        PropPile.barsWaitForNinja = ninjaExplodesPiles;
     }
 
     // Where a treat should curve to: a hungry cat wanting its colour, or the ninja boss while it can be fed
@@ -331,7 +346,7 @@ public class RushDirector : MonoBehaviour
             float best = aimAssistAngle;
             foreach (KittenRun kitten in KittenRun.running)
             {
-                if (!kitten.isFed) Consider(kitten.aimPoint);
+                if (!kitten.isFed && kitten.feedable) Consider(kitten.aimPoint);
             }
             foreach (PopUpCat pop in PopUpCat.active)
             {
@@ -406,6 +421,7 @@ public class RushDirector : MonoBehaviour
         Treat.cleanShots = false;
         Treat.aimAssistTarget = null;
         PropPile.toppleOnHit = false;
+        PropPile.barsWaitForNinja = false;
         if (GameManager.instance != null)
         {
             GameManager.instance.GameStart -= OnGameStart;
@@ -427,6 +443,7 @@ public class RushDirector : MonoBehaviour
 
         player.treatSpeed = treatSpeed;
         player.SetReticleColours(leftColour, rightColour);
+        player.blockFire = LauncherKitten.BlocksFire;
         KeepCatsOutOfPlayerSpace();
         PickEntryDoors();
         if (fedCatsUseHoles) MakeHoles();
@@ -457,6 +474,7 @@ public class RushDirector : MonoBehaviour
         playing = false;
         current = null;
         CatRaid.CancelAll();
+        LauncherKitten.EndAll();
         KittenRun.EndAll();
         PopUpCat.EndAll();
         if (player != null) player.ForceFireStyle(null);
@@ -471,6 +489,8 @@ public class RushDirector : MonoBehaviour
             if (!playing) yield break;
             current = phase;
             nextRaid = Time.time + phase.raidEvery * 0.6f;
+            nextLatch = Time.time + phase.latchEvery * 0.5f;
+            if (phase.kind != Kind.Feed || phase.latchEvery <= 0) LauncherKitten.EndAll();
 
             // Hungry cats only go for the piles in feeding phases (and only if this phase says so)
             CatMovement.targetingChanceOverride = phase.kind == Kind.Feed ? phase.attackChance : 0f;
@@ -878,6 +898,7 @@ public class RushDirector : MonoBehaviour
     {
         if (!playing || current == null) return;
         if (raids) UpdateRaids();
+        if (current.kind == Kind.Feed && current.latchEvery > 0) UpdateLatches();
         if (!HasOrders(current.kind)) return;
         if (Time.time - lastArrival < arrivalGap) return;
 
@@ -934,6 +955,60 @@ public class RushDirector : MonoBehaviour
             FloatingWord.Show(quickServiceText, order.aboveBubble, new Color(1f, 0.85f, 0.2f));
         }
         tipJar.AddCoins(order.transform.position + Vector3.up * 0.3f, coins);
+    }
+
+    // ---------- Cat Cafe Waves: launcher kittens ----------
+
+    // Every so often (one at a time) a kitten bolts in from a door the player can see and leaps onto a launcher
+    void UpdateLatches()
+    {
+        if (LauncherKitten.active.Count > 0 || Time.time < nextLatch) return;
+        nextLatch = Time.time + 1f;   // couldn't send one: try again in a moment
+        List<Vector3> path = LatchPath();
+        if (path == null) return;
+        CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+        if (cat == null) return;
+        LauncherKitten.Send(cat, path, player, launcherKitten, KittenLatched, LatchOver);
+        cat.DustPuff(KittenRun.DustSize);
+        nextLatch = float.MaxValue;   // set again when it's over
+    }
+
+    void KittenLatched(LauncherKitten kitten)
+    {
+        if (latchLineSaid) return;
+        latchLineSaid = true;
+        Say(latchLine);
+    }
+
+    void LatchOver(LauncherKitten kitten, LauncherKitten.Result result)
+    {
+        if (current != null) nextLatch = Time.time + current.latchEvery * Random.Range(0.8f, 1.2f);
+    }
+
+    // From a door in front of the player to the floor just outside the player's space
+    List<Vector3> LatchPath()
+    {
+        List<Transform> ways = entryDoors.Count > 0 ? entryDoors : doors;
+        if (player == null || ways.Count == 0) return null;
+        Vector3 at = player.transform.position;
+        Vector3 forward = Flat(player.transform.forward);
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        float front = Mathf.Max(0.5f, playerSpace.z * 0.5f) + 0.4f;
+        NavMeshPath navPath = new NavMeshPath();
+        for (int attempt = 0; attempt < 6; attempt++)
+        {
+            Transform door = ways[Random.Range(0, ways.Count)];
+            if (door == null) continue;
+            Vector3 spot = at + forward * front + right * Random.Range(-0.5f, 0.5f);
+            if (!NavMesh.SamplePosition(spot, out NavMeshHit end, 1.2f, NavMesh.AllAreas)) continue;
+            if (Mathf.Abs(end.position.y - at.y) > 0.3f) continue;   // on the floor, not up on something
+            if (!NavMesh.SamplePosition(door.position, out NavMeshHit start, 1.5f, NavMesh.AllAreas)) continue;
+            if (!NavMesh.CalculatePath(start.position, end.position, NavMesh.AllAreas, navPath) ||
+                navPath.status != NavMeshPathStatus.PathComplete) continue;
+            return new List<Vector3>(navPath.corners);
+        }
+        return null;
     }
 
     // ---------- Cat Cafe Waves: the catch intro ----------

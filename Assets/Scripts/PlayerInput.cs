@@ -221,6 +221,10 @@ public class PlayerInput : MonoBehaviour
     // The player's head (what billboards turn to face)
     public Transform eyePoint => eye;
 
+    // Something stopping a launcher firing (e.g. a kitten clinging to it in Cat Cafe Waves): asked before every shot,
+    // true = nothing comes out of that hand
+    public System.Func<bool, bool> blockFire;
+
     // Fire styles (Cat Cafe Rush trial, finale only): each launcher can fire one treat, a wide scatter, or a tight
     // short-range buckshot. Flicking that hand's thumbstick left/right swaps its style while they're unlocked.
     public enum FireStyle
@@ -715,6 +719,8 @@ public class PlayerInput : MonoBehaviour
 
     void LaunchTreat(bool rightHand)
     {
+        if (blockFire != null && blockFire(rightHand)) return;
+
         if (spreadActive)
         {
             LaunchSpread(rightHand);
