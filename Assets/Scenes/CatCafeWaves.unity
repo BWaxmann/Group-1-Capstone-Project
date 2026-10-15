@@ -637,11 +637,11 @@ MonoBehaviour:
     cats: 1
     shortestOrder: 1
     longestOrder: 2
-    banner: 'NINJA BOSS!
+    banner: 'NINJA FINALE!
 
-      <size=55%>Feed it before time''s up!</size>'
+      <size=55%>Save the piles: catch everything!</size>'
     attackChance: 0
-    line: boss
+    line: catch_2
     raidEvery: 0
   bannerSeconds: 2.5
   catPool: {fileID: 103450848}
@@ -693,9 +693,9 @@ MonoBehaviour:
   burstOutwardSpeed: 3.5
   burstUpSpeed: 3.2
   catchableAfter: 0.3
-  fallSpeed: 0.55
+  fallSpeed: 0.65
   attacksTopple: 1
-  finaleFireStyles: 1
+  finaleFireStyles: 0
   fireStylesBanner: 'NINJA BOSS!
 
     <size=50%>Flick the thumbsticks to swap shots!</size>'
@@ -712,12 +712,57 @@ MonoBehaviour:
   entryArc: 70
   coinsPerTreat: 1
   bossCoins: 8
+  tipJarSpot: {fileID: 0}
   raids: 1
+  raid:
+    windUp: 1.2
+    sprintMultiplier: 2.5
+    saveBonus: 5
+    savedText: Saved!
+    warningColour: {r: 1, g: 0.35, b: 0.1, a: 1}
   raidSpillCoins: 3
   catSpeedMultiplier: 1.3
   catchGlow: 1
+  stampedeScatter: 1
+  kittenScale: 0.55
+  kittensPerHerdMin: 5
+  kittensPerHerdMax: 7
+  herdGapMin: 2.2
+  herdGapMax: 3.2
+  kittenSpeedMin: 3.2
+  kittenSpeedMax: 4.2
+  kittenHitRadius: 0.35
+  kittenScore: 2
+  kittenCoins: 1
+  popUpSeats: 6
+  popGapStart: 1.8
+  popGapEnd: 1
+  doublePopsFrom: 0.6
+  popUp:
+    warning: 0.45
+    heightMin: 1.2
+    heightMax: 1.7
+    riseTime: 0.45
+    hang: 0.4
+    fallTime: 0.45
+    hitRadius: 0.4
+    glowColour: {r: 1, g: 0.8, b: 0.15, a: 1}
+  popUpScore: 5
+  popUpCoins: 2
   catchIntro: 1
   catchIntroHint: Alternative trigger!
+  tipJarReplaces: Cafe_Bottle_with_Coffee_3
+  tipJarScale: 1.4
+  ninjaExplodesPiles: 1
+  missedPropsStayDown: 1
+  bossMakesMess: 1
+  tidyBonusCoins: 10
+  tidyBonusScore: 30
+  tidyBonusBanner: TIDY CAFE BONUS!
+  catchAimAngle: 14
+  wrongColourLeaves: 1
+  catchIntroPraise: Nice catch!
+  catchIntroTimeout: 12
 --- !u!114 &41138492
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -744,6 +789,8 @@ MonoBehaviour:
   airborneScale: 1.8
   airborneTrail: 1
   trailColour: {r: 1, g: 0.9, b: 0.4, a: 0.9}
+  catchableGlow: 0
+  glowColour: {r: 1, g: 0.8, b: 0.15, a: 1}
   respawnDelay: 2.5
   returnDuration: 0.8
   pileTargetingChance: 0
@@ -5788,7 +5835,7 @@ PrefabInstance:
     - target: {fileID: 4358148907935916253, guid: 974b5397a3497da419eed8a3a7e3b24a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.633
+      value: 1.593
       objectReference: {fileID: 0}
     - target: {fileID: 4358148907935916253, guid: 974b5397a3497da419eed8a3a7e3b24a,
         type: 3}
@@ -5798,7 +5845,7 @@ PrefabInstance:
     - target: {fileID: 4358148907935916253, guid: 974b5397a3497da419eed8a3a7e3b24a,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.606
+      value: -2.906
       objectReference: {fileID: 0}
     - target: {fileID: 4358148907935916253, guid: 974b5397a3497da419eed8a3a7e3b24a,
         type: 3}
@@ -6990,7 +7037,7 @@ PrefabInstance:
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.084
+      value: 2.769
       objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
@@ -7000,7 +7047,7 @@ PrefabInstance:
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.925
+      value: -2.583
       objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
@@ -13609,34 +13656,41 @@ MonoBehaviour:
   spawnPointCentre: {fileID: 1096553779}
   spawnPointRadius: 0.5
   afterFeedingReturnPoint: {fileID: 1096553779}
+  spawnRoundsData: []
   spawnWavesData:
   - _secondsAfterStartToBegin: 0
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 30
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 90
     _numberOfTimesToSpawn: 4
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 8
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 122
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 16
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 180
     _numberOfTimesToSpawn: 5
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 6
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 210
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
@@ -15738,34 +15792,41 @@ MonoBehaviour:
   spawnPointCentre: {fileID: 523086518}
   spawnPointRadius: 0.2
   afterFeedingReturnPoint: {fileID: 523086518}
+  spawnRoundsData: []
   spawnWavesData:
   - _secondsAfterStartToBegin: 5
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 35
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 94
     _numberOfTimesToSpawn: 4
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 8
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 126
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 16
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 183
     _numberOfTimesToSpawn: 5
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 6
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 213
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
@@ -17593,34 +17654,41 @@ MonoBehaviour:
   spawnPointCentre: {fileID: 785176172}
   spawnPointRadius: 0.5
   afterFeedingReturnPoint: {fileID: 785176172}
+  spawnRoundsData: []
   spawnWavesData:
   - _secondsAfterStartToBegin: 2.5
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 32.5
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 92
     _numberOfTimesToSpawn: 4
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 8
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 124
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 16
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 181.5
     _numberOfTimesToSpawn: 5
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 6
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 211.5
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
@@ -18427,34 +18495,41 @@ MonoBehaviour:
   spawnPointCentre: {fileID: 136025908}
   spawnPointRadius: 0.2
   afterFeedingReturnPoint: {fileID: 136025908}
+  spawnRoundsData: []
   spawnWavesData:
   - _secondsAfterStartToBegin: 7.5
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 10
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 37.5
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 20
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 96
     _numberOfTimesToSpawn: 4
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 8
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 128
     _numberOfTimesToSpawn: 2
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 16
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 184.5
     _numberOfTimesToSpawn: 5
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 6
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
   - _secondsAfterStartToBegin: 214.5
     _numberOfTimesToSpawn: 3
+    _numberToSpawnAtATime: 0
     _delayBetweenSpawns: 12
     _onlySpawnSpecificVariations: 0
     _variationsToSpawn: 
@@ -23993,6 +24068,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
         type: 3}
+      propertyPath: roundMaxTimes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
+      propertyPath: roundMinTimes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
       propertyPath: pregameCanvas
       value: 
       objectReference: {fileID: 509834972}
@@ -24068,18 +24153,8 @@ PrefabInstance:
       objectReference: {fileID: 7440272166285416836}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
         type: 3}
-      propertyPath: roundMaxTimes.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
-        type: 3}
       propertyPath: roundMaxTimes.Array.data[0]
       value: 180
-      objectReference: {fileID: 0}
-    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
-        type: 3}
-      propertyPath: roundMinTimes.Array.size
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
         type: 3}
