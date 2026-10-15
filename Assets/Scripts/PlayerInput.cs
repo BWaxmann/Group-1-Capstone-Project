@@ -218,6 +218,9 @@ public class PlayerInput : MonoBehaviour
     public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
     public Transform LaunchPoint(bool rightHand) => rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
 
+    // The player's head (what billboards turn to face)
+    public Transform eyePoint => eye;
+
     // Fire styles (Cat Cafe Rush trial, finale only): each launcher can fire one treat, a wide scatter, or a tight
     // short-range buckshot. Flicking that hand's thumbstick left/right swaps its style while they're unlocked.
     public enum FireStyle

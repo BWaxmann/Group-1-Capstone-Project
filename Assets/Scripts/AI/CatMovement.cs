@@ -571,9 +571,32 @@ public class CatMovement : MonoBehaviour
         }
     }
 
+    // Set by a scene that sends fed cats somewhere before they go (Cat Cafe Waves: they run off to a hole).
+    // It's called instead of the usual finish, and must call FinishLeaving when the cat gets there.
+    public System.Action<CatMovement> leaveOverride;
+
+    // The end of a leaveOverride: a small pop of confetti, then the cat goes back to the pool
+    public void FinishLeaving()
+    {
+        if (launchPopParticleIndex >= 0)
+        {
+            ParticleManager.instance.ShowParticleEffect(launchPopParticleIndex, transform.position);
+        }
+        GameManager.instance.PlayCatPopSound(transform.position);
+        Vanish();
+    }
+
     protected virtual void BeginVanish()
     {
         currentState = AIState.Full;
+        if (leaveOverride != null)
+        {
+            // Any pickup drops where the cat was fed, not where it ends up
+            pickupDropPosition = transform.position;
+            StopAllCoroutines();
+            leaveOverride(this);
+            return;
+        }
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
             agent.isStopped = true;

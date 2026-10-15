@@ -1,0 +1,13 @@
+# Cat Cafe Waves announcer: the cafe manager on the speaker.
+# One line each:  id | what's said | subtitle (optional, if it should read differently from what's said)
+# After changing what's said, re-record the placeholders: powershell -File Tools/make-announcer-voice.ps1
+welcome | Good morning, and welcome to your first shift at Catastrophe Cafe! Blue treats in your left hand, orange in your right.
+feed_first | Here come the regulars! Give each cat what it ordered.
+stampede | Uh oh. Kitten stampede! Hit as many as you can!
+feed_combo | Combo orders! Some cats want two treats, in that order.
+catch | Ninja on the loose! Grab whatever it knocks into the air!
+popup | Pop-up cats! Hit them while they're in the air!
+boss | The ninja is back, and it's hungry! Feed it before it gets away!
+boss_fed | You fed the ninja! Incredible!
+boss_left | The ninja got away. Next time!
+closing | And that's closing time! Great first shift.

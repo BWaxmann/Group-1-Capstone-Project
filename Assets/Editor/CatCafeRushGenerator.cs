@@ -404,14 +404,20 @@ public static class CatCafeRushGenerator
         director.phases = new List<RushDirector.Phase>
         {
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
-                                     attackChance = 0.3f, banner = "FEED THE CATS!" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!" },
+                                     attackChance = 0.3f, banner = "FEED THE CATS!", line = "feed_first" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 4, shortestOrder = 1, longestOrder = 2,
-                                     attackChance = 0.35f, banner = "COMBO ORDERS!" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Grip to grab what flies</size>" },
-            new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner },
+                                     attackChance = 0.35f, banner = "COMBO ORDERS!", line = "feed_combo" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Grip to grab what flies</size>",
+                                     line = "catch" },
+            new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner,
+                                     line = "boss" },
         };
+        // The manager on the speaker, fed cats leaving through holes, and tips
+        director.announcer = true;
+        director.fedCatsUseHoles = true;
+        director.coinsPerTreat = 1;
         EditorUtility.SetDirty(director);
 
         // The round lasts exactly as long as the waves
@@ -429,7 +435,7 @@ public static class CatCafeRushGenerator
         EditorSceneManager.SaveScene(scene);
         return $"CatCafeWaves made from the Trial: Feed > Stampede > Feed > Catch > Pop-up > Boss, {total:F0} s " +
                $"(round timer {(gameManager != null ? "set" : "NOT set, no GameManager found")}). " +
-               "Stampede and Pop-up are placeholders for now (the room clears for that long).";
+               "Announcer, cat holes and tip jar on. Stampede and Pop-up play as feeding until they're built.";
     }
 
     // ---------- Updating a hand-made layout ----------

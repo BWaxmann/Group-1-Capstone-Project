@@ -38,6 +38,18 @@ public class CatOrder : MonoBehaviour
     SphereCollider hitbox;
     int lastShotEaten;
 
+    // Called when the cat gets the last treat of its order (Cat Cafe Waves pays out tips)
+    public System.Action<CatOrder> served;
+
+    // If set, a served cat runs to the hole this gives (from where it is) and dives in, instead of happy-launching
+    public System.Func<Vector3, Vector3?> holeFor;
+
+    // How many treats the order was
+    public int orderLength => order.Count;
+
+    Vector3 scaleBeforeDive;
+    bool diving;
+
     // A generous, invisible hit area around a cat's body, so a treat that looks like a hit counts as one
     // (some of the cats' own colliders are much smaller than their bodies). It's a trigger: it blocks nothing.
     public static SphereCollider AddHitbox(GameObject catObject, float generosity)
@@ -170,9 +182,12 @@ public class CatOrder : MonoBehaviour
             return true;
         }
 
-        // The last treat of the order: a happy face, then the cat is full and launches
+        // The last treat of the order: a happy face, then the cat is full and launches (or runs off to a hole)
         bubble.FlashFace(cat.happiestFace, 0f);
         cat.treatGate = null;
+        served?.Invoke(this);
+        Vector3? hole = holeFor != null ? holeFor(transform.position) : null;
+        if (hole.HasValue) cat.leaveOverride = fedCat => LeaveThroughHole(hole.Value);
         cat.FeedCat(true);
         StartCoroutine(HideBubbleSoon());
         return false;
@@ -192,10 +207,17 @@ public class CatOrder : MonoBehaviour
         cat.treatGate = t => false;
         if (bubble != null) bubble.Hide();
         cat.StopAllCoroutines();   // stops its roaming
-        StartCoroutine(RunRoutine(exit));
+        StartCoroutine(RunRoutine(exit, false));
     }
 
-    IEnumerator RunRoutine(Vector3 exit)
+    // A served cat scampers off happily and dives into the hole (the cat has already scored)
+    void LeaveThroughHole(Vector3 hole)
+    {
+        runningOff = true;
+        StartCoroutine(RunRoutine(hole, true));
+    }
+
+    IEnumerator RunRoutine(Vector3 exit, bool served)
     {
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
@@ -213,6 +235,26 @@ public class CatOrder : MonoBehaviour
                 yield return null;
             }
         }
+
+        if (served)
+        {
+            // Shrinks down into the hole, then a little pop of confetti
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = true;
+            diving = true;
+            scaleBeforeDive = transform.localScale;
+            Vector3 start = transform.position;
+            float t = 0;
+            while (t < 1f)
+            {
+                t += Time.deltaTime / 0.25f;
+                transform.localScale = scaleBeforeDive * Mathf.Lerp(1f, 0.1f, t * t);
+                transform.position = start + Vector3.down * 0.2f * t;
+                yield return null;
+            }
+            cat.FinishLeaving();   // back to the pool
+            yield break;
+        }
+
         cat.DisappearParticleEffect();
         gameObject.SetActive(false);   // back to the pool
     }
@@ -235,7 +277,16 @@ public class CatOrder : MonoBehaviour
             agent.updateRotation = normalUpdateRotation;
         }
         runningOff = false;
-        if (cat != null) cat.treatGate = null;
+        if (diving)
+        {
+            transform.localScale = scaleBeforeDive;
+            diving = false;
+        }
+        if (cat != null)
+        {
+            cat.treatGate = null;
+            cat.leaveOverride = null;
+        }
         if (bubble != null) bubble.Hide();
         order.Clear();
     }

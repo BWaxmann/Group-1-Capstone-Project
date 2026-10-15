@@ -37,6 +37,8 @@ public class RushDirector : MonoBehaviour
         [Range(0f, 1f)]
         [Tooltip("Feed: chance, at each stop while wandering, that a hungry cat goes to attack a pile. 0 = they just wander.")]
         public float attackChance = 0f;
+        [Tooltip("Announcer line called out as this phase starts (its id in Resources/Announcer/lines.txt). Empty = none.")]
+        public string line = "";
     }
 
     [Header("Round")]
@@ -159,6 +161,25 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Size of confetti and smoke puffs (1 = as made). Smaller keeps the action easy to see.")]
     public float effectScale = 0.5f;
 
+    [Header("Cat Cafe Waves")]
+
+    [Tooltip("The cafe manager calls out each phase on the speaker (each phase's Line), with subtitles.")]
+    public bool announcer = false;
+    public string welcomeLine = "welcome";
+    public string closingLine = "closing";
+    public string bossFedLine = "boss_fed";
+    public string bossLeftLine = "boss_left";
+    [Tooltip("Played before the ninja's catch and boss lines (from Resources/CafeSounds).")]
+    public string ninjaSting = "ninja_sting";
+
+    [Tooltip("Fed cats run off to a hole in the floor (one at each door) and dive in, instead of launching.")]
+    public bool fedCatsUseHoles = false;
+
+    [Min(0)]
+    [Tooltip("Coins that fly from a fed cat into a tip jar on the counter, for each treat in its order. 0 = no tip jar.")]
+    public int coinsPerTreat = 0;
+    [Min(0)] public int bossCoins = 8;
+
     readonly List<CatOrder> orders = new List<CatOrder>();
     PlayerInput player;
     NinjaRushCat ninja;
@@ -166,6 +187,9 @@ public class RushDirector : MonoBehaviour
     Phase current;
     float lastArrival = -100f;
     bool playing;
+    Announcer voice;
+    TipJar tipJar;
+    readonly List<Vector3> holes = new List<Vector3>();
 
     void Awake()
     {
@@ -209,6 +233,23 @@ public class RushDirector : MonoBehaviour
             ninja = Instantiate(ninjaPrefab, transform);
             ninja.gameObject.SetActive(false);
         }
+
+        if (announcer)
+        {
+            voice = gameObject.AddComponent<Announcer>();
+            StartCoroutine(Welcome());
+        }
+    }
+
+    IEnumerator Welcome()
+    {
+        yield return new WaitForSeconds(1.5f);
+        if (!playing) Say(welcomeLine);
+    }
+
+    void Say(string line, string sting = null)
+    {
+        if (voice != null) voice.Say(line, sting);
     }
 
     void OnDestroy()
@@ -240,6 +281,8 @@ public class RushDirector : MonoBehaviour
         player.treatSpeed = treatSpeed;
         player.SetReticleColours(leftColour, rightColour);
         KeepCatsOutOfPlayerSpace();
+        if (fedCatsUseHoles) MakeHoles();
+        if (coinsPerTreat > 0 || bossCoins > 0) PlaceTipJar();
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);
@@ -258,6 +301,7 @@ public class RushDirector : MonoBehaviour
         playing = false;
         current = null;
         if (ninja != null) ninja.Leave();
+        Say(closingLine);
     }
 
     IEnumerator RunPhases()
@@ -278,6 +322,8 @@ public class RushDirector : MonoBehaviour
                 if (!string.IsNullOrEmpty(fireStylesBanner)) banner = fireStylesBanner;
             }
             if (!string.IsNullOrEmpty(banner)) GameManager.instance.ShowBanner(banner, bannerSeconds);
+            bool ninjaPhase = phase.kind == Kind.Catch || phase.kind == Kind.Boss;
+            Say(phase.line, ninjaPhase ? ninjaSting : null);
 
             switch (phase.kind)
             {
@@ -304,7 +350,12 @@ public class RushDirector : MonoBehaviour
                         timer += Time.deltaTime;
                         yield return null;
                     }
-                    if (playing) GameManager.instance.ShowBanner(ninja.isFullyFed ? bossFedBanner : bossLeftBanner, bannerSeconds);
+                    if (playing)
+                    {
+                        GameManager.instance.ShowBanner(ninja.isFullyFed ? bossFedBanner : bossLeftBanner, bannerSeconds);
+                        Say(ninja.isFullyFed ? bossFedLine : bossLeftLine);
+                        if (ninja.isFullyFed && tipJar != null) tipJar.AddCoins(ninja.transform.position + Vector3.up * 0.3f, bossCoins);
+                    }
                     // If time is left after the boss, the round finishes with ordinary feeding
                     current = new Phase { kind = Kind.Feed, cats = phase.cats + 2, shortestOrder = phase.shortestOrder, longestOrder = phase.longestOrder };
                     while (playing) yield return null;
@@ -312,19 +363,18 @@ public class RushDirector : MonoBehaviour
 
                 case Kind.Stampede:
                 case Kind.PopUp:
-                    // Not built yet: the hungry cats clear out and the room stays quiet for the phase
-                    Debug.LogWarning($"[Cat Cafe Rush] {phase.kind} phase isn't built yet; skipping its {phase.seconds:F0} s.");
-                    SendCatsAway();
+                    // Not built yet: plays as ordinary feeding for now (with its own banner and callout)
+                    Debug.LogWarning($"[Cat Cafe Rush] {phase.kind} phase isn't built yet; it plays as feeding for {phase.seconds:F0} s.");
                     yield return new WaitForSeconds(phase.seconds);
                     break;
             }
         }
     }
 
-    // Phases where hungry cats with orders keep coming in
+    // Phases where hungry cats with orders keep coming in (Stampede and Pop-up too, until they're built)
     static bool HasOrders(Kind kind)
     {
-        return kind == Kind.Feed || kind == Kind.Boss;
+        return kind != Kind.Catch;
     }
 
     void Update()
@@ -359,8 +409,73 @@ public class RushDirector : MonoBehaviour
                 icon = new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour)
             });
         }
-        orders.Add(CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f));
+        CatOrder order = CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f);
+        order.served = Served;
+        order.holeFor = fedCatsUseHoles && holes.Count > 0 ? (Func<Vector3, Vector3?>)NearestHole : null;
+        orders.Add(order);
         lastArrival = Time.time;
+    }
+
+    void Served(CatOrder order)
+    {
+        if (tipJar != null && coinsPerTreat > 0) tipJar.AddCoins(order.transform.position + Vector3.up * 0.3f, coinsPerTreat * order.orderLength);
+    }
+
+    // ---------- Cat Cafe Waves: holes and the tip jar ----------
+
+    Vector3? NearestHole(Vector3 from)
+    {
+        Vector3? best = null;
+        foreach (Vector3 hole in holes)
+        {
+            if (best == null || (hole - from).sqrMagnitude < (best.Value - from).sqrMagnitude) best = hole;
+        }
+        return best;
+    }
+
+    // A dark round hole in the floor at each door (cats come out of them, and fed cats dive back in)
+    void MakeHoles()
+    {
+        holes.Clear();
+        foreach (Transform door in doors)
+        {
+            if (door == null) continue;
+            Vector3 at = door.position;
+            if (NavMesh.SamplePosition(at, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) at = hit.position;
+            holes.Add(at);
+
+            GameObject rim = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Cat Hole", new Color(0.18f, 0.11f, 0.06f));
+            rim.transform.localScale = new Vector3(0.62f, 0.002f, 0.62f);
+            rim.transform.position = at + Vector3.up * 0.004f;
+            GameObject hole = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, rim.transform, "Dark", Color.black);
+            hole.GetComponent<Renderer>().sharedMaterial.renderQueue = 3001;
+            hole.transform.localScale = new Vector3(0.82f, 1.2f, 0.82f);
+        }
+    }
+
+    // On the counter, in front of the player and off to the right (out of the way of shots at the room)
+    void PlaceTipJar()
+    {
+        Transform eye = player.eyePoint != null ? player.eyePoint : (Camera.main != null ? Camera.main.transform : null);
+        Vector3 head = eye != null ? eye.position : player.transform.position + Vector3.up * 1.6f;
+        Vector3 forward = player.transform.forward;
+        forward.y = 0;
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        Vector3 spot = head + forward * 0.5f + right * 0.45f;
+
+        // Stand it on whatever is below (the counter), or about counter height if nothing's there
+        float y = head.y - 0.65f;
+        RaycastHit[] hits = Physics.RaycastAll(spot, Vector3.down, 1.6f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider.GetComponentInParent<PlayerInput>() != null) continue;
+            if (hit.point.y < head.y - 0.3f) y = hit.point.y;
+            break;
+        }
+        spot.y = y;
+        tipJar = TipJar.Create(spot, head);
     }
 
     // Every hungry cat heads for the nearest door and leaves
