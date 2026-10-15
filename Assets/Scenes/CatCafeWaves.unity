@@ -761,7 +761,7 @@ MonoBehaviour:
   tidyBonusScore: 30
   tidyBonusBanner: TIDY CAFE BONUS!
   catchAimAngle: 14
-  wrongColourLeaves: 1
+  wrongColourLeaves: 0
   catchIntroPraise: Nice catch!
   catchIntroTimeout: 12
 --- !u!114 &41138492

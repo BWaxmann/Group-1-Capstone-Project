@@ -453,7 +453,7 @@ public static class CatCafeRushGenerator
         // The tip jar takes the place of the coffee bottle on the counter, a bit bigger; raids go for it
         director.tipJarReplaces = "Cafe_Bottle_with_Coffee_3";
         director.tipJarScale = 1.4f;
-        director.wrongColourLeaves = true;
+        director.wrongColourLeaves = false;   // a stray shot shouldn't drive off the wrong cat
         EditorUtility.SetDirty(director);
 
         // No yarnball in Waves for now (it has no voice line and doesn't mean much in this version)
