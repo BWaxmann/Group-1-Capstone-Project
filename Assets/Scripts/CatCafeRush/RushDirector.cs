@@ -9,14 +9,18 @@ using Random = UnityEngine.Random;
 // Feed: hungry cats wander in with colour orders (left launcher Blue, right Orange).
 // Catch: the cats run off, and the ninja blinks about knocking things into the air to catch (it can't be fed now).
 // Boss: the finale. The ninja can be fed (it ends when it's full), while it keeps knocking things up.
+// Stampede and Pop-up are the Cat Cafe Waves additions (still being built: for now the cats clear out for that long).
 // Brian's wave spawners are off in this scene; this spawns the cats itself.
 public class RushDirector : MonoBehaviour
 {
+    // New kinds go on the end, so scenes that already have phases keep theirs
     public enum Kind
     {
         Feed,
         Catch,
-        Boss
+        Boss,
+        Stampede,
+        PopUp
     }
 
     [Serializable]
@@ -97,7 +101,7 @@ public class RushDirector : MonoBehaviour
     [Tooltip("How fast treats fly, in m/s (the original game uses 15).")]
     public float treatSpeed = 25f;
 
-    [Tooltip("Which pickups cats can drop (0 = x2 points, 1 = InstaKill, 2 = Shield, 3 = Rapid Fire). " +
+    [Tooltip("Which pickups cats can drop (0 = x2 points, 1 = InstaKill, 2 = Shield, 3 = Spread Shot, 4 = Rapid Fire). " +
              "InstaKill makes colour orders pointless and the shield protects nothing here, so only x2 by default.")]
     public List<int> allowedPickups = new List<int> { 0 };
 
@@ -305,13 +309,27 @@ public class RushDirector : MonoBehaviour
                     current = new Phase { kind = Kind.Feed, cats = phase.cats + 2, shortestOrder = phase.shortestOrder, longestOrder = phase.longestOrder };
                     while (playing) yield return null;
                     break;
+
+                case Kind.Stampede:
+                case Kind.PopUp:
+                    // Not built yet: the hungry cats clear out and the room stays quiet for the phase
+                    Debug.LogWarning($"[Cat Cafe Rush] {phase.kind} phase isn't built yet; skipping its {phase.seconds:F0} s.");
+                    SendCatsAway();
+                    yield return new WaitForSeconds(phase.seconds);
+                    break;
             }
         }
     }
 
+    // Phases where hungry cats with orders keep coming in
+    static bool HasOrders(Kind kind)
+    {
+        return kind == Kind.Feed || kind == Kind.Boss;
+    }
+
     void Update()
     {
-        if (!playing || current == null || current.kind == Kind.Catch) return;
+        if (!playing || current == null || !HasOrders(current.kind)) return;
         if (Time.time - lastArrival < arrivalGap) return;
 
         orders.RemoveAll(o => o == null || !o.isHungry);

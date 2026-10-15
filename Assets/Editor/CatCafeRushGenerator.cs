@@ -359,6 +359,79 @@ public static class CatCafeRushGenerator
                $"{bars} pile health bar(s) shown, and fire styles in the finale (flick the thumbsticks).";
     }
 
+    // ---------- Cat Cafe Waves ----------
+
+    const string WavesScene = "Assets/Scenes/CatCafeWaves.unity";
+
+    // A copy of the Trial (layout, Eleni's ideas and all) that plays a run of short, different waves.
+    // Cat Cafe Rush and the Trial are unchanged.
+    [MenuItem("Catastrophe Cafe/Cat Cafe Rush/Create Waves Scene (Copy Of Trial)", false, 91)]
+    static void CreateWavesFromMenu()
+    {
+        if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+        if (File.Exists(WavesScene) &&
+            !EditorUtility.DisplayDialog("Cat Cafe Waves", "This replaces CatCafeWaves with a fresh copy of CatCafeRushTrial " +
+                                         "(and any changes made to it by hand).", "Make it", "Cancel"))
+        {
+            return;
+        }
+        EditorUtility.DisplayDialog("Cat Cafe Waves", CreateWaves(), "OK");
+    }
+
+    // Command line: -executeMethod CatCafeRushGenerator.BatchCreateWaves
+    public static void BatchCreateWaves()
+    {
+        Debug.Log("[Cat Cafe Waves] " + CreateWaves());
+    }
+
+    static string CreateWaves()
+    {
+        if (File.Exists(WavesScene))
+        {
+            File.Copy(TrialScene, WavesScene, true);
+            AssetDatabase.ImportAsset(WavesScene, ImportAssetOptions.ForceUpdate);
+        }
+        else if (!AssetDatabase.CopyAsset(TrialScene, WavesScene))
+        {
+            return $"Couldn't copy {TrialScene}.";
+        }
+        AssetDatabase.Refresh();
+        Scene scene = EditorSceneManager.OpenScene(WavesScene, OpenSceneMode.Single);
+
+        RushDirector director = Object.FindObjectOfType<RushDirector>();
+        if (director == null) return "No RushDirector in the copy.";
+        string ninjaBanner = director.finaleFireStyles ? director.fireStylesBanner : "NINJA BOSS!\n<size=55%>Feed it before time's up!</size>";
+        director.phases = new List<RushDirector.Phase>
+        {
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
+                                     attackChance = 0.3f, banner = "FEED THE CATS!" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 4, shortestOrder = 1, longestOrder = 2,
+                                     attackChance = 0.35f, banner = "COMBO ORDERS!" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Grip to grab what flies</size>" },
+            new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner },
+        };
+        EditorUtility.SetDirty(director);
+
+        // The round lasts exactly as long as the waves
+        float total = 0;
+        foreach (RushDirector.Phase phase in director.phases) total += phase.seconds;
+        GameManager gameManager = Object.FindObjectOfType<GameManager>();
+        if (gameManager != null)
+        {
+            SerializedObject gameSettings = new SerializedObject(gameManager);
+            CatChaosSceneGenerator.SetSingleRound(gameSettings, total);
+            gameSettings.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+        return $"CatCafeWaves made from the Trial: Feed > Stampede > Feed > Catch > Pop-up > Boss, {total:F0} s " +
+               $"(round timer {(gameManager != null ? "set" : "NOT set, no GameManager found")}). " +
+               "Stampede and Pop-up are placeholders for now (the room clears for that long).";
+    }
+
     // ---------- Updating a hand-made layout ----------
 
     // Turns the player (wherever they stand) to face the chalkboard. Run Update Open Scene afterwards.
