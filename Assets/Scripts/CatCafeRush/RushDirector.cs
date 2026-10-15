@@ -202,7 +202,7 @@ public class RushDirector : MonoBehaviour
     [Tooltip("The first catch phase starts by knocking up one prop that hangs in the air, with a hint, and the clock " +
              "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
     public bool catchIntro = false;
-    public string catchIntroHint = "Squeeze GRIP!";
+    public string catchIntroHint = "Alternative trigger!";
     public string catchIntroPraise = "Nice catch!";
     [Min(1f)] public float catchIntroTimeout = 12f;
 

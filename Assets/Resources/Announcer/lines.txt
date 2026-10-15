@@ -12,7 +12,7 @@ stampede_2 | Kittens! Kittens everywhere! Feed them all!
 feed_combo | Combo orders! Some hungry cats want more than one treat! Fill their bellies to get those tips!
 feed_three | Bigger appetites now! Some cats want THREE treats! Keep filling those bellies!
 catch | Oh no! Ninja Cat has scared off the customers! When it sends something flying, use the alternative trigger to catch it!
-catch_2 | The ninja's knocking things over! Squeeze the grip to catch them!
+# catch_2 | The ninja's knocking things over! Squeeze the grip to catch them!   (left out of rotation: it says "grip"; the catch line teaches the button, so it stays the same every time)
 popup | Pop-up cats! Hit them while they're in the air!
 popup_2 | Heads up! Get them mid-jump!
 boss | The Ninja Cat is back, and it's hungry! Feed it this time to make it go away!

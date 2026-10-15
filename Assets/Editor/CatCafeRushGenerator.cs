@@ -410,7 +410,7 @@ public static class CatCafeRushGenerator
                                      raidEvery = 7, banner = "COMBO ORDERS!", line = "feed_combo" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 15, cats = 4, shortestOrder = 2, longestOrder = 3,
                                      raidEvery = 7, banner = "BIGGER APPETITES!", line = "feed_three" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Squeeze GRIP to catch what flies</size>",
+            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Use the alternative trigger to catch what flies</size>",
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
             new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner,
