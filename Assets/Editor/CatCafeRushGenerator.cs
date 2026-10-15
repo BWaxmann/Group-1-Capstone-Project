@@ -362,6 +362,8 @@ public static class CatCafeRushGenerator
     // ---------- Cat Cafe Waves ----------
 
     const string WavesScene = "Assets/Scenes/CatCafeWaves.unity";
+    const string WavesFinaleBanner = "NINJA FINALE!\n<size=55%>Save the piles: catch everything!</size>";
+    const string WavesFinaleLine = "catch_2";   // until there's a finale line of its own
     const string WavesStartupMessage = "Feed the cats!\n<size=60%>Left trigger = Blue\nRight trigger = Orange\nAlternative trigger = catch</size>\n" +
                                        "<size=45%>Point at the launchers and pull the trigger</size>";
 
@@ -402,7 +404,7 @@ public static class CatCafeRushGenerator
 
         RushDirector director = Object.FindObjectOfType<RushDirector>();
         if (director == null) return "No RushDirector in the copy.";
-        string ninjaBanner = director.finaleFireStyles ? director.fireStylesBanner : "NINJA BOSS!\n<size=55%>Feed it before time's up!</size>";
+        string ninjaBanner = WavesFinaleBanner;
         director.phases = new List<RushDirector.Phase>
         {
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
@@ -416,7 +418,7 @@ public static class CatCafeRushGenerator
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
             new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner,
-                                     line = "boss" },
+                                     line = WavesFinaleLine },
         };
         // The manager on the speaker, fed cats leaving through holes, tips, and raids (instead of random pile attacks)
         director.announcer = true;
@@ -428,6 +430,20 @@ public static class CatCafeRushGenerator
         // Catching is taught the first time (one glowing prop hangs in the air until it's caught) and props glow
         director.catchIntro = true;
         director.catchGlow = true;
+        // The ninja and the piles are the catching stake: it blows whole piles up, misses stay broken, the finale is
+        // all mess (no feeding it) and each pile pays a tidy bonus at closing. Catching is a little stricter.
+        director.ninjaExplodesPiles = true;
+        director.missedPropsStayDown = true;
+        director.bossMakesMess = true;
+        director.finaleFireStyles = false;
+        director.tidyBonusCoins = 10;
+        director.tidyBonusScore = 30;
+        director.catchAimAngle = 14f;
+        director.fallSpeed = 0.65f;
+        // The tip jar takes the place of the coffee bottle on the counter, a bit bigger; raids go for it
+        director.tipJarReplaces = "Cafe_Bottle_with_Coffee_3";
+        director.tipJarScale = 1.4f;
+        director.wrongColourLeaves = true;
         EditorUtility.SetDirty(director);
 
         // No yarnball in Waves for now (it has no voice line and doesn't mean much in this version)
