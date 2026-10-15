@@ -189,6 +189,31 @@ public class RushDirector : MonoBehaviour
     [Min(0)] public int bossCoins = 8;
     [Tooltip("Optional: where the tip jar stands. Empty = on the counter beside the cat clock.")]
     public Transform tipJarSpot;
+    [Tooltip("Optional: the name of an object the tip jar takes the place of (it's hidden), e.g. a bottle on the counter.")]
+    public string tipJarReplaces = "";
+    [Min(0.5f)] public float tipJarScale = 1f;
+
+    [Header("Ninja and the piles (Cat Cafe Waves)")]
+
+    [Tooltip("The ninja only goes to the prop piles, and sends a whole pile flying at once.")]
+    public bool ninjaExplodesPiles = false;
+    [Tooltip("Props that hit the floor stay broken for the rest of the round; the piles' bars show what's left.")]
+    public bool missedPropsStayDown = false;
+    [Tooltip("The finale ninja doesn't want feeding: it just makes a mess (the hungry cats clear out for it).")]
+    public bool bossMakesMess = false;
+    [Min(0)]
+    [Tooltip("At the end of the round each pile pays this many coins into the tip jar if it's whole (fewer if not).")]
+    public int tidyBonusCoins = 0;
+    [Min(0)]
+    [Tooltip("Points for each whole pile at the end of the round (fewer if not).")]
+    public int tidyBonusScore = 0;
+    public string tidyBonusBanner = "TIDY CAFE BONUS!";
+    [Range(0f, 45f)]
+    [Tooltip("How far off (in degrees) a grip can be pointed and still catch a prop. 0 = leave the gravity beam's own.")]
+    public float catchAimAngle = 0f;
+
+    [Tooltip("A cat given the wrong colour pulls an angry face and storms off (no tip).")]
+    public bool wrongColourLeaves = false;
 
     [Tooltip("Hungry cats make runs at the tip jar and the piles (in phases with a Raid Every time): a \"!\" and a wind-up, " +
              "then a sprint and a swat. The right treat before it leaps stops it.")]
@@ -225,8 +250,8 @@ public class RushDirector : MonoBehaviour
     [Header("Pop-up Cats (Pop-up phases)")]
 
     [Min(1)]
-    [Tooltip("Holes cats pop out of: the entry holes in front of the player, plus extra ones opened for the phase.")]
-    public int popUpHoles = 5;
+    [Tooltip("How many cats sit about (on the couches and chairs in front of the player, then the floor if short).")]
+    public int popUpSeats = 6;
     [Min(0.3f)]
     [Tooltip("Seconds between pops at the start of the phase...")]
     public float popGapStart = 1.8f;
@@ -259,6 +284,7 @@ public class RushDirector : MonoBehaviour
     readonly List<Vector3> holes = new List<Vector3>();
     readonly List<Transform> entryDoors = new List<Transform>();
     readonly List<DefendPoint> piles = new List<DefendPoint>();
+    readonly List<PropPile> propPiles = new List<PropPile>();
     float nextRaid;
     bool raidJarNext = true;
     bool catchIntroDone;
@@ -286,7 +312,7 @@ public class RushDirector : MonoBehaviour
             }
             foreach (PopUpCat pop in PopUpCat.active)
             {
-                if (pop.isOut) Consider(pop.aimPoint);
+                if (pop.isOut && pop.wantedFood == treat.foodVariation) Consider(pop.aimPoint);
             }
 
             void Consider(Vector3 point)
@@ -319,6 +345,7 @@ public class RushDirector : MonoBehaviour
             flight.catchableAfter = catchableAfter;
             flight.driftFallSpeed = fallSpeed;
             flight.catchableGlow = catchGlow;
+            flight.missedStayDown = missedPropsStayDown;
         }
 
         player = FindObjectOfType<PlayerInput>();
@@ -379,9 +406,15 @@ public class RushDirector : MonoBehaviour
         KeepCatsOutOfPlayerSpace();
         PickEntryDoors();
         if (fedCatsUseHoles) MakeHoles();
-        if (coinsPerTreat > 0 || bossCoins > 0) PlaceTipJar();
+        if (coinsPerTreat > 0) PlaceTipJar();
         piles.Clear();
         piles.AddRange(FindObjectsOfType<DefendPoint>());
+        propPiles.Clear();
+        propPiles.AddRange(FindObjectsOfType<PropPile>());
+
+        // Catching can be made a little harder (the grip has to point closer to the prop)
+        GravityBeam beam = player.GetComponent<GravityBeam>();
+        if (beam != null && catchAimAngle > 0) beam.aimAngle = catchAimAngle;
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);
@@ -446,6 +479,21 @@ public class RushDirector : MonoBehaviour
                     if (ninja != null) ninja.Leave();
                     break;
 
+                case Kind.Boss when bossMakesMess:
+                    // The finale is all about saving the piles: the hungry cats clear out and the ninja trashes the
+                    // place until just before closing, then each pile pays out by how whole it is
+                    Haptics.PulseBoth(Haptics.Strength.Huge);
+                    CatRaid.CancelAll();
+                    SendCatsAway();
+                    yield return new WaitForSeconds(1f);
+                    SummonNinja(true);
+                    float messUntil = Time.time + Mathf.Max(0, phase.seconds - 1f - TidyBonusSeconds);
+                    while (playing && Time.time < messUntil) yield return null;
+                    if (ninja != null) ninja.Leave();
+                    if (playing) yield return TidyBonus();
+                    while (playing) yield return null;
+                    break;
+
                 case Kind.Boss:
                     Haptics.PulseBoth(Haptics.Strength.Huge);
                     yield return new WaitForSeconds(1f);
@@ -485,44 +533,72 @@ public class RushDirector : MonoBehaviour
     }
 
     // Phases where hungry cats with orders keep coming in
-    static bool HasOrders(Kind kind)
+    bool HasOrders(Kind kind)
     {
-        return kind == Kind.Feed || kind == Kind.Boss;
+        return kind == Kind.Feed || (kind == Kind.Boss && !bossMakesMess);
     }
 
     // ---------- Cat Cafe Waves: pop-up cats ----------
 
-    // Whack-a-mole in the air: cats spring up out of holes in front of the player, faster as the phase goes on
-    // (and two at once near the end); any treat pops one while it's out
+    // Whack-a-mole in the air: cats sit on the couches and chairs in front of the player, and now and then one springs
+    // up showing a colour (faster as the phase goes on, two at once near the end). The right colour pops it, and a new
+    // cat takes its seat a moment later.
     IEnumerator PopUps(Phase phase)
     {
         float start = Time.time;
         float end = start + phase.seconds;
-        List<GameObject> extraHoles = new List<GameObject>();
-        List<Vector3> spots = PopUpSpots(extraHoles);
-        yield return new WaitForSeconds(1.5f);   // the callout lands first
-
         Transform eye = player != null ? player.eyePoint : null;
-        int lastSpot = -1;
-        while (playing && Time.time < end - 1.5f && spots.Count > 0)
+        List<Vector3> seats = PopUpSeats();
+        PopUpCat[] sitters = new PopUpCat[seats.Count];
+        float[] refillAt = new float[seats.Count];
+        for (int i = 0; i < seats.Count; i++)
+        {
+            sitters[i] = SeatCat(seats[i], eye);
+            yield return new WaitForSeconds(0.12f);
+        }
+        yield return new WaitForSeconds(1.2f);   // the callout lands first
+
+        int lastJumper = -1;
+        while (playing && Time.time < end - 1.5f && seats.Count > 0)
         {
             float progress = (Time.time - start) / phase.seconds;
-            int allowed = progress >= doublePopsFrom ? 2 : 1;
-            if (PopUpCat.active.Count < allowed)
+
+            // Popped cats' seats are taken by new ones after a moment
+            for (int i = 0; i < seats.Count; i++)
             {
-                // A hole nobody's in, and not the one just used (so it moves about)
-                List<int> free = new List<int>();
-                for (int i = 0; i < spots.Count; i++)
+                bool empty = sitters[i] == null || !sitters[i].isActiveAndEnabled;
+                if (!empty) continue;
+                if (refillAt[i] == 0) refillAt[i] = Time.time + 1.5f;
+                else if (Time.time >= refillAt[i])
                 {
-                    if (i == lastSpot && spots.Count > 1) continue;
-                    if (PopUpCat.active.Exists(pop => (pop.holePosition - spots[i]).sqrMagnitude < 0.01f)) continue;
-                    free.Add(i);
+                    sitters[i] = SeatCat(seats[i], eye);
+                    refillAt[i] = 0;
                 }
-                CatMovement cat = free.Count > 0 && catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
-                if (cat != null)
+            }
+
+            int allowed = progress >= doublePopsFrom ? 2 : 1;
+            int up = 0;
+            foreach (PopUpCat sitter in sitters)
+            {
+                if (sitter != null && sitter.isActiveAndEnabled && !sitter.isIdle) up++;
+            }
+            if (up < allowed)
+            {
+                // Someone sitting (not the last one to jump, so it moves about)
+                List<int> ready = new List<int>();
+                for (int i = 0; i < seats.Count; i++)
                 {
-                    lastSpot = free[Random.Range(0, free.Count)];
-                    PopUpCat.Launch(cat, spots[lastSpot], eye, popUp, PopUpHit);
+                    if (sitters[i] == null || !sitters[i].isIdle) continue;
+                    if (i == lastJumper && seats.Count > 1) continue;
+                    ready.Add(i);
+                }
+                if (ready.Count > 0)
+                {
+                    lastJumper = ready[Random.Range(0, ready.Count)];
+                    bool left = Random.value < 0.5f;
+                    sitters[lastJumper].Jump(left ? leftFood : rightFood,
+                                             new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour),
+                                             bubbleScale);
                 }
             }
             float gap = Mathf.Lerp(popGapStart, popGapEnd, progress);
@@ -531,10 +607,12 @@ public class RushDirector : MonoBehaviour
         while (playing && Time.time < end) yield return null;
 
         PopUpCat.EndAll();
-        foreach (GameObject hole in extraHoles)
-        {
-            if (hole != null) Destroy(hole);
-        }
+    }
+
+    PopUpCat SeatCat(Vector3 seat, Transform eye)
+    {
+        CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+        return cat != null ? PopUpCat.Seat(cat, seat, eye, popUp, PopUpHit) : null;
     }
 
     void PopUpHit(PopUpCat pop)
@@ -545,30 +623,112 @@ public class RushDirector : MonoBehaviour
         Haptics.PulseBoth(Haptics.Strength.Medium);
     }
 
-    // The entry holes, plus extra holes opened on clear floor in front of the player (not under a table, not too
-    // close together) until there are enough
-    List<Vector3> PopUpSpots(List<GameObject> extraHoles)
+    static readonly string[] SeatNames = { "Couch", "Sofa", "Chair", "Armchair", "Stool", "Bench" };
+
+    // Seats in front of the player: the couches and chairs (a long couch seats two), up to Pop Up Seats of them.
+    // If there aren't enough, clear spots on the floor make up the rest.
+    List<Vector3> PopUpSeats()
     {
-        List<Vector3> spots = new List<Vector3>(holes);
-        if (player == null) return spots;
+        List<Vector3> seats = new List<Vector3>();
+        if (player == null) return seats;
         Transform eye = player.eyePoint;
         Vector3 head = eye != null ? eye.position : player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
         forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
         float floorY = player.transform.position.y;
 
-        for (int attempt = 0; attempt < 60 && spots.Count < popUpHoles; attempt++)
+        List<Vector3> found = new List<Vector3>();
+        foreach (Transform thing in FindObjectsOfType<Transform>())
+        {
+            if (!IsSeat(thing.name)) continue;
+            Bounds bounds;
+            if (!BoundsOf(thing, out bounds)) continue;
+            Vector3 to = Flat(bounds.center - head);
+            if (to.magnitude < 1.5f || to.magnitude > 8f || Vector3.Angle(forward, to) > 65f) continue;
+
+            // A long couch has room for two
+            bool couch = Mathf.Max(bounds.size.x, bounds.size.z) > 1.3f;
+            Vector3 along = bounds.size.x > bounds.size.z ? Vector3.right : Vector3.forward;
+            float half = Mathf.Max(bounds.size.x, bounds.size.z) * 0.25f;
+            foreach (Vector3 point in couch ? new[] { bounds.center - along * half, bounds.center + along * half } : new[] { bounds.center })
+            {
+                if (SeatTop(point, bounds, floorY, out Vector3 seat)) found.Add(seat);
+            }
+        }
+
+        // The nearest seats to the middle of the view first, keeping cats apart
+        found.Sort((a, b) => Vector3.Angle(forward, Flat(a - head)).CompareTo(Vector3.Angle(forward, Flat(b - head))));
+        foreach (Vector3 seat in found)
+        {
+            if (seats.Count >= popUpSeats) break;
+            if (seats.Exists(other => Flat(other - seat).magnitude < 0.7f)) continue;
+            seats.Add(seat);
+        }
+
+        // Not enough seats: the floor in front, out in the open
+        for (int attempt = 0; attempt < 60 && seats.Count < popUpSeats; attempt++)
         {
             Vector3 probe = head + Quaternion.Euler(0, Random.Range(-55f, 55f), 0) * forward * Random.Range(2.5f, 6f);
             probe.y = floorY;
             if (!NavMesh.SamplePosition(probe, out NavMeshHit floor, 0.5f, NavMesh.AllAreas)) continue;
             if (Mathf.Abs(floor.position.y - floorY) > 0.15f) continue;
             if (Physics.Raycast(floor.position + Vector3.up * 0.1f, Vector3.up, 2.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
-            if (spots.Exists(spot => Flat(spot - floor.position).magnitude < 1.4f)) continue;
-            spots.Add(floor.position);
-            extraHoles.Add(HoleVisual(floor.position));
+            if (seats.Exists(other => Flat(other - floor.position).magnitude < 1.2f)) continue;
+            seats.Add(floor.position);
         }
-        return spots;
+        return seats;
+    }
+
+    static bool IsSeat(string name)
+    {
+        foreach (string seatName in SeatNames)
+        {
+            if (name.StartsWith(seatName)) return true;
+        }
+        return false;
+    }
+
+    static bool BoundsOf(Transform thing, out Bounds bounds)
+    {
+        bounds = new Bounds();
+        bool any = false;
+        foreach (Renderer rend in thing.GetComponentsInChildren<Renderer>())
+        {
+            if (!(rend is MeshRenderer) && !(rend is SkinnedMeshRenderer)) continue;
+            if (!any) bounds = rend.bounds;
+            else bounds.Encapsulate(rend.bounds);
+            any = true;
+        }
+        return any;
+    }
+
+    // Where a cat would sit at `point` on a seat: the highest surface there at seat height (not the back or arm)
+    static bool SeatTop(Vector3 point, Bounds bounds, float floorY, out Vector3 seat)
+    {
+        seat = Vector3.zero;
+        float best = float.MinValue;
+        Vector3 from = new Vector3(point.x, bounds.max.y + 0.2f, point.z);
+        foreach (RaycastHit hit in Physics.RaycastAll(from, Vector3.down, bounds.size.y + 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            // Seat height (a table top is higher), facing up
+            float height = hit.point.y - floorY;
+            if (height < 0.25f || height > 0.65f || hit.normal.y < 0.7f) continue;
+            if (hit.point.y > best)
+            {
+                best = hit.point.y;
+                seat = hit.point;
+            }
+        }
+        if (best == float.MinValue)
+        {
+            // No collider to land on: the seat's walkable top, if cats can stand there
+            Vector3 guess = new Vector3(point.x, floorY + 0.45f, point.z);
+            if (!NavMesh.SamplePosition(guess, out NavMeshHit onSeat, 0.4f, NavMesh.AllAreas) ||
+                onSeat.position.y - floorY < 0.25f || onSeat.position.y - floorY > 0.65f) return false;
+            seat = onSeat.position;
+        }
+        // Not tucked under a table: it needs room to jump
+        return !Physics.Raycast(seat + Vector3.up * 0.15f, Vector3.up, 1.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 
     // ---------- Cat Cafe Waves: kitten stampede ----------
@@ -693,6 +853,7 @@ public class RushDirector : MonoBehaviour
         CatOrder order = CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f, catSpeedMultiplier);
         order.served = Served;
         order.holeFor = fedCatsUseHoles && holes.Count > 0 ? (Func<Vector3, Vector3?>)NearestHole : null;
+        order.wrongTreat = WrongTreat;
         orders.Add(order);
         lastArrival = Time.time;
     }
@@ -773,8 +934,9 @@ public class RushDirector : MonoBehaviour
         if (current.raidEvery <= 0 || CatRaid.active.Count > 0 || Time.time < nextRaid) return;
         nextRaid = Time.time + 1f;   // nobody could go: try again in a moment
 
-        bool jarFirst = raidJarNext;
-        for (int attempt = 0; attempt < 2; attempt++)
+        // With a tip jar, raids are all about the jar (the piles are the ninja's); otherwise they take turns
+        bool jarFirst = tipJar != null || raidJarNext;
+        for (int attempt = 0; attempt < (tipJar != null ? 1 : 2); attempt++)
         {
             bool useJar = attempt == 0 ? jarFirst : !jarFirst;
             CatRaid.Target target = useJar ? JarTarget() : PileTarget();
@@ -909,9 +1071,42 @@ public class RushDirector : MonoBehaviour
         Vector3 head = eye != null ? eye.position : player.transform.position + Vector3.up * 1.6f;
         if (tipJarSpot != null)
         {
-            tipJar = TipJar.Create(tipJarSpot.position, head);
+            tipJar = TipJar.Create(tipJarSpot.position, head, tipJarScale);
             return;
         }
+
+        // In place of something already standing there (e.g. a bottle on the counter), which is put away. Several
+        // things can share a name: it's the one nearest the player.
+        GameObject replaced = null;
+        if (!string.IsNullOrEmpty(tipJarReplaces))
+        {
+            float nearest = float.MaxValue;
+            foreach (Transform thing in FindObjectsOfType<Transform>())
+            {
+                if (thing.name != tipJarReplaces) continue;
+                float distance = Flat(thing.position - head).magnitude;
+                if (distance < nearest)
+                {
+                    nearest = distance;
+                    replaced = thing.gameObject;
+                }
+            }
+        }
+        if (replaced != null)
+        {
+            Bounds bounds = new Bounds(replaced.transform.position, Vector3.zero);
+            bool any = false;
+            foreach (Renderer rend in replaced.GetComponentsInChildren<Renderer>())
+            {
+                if (!any) bounds = rend.bounds;
+                else bounds.Encapsulate(rend.bounds);
+                any = true;
+            }
+            replaced.SetActive(false);
+            tipJar = TipJar.Create(new Vector3(bounds.center.x, bounds.min.y, bounds.center.z), head, tipJarScale);
+            return;
+        }
+        if (!string.IsNullOrEmpty(tipJarReplaces)) Debug.LogWarning($"[Cat Cafe Waves] No \"{tipJarReplaces}\" in the scene for the tip jar to replace.");
 
         Vector3 forward = player.transform.forward;
         forward.y = 0;
@@ -925,7 +1120,7 @@ public class RushDirector : MonoBehaviour
             Debug.LogWarning("[Cat Cafe Waves] No Cat_clock on a counter to put the tip jar beside; it's guessing the counter height.");
             spot = new Vector3(wanted.x, head.y - 0.65f, wanted.z);
         }
-        tipJar = TipJar.Create(spot.Value, head);
+        tipJar = TipJar.Create(spot.Value, head, tipJarScale);
     }
 
     Vector3? BesideTheClock(Vector3 wanted)
@@ -993,19 +1188,42 @@ public class RushDirector : MonoBehaviour
         foreach (CatOrder order in orders)
         {
             if (order == null || !order.isHungry) continue;
-            Vector3 cat = order.transform.position;
-            Transform nearest = null;
-            foreach (Transform door in doors)
-            {
-                if (nearest == null || (door.position - cat).sqrMagnitude < (nearest.position - cat).sqrMagnitude) nearest = door;
-            }
-            if (nearest == null) continue;
-            // The floor at that door (some door markers sit a little above it)
-            Vector3 exit = nearest.position;
-            if (NavMesh.SamplePosition(exit, out NavMeshHit floor, 1.5f, NavMesh.AllAreas)) exit = floor.position;
-            order.RunOff(exit);
+            Vector3? exit = NearestExit(order.transform.position);
+            if (exit.HasValue) order.RunOff(exit.Value);
         }
         orders.Clear();
+    }
+
+    // The floor at the door nearest `from` (some door markers sit a little above it)
+    Vector3? NearestExit(Vector3 from)
+    {
+        Transform nearest = null;
+        foreach (Transform door in doors)
+        {
+            if (door == null) continue;
+            if (nearest == null || (door.position - from).sqrMagnitude < (nearest.position - from).sqrMagnitude) nearest = door;
+        }
+        if (nearest == null) return null;
+        Vector3 exit = nearest.position;
+        if (NavMesh.SamplePosition(exit, out NavMeshHit floor, 1.5f, NavMesh.AllAreas)) exit = floor.position;
+        return exit;
+    }
+
+    // The wrong colour: an angry face (already shown), a moment to sulk, then it storms off without a tip
+    void WrongTreat(CatOrder order)
+    {
+        if (wrongColourLeaves) StartCoroutine(StormOff(order));
+    }
+
+    IEnumerator StormOff(CatOrder order)
+    {
+        yield return new WaitForSeconds(0.6f);
+        if (order == null || !order.isHungry || !playing) yield break;
+        CatRaid raid = order.GetComponent<CatRaid>();
+        if (raid != null && raid.isRunning) raid.Cancel();
+        Vector3? exit = NearestExit(order.transform.position);
+        if (exit.HasValue) order.RunOff(exit.Value);
+        orders.Remove(order);
     }
 
     // A cat-proof patch of floor where the player stands (cut out of the NavMesh while the round runs)
@@ -1035,14 +1253,71 @@ public class RushDirector : MonoBehaviour
 
     void SummonNinja(bool boss)
     {
-        if (ninja == null || ninjaStops.Count == 0) return;
-        List<Vector3> stops = StopsAwayFromPlayer();
-        if (boss) ninja.Configure(true, bossKnocksPerStop, bossSitMin, bossSitMax);
-        else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax);
+        if (ninja == null) return;
+        List<Vector3> stops;
+        ninja.piles.Clear();
+        if (ninjaExplodesPiles && PileStops(out stops, ninja.piles))
+        {
+            // Only the piles, each blown up whole (the finale's too, if it's making a mess)
+            if (boss) ninja.Configure(!bossMakesMess, bossKnocksPerStop, bossSitMin, bossSitMax, true);
+            else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax, true);
+        }
+        else
+        {
+            if (ninjaStops.Count == 0) return;
+            stops = StopsAwayFromPlayer();
+            if (boss) ninja.Configure(true, bossKnocksPerStop, bossSitMin, bossSitMax);
+            else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax);
+        }
         ninja.stops = stops;
         ninja.gameObject.SetActive(true);
         ninja.Initialise(transform, stops[Random.Range(0, stops.Count)]);
         // The boss gets the same generous hit area as the other cats
         if (cleanShots && ninjaHitbox == null) ninjaHitbox = CatOrder.AddHitbox(ninja.gameObject, hitboxGenerosity);
+    }
+
+    // A spot beside each prop pile (on its table, on the player's side) for the ninja to appear at
+    bool PileStops(out List<Vector3> stops, List<PropPile> forPiles)
+    {
+        stops = new List<Vector3>();
+        Vector3 viewer = player != null ? player.transform.position : transform.position;
+        foreach (PropPile pile in propPiles)
+        {
+            if (pile == null || !pile.isActiveAndEnabled) continue;
+            Vector3 at = pile.transform.position;
+            Vector3 towards = Flat(viewer - at);
+            towards = towards.sqrMagnitude > 0.001f ? towards.normalized : Vector3.forward;
+            Vector3 beside = at + towards * 0.35f;
+            if (!NavMesh.SamplePosition(beside, out NavMeshHit hit, 0.6f, NavMesh.AllAreas) &&
+                !NavMesh.SamplePosition(at, out hit, 1.5f, NavMesh.AllAreas)) continue;
+            stops.Add(hit.position);
+            forPiles.Add(pile);
+        }
+        return stops.Count > 0;
+    }
+
+    // ---------- Cat Cafe Waves: the end-of-round tidy bonus ----------
+
+    const float TidyBonusSeconds = 3f;
+
+    // Each pile pays into the tip jar (and the score) by how much of it is still standing
+    IEnumerator TidyBonus()
+    {
+        if ((tidyBonusCoins <= 0 && tidyBonusScore <= 0) || propPiles.Count == 0) yield break;
+        if (!string.IsNullOrEmpty(tidyBonusBanner)) GameManager.instance.ShowBanner(tidyBonusBanner, bannerSeconds);
+        yield return new WaitForSeconds(0.6f);
+        foreach (PropPile pile in propPiles)
+        {
+            if (pile == null) continue;
+            float whole = pile.standing;
+            Vector3 at = pile.transform.position + Vector3.up * 0.4f;
+            int score = Mathf.RoundToInt(whole * tidyBonusScore);
+            int coins = Mathf.RoundToInt(whole * tidyBonusCoins);
+            if (score > 0) GameManager.instance.AddBonus(score, at);
+            if (coins > 0 && tipJar != null) tipJar.AddCoins(at, coins);
+            FloatingWord.Show($"{Mathf.RoundToInt(whole * 100)}%", at + Vector3.up * 0.3f,
+                              whole > 0.66f ? new Color(0.4f, 1f, 0.5f) : whole > 0.33f ? new Color(1f, 0.85f, 0.2f) : new Color(1f, 0.4f, 0.3f), 4f, 1.6f);
+            yield return new WaitForSeconds(0.5f);
+        }
     }
 }

@@ -50,6 +50,9 @@ public class CatOrder : MonoBehaviour
     // Called for every right treat the cat eats (including the last), before the cat reacts to it
     public event System.Action<CatOrder> rightTreat;
 
+    // Called when it's given the wrong colour (after the angry face), e.g. so it can storm off
+    public System.Action<CatOrder> wrongTreat;
+
     // While true the cat ignores treats (e.g. mid-leap in a raid: too late to stop it)
     public bool busy { get; set; }
 
@@ -200,6 +203,7 @@ public class CatOrder : MonoBehaviour
             // "That's not what I ordered!"
             bubble.Shake();
             bubble.FlashFace(cat.grumpiestFace, 0.5f);
+            wrongTreat?.Invoke(this);
             return false;
         }
 

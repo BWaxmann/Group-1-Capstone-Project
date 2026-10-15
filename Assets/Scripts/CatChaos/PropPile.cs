@@ -119,6 +119,32 @@ public class PropPile : MonoBehaviour
         return false;
     }
 
+    // The whole pile goes up at once (the ninja's swipe in Cat Cafe Waves). Returns how many props went flying.
+    public int Explode(Vector3 playerPosition)
+    {
+        int sent = 0;
+        foreach (FlyingProp prop in props)
+        {
+            if (prop != null && prop.state == FlyingProp.State.Home && prop.Knock(playerPosition, false, true)) sent++;
+        }
+        shake = 1f;
+        return sent;
+    }
+
+    // Props still sitting on the pile
+    public int propsHome
+    {
+        get
+        {
+            int home = 0;
+            foreach (FlyingProp prop in props)
+            {
+                if (prop != null && prop.state == FlyingProp.State.Home) home++;
+            }
+            return home;
+        }
+    }
+
     // A wobble, e.g. when a cat brushes past
     public void Rattle(float amount)
     {

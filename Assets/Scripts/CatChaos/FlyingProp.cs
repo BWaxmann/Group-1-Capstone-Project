@@ -131,11 +131,11 @@ public class FlyingProp : MonoBehaviour
     }
 
     // Sends the prop up on a slow arc, drifting towards the player. Returns false if it can't go right now.
-    // A slow-fall prop hangs in the air for a long time.
-    public bool Knock(Vector3 playerPosition, bool slowFall = false)
+    // A slow-fall prop hangs in the air for a long time. Ignoring the limit lets a whole pile go up at once.
+    public bool Knock(Vector3 playerPosition, bool slowFall = false, bool ignoreLimit = false)
     {
         CatChaosSettings settings = CatChaosSettings.instance;
-        if (state != State.Home || settings == null || airborne.Count >= settings.maxAirborne) return false;
+        if (state != State.Home || settings == null || (!ignoreLimit && airborne.Count >= settings.maxAirborne)) return false;
 
         Vector3 toPlayer = playerPosition - transform.position;
         toPlayer.y = 0;
@@ -341,6 +341,8 @@ public class FlyingProp : MonoBehaviour
                 break;
 
             case State.Landed:
+                // Missed props can stay broken for the rest of the round (the pile shows what's left)
+                if (settings.missedStayDown) break;
                 timer += dt;
                 if (timer >= settings.respawnDelay)
                 {

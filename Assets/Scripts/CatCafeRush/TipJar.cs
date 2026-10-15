@@ -17,7 +17,7 @@ public class TipJar : MonoBehaviour
     public int coins { get; private set; }
 
     // The jar's mouth (where coins drop in)
-    public Vector3 top => transform.position + Vector3.up * JarHeight;
+    public Vector3 top => transform.position + Vector3.up * JarHeight * transform.lossyScale.y;
 
     Transform fill;
     Transform body;
@@ -25,11 +25,12 @@ public class TipJar : MonoBehaviour
     AudioClip clink;
     Coroutine punch;
 
-    // Builds a jar standing at `position`, its label turned towards `viewer`
-    public static TipJar Create(Vector3 position, Vector3 viewer)
+    // Builds a jar standing at `position`, its label turned towards `viewer` (scale 1 = about 22 cm tall)
+    public static TipJar Create(Vector3 position, Vector3 viewer, float scale = 1f)
     {
         GameObject root = new GameObject("Tip Jar");
         root.transform.position = position;
+        root.transform.localScale = Vector3.one * scale;
         Vector3 away = position - viewer;
         away.y = 0;
         if (away.sqrMagnitude > 0.0001f) root.transform.rotation = Quaternion.LookRotation(away);
@@ -108,7 +109,7 @@ public class TipJar : MonoBehaviour
         coin.transform.localScale = new Vector3(0.05f, 0.004f, 0.05f);
         coin.transform.position = from;
 
-        Vector3 to = transform.position + Vector3.up * (JarHeight + 0.02f);
+        Vector3 to = top + Vector3.up * 0.02f;
         float height = 0.5f + Vector3.Distance(from, to) * 0.15f;
         float flight = coinFlightTime + Vector3.Distance(from, to) * 0.05f;
         float timer = 0;

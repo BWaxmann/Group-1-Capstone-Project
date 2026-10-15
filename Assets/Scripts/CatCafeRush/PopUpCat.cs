@@ -5,16 +5,17 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-// Cat Cafe Waves' pop-up cats: whack-a-mole in the air. A pooled cat hides in a hole in the floor; the hole puffs and
-// boings, then the cat springs straight up, hangs at the top for a moment glowing gold, and drops back in. Any treat
-// that reaches it while it's out pops it into confetti. A miss costs nothing: it just drops back down.
+// Cat Cafe Waves' pop-up cats: whack-a-mole in the air. Pooled cats sit on the couches and chairs; now and then one
+// crouches, boings, and springs straight up, showing a colour, hangs at the top for a moment glowing gold, and drops
+// back onto its seat. The right colour while it's up pops it into confetti (and its seat is taken by a new cat); the
+// wrong colour gets an angry face. A miss costs nothing: it just lands and waits to jump again.
 public class PopUpCat : MonoBehaviour
 {
     [Serializable]
     public class Settings
     {
         [Min(0.1f)]
-        [Tooltip("Seconds between the hole's puff and boing and the cat springing out (the warning).")]
+        [Tooltip("Seconds of crouch and boing before the cat springs up (the warning).")]
         public float warning = 0.45f;
         [Min(0.3f)] public float heightMin = 1.2f;
         [Min(0.3f)] public float heightMax = 1.7f;
@@ -31,55 +32,62 @@ public class PopUpCat : MonoBehaviour
 
     public static readonly List<PopUpCat> active = new List<PopUpCat>();
 
-    const float HideDepth = 0.6f;   // how far below the floor it waits
-
     CatMovement cat;
     Animator animator;
     SphereCollider hitbox;
     Outline glow;
+    OrderBubble bubble;
     Settings settings;
-    Vector3 hole;
+    Vector3 seat;
     Transform viewer;
     Action<PopUpCat> onHit;
+    bool jumping;
     bool airborne;
     bool hit;
+    int food = -1;
     float normalAnimatorSpeed = 1f;
+    Vector3 normalScale;
 
     static AudioClip boing;
     AudioSource voice;
 
+    public bool isIdle => !jumping && !hit && isActiveAndEnabled;
     public bool isOut => airborne && !hit;
+    public int wantedFood => isOut ? food : -1;
     public Vector3 aimPoint => hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.2f;
-    public Vector3 holePosition => hole;
 
-    // Hides a pooled cat (switched off) in `hole` and pops it up once
-    public static PopUpCat Launch(CatMovement cat, Vector3 hole, Transform viewer, Settings settings, Action<PopUpCat> onHit)
+    // Sits a pooled cat (switched off) on `seat`, facing the player
+    public static PopUpCat Seat(CatMovement cat, Vector3 seat, Transform viewer, Settings settings, Action<PopUpCat> onHit)
     {
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
         if (agent != null) agent.enabled = false;
         PopUpCat pop = cat.GetComponent<PopUpCat>();
         if (pop == null) pop = cat.gameObject.AddComponent<PopUpCat>();
         pop.cat = cat;
-        pop.hole = hole;
+        pop.seat = seat;
         pop.viewer = viewer;
         pop.settings = settings;
         pop.onHit = onHit;
+        pop.jumping = false;
         pop.airborne = false;
         pop.hit = false;
+        pop.normalScale = cat.transform.localScale;
 
-        cat.transform.position = hole + Vector3.down * HideDepth;
-        Vector3 look = viewer != null ? viewer.position - hole : -cat.transform.forward;
-        look.y = 0;
-        if (look.sqrMagnitude > 0.0001f) cat.transform.rotation = Quaternion.LookRotation(look);
+        cat.transform.position = seat;
+        pop.FaceViewer();
         cat.gameObject.SetActive(true);
         cat.TakeOver();
         cat.treatGate = pop.Eat;
         pop.enabled = true;
 
         pop.animator = cat.GetComponentInChildren<Animator>();
-        if (pop.animator != null) pop.normalAnimatorSpeed = pop.animator.speed;
+        if (pop.animator != null)
+        {
+            pop.normalAnimatorSpeed = pop.animator.speed;
+            pop.animator.speed = 0.4f;   // sitting about, not going anywhere
+        }
         pop.SetHitbox(settings.hitRadius);
-        pop.StartCoroutine(pop.Pop());
+        cat.DustPuff(0.5f, seat);
         return pop;
     }
 
@@ -93,23 +101,49 @@ public class PopUpCat : MonoBehaviour
         active.Remove(this);
     }
 
-    IEnumerator Pop()
+    void FaceViewer()
     {
-        // The warning: a puff of dust out of the hole and a boing from it
-        cat.DustPuff(0.6f, hole);
-        PlayBoing();
-        yield return new WaitForSeconds(settings.warning);
+        Vector3 look = viewer != null ? viewer.position - seat : -transform.forward;
+        look.y = 0;
+        if (look.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(look);
+    }
 
-        // Up it springs (fast, slowing to the top)
+    // Springs up once, wanting `wanted` (a treat pool position), shown by `icon` in a bubble while it's up
+    public void Jump(int wanted, OrderBubble.Item icon, float bubbleScale)
+    {
+        if (!isIdle) return;
+        food = wanted;
+        StartCoroutine(JumpRoutine(icon, bubbleScale));
+    }
+
+    IEnumerator JumpRoutine(OrderBubble.Item icon, float bubbleScale)
+    {
+        jumping = true;
+
+        // The warning: it crouches down, wiggling, with a boing
+        PlayBoing();
+        float timer = 0;
+        while (timer < settings.warning)
+        {
+            timer += Time.deltaTime;
+            float crouch = Mathf.Sin(Mathf.Clamp01(timer / settings.warning) * Mathf.PI * 0.5f);
+            transform.localScale = new Vector3(normalScale.x * (1f + 0.1f * crouch), normalScale.y * (1f - 0.25f * crouch), normalScale.z * (1f + 0.1f * crouch));
+            transform.position = seat + transform.right * Mathf.Sin(timer * 40f) * 0.02f;
+            yield return null;
+        }
+        transform.localScale = normalScale;
+
+        // Up it springs (fast, slowing to the top), showing what it wants
         airborne = true;
         SetGlow(true);
-        Vector3 low = hole + Vector3.down * HideDepth;
-        Vector3 top = hole + Vector3.up * Random.Range(settings.heightMin, Mathf.Max(settings.heightMin, settings.heightMax));
+        ShowWant(icon, bubbleScale);
+        if (animator != null) animator.speed = normalAnimatorSpeed;
+        Vector3 top = seat + Vector3.up * Random.Range(settings.heightMin, Mathf.Max(settings.heightMin, settings.heightMax));
         float t = 0;
         while (t < 1f)
         {
             t = Mathf.Min(1f, t + Time.deltaTime / settings.riseTime);
-            transform.position = Vector3.Lerp(low, top, 1f - (1f - t) * (1f - t));
+            transform.position = Vector3.Lerp(seat, top, 1f - (1f - t) * (1f - t));
             Pulse();
             yield return null;
         }
@@ -117,7 +151,7 @@ public class PopUpCat : MonoBehaviour
         // Hangs there, paws out, wiggling
         if (animator != null) animator.speed = 0f;
         Quaternion facing = transform.rotation;
-        float timer = 0;
+        timer = 0;
         while (timer < settings.hang)
         {
             timer += Time.deltaTime;
@@ -127,27 +161,37 @@ public class PopUpCat : MonoBehaviour
             yield return null;
         }
         transform.rotation = facing;
-        if (animator != null) animator.speed = normalAnimatorSpeed;
 
-        // And back down into the hole (faster and faster)
+        // And back down onto its seat (faster and faster)
         t = 0;
         while (t < 1f)
         {
             t = Mathf.Min(1f, t + Time.deltaTime / settings.fallTime);
-            transform.position = Vector3.Lerp(top, low, t * t);
+            transform.position = Vector3.Lerp(top, seat, t * t);
             Pulse();
-            if (transform.position.y < hole.y) SetGlow(false);
             yield return null;
         }
+        transform.position = seat;
         airborne = false;
-        cat.DustPuff(0.5f, hole);
-        Finish();
+        SetGlow(false);
+        if (bubble != null) bubble.Hide();
+        if (animator != null) animator.speed = 0.4f;
+        jumping = false;
     }
 
-    // Any treat pops it while it's out of the hole
+    // While it's up: the right colour pops it, the wrong one gets an angry face
     bool Eat(Treat treat)
     {
-        if (!airborne || hit || transform.position.y < hole.y) return false;
+        if (!airborne || hit) return false;
+        if (food >= 0 && treat.foodVariation != food)
+        {
+            if (bubble != null)
+            {
+                bubble.Shake();
+                bubble.FlashFace(cat.grumpiestFace, 0.5f);
+            }
+            return false;
+        }
         hit = true;
         onHit?.Invoke(this);
         StopAllCoroutines();
@@ -157,16 +201,23 @@ public class PopUpCat : MonoBehaviour
 
     IEnumerator HitPop()
     {
-        Vector3 size = transform.localScale;
+        if (bubble != null) bubble.FlashFace(cat.happiestFace, 0f);
         float t = 0;
         while (t < 1f)
         {
             t += Time.deltaTime / 0.12f;
-            transform.localScale = size * (1f + 0.3f * Mathf.Min(t, 1f));
+            transform.localScale = normalScale * (1f + 0.3f * Mathf.Min(t, 1f));
             yield return null;
         }
-        transform.localScale = size;
         cat.PopConfetti();
+        Finish();
+    }
+
+    // Off its seat in a puff (e.g. the wave is over)
+    public void Leave()
+    {
+        if (!isActiveAndEnabled) return;
+        cat.DustPuff(0.5f, transform.position);
         Finish();
     }
 
@@ -174,23 +225,48 @@ public class PopUpCat : MonoBehaviour
     {
         StopAllCoroutines();
         airborne = false;
+        jumping = false;
         SetGlow(false);
+        if (bubble != null) bubble.Hide();
         if (hitbox != null) hitbox.enabled = false;
         if (animator != null) animator.speed = normalAnimatorSpeed;
+        transform.localScale = normalScale;
         cat.treatGate = null;
         enabled = false;
         cat.gameObject.SetActive(false);
     }
 
-    // When the wave is over: any cat still out drops back into its hole
     public static void EndAll()
     {
         foreach (PopUpCat pop in active.ToArray())
         {
-            if (pop.hit) continue;
-            pop.cat.DustPuff(0.5f, pop.hole);
-            pop.Finish();
+            if (!pop.hit) pop.Leave();
         }
+    }
+
+    void ShowWant(OrderBubble.Item icon, float bubbleScale)
+    {
+        if (food < 0) return;
+        if (bubble == null) bubble = OrderBubble.Create(transform);
+        bubble.gameObject.SetActive(true);
+        bubble.transform.localScale = Vector3.one * bubbleScale;
+        bubble.Show(new List<OrderBubble.Item> { icon }, new Vector3(0, BubbleHeight(bubbleScale), 0));
+    }
+
+    // Just above its head
+    float BubbleHeight(float bubbleScale)
+    {
+        float top = 0.45f;
+        bool any = false;
+        foreach (Renderer rend in GetComponentsInChildren<Renderer>())
+        {
+            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer) continue;
+            if (rend.GetComponentInParent<OrderBubble>() != null || rend.GetComponentInParent<Canvas>() != null) continue;
+            float height = rend.bounds.max.y - transform.position.y;
+            top = any ? Mathf.Max(top, height) : height;
+            any = true;
+        }
+        return Mathf.Clamp(top, 0.3f, 1.2f) + 0.2f * bubbleScale;
     }
 
     void SetHitbox(float worldRadius)
@@ -208,7 +284,7 @@ public class PopUpCat : MonoBehaviour
         hitbox.center = new Vector3(0, 0.2f / Mathf.Max(0.0001f, hitbox.transform.lossyScale.y), 0);
     }
 
-    // A pulsing gold outline while it's out, like a prop that can be caught: hit me now
+    // A pulsing gold outline while it's up, like a prop that can be caught: hit me now
     void SetGlow(bool on)
     {
         if (on && glow == null)
@@ -235,7 +311,7 @@ public class PopUpCat : MonoBehaviour
         {
             voice = gameObject.AddComponent<AudioSource>();
             voice.playOnAwake = false;
-            voice.spatialBlend = 1f;   // heard from the hole
+            voice.spatialBlend = 1f;   // heard from the seat
             voice.minDistance = 3f;
             voice.maxDistance = 30f;
         }

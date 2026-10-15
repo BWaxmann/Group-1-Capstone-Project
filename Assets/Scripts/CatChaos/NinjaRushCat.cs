@@ -39,13 +39,39 @@ public class NinjaRushCat : BossCat
     // Cat Cafe Rush's catch phases use it purely as a knocker: treats don't feed it then
     public bool feedable = true;
 
+    // Cat Cafe Waves: it only goes for the prop piles (stops[i] is beside piles[i]) and sends a whole pile flying at
+    // once, choosing piles that still have props on them
+    public List<PropPile> piles = new List<PropPile>();
+    public bool explodePiles;
+
     // Changes how it behaves for its next appearance (Cat Cafe Rush uses it both as a quick knocker and as the boss)
-    public void Configure(bool canBeFed, int knocks, float sitMin, float sitMax)
+    public void Configure(bool canBeFed, int knocks, float sitMin, float sitMax, bool explode = false)
     {
         feedable = canBeFed;
         knocksPerStop = Mathf.Max(1, knocks);
         minimumSit = Mathf.Max(0.2f, sitMin);
         maximumSit = Mathf.Max(minimumSit, sitMax);
+        explodePiles = explode;
+    }
+
+    // The next stop: a different one from last time, and (blowing up piles) one whose pile still has props on it
+    int NextStop(int lastStop)
+    {
+        List<int> choices = new List<int>();
+        for (int i = 0; i < stops.Count; i++)
+        {
+            if (i == lastStop && stops.Count > 1) continue;
+            if (explodePiles && i < piles.Count && piles[i] != null && piles[i].propsHome == 0) continue;
+            choices.Add(i);
+        }
+        if (choices.Count == 0)
+        {
+            for (int i = 0; i < stops.Count; i++)
+            {
+                if (i != lastStop || stops.Count == 1) choices.Add(i);
+            }
+        }
+        return choices[Random.Range(0, choices.Count)];
     }
 
     int lastShotEaten;
@@ -92,8 +118,7 @@ public class NinjaRushCat : BossCat
 
             if (stops.Count > 0)
             {
-                int next = Random.Range(0, stops.Count);
-                if (stops.Count > 1 && next == lastStop) next = (next + 1 + Random.Range(0, stops.Count - 1)) % stops.Count;
+                int next = NextStop(lastStop);
                 lastStop = next;
                 Blink(stops[next]);
 
@@ -106,7 +131,8 @@ public class NinjaRushCat : BossCat
                     yield return pawWait;
                     if (currentState == AIState.Full) yield break;
                     hitDefendPointSound.PlayOneShot(attackSource);
-                    FlyingProp.KnockNear(transform.position, reach, knocksPerStop, ViewerPosition());
+                    if (explodePiles && next < piles.Count && piles[next] != null) piles[next].Explode(ViewerPosition());
+                    else FlyingProp.KnockNear(transform.position, reach, knocksPerStop, ViewerPosition());
                 }
             }
 

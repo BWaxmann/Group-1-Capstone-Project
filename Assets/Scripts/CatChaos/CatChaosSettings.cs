@@ -63,6 +63,9 @@ public class CatChaosSettings : MonoBehaviour
     [Tooltip("Props pulse with a bright outline while they can be caught (seen through furniture too).")]
     public bool catchableGlow = false;
 
+    [Tooltip("A prop that hits the floor stays broken for the rest of the round instead of popping back onto its pile.")]
+    public bool missedStayDown = false;
+
     public Color glowColour = new Color(1f, 0.8f, 0.15f);
 
     [Min(0)]
