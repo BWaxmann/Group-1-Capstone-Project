@@ -19,7 +19,7 @@ boss | The Ninja Cat is back, and it's hungry! Feed it this time to make it go a
 boss_2 | Here comes the ninja boss! Fill it up, quick!
 boss_fed | You fed the Ninja Cat! Incredible!
 boss_fed_2 | Ninja: fed! You're a natural!
-boss_left | The ninja got away. We'll get it next time!
+boss_left | Ninja Cat got away! You'll get it next time!
 boss_left_2 | Gone in a puff of smoke! Next time!
 closing | And that's closing time! What a first shift. You did amazing!
 closing_2 | Shift's over! The cats loved you.
