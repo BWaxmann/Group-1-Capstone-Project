@@ -406,8 +406,10 @@ public static class CatCafeRushGenerator
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
                                      raidEvery = 10, banner = "FEED THE CATS!", line = "feed_first" },
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 4, shortestOrder = 1, longestOrder = 2,
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 4, shortestOrder = 1, longestOrder = 2,
                                      raidEvery = 7, banner = "COMBO ORDERS!", line = "feed_combo" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 15, cats = 4, shortestOrder = 2, longestOrder = 3,
+                                     raidEvery = 7, banner = "BIGGER APPETITES!", line = "feed_three" },
             new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Squeeze GRIP to catch what flies</size>",
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
@@ -438,7 +440,7 @@ public static class CatCafeRushGenerator
 
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
-        return $"CatCafeWaves made from the Trial: Feed > Stampede > Feed > Catch > Pop-up > Boss, {total:F0} s " +
+        return $"CatCafeWaves made from the Trial: Feed > Stampede > Combo > Bigger appetites > Catch > Pop-up > Boss, {total:F0} s " +
                $"(round timer {(gameManager != null ? "set" : "NOT set, no GameManager found")}). " +
                "Announcer, cat holes and tip jar on. Stampede and Pop-up play as feeding until they're built.";
     }

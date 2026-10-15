@@ -1,24 +1,25 @@
 # Cat Cafe Waves announcer: the cafe manager on the speaker.
 # One line each:  id | what's said | subtitle (optional, if it should read differently from what's said)
 # Recordings sit next to this file named by id (welcome.mp3, catch_2.wav...). Other takes of a line are id_2, id_3...
-# and one is picked at random each time (never the same one twice running).
-# After changing what's said, re-record the placeholders: powershell -File Tools/make-announcer-voice.ps1
-welcome | Morning! Welcome to your first shift at Catastrophe Cafe. Blue treats in your left hand, orange in your right!
-feed_first | Here come the regulars! Give each cat what it ordered.
+# and one is picked at random each time (never the same one twice running). A take with a recording always wins
+# over one without. The real voice is ElevenLabs (Joshua); any .wav left here is a Windows placeholder
+# (powershell -File Tools/make-announcer-voice.ps1 -Only <id> re-records one).
+welcome | Morning! Welcome to your first shift at Catastrophe Cafe. Blue treats are in your left hand, orange are in your right! Squeeze the trigger to send treats flying!
+feed_first | Customers incoming! Feed them the coloured treat in their bubble, and see the tips fly your way!
 feed_first_2 | Customers! Feed them the colour in their bubble.
-stampede | Uh oh... kitten stampede! Hit as many as you can!
+stampede | Uh oh... kitten stampede! Feed as many as you can!
 stampede_2 | Kittens! Kittens everywhere! Feed them all!
-feed_combo | Combo orders! Some cats want two treats, in that order.
-feed_combo_2 | Bigger appetites now! Watch the whole order.
-catch | Ninja on the loose! When something flies, squeeze the grip to catch it!
+feed_combo | Combo orders! Some hungry cats want more than one treat! Fill their bellies to get those tips!
+feed_three | Bigger appetites now! Some cats want THREE treats! Keep filling those bellies!
+catch | Oh no! Ninja Cat has scared off the customers! When it sends something flying, use the alternative trigger to catch it!
 catch_2 | The ninja's knocking things over! Squeeze the grip to catch them!
 popup | Pop-up cats! Hit them while they're in the air!
 popup_2 | Heads up! Get them mid-jump!
-boss | The ninja's back, and it's hungry! Feed it before it gets away!
+boss | The Ninja Cat is back, and it's hungry! Feed it this time to make it go away!
 boss_2 | Here comes the ninja boss! Fill it up, quick!
-boss_fed | You fed the ninja! Incredible!
+boss_fed | You fed the Ninja Cat! Incredible!
 boss_fed_2 | Ninja: fed! You're a natural!
 boss_left | The ninja got away. We'll get it next time!
 boss_left_2 | Gone in a puff of smoke! Next time!
-closing | And that's closing time! What a first shift.
+closing | And that's closing time! What a first shift. You did amazing!
 closing_2 | Shift's over! The cats loved you.

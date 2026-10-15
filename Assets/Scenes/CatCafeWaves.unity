@@ -595,13 +595,22 @@ MonoBehaviour:
     line: stampede
     raidEvery: 0
   - kind: 0
-    seconds: 35
+    seconds: 20
     cats: 4
     shortestOrder: 1
     longestOrder: 2
     banner: COMBO ORDERS!
     attackChance: 0
     line: feed_combo
+    raidEvery: 7
+  - kind: 0
+    seconds: 15
+    cats: 4
+    shortestOrder: 2
+    longestOrder: 3
+    banner: BIGGER APPETITES!
+    attackChance: 0
+    line: feed_three
     raidEvery: 7
   - kind: 1
     seconds: 15
