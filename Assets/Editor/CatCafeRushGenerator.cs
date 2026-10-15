@@ -407,13 +407,13 @@ public static class CatCafeRushGenerator
         string ninjaBanner = WavesFinaleBanner;
         director.phases = new List<RushDirector.Phase>
         {
-            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 25, cats = 3, shortestOrder = 1, longestOrder = 1,
                                      banner = "FEED THE CATS!", line = "feed_first" },
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 4, shortestOrder = 1, longestOrder = 2,
-                                     banner = "COMBO ORDERS!", line = "feed_combo", latchEvery = 10 },
-            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 15, cats = 4, shortestOrder = 2, longestOrder = 3,
-                                     banner = "BIGGER APPETITES!", line = "feed_three", latchEvery = 8 },
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 25, cats = 4, shortestOrder = 1, longestOrder = 2,
+                                     banner = "COMBO ORDERS!", line = "feed_combo", latchEvery = 5 },
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 4, shortestOrder = 2, longestOrder = 3,
+                                     banner = "BIGGER APPETITES!", line = "feed_three", latchEvery = 4 },
             new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Use the alternative trigger to catch what flies</size>",
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },

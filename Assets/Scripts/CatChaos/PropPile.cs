@@ -7,6 +7,7 @@ using UnityEngine;
 public class PropPile : MonoBehaviour
 {
     static readonly List<CatMovement> noCats = new List<CatMovement>();
+    static readonly List<PropPile> all = new List<PropPile>();
 
     [Tooltip("The object holding the props; it's what rattles.")]
     public Transform pile;
@@ -60,11 +61,13 @@ public class PropPile : MonoBehaviour
 
     void OnEnable()
     {
+        all.Add(this);
         if (defendPoint != null) defendPoint.Hit += OnHit;
     }
 
     void OnDisable()
     {
+        all.Remove(this);
         if (defendPoint != null) defendPoint.Hit -= OnHit;
     }
 
@@ -140,6 +143,13 @@ public class PropPile : MonoBehaviour
     // Cat Cafe Waves: a pile's bar stays hidden until the ninja first blows the pile up. Then it pops in empty and
     // fills back up as the props are caught and put back.
     public static bool barsWaitForNinja;
+
+    // Puts every pile's bar away again (when the ninja's phase is over); the next time the ninja blows a pile up, its
+    // bar pops back up
+    public static void HideBars()
+    {
+        foreach (PropPile pile in all) pile.barShown = false;
+    }
 
     void ShowBar()
     {

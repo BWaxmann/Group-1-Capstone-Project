@@ -577,7 +577,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   phases:
   - kind: 0
-    seconds: 35
+    seconds: 25
     cats: 3
     shortestOrder: 1
     longestOrder: 1
@@ -595,7 +595,7 @@ MonoBehaviour:
     line: stampede
     raidEvery: 0
   - kind: 0
-    seconds: 20
+    seconds: 25
     cats: 4
     shortestOrder: 1
     longestOrder: 2
@@ -603,9 +603,9 @@ MonoBehaviour:
     attackChance: 0
     line: feed_combo
     raidEvery: 0
-    latchEvery: 10
+    latchEvery: 5
   - kind: 0
-    seconds: 15
+    seconds: 20
     cats: 4
     shortestOrder: 2
     longestOrder: 3
@@ -613,7 +613,7 @@ MonoBehaviour:
     attackChance: 0
     line: feed_three
     raidEvery: 0
-    latchEvery: 8
+    latchEvery: 4
   - kind: 1
     seconds: 15
     cats: 3

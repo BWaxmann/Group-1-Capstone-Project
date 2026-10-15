@@ -504,6 +504,8 @@ public class RushDirector : MonoBehaviour
             }
             if (!string.IsNullOrEmpty(banner)) GameManager.instance.ShowBanner(banner, bannerSeconds);
             bool ninjaPhase = phase.kind == Kind.Catch || phase.kind == Kind.Boss;
+            // The piles' bars are only up while the ninja's about (each pops up again when it blows that pile up)
+            if (!ninjaPhase) PropPile.HideBars();
             Say(phase.line, ninjaPhase ? ninjaSting : null);
 
             switch (phase.kind)
@@ -933,6 +935,7 @@ public class RushDirector : MonoBehaviour
         CatOrder order = CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f, catSpeedMultiplier);
         order.served = Served;
         order.holeFor = fedCatsUseHoles && holes.Count > 0 ? (Func<Vector3, Vector3?>)NearestHole : null;
+        order.orderSpotFor = orderMoments ? OrderSpot : (Func<CatOrder, Vector3?>)null;
         order.wrongTreat = WrongTreat;
         order.patienceOut = PatienceOut;
         if (orderMoments)
@@ -942,6 +945,87 @@ public class RushDirector : MonoBehaviour
         }
         orders.Add(order);
         lastArrival = Time.time;
+    }
+
+    // ---------- Cat Cafe Waves: ordering where the player can see ----------
+
+    // Floor spots in front of the player with a clear view of a cat standing there (found once, when first needed)
+    readonly List<Vector3> orderSpots = new List<Vector3>();
+    readonly Dictionary<CatOrder, Vector3> spotTaken = new Dictionary<CatOrder, Vector3>();
+    bool lookedForOrderSpots;
+
+    // Where a cat about to order should go first: nowhere (null) if the player can already see it well; otherwise the
+    // nearest free spot they can
+    Vector3? OrderSpot(CatOrder order)
+    {
+        Transform eye = player != null ? player.eyePoint : null;
+        if (eye == null) return null;
+        if (InGoodView(eye, order.transform.position)) return null;
+        if (!lookedForOrderSpots)
+        {
+            lookedForOrderSpots = true;
+            FindOrderSpots(eye);
+        }
+
+        // Not one another cat is standing at or heading for
+        List<CatOrder> gone = new List<CatOrder>();
+        foreach (KeyValuePair<CatOrder, Vector3> taken in spotTaken)
+        {
+            if (taken.Key == null || !taken.Key.isHungry) gone.Add(taken.Key);
+        }
+        foreach (CatOrder done in gone) spotTaken.Remove(done);
+
+        Vector3? best = null;
+        float bestDistance = float.MaxValue;
+        foreach (Vector3 spot in orderSpots)
+        {
+            bool free = true;
+            foreach (KeyValuePair<CatOrder, Vector3> taken in spotTaken)
+            {
+                if (taken.Key != order && Flat(taken.Value - spot).magnitude < 0.9f) free = false;
+            }
+            foreach (CatOrder other in orders)
+            {
+                if (other != null && other != order && other.isHungry && Flat(other.transform.position - spot).magnitude < 0.9f) free = false;
+            }
+            float distance = Flat(spot - order.transform.position).magnitude;
+            if (free && distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = spot;
+            }
+        }
+        if (best != null) spotTaken[order] = best.Value;
+        return best;
+    }
+
+    // In front of the player, not too near or far, and nothing solid hiding it
+    bool InGoodView(Transform eye, Vector3 at)
+    {
+        Vector3 to = Flat(at - eye.position);
+        float distance = to.magnitude;
+        if (distance < 1.8f || distance > 8f) return false;
+        Vector3 forward = Flat(player.transform.forward);
+        if (forward.sqrMagnitude > 0.001f && Vector3.Angle(forward, to) > 60f) return false;
+        return CanSee(eye.position, at + Vector3.up * 0.25f);
+    }
+
+    void FindOrderSpots(Transform eye)
+    {
+        Vector3 at = player.transform.position;
+        Vector3 forward = Flat(player.transform.forward);
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        for (float distance = 2.5f; distance <= 6.5f; distance += 0.8f)
+        {
+            for (float angle = -50f; angle <= 50f; angle += 10f)
+            {
+                Vector3 point = at + Quaternion.Euler(0, angle, 0) * forward * distance;
+                if (!NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas)) continue;
+                if (Mathf.Abs(hit.position.y - at.y) > 0.3f) continue;   // on the floor, not up on the furniture
+                if (orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f)) continue;
+                if (InGoodView(eye, hit.position)) orderSpots.Add(hit.position);
+            }
+        }
     }
 
     void Served(CatOrder order)

@@ -62,6 +62,10 @@ public class CatOrder : MonoBehaviour
     // If set, a served cat runs to the hole this gives (from where it is) and dives in, instead of happy-launching
     public System.Func<Vector3, Vector3?> holeFor;
 
+    // If set, a cat about to order (with an order moment) first walks to the spot this gives, if any (e.g. somewhere the
+    // player can see it properly)
+    public System.Func<CatOrder, Vector3?> orderSpotFor;
+
     // How many treats the order was
     public int orderLength => order.Count;
 
@@ -202,6 +206,18 @@ public class CatOrder : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         if (!isHungry) yield break;
+
+        // Somewhere the player can see it first (not tucked away behind the furniture or off to one side)
+        Vector3? spot = orderSpotFor?.Invoke(this);
+        if (spot != null && agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            cat.StopAllCoroutines();   // stops its roaming
+            agent.isStopped = false;
+            agent.SetDestination(spot.Value);
+            float giveUp = Time.time + 6f;
+            while (isHungry && Time.time < giveUp && (agent.pathPending || agent.remainingDistance > 0.3f)) yield return null;
+            if (!isHungry) yield break;
+        }
 
         // It stops where it is, turns to the player, the counter bell dings, and up pops its order
         cat.StopAllCoroutines();   // stops its roaming
