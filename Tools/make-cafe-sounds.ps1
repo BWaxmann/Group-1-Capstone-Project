@@ -2,7 +2,8 @@
 #   ninja_sting.wav  two taiko drum hits and a sword "shing" (played before the ninja's callouts)
 #   coin.wav         a bright coin clink (each coin landing in the tip jar)
 #   windup.wav       a rising cartoon wind-up (a cat getting ready to raid)
-#   boing.wav        a springy boing (a pop-up cat about to spring out of its hole)
+#   boing.wav        a springy boing (a pop-up cat about to spring up)
+#   order_ding.wav   a counter-bell ding (a cat has just ordered)
 # Swap them for real sounds later (same names), no code changes needed.
 #   powershell -File Tools/make-cafe-sounds.ps1
 
@@ -123,6 +124,30 @@ public static class CafeSynth
         Save(path, buffer);
     }
 
+    // A bright counter-bell ding: a cat has ordered
+    public static void Ding(string path)
+    {
+        float[] buffer = Buffer(0.9);
+        double[] partials = { 1318.5, 1975.5, 2637, 3951 };
+        double[] decays = { 0.45, 0.35, 0.22, 0.12 };
+        double[] loud = { 1.0, 0.55, 0.3, 0.15 };
+        double[] phases = new double[partials.Length];
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            double t = i / (double)Rate;
+            double attack = Math.Min(1, t / 0.003);
+            double sample = 0;
+            for (int p = 0; p < partials.Length; p++)
+            {
+                double shimmer = 1 + 0.0015 * Math.Sin(2 * Math.PI * 6 * t + p);
+                phases[p] += 2 * Math.PI * partials[p] * shimmer / Rate;
+                sample += loud[p] * Math.Sin(phases[p]) * Math.Exp(-t / decays[p]);
+            }
+            buffer[i] = (float)(attack * sample);
+        }
+        Save(path, buffer);
+    }
+
     // A springy cartoon boing: a quick swoop up with a wobble that rings out
     public static void Boing(string path)
     {
@@ -184,4 +209,5 @@ public static class CafeSynth
 [CafeSynth]::Coin((Join-Path $folder 'coin.wav'))
 [CafeSynth]::WindUp((Join-Path $folder 'windup.wav'))
 [CafeSynth]::Boing((Join-Path $folder 'boing.wav'))
+[CafeSynth]::Ding((Join-Path $folder 'order_ding.wav'))
 Get-ChildItem $folder -Filter *.wav | ForEach-Object { "made $($_.Name) ($([math]::Round($_.Length / 1024)) KB)" }

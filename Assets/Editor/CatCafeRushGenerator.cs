@@ -408,12 +408,12 @@ public static class CatCafeRushGenerator
         director.phases = new List<RushDirector.Phase>
         {
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 3, shortestOrder = 1, longestOrder = 1,
-                                     raidEvery = 8, banner = "FEED THE CATS!", line = "feed_first" },
+                                     banner = "FEED THE CATS!", line = "feed_first" },
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 4, shortestOrder = 1, longestOrder = 2,
-                                     raidEvery = 5.5f, banner = "COMBO ORDERS!", line = "feed_combo" },
+                                     banner = "COMBO ORDERS!", line = "feed_combo" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 15, cats = 4, shortestOrder = 2, longestOrder = 3,
-                                     raidEvery = 5.5f, banner = "BIGGER APPETITES!", line = "feed_three" },
+                                     banner = "BIGGER APPETITES!", line = "feed_three" },
             new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Use the alternative trigger to catch what flies</size>",
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
@@ -454,6 +454,10 @@ public static class CatCafeRushGenerator
         director.tipJarReplaces = "Cafe_Bottle_with_Coffee_3";
         director.tipJarScale = 1.4f;
         director.wrongColourLeaves = false;   // a stray shot shouldn't drive off the wrong cat
+        // Cats wander in, then order (a ding and the bubble); serve them before their patience runs out, or they
+        // raid the tip jar. These replace the scheduled raids.
+        director.orderMoments = true;
+        director.impatientCatsRaid = true;
         EditorUtility.SetDirty(director);
 
         // No yarnball in Waves for now (it has no voice line and doesn't mean much in this version)

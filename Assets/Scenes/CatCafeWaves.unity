@@ -584,7 +584,7 @@ MonoBehaviour:
     banner: FEED THE CATS!
     attackChance: 0
     line: feed_first
-    raidEvery: 8
+    raidEvery: 0
   - kind: 3
     seconds: 20
     cats: 3
@@ -602,7 +602,7 @@ MonoBehaviour:
     banner: COMBO ORDERS!
     attackChance: 0
     line: feed_combo
-    raidEvery: 5.5
+    raidEvery: 0
   - kind: 0
     seconds: 15
     cats: 4
@@ -611,7 +611,7 @@ MonoBehaviour:
     banner: BIGGER APPETITES!
     attackChance: 0
     line: feed_three
-    raidEvery: 5.5
+    raidEvery: 0
   - kind: 1
     seconds: 15
     cats: 3
@@ -762,6 +762,14 @@ MonoBehaviour:
   tidyBonusBanner: TIDY CAFE BONUS!
   catchAimAngle: 14
   wrongColourLeaves: 0
+  orderMoments: 1
+  orderDelayMin: 2
+  orderDelayMax: 4.5
+  patience: 10
+  patiencePerExtraTreat: 3
+  impatientCatsRaid: 1
+  quickServiceCoins: 1
+  quickServiceText: Quick!
   catchIntroPraise: Nice catch!
   catchIntroTimeout: 12
 --- !u!114 &41138492

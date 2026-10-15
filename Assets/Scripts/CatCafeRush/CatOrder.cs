@@ -27,7 +27,25 @@ public class CatOrder : MonoBehaviour
     public bool isHungry => cat != null && cat.isActiveAndEnabled && !cat.isFullyFed && !runningOff && step < order.Count;
 
     // The treat this cat wants right now (its position in the treat pool), or -1
-    public int wantedFood => isHungry ? order[step].variation : -1;
+    public int wantedFood => isHungry && ordered ? order[step].variation : -1;
+
+    // Cat Cafe Waves' order moments: a cat can wander in first and order a little later (with a ding), then waits
+    // with a draining patience ring
+    public bool hasOrdered => ordered;
+    public float patienceFraction => patienceTotal > 0 ? Mathf.Clamp01(patienceLeft / patienceTotal) : 1f;
+
+    // Called once when its patience runs out (e.g. so it can raid the tip jar or storm off)
+    public System.Action<CatOrder> patienceOut;
+
+    bool ordered = true;
+    float patienceTotal;
+    float patienceLeft;
+    bool patienceSpent;
+    float lastNotReady = -10f;
+    List<OrderBubble.Item> icons = new List<OrderBubble.Item>();
+    float bubbleHeight;
+    AudioSource dingSource;
+    static AudioClip ding;
 
     // The middle of the cat's body, for the aim assist to steer towards
     public Vector3 aimPoint => hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.2f;
@@ -159,9 +177,95 @@ public class CatOrder : MonoBehaviour
 
         if (bubble == null) bubble = OrderBubble.Create(transform);
         bubble.transform.localScale = Vector3.one * bubbleScale;
-        List<OrderBubble.Item> icons = new List<OrderBubble.Item>();
+        icons = new List<OrderBubble.Item>();
         foreach (Food food in order) icons.Add(food.icon);
-        bubble.Show(icons, new Vector3(0, BubbleHeight(bubbleScale), 0));
+        bubbleHeight = BubbleHeight(bubbleScale);
+        bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
+        ordered = true;
+        patienceTotal = 0;
+        patienceSpent = false;
+    }
+
+    // Wanders about without an order for `delay` seconds, then settles down and orders; after that it waits
+    // `patience` seconds for its whole order to be served (0 = forever)
+    public void OrderLater(float delay, float patience)
+    {
+        ordered = false;
+        if (bubble != null) bubble.Hide();
+        patienceTotal = patience;
+        patienceLeft = patience;
+        patienceSpent = false;
+        StartCoroutine(OrderRoutine(delay));
+    }
+
+    IEnumerator OrderRoutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (!isHungry) yield break;
+
+        // It stops where it is, turns to the player, the counter bell dings, and up pops its order
+        cat.StopAllCoroutines();   // stops its roaming
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = true;
+        ordered = true;
+        bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
+        PlayDing();
+
+        PlayerInput player = FindObjectOfType<PlayerInput>();
+        Transform eye = player != null ? player.eyePoint : null;
+        if (eye == null) yield break;
+        Vector3 look = eye.position - transform.position;
+        look.y = 0;
+        if (look.sqrMagnitude < 0.001f) yield break;
+        Quaternion from = transform.rotation;
+        Quaternion to = Quaternion.LookRotation(look);
+        float t = 0;
+        while (t < 1f && !busy && !runningOff)
+        {
+            t += Time.deltaTime / 0.3f;
+            transform.rotation = Quaternion.Slerp(from, to, t);
+            yield return null;
+        }
+    }
+
+    // A good while of patience back (e.g. it was fed the right colour just as it set off to raid)
+    public void RefillPatience(float fraction)
+    {
+        if (patienceTotal <= 0) return;
+        patienceLeft = patienceTotal * Mathf.Clamp01(fraction);
+        patienceSpent = false;
+    }
+
+    void Update()
+    {
+        if (!ordered || patienceTotal <= 0 || patienceSpent || busy || !isHungry) return;
+        patienceLeft -= Time.deltaTime;
+        if (bubble != null) bubble.SetPatience(patienceFraction);
+        if (patienceLeft > 0) return;
+
+        // Had enough of waiting
+        patienceSpent = true;
+        if (bubble != null)
+        {
+            bubble.Shake();
+            bubble.FlashFace(cat.grumpiestFace, 1.2f);
+        }
+        patienceOut?.Invoke(this);
+    }
+
+    void PlayDing()
+    {
+        if (ding == null) ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
+        if (ding == null) return;
+        if (dingSource == null)
+        {
+            dingSource = gameObject.AddComponent<AudioSource>();
+            dingSource.playOnAwake = false;
+            dingSource.spatialBlend = 1f;   // heard from where the cat is, so it's easy to find
+            dingSource.minDistance = 3f;
+            dingSource.maxDistance = 30f;
+        }
+        dingSource.pitch = Random.Range(0.97f, 1.05f);
+        dingSource.PlayOneShot(ding, 0.8f);
     }
 
     // Just above the cat's head (the bubble is a child of the cat, so it follows it about)
@@ -184,6 +288,16 @@ public class CatOrder : MonoBehaviour
     bool Eat(Treat treat)
     {
         if (runningOff || step >= order.Count) return false;
+        if (!ordered)
+        {
+            // Hasn't ordered yet: "hm?"
+            if (Time.time - lastNotReady > 0.6f)
+            {
+                lastNotReady = Time.time;
+                FloatingWord.Show("?", aboveBubble, Color.white, 3f, 0.7f);
+            }
+            return false;
+        }
         if (busy)
         {
             // Too late: it's mid-raid and not listening

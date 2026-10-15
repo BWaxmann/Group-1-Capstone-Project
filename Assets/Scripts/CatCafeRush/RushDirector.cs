@@ -217,6 +217,27 @@ public class RushDirector : MonoBehaviour
     [Tooltip("A cat given the wrong colour pulls an angry face and storms off (no tip).")]
     public bool wrongColourLeaves = false;
 
+    [Header("Order moments (Cat Cafe Waves)")]
+
+    [Tooltip("Cats wander in without an order, then settle, turn to the player and order (a ding and the bubble pops " +
+             "up) a few seconds later. Their patience ring then drains.")]
+    public bool orderMoments = false;
+    [Min(0f)] public float orderDelayMin = 2f;
+    [Min(0f)] public float orderDelayMax = 4.5f;
+    [Min(0f)]
+    [Tooltip("Seconds a cat waits for a one-treat order once it's ordered (0 = forever)...")]
+    public float patience = 10f;
+    [Min(0f)]
+    [Tooltip("...plus this many for each extra treat in its order.")]
+    public float patiencePerExtraTreat = 3f;
+    [Tooltip("A cat whose patience runs out raids the tip jar (the right treat during its wind-up calms it down); " +
+             "without a tip jar it storms off with no tip.")]
+    public bool impatientCatsRaid = true;
+    [Min(0)]
+    [Tooltip("Extra coins for each treat when a cat is served in the first half of its patience.")]
+    public int quickServiceCoins = 1;
+    public string quickServiceText = "Quick!";
+
     [Tooltip("Hungry cats make runs at the tip jar and the piles (in phases with a Raid Every time): a \"!\" and a wind-up, " +
              "then a sprint and a swat. The right treat before it leaps stops it.")]
     public bool raids = false;
@@ -892,13 +913,27 @@ public class RushDirector : MonoBehaviour
         order.served = Served;
         order.holeFor = fedCatsUseHoles && holes.Count > 0 ? (Func<Vector3, Vector3?>)NearestHole : null;
         order.wrongTreat = WrongTreat;
+        order.patienceOut = PatienceOut;
+        if (orderMoments)
+        {
+            order.OrderLater(Random.Range(orderDelayMin, Mathf.Max(orderDelayMin, orderDelayMax)),
+                             patience > 0 ? patience + patiencePerExtraTreat * (length - 1) : 0f);
+        }
         orders.Add(order);
         lastArrival = Time.time;
     }
 
     void Served(CatOrder order)
     {
-        if (tipJar != null && coinsPerTreat > 0) tipJar.AddCoins(order.transform.position + Vector3.up * 0.3f, coinsPerTreat * order.orderLength);
+        if (tipJar == null || coinsPerTreat <= 0) return;
+        int coins = coinsPerTreat * order.orderLength;
+        // Quick service (in the first half of its patience) tips better
+        if (orderMoments && quickServiceCoins > 0 && order.patienceFraction > 0.5f)
+        {
+            coins += quickServiceCoins * order.orderLength;
+            FloatingWord.Show(quickServiceText, order.aboveBubble, new Color(1f, 0.85f, 0.2f));
+        }
+        tipJar.AddCoins(order.transform.position + Vector3.up * 0.3f, coins);
     }
 
     // ---------- Cat Cafe Waves: the catch intro ----------
@@ -1034,7 +1069,7 @@ public class RushDirector : MonoBehaviour
         List<CatOrder> others = new List<CatOrder>();
         foreach (CatOrder order in orders)
         {
-            if (order == null || !order.isHungry || order.busy) continue;
+            if (order == null || !order.isHungry || order.busy || !order.hasOrdered) continue;
             Vector3 gap = target - order.transform.position;
             gap.y = 0;
             if (gap.magnitude < 2.5f) continue;
@@ -1274,9 +1309,37 @@ public class RushDirector : MonoBehaviour
         if (order == null || !order.isHungry || !playing) yield break;
         CatRaid raid = order.GetComponent<CatRaid>();
         if (raid != null && raid.isRunning) raid.Cancel();
+        LeaveWithoutTip(order);
+    }
+
+    void LeaveWithoutTip(CatOrder order)
+    {
         Vector3? exit = NearestExit(order.transform.position);
         if (exit.HasValue) order.RunOff(exit.Value);
         orders.Remove(order);
+    }
+
+    // Kept waiting too long: it goes for the tip jar (the right treat during its wind-up still calms it down), or,
+    // with no jar (or two raids already on), storms off without a tip
+    void PatienceOut(CatOrder order)
+    {
+        if (!playing || order == null || !order.isHungry) return;
+        if (impatientCatsRaid && tipJar != null && CatRaid.active.Count < 2)
+        {
+            CatRaid.Target jar = JarTarget();
+            if (jar != null && CatRaid.Begin(order, jar, raid, ImpatientRaidOver) != null) return;
+        }
+        LeaveWithoutTip(order);
+    }
+
+    void ImpatientRaidOver(CatRaid finished, CatRaid.Result result)
+    {
+        CatOrder order = finished.catOrder;
+        if (order == null || !playing) return;
+        // Calmed down with the right treat in time: it'll wait a while longer
+        if (result == CatRaid.Result.Saved) order.RefillPatience(0.6f);
+        // Got to the jar: it grabbed its tip and it's off
+        else if (result == CatRaid.Result.Swatted && order.isHungry) LeaveWithoutTip(order);
     }
 
     // A cat-proof patch of floor where the player stands (cut out of the NavMesh while the round runs)
