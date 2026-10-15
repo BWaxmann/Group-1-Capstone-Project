@@ -22,7 +22,6 @@ public class KittenRun : MonoBehaviour
     float nextMeow;
 
     CatMovement cat;
-    Animator animator;
     TrailRenderer dust;
     SphereCollider hitbox;
     List<Vector3> path;
@@ -33,7 +32,25 @@ public class KittenRun : MonoBehaviour
     bool fed;
     Action<KittenRun> onFed;
     Vector3 normalScale;
-    float normalAnimatorSpeed = 1f;
+    CatRunAnimation runAnimation;
+    static readonly int RunSpeed = Animator.StringToHash("RunSpeed");
+
+    // Sets the run cycle's speed on whichever of the cat's animators has one (0 = holds still)
+    void SetLegs(float runSpeed)
+    {
+        foreach (Animator legs in GetComponentsInChildren<Animator>())
+        {
+            if (legs.runtimeAnimatorController == null) continue;
+            foreach (AnimatorControllerParameter parameter in legs.parameters)
+            {
+                if (parameter.nameHash == RunSpeed)
+                {
+                    legs.SetFloat(RunSpeed, runSpeed);
+                    break;
+                }
+            }
+        }
+    }
 
     static Material dustMaterial;
 
@@ -69,12 +86,12 @@ public class KittenRun : MonoBehaviour
         cat.treatGate = run.Eat;
         run.enabled = true;
 
-        run.animator = cat.GetComponentInChildren<Animator>();
-        if (run.animator != null)
-        {
-            run.normalAnimatorSpeed = run.animator.speed;
-            run.animator.speed = 1.8f;   // little legs going fast
-        }
+        // Little legs going fast. The run cycle's speed is normally set from the navigation agent (which a kitten
+        // doesn't use), so that's switched off and the speed set here: faster when it runs faster, and faster
+        // again for being small (shorter strides)
+        run.runAnimation = cat.GetComponent<CatRunAnimation>();
+        if (run.runAnimation != null) run.runAnimation.enabled = false;
+        run.SetLegs(speed / Mathf.Max(0.1f, scale));
         run.SetHitbox(hitRadius);
         run.SetDust(true);
         // Most squeak as they burst in; the rest a little later
@@ -160,7 +177,8 @@ public class KittenRun : MonoBehaviour
         StopAllCoroutines();
         SetDust(false);
         if (hitbox != null) hitbox.enabled = false;
-        if (animator != null) animator.speed = normalAnimatorSpeed;
+        SetLegs(0f);
+        if (runAnimation != null) runAnimation.enabled = true;   // back to following the navigation agent
         cat.treatGate = null;
         transform.localScale = normalScale;
         enabled = false;
