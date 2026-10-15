@@ -255,6 +255,8 @@ public class CatMovement : MonoBehaviour
         }
         PrepareFeel();
 
+        EnsureWaddle();
+
         // The happy launch switches the agent off while the cat flies
         if (!agent.enabled) agent.enabled = true;
         agent.Warp(spawnPosition);
@@ -575,11 +577,18 @@ public class CatMovement : MonoBehaviour
     // runs, but it can still be hit by treats
     public void TakeOver()
     {
+        EnsureWaddle();
         StopAllCoroutines();
         currentState = AIState.Roaming;
         isStunned = false;
         if (animator == null) animator = GetComponentInChildren<Animator>();
         if (moodCanvas != null) moodCanvas.SetActive(false);
+    }
+
+    // Cats with no run animation of their own (the phat cats and the Armoured cat) waddle instead of gliding
+    void EnsureWaddle()
+    {
+        if (GetComponent<CatRunAnimation>() == null && GetComponent<CatWaddle>() == null) gameObject.AddComponent<CatWaddle>();
     }
 
     // One of the cat's own meows (the ones it makes while wandering), pitched (kittens squeak higher)
