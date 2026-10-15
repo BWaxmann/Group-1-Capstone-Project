@@ -408,7 +408,7 @@ public static class CatCafeRushGenerator
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 35, cats = 4, shortestOrder = 1, longestOrder = 2,
                                      raidEvery = 7, banner = "COMBO ORDERS!", line = "feed_combo" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Grip to grab what flies</size>",
+            new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Squeeze GRIP to catch what flies</size>",
                                      line = "catch" },
             new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
             new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner,
@@ -420,6 +420,9 @@ public static class CatCafeRushGenerator
         director.coinsPerTreat = 1;
         director.raids = true;
         director.catSpeedMultiplier = 1.3f;
+        // Catching is taught the first time (one glowing prop hangs in the air until it's caught) and props glow
+        director.catchIntro = true;
+        director.catchGlow = true;
         EditorUtility.SetDirty(director);
 
         // The round lasts exactly as long as the waves

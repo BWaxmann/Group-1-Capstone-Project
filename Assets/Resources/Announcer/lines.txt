@@ -5,7 +5,7 @@ welcome | Good morning, and welcome to your first shift at Catastrophe Cafe! Blu
 feed_first | Here come the regulars! Give each cat what it ordered.
 stampede | Uh oh. Kitten stampede! Hit as many as you can!
 feed_combo | Combo orders! Some cats want two treats, in that order.
-catch | Ninja on the loose! Grab whatever it knocks into the air!
+catch | Ninja on the loose! When something flies, squeeze the grip to catch it!
 popup | Pop-up cats! Hit them while they're in the air!
 boss | The ninja is back, and it's hungry! Feed it before it gets away!
 boss_fed | You fed the ninja! Incredible!

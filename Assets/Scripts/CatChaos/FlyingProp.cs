@@ -87,6 +87,9 @@ public class FlyingProp : MonoBehaviour
     Vector3 driftVelocity;
     Vector3 viewer;
     Vector3 actionCentre;
+    float maxReach;   // never further from the player than when it was knocked (so never back through the wall behind it)
+    bool slowFall;    // hangs in the air for a long time (e.g. the first prop, while the catch is explained)
+    Outline glow;
 
     // Holding and returning
     Vector3 holdTarget;
@@ -128,7 +131,8 @@ public class FlyingProp : MonoBehaviour
     }
 
     // Sends the prop up on a slow arc, drifting towards the player. Returns false if it can't go right now.
-    public bool Knock(Vector3 playerPosition)
+    // A slow-fall prop hangs in the air for a long time.
+    public bool Knock(Vector3 playerPosition, bool slowFall = false)
     {
         CatChaosSettings settings = CatChaosSettings.instance;
         if (state != State.Home || settings == null || airborne.Count >= settings.maxAirborne) return false;
@@ -138,13 +142,14 @@ public class FlyingProp : MonoBehaviour
         if (toPlayer.sqrMagnitude < 0.01f) toPlayer = -transform.forward;
         toPlayer.Normalize();
 
-        // A random direction within the spread, but not into a wall: try a few, else head towards the player
+        // A random direction within the spread, but not into a wall: try a few, else head towards the player.
+        // The check starts a little towards the player, so a wall the prop is pushed up against still counts.
         Vector3 drift = toPlayer;
-        Vector3 from = centre;
+        Vector3 from = centre + toPlayer * 0.3f;
         for (int attempt = 0; attempt < 6; attempt++)
         {
             Vector3 candidate = Quaternion.Euler(0, Random.Range(-settings.launchSpread, settings.launchSpread), 0) * toPlayer;
-            if (!Physics.Raycast(from, candidate, 2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            if (!WallAhead(from, candidate, 2.3f, out _))
             {
                 drift = candidate;
                 break;
@@ -160,10 +165,12 @@ public class FlyingProp : MonoBehaviour
         flightTime = 0;
         drifting = false;
         viewer = playerPosition;
+        this.slowFall = slowFall;
         // It drifts about over the space between the player and where it came from, so it stays in front of them
         Vector3 fromPlayer = transform.position - playerPosition;
         fromPlayer.y = 0;
         actionCentre = playerPosition + fromPlayer * 0.6f;
+        maxReach = fromPlayer.magnitude + 0.25f;
 
         // Fly free of the pile (keeping its size), so the pile can rattle without dragging it along
         StopAllCoroutines();
@@ -263,6 +270,7 @@ public class FlyingProp : MonoBehaviour
         CatChaosSettings settings = CatChaosSettings.instance;
         if (settings == null) return;
         float dt = Time.deltaTime;
+        UpdateGlow(settings);
 
         // Bigger while it's in the air or held, so it's easy to spot; back to normal on the way home
         if (settings.airborneScale > 1f && (state == State.Flying || state == State.Held || state == State.Returning))
@@ -296,11 +304,12 @@ public class FlyingProp : MonoBehaviour
                         driftVelocity = PickDrift(settings);
                     }
                     Vector3 sideways = Vector3.Lerp(new Vector3(velocity.x, 0, velocity.z), driftVelocity, 1f - Mathf.Exp(-3f * dt));
-                    float sink = Mathf.MoveTowards(velocity.y, -settings.driftFallSpeed, settings.propGravity * dt);
+                    float fall = slowFall ? Mathf.Min(0.08f, settings.driftFallSpeed) : settings.driftFallSpeed;
+                    float sink = Mathf.MoveTowards(velocity.y, -fall, settings.propGravity * dt);
                     velocity = new Vector3(sideways.x, sink, sideways.z);
                 }
 
-                transform.position += velocity * dt;
+                transform.position += KeepOutOfWalls(velocity * dt, dt);
                 transform.Rotate(spinAxis, spinSpeed * dt, Space.World);
                 if (velocity.y < 0 && transform.position.y <= settings.floorHeight + 0.05f)
                 {
@@ -364,11 +373,87 @@ public class FlyingProp : MonoBehaviour
         direction.Normalize();
 
         // Not into a wall: if one's close that way, head back towards the action instead
-        if (Physics.Raycast(transform.position, direction, 0.8f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        if (WallAhead(transform.position, direction, 0.8f, out _))
         {
             direction = toCentre.sqrMagnitude > 0.0001f ? toCentre.normalized : -direction;
         }
         return direction * settings.driftSpeed * Random.Range(0.6f, 1.2f);
+    }
+
+    // The step a flying prop takes this frame, kept out of walls: it glances off any wall in its way, and it never
+    // goes further from the player than where it started (so not back through the wall behind its spot, even where
+    // that wall has no collider)
+    Vector3 KeepOutOfWalls(Vector3 step, float dt)
+    {
+        Vector3 flat = new Vector3(step.x, 0, step.z);
+        float length = flat.magnitude;
+        if (length > 0.00001f && WallAhead(transform.position, flat / length, length + 0.15f, out Vector3 normal))
+        {
+            normal.y = 0;
+            if (normal.sqrMagnitude > 0.0001f)
+            {
+                normal.Normalize();
+                float into = Vector3.Dot(velocity, normal);
+                if (into < 0) velocity -= normal * into * 1.4f;
+                float driftInto = Vector3.Dot(driftVelocity, normal);
+                if (driftInto < 0) driftVelocity -= normal * driftInto * 2f;
+                step = velocity * dt;
+            }
+        }
+
+        Vector3 next = transform.position + step;
+        Vector3 away = next - viewer;
+        away.y = 0;
+        float distance = away.magnitude;
+        if (maxReach > 0 && distance > maxReach)
+        {
+            Vector3 outward = away / distance;
+            next -= outward * (distance - maxReach);
+            float outSpeed = Vector3.Dot(velocity, outward);
+            if (outSpeed > 0) velocity -= outward * outSpeed;
+            step = next - transform.position;
+        }
+        return step;
+    }
+
+    static readonly RaycastHit[] wallHits = new RaycastHit[16];
+
+    // Is there a wall (or the side of something solid) that way? Floors and table tops, cats, props and the player
+    // don't count.
+    static bool WallAhead(Vector3 from, Vector3 direction, float distance, out Vector3 normal)
+    {
+        normal = Vector3.zero;
+        int count = Physics.RaycastNonAlloc(from, direction, wallHits, distance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        float nearest = float.MaxValue;
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit hit = wallHits[i];
+            if (hit.distance <= 0f || hit.distance >= nearest) continue;
+            if (Vector3.Dot(hit.normal, Vector3.up) > 0.6f) continue;
+            Collider other = hit.collider;
+            if (other.GetComponentInParent<FlyingProp>() != null || other.GetComponentInParent<CatMovement>() != null ||
+                other.GetComponentInParent<PlayerInput>() != null) continue;
+            nearest = hit.distance;
+            normal = hit.normal;
+        }
+        return nearest < float.MaxValue;
+    }
+
+    // Catchable props pulse with a bright outline (seen through furniture too), if the scene wants it
+    void UpdateGlow(CatChaosSettings settings)
+    {
+        bool on = settings.catchableGlow && isCatchable;
+        if (on && glow == null)
+        {
+            glow = gameObject.AddComponent<Outline>();
+            glow.OutlineMode = Outline.Mode.OutlineAll;
+        }
+        if (glow == null) return;
+        if (glow.enabled != on) glow.enabled = on;
+        if (!on) return;
+        float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 10f);
+        glow.OutlineWidth = Mathf.Lerp(3f, 8f, pulse);
+        glow.OutlineColor = Color.Lerp(settings.glowColour, Color.white, pulse * 0.6f);
     }
 
     void Land(CatChaosSettings settings)

@@ -293,6 +293,9 @@ public class GameManager : MonoBehaviour
 
     public bool enablePlayerInput => playerInputsEnabled;
 
+    // While true the round clock stands still (e.g. while something new is being explained)
+    public bool clockPaused { get; set; }
+
     void Awake()
     {
         if (instance == null)
@@ -421,6 +424,7 @@ public class GameManager : MonoBehaviour
             int steps = Mathf.FloorToInt(roundTime);
             for (int j = 0; j < steps; j++)
             {
+                while (clockPaused) yield return null;
                 timerText.text = (steps - j).ToString();
 
                 // The finale is the end of the last round

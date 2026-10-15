@@ -60,6 +60,11 @@ public class CatChaosSettings : MonoBehaviour
 
     public Color trailColour = new Color(1f, 0.9f, 0.4f, 0.9f);
 
+    [Tooltip("Props pulse with a bright outline while they can be caught (seen through furniture too).")]
+    public bool catchableGlow = false;
+
+    public Color glowColour = new Color(1f, 0.8f, 0.15f);
+
     [Min(0)]
     [Tooltip("Seconds before a landed prop pops back onto its pile.")]
     public float respawnDelay = 2.5f;

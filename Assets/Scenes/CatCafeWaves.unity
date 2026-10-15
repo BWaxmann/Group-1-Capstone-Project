@@ -610,7 +610,7 @@ MonoBehaviour:
     longestOrder: 1
     banner: 'CATCH!
 
-      <size=55%>Grip to grab what flies</size>'
+      <size=55%>Squeeze GRIP to catch what flies</size>'
     attackChance: 0
     line: catch
     raidEvery: 0
@@ -705,6 +705,8 @@ MonoBehaviour:
   raids: 1
   raidSpillCoins: 3
   catSpeedMultiplier: 1.3
+  catchGlow: 1
+  catchIntro: 1
 --- !u!114 &41138492
 MonoBehaviour:
   m_ObjectHideFlags: 0

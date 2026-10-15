@@ -196,6 +196,16 @@ public class RushDirector : MonoBehaviour
     [Tooltip("How fast cats walk compared with their own speed (1 = as made).")]
     public float catSpeedMultiplier = 1f;
 
+    [Tooltip("Props that can be caught pulse with a bright outline (seen through furniture too).")]
+    public bool catchGlow = false;
+
+    [Tooltip("The first catch phase starts by knocking up one prop that hangs in the air, with a hint, and the clock " +
+             "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
+    public bool catchIntro = false;
+    public string catchIntroHint = "Squeeze GRIP!";
+    public string catchIntroPraise = "Nice catch!";
+    [Min(1f)] public float catchIntroTimeout = 12f;
+
     readonly List<CatOrder> orders = new List<CatOrder>();
     PlayerInput player;
     NinjaRushCat ninja;
@@ -209,6 +219,7 @@ public class RushDirector : MonoBehaviour
     readonly List<DefendPoint> piles = new List<DefendPoint>();
     float nextRaid;
     bool raidJarNext = true;
+    bool catchIntroDone;
 
     void Awake()
     {
@@ -242,6 +253,7 @@ public class RushDirector : MonoBehaviour
             flight.launchUpSpeed = burstUpSpeed;
             flight.catchableAfter = catchableAfter;
             flight.driftFallSpeed = fallSpeed;
+            flight.catchableGlow = catchGlow;
         }
 
         player = FindObjectOfType<PlayerInput>();
@@ -358,6 +370,7 @@ public class RushDirector : MonoBehaviour
                     Haptics.PulseBoth(Haptics.Strength.Strong);
                     CatRaid.CancelAll();
                     SendCatsAway();
+                    if (catchIntro && !catchIntroDone) yield return CatchIntro();
                     yield return new WaitForSeconds(1f);
                     SummonNinja(false);
                     yield return new WaitForSeconds(Mathf.Max(0, phase.seconds - 1f));
@@ -445,6 +458,69 @@ public class RushDirector : MonoBehaviour
     void Served(CatOrder order)
     {
         if (tipJar != null && coinsPerTreat > 0) tipJar.AddCoins(order.transform.position + Vector3.up * 0.3f, coinsPerTreat * order.orderLength);
+    }
+
+    // ---------- Cat Cafe Waves: the catch intro ----------
+
+    // The first catch of the run, taught by doing: the clock stops, one prop in front of the player pops up and hangs
+    // in the air with a hint by it, and play carries on once it's caught (or after a while anyway, no fail)
+    IEnumerator CatchIntro()
+    {
+        catchIntroDone = true;
+        GameManager.instance.clockPaused = true;
+        yield return new WaitForSeconds(1.2f);
+
+        Transform eye = player != null ? player.eyePoint : null;
+        Vector3 viewer = eye != null ? eye.position : (player != null ? player.transform.position : transform.position);
+        FlyingProp prop = PropInView(eye);
+        if (prop != null && prop.Knock(new Vector3(viewer.x, prop.transform.position.y, viewer.z), true))
+        {
+            GameObject hint = FloatingWord.Make(catchIntroHint, new Color(1f, 0.85f, 0.2f), 2.2f);
+            float timer = 0;
+            float nextBuzz = 0;
+            while (playing && timer < catchIntroTimeout && prop.state == FlyingProp.State.Flying)
+            {
+                timer += Time.deltaTime;
+                hint.transform.position = prop.centre + Vector3.up * (0.35f + Mathf.Abs(Mathf.Sin(timer * 4f)) * 0.06f);
+                FloatingWord.FacePlayer(hint.transform);
+                // A nudge in both hands, the hands that do the catching
+                if (timer >= nextBuzz)
+                {
+                    Haptics.PulseBoth(Haptics.Strength.Light);
+                    nextBuzz = timer + 1.5f;
+                }
+                yield return null;
+            }
+            Destroy(hint);
+            if (prop.state == FlyingProp.State.Held || prop.state == FlyingProp.State.Returning)
+            {
+                FloatingWord.Show(catchIntroPraise, prop.centre + Vector3.up * 0.3f, new Color(0.4f, 1f, 0.5f));
+                yield return new WaitForSeconds(0.6f);
+            }
+        }
+        GameManager.instance.clockPaused = false;
+    }
+
+    // A prop at home that's in front of the player and not too far: the one nearest the middle of their view
+    FlyingProp PropInView(Transform eye)
+    {
+        if (eye == null) return null;
+        FlyingProp best = null;
+        float bestAngle = 50f;
+        foreach (FlyingProp prop in FlyingProp.all)
+        {
+            if (prop == null || prop.state != FlyingProp.State.Home) continue;
+            Vector3 to = prop.centre - eye.position;
+            float distance = Flat(to).magnitude;
+            if (distance < 1.2f || distance > 5f) continue;
+            float angle = Vector3.Angle(Flat(eye.forward), Flat(to));
+            if (angle < bestAngle)
+            {
+                bestAngle = angle;
+                best = prop;
+            }
+        }
+        return best;
     }
 
     // ---------- Cat Cafe Waves: raids ----------
