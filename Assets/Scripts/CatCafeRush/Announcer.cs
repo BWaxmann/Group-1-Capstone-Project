@@ -125,6 +125,8 @@ public class Announcer : MonoBehaviour
             if (lines.ContainsKey(id + "_" + n)) takes.Add(id + "_" + n);
         }
         if (takes.Count == 0) return null;
+        // Takes with a recording win over ones that would only show a subtitle
+        if (takes.Exists(take => lines[take].clip != null)) takes.RemoveAll(take => lines[take].clip == null);
         if (takes.Count > 1 && lastTake.TryGetValue(id, out string last)) takes.Remove(last);
         string chosen = takes[Random.Range(0, takes.Count)];
         lastTake[id] = chosen;
