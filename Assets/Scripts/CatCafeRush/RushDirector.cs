@@ -39,6 +39,9 @@ public class RushDirector : MonoBehaviour
         public float attackChance = 0f;
         [Tooltip("Announcer line called out as this phase starts (its id in Resources/Announcer/lines.txt). Empty = none.")]
         public string line = "";
+        [Min(0)]
+        [Tooltip("Raids: about how often a hungry cat makes a run at the tip jar or a pile, in seconds. 0 = none.")]
+        public float raidEvery = 0f;
     }
 
     [Header("Round")]
@@ -182,6 +185,17 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Optional: where the tip jar stands. Empty = on the counter beside the cat clock.")]
     public Transform tipJarSpot;
 
+    [Tooltip("Hungry cats make runs at the tip jar and the piles (in phases with a Raid Every time): a \"!\" and a wind-up, " +
+             "then a sprint and a swat. The right treat before it leaps stops it.")]
+    public bool raids = false;
+    public CatRaid.Settings raid = new CatRaid.Settings();
+    [Min(0)]
+    [Tooltip("Coins a raiding cat knocks out of the tip jar.")]
+    public int raidSpillCoins = 3;
+    [Range(0.5f, 2f)]
+    [Tooltip("How fast cats walk compared with their own speed (1 = as made).")]
+    public float catSpeedMultiplier = 1f;
+
     readonly List<CatOrder> orders = new List<CatOrder>();
     PlayerInput player;
     NinjaRushCat ninja;
@@ -192,6 +206,9 @@ public class RushDirector : MonoBehaviour
     Announcer voice;
     TipJar tipJar;
     readonly List<Vector3> holes = new List<Vector3>();
+    readonly List<DefendPoint> piles = new List<DefendPoint>();
+    float nextRaid;
+    bool raidJarNext = true;
 
     void Awake()
     {
@@ -285,6 +302,8 @@ public class RushDirector : MonoBehaviour
         KeepCatsOutOfPlayerSpace();
         if (fedCatsUseHoles) MakeHoles();
         if (coinsPerTreat > 0 || bossCoins > 0) PlaceTipJar();
+        piles.Clear();
+        piles.AddRange(FindObjectsOfType<DefendPoint>());
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);
@@ -302,6 +321,7 @@ public class RushDirector : MonoBehaviour
     {
         playing = false;
         current = null;
+        CatRaid.CancelAll();
         if (ninja != null) ninja.Leave();
         Say(closingLine);
     }
@@ -312,6 +332,7 @@ public class RushDirector : MonoBehaviour
         {
             if (!playing) yield break;
             current = phase;
+            nextRaid = Time.time + phase.raidEvery * 0.6f;
 
             // Hungry cats only go for the piles in feeding phases (and only if this phase says so)
             CatMovement.targetingChanceOverride = phase.kind == Kind.Feed ? phase.attackChance : 0f;
@@ -335,6 +356,7 @@ public class RushDirector : MonoBehaviour
 
                 case Kind.Catch:
                     Haptics.PulseBoth(Haptics.Strength.Strong);
+                    CatRaid.CancelAll();
                     SendCatsAway();
                     yield return new WaitForSeconds(1f);
                     SummonNinja(false);
@@ -381,7 +403,9 @@ public class RushDirector : MonoBehaviour
 
     void Update()
     {
-        if (!playing || current == null || !HasOrders(current.kind)) return;
+        if (!playing || current == null) return;
+        if (raids) UpdateRaids();
+        if (!HasOrders(current.kind)) return;
         if (Time.time - lastArrival < arrivalGap) return;
 
         orders.RemoveAll(o => o == null || !o.isHungry);
@@ -411,7 +435,7 @@ public class RushDirector : MonoBehaviour
                 icon = new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour)
             });
         }
-        CatOrder order = CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f);
+        CatOrder order = CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f, catSpeedMultiplier);
         order.served = Served;
         order.holeFor = fedCatsUseHoles && holes.Count > 0 ? (Func<Vector3, Vector3?>)NearestHole : null;
         orders.Add(order);
@@ -421,6 +445,90 @@ public class RushDirector : MonoBehaviour
     void Served(CatOrder order)
     {
         if (tipJar != null && coinsPerTreat > 0) tipJar.AddCoins(order.transform.position + Vector3.up * 0.3f, coinsPerTreat * order.orderLength);
+    }
+
+    // ---------- Cat Cafe Waves: raids ----------
+
+    // Every so often (one at a time) a hungry cat the player can see makes a run at the tip jar or a pile
+    void UpdateRaids()
+    {
+        if (current.raidEvery <= 0 || CatRaid.active.Count > 0 || Time.time < nextRaid) return;
+        nextRaid = Time.time + 1f;   // nobody could go: try again in a moment
+
+        bool jarFirst = raidJarNext;
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            bool useJar = attempt == 0 ? jarFirst : !jarFirst;
+            CatRaid.Target target = useJar ? JarTarget() : PileTarget();
+            if (target == null) continue;
+            foreach (CatOrder raider in Raiders(target.position))
+            {
+                if (CatRaid.Begin(raider, target, raid, RaidOver) != null)
+                {
+                    raidJarNext = !useJar;
+                    nextRaid = float.MaxValue;   // set again when this raid is over
+                    return;
+                }
+            }
+        }
+    }
+
+    void RaidOver(CatRaid finished, CatRaid.Result result)
+    {
+        if (current != null) nextRaid = Time.time + current.raidEvery * Random.Range(0.8f, 1.2f);
+    }
+
+    CatRaid.Target JarTarget()
+    {
+        if (tipJar == null) return null;
+        TipJar jar = tipJar;
+        return new CatRaid.Target { position = jar.transform.position, swat = from => jar.Spill(from, raidSpillCoins) };
+    }
+
+    CatRaid.Target PileTarget()
+    {
+        List<DefendPoint> standing = piles.FindAll(p => p != null && p.isActiveAndEnabled);
+        if (standing.Count == 0) return null;
+        DefendPoint pile = standing[Random.Range(0, standing.Count)];
+        return new CatRaid.Target { position = pile.position, swat = from => pile.GetHit() };
+    }
+
+    // Hungry cats far enough from the target for the run to be seen, the ones in the player's view first
+    List<CatOrder> Raiders(Vector3 target)
+    {
+        Transform eye = player != null ? player.eyePoint : null;
+        List<CatOrder> inView = new List<CatOrder>();
+        List<CatOrder> others = new List<CatOrder>();
+        foreach (CatOrder order in orders)
+        {
+            if (order == null || !order.isHungry || order.busy) continue;
+            Vector3 gap = target - order.transform.position;
+            gap.y = 0;
+            if (gap.magnitude < 2.5f) continue;
+            bool seen = eye == null || Vector3.Angle(Flat(eye.forward), Flat(order.transform.position - eye.position)) < 60f;
+            (seen ? inView : others).Add(order);
+        }
+        Shuffle(inView);
+        Shuffle(others);
+        inView.AddRange(others);
+        return inView;
+    }
+
+    static Vector3 Flat(Vector3 v)
+    {
+        v.y = 0;
+        return v;
+    }
+
+    static void Shuffle<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            T swap = list[i];
+            list[i] = list[j];
+            list[j] = swap;
+        }
     }
 
     // ---------- Cat Cafe Waves: holes and the tip jar ----------

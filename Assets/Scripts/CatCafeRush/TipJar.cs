@@ -16,6 +16,9 @@ public class TipJar : MonoBehaviour
 
     public int coins { get; private set; }
 
+    // The jar's mouth (where coins drop in)
+    public Vector3 top => transform.position + Vector3.up * JarHeight;
+
     Transform fill;
     Transform body;
     AudioSource clinkSource;
@@ -130,6 +133,62 @@ public class TipJar : MonoBehaviour
         }
         if (punch != null) StopCoroutine(punch);
         punch = StartCoroutine(Punch());
+    }
+
+    // A cat swatted the jar (from `from`): it rocks over and up to `count` coins spill out. Returns how many were lost.
+    public int Spill(Vector3 from, int count)
+    {
+        int lost = Mathf.Min(count, coins);
+        coins -= lost;
+        SetFill(coins / FullAfter);
+        Vector3 away = transform.position - from;
+        away.y = 0;
+        away = away.sqrMagnitude > 0.0001f ? away.normalized : transform.forward;
+        StartCoroutine(Rock(away));
+        for (int i = 0; i < lost; i++) StartCoroutine(SpillCoin(away, i));
+        return lost;
+    }
+
+    IEnumerator Rock(Vector3 away)
+    {
+        Vector3 axis = Vector3.Cross(Vector3.up, away);
+        float timer = 0;
+        while (timer < 0.7f)
+        {
+            timer += Time.deltaTime;
+            // A hard knock over, then wobbling back upright
+            float angle = 35f * Mathf.Sin(timer / 0.7f * Mathf.PI * 3f) * (1f - timer / 0.7f);
+            body.rotation = Quaternion.AngleAxis(angle, axis) * transform.rotation;
+            yield return null;
+        }
+        body.localRotation = Quaternion.identity;
+    }
+
+    IEnumerator SpillCoin(Vector3 away, int index)
+    {
+        yield return new WaitForSeconds(index * 0.05f);
+        GameObject coin = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Spilt Coin", coinColour);
+        coin.transform.localScale = new Vector3(0.05f, 0.004f, 0.05f);
+        coin.transform.position = top;
+        Vector3 sideways = Vector3.Cross(Vector3.up, away) * Random.Range(-0.7f, 0.7f);
+        Vector3 velocity = away * Random.Range(0.8f, 1.6f) + sideways + Vector3.up * Random.Range(1.2f, 2f);
+        if (clink != null)
+        {
+            clinkSource.pitch = Random.Range(0.8f, 1.2f);
+            clinkSource.PlayOneShot(clink, 0.7f);
+        }
+
+        float timer = 0;
+        while (timer < 1f)
+        {
+            timer += Time.deltaTime;
+            velocity += Physics.gravity * Time.deltaTime;
+            coin.transform.position += velocity * Time.deltaTime;
+            coin.transform.Rotate(900f * Time.deltaTime, 0, 0, Space.Self);
+            yield return null;
+        }
+        Destroy(coin.GetComponent<Renderer>().sharedMaterial);
+        Destroy(coin);
     }
 
     IEnumerator Punch()

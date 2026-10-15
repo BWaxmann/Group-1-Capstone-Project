@@ -582,8 +582,9 @@ MonoBehaviour:
     shortestOrder: 1
     longestOrder: 1
     banner: FEED THE CATS!
-    attackChance: 0.3
+    attackChance: 0
     line: feed_first
+    raidEvery: 10
   - kind: 3
     seconds: 20
     cats: 3
@@ -592,14 +593,16 @@ MonoBehaviour:
     banner: KITTEN STAMPEDE!
     attackChance: 0
     line: stampede
+    raidEvery: 0
   - kind: 0
     seconds: 35
     cats: 4
     shortestOrder: 1
     longestOrder: 2
     banner: COMBO ORDERS!
-    attackChance: 0.35
+    attackChance: 0
     line: feed_combo
+    raidEvery: 7
   - kind: 1
     seconds: 15
     cats: 3
@@ -610,6 +613,7 @@ MonoBehaviour:
       <size=55%>Grip to grab what flies</size>'
     attackChance: 0
     line: catch
+    raidEvery: 0
   - kind: 4
     seconds: 30
     cats: 3
@@ -618,6 +622,7 @@ MonoBehaviour:
     banner: POP-UP CATS!
     attackChance: 0
     line: popup
+    raidEvery: 0
   - kind: 2
     seconds: 45
     cats: 1
@@ -628,6 +633,7 @@ MonoBehaviour:
       <size=55%>Feed it before time''s up!</size>'
     attackChance: 0
     line: boss
+    raidEvery: 0
   bannerSeconds: 2.5
   catPool: {fileID: 103450848}
   doors:
@@ -696,6 +702,9 @@ MonoBehaviour:
   fedCatsUseHoles: 1
   coinsPerTreat: 1
   bossCoins: 8
+  raids: 1
+  raidSpillCoins: 3
+  catSpeedMultiplier: 1.3
 --- !u!114 &41138492
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -47,6 +47,19 @@ public class CatOrder : MonoBehaviour
     // How many treats the order was
     public int orderLength => order.Count;
 
+    // Called for every right treat the cat eats (including the last), before the cat reacts to it
+    public event System.Action<CatOrder> rightTreat;
+
+    // While true the cat ignores treats (e.g. mid-leap in a raid: too late to stop it)
+    public bool busy { get; set; }
+
+    // Just above the order bubble
+    public Vector3 aboveBubble => bubble != null
+        ? bubble.transform.position + Vector3.up * (0.15f + 0.26f * bubble.transform.lossyScale.y)
+        : transform.position + Vector3.up * 1f;
+
+    float baseSpeed = -1f;
+
     Vector3 scaleBeforeDive;
     bool diving;
 
@@ -108,13 +121,22 @@ public class CatOrder : MonoBehaviour
     }
 
     // Gives a cat (just spawned) its order. Reuses the component and bubble when a pooled cat comes back.
-    public static CatOrder Give(CatMovement cat, List<Food> foods, float bubbleScale, float hitboxGenerosity = 0f)
+    public static CatOrder Give(CatMovement cat, List<Food> foods, float bubbleScale, float hitboxGenerosity = 0f, float speedMultiplier = 1f)
     {
         CatOrder catOrder = cat.GetComponent<CatOrder>();
         if (catOrder == null) catOrder = cat.gameObject.AddComponent<CatOrder>();
         if (hitboxGenerosity > 0 && catOrder.hitbox == null) catOrder.hitbox = AddHitbox(cat.gameObject, hitboxGenerosity);
         catOrder.Begin(foods, bubbleScale);
+        catOrder.SetSpeed(speedMultiplier);
         return catOrder;
+    }
+
+    // Walking speed compared with the cat's own (it starts from the cat's own speed each time, so pooled cats don't speed up)
+    void SetSpeed(float multiplier)
+    {
+        if (agent == null) return;
+        if (baseSpeed < 0) baseSpeed = agent.speed;
+        agent.speed = baseSpeed * multiplier;
     }
 
     void OnEnable()
@@ -159,6 +181,12 @@ public class CatOrder : MonoBehaviour
     bool Eat(Treat treat)
     {
         if (runningOff || step >= order.Count) return false;
+        if (busy)
+        {
+            // Too late: it's mid-raid and not listening
+            bubble.Shake();
+            return false;
+        }
 
         // A scatter or buckshot volley counts once per cat (the other pellets just vanish)
         if (treat.shotId != 0)
@@ -176,6 +204,7 @@ public class CatOrder : MonoBehaviour
         }
 
         step++;
+        rightTreat?.Invoke(this);
         if (step < order.Count)
         {
             bubble.Advance();
@@ -277,6 +306,7 @@ public class CatOrder : MonoBehaviour
             agent.updateRotation = normalUpdateRotation;
         }
         runningOff = false;
+        busy = false;
         if (diving)
         {
             transform.localScale = scaleBeforeDive;

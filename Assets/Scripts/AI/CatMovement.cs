@@ -571,6 +571,17 @@ public class CatMovement : MonoBehaviour
         }
     }
 
+    // Picks up roaming again after another script took over the cat for a while (Cat Cafe Waves raids)
+    public void ResumeRoaming()
+    {
+        if (isFullyFed || !isActiveAndEnabled) return;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = false;
+        isStunned = false;
+        StartCoroutine(MoveToTargetRoutine());
+        StartCoroutine(RotationRoutine());
+        if (voiceSource != null) StartCoroutine(SoundRoutine());
+    }
+
     // Set by a scene that sends fed cats somewhere before they go (Cat Cafe Waves: they run off to a hole).
     // It's called instead of the usual finish, and must call FinishLeaving when the cat gets there.
     public System.Action<CatMovement> leaveOverride;
