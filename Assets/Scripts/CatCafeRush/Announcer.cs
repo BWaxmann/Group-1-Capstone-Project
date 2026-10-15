@@ -100,16 +100,35 @@ public class Announcer : MonoBehaviour
     }
 
     // Queues a line (by its id in lines.txt), optionally with a sting just before it. Unknown ids are skipped.
+    // Other takes of a line are listed as id_2, id_3... and one is picked at random (not the same one twice running).
     public void Say(string id, string sting = null)
     {
         Line line = null;
-        if (!string.IsNullOrEmpty(id) && !lines.TryGetValue(id, out line))
+        if (!string.IsNullOrEmpty(id))
         {
-            Debug.LogWarning($"[Announcer] No line called \"{id}\" in lines.txt.");
+            line = PickTake(id);
+            if (line == null) Debug.LogWarning($"[Announcer] No line called \"{id}\" in lines.txt.");
         }
         AudioClip stingClip = Sting(sting);
         if (line == null && stingClip == null) return;
         queue.Enqueue(new Queued { line = line, sting = stingClip, queuedAt = Time.time });
+    }
+
+    readonly Dictionary<string, string> lastTake = new Dictionary<string, string>();
+
+    Line PickTake(string id)
+    {
+        List<string> takes = new List<string>();
+        if (lines.ContainsKey(id)) takes.Add(id);
+        for (int n = 2; n <= 9; n++)
+        {
+            if (lines.ContainsKey(id + "_" + n)) takes.Add(id + "_" + n);
+        }
+        if (takes.Count == 0) return null;
+        if (takes.Count > 1 && lastTake.TryGetValue(id, out string last)) takes.Remove(last);
+        string chosen = takes[Random.Range(0, takes.Count)];
+        lastTake[id] = chosen;
+        return lines[chosen];
     }
 
     AudioClip Sting(string name)
