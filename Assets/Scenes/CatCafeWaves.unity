@@ -6984,7 +6984,7 @@ PrefabInstance:
       objectReference: {fileID: 239547139}
     - target: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70, type: 3}
       propertyPath: yarnballButton
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
@@ -24099,7 +24099,7 @@ PrefabInstance:
 
         Right trigger = Orange
 
-        Grip = catch</size>
+        Alternative trigger = catch</size>
 
         <size=45%>Point at the launchers and pull the trigger</size>'
       objectReference: {fileID: 0}

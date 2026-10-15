@@ -362,6 +362,8 @@ public static class CatCafeRushGenerator
     // ---------- Cat Cafe Waves ----------
 
     const string WavesScene = "Assets/Scenes/CatCafeWaves.unity";
+    const string WavesStartupMessage = "Feed the cats!\n<size=60%>Left trigger = Blue\nRight trigger = Orange\nAlternative trigger = catch</size>\n" +
+                                       "<size=45%>Point at the launchers and pull the trigger</size>";
 
     // A copy of the Trial (layout, Eleni's ideas and all) that plays a run of short, different waves.
     // Cat Cafe Rush and the Trial are unchanged.
@@ -427,6 +429,15 @@ public static class CatCafeRushGenerator
         director.catchGlow = true;
         EditorUtility.SetDirty(director);
 
+        // No yarnball in Waves for now (it has no voice line and doesn't mean much in this version)
+        PlayerInput player = Object.FindObjectOfType<PlayerInput>();
+        if (player != null)
+        {
+            SerializedObject playerSettings = new SerializedObject(player);
+            playerSettings.FindProperty("yarnballButton").enumValueIndex = (int)PlayerInput.YarnballButton.Off;
+            playerSettings.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         // The round lasts exactly as long as the waves
         float total = 0;
         foreach (RushDirector.Phase phase in director.phases) total += phase.seconds;
@@ -435,6 +446,7 @@ public static class CatCafeRushGenerator
         {
             SerializedObject gameSettings = new SerializedObject(gameManager);
             CatChaosSceneGenerator.SetSingleRound(gameSettings, total);
+            gameSettings.FindProperty("startupMessage").stringValue = WavesStartupMessage;
             gameSettings.ApplyModifiedPropertiesWithoutUndo();
         }
 

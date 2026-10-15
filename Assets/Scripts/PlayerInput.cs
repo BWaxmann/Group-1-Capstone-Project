@@ -331,6 +331,8 @@ public class PlayerInput : MonoBehaviour
         yarnballReady = yarnballReadyOnStart;
         yarnballRechargeTimer = yarnballReady ? yarnballRechargeTime : 0;
         SetYarnballBar();
+        // No yarnball in this scene: its recharge bar goes too
+        if (yarnballButton == YarnballButton.Off && yarnballRechargeBar != null) yarnballRechargeBar.gameObject.SetActive(false);
 
         StartCoroutine(UpdateBillboardsRoutine());
     }
@@ -374,7 +376,7 @@ public class PlayerInput : MonoBehaviour
             }
         }
 
-        if (!yarnballReady)
+        if (!yarnballReady && yarnballButton != YarnballButton.Off)
         {
             yarnballRechargeTimer += Time.deltaTime;
             if (yarnballRechargeTimer >= yarnballRechargeTime)
