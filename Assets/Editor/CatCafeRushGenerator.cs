@@ -139,7 +139,7 @@ public static class CatCafeRushGenerator
                        $"{(director.catPool != null ? "Cat Pool found" : "NO Cat Pool found")}; ninja with {director.ninjaStops.Count} stops.");
 
         SerializedObject gameSettings = new SerializedObject(gameManager);
-        gameSettings.FindProperty("gameTime").floatValue = RoundLength;
+        CatChaosSceneGenerator.SetSingleRound(gameSettings, RoundLength);
         gameSettings.FindProperty("finaleBannerText").stringValue = "";   // the director announces the boss instead
         gameSettings.ApplyModifiedPropertiesWithoutUndo();
 

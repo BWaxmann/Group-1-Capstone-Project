@@ -43,9 +43,9 @@ public class Treat : Launchable
         Invoke(nameof(Despawn), seconds);
     }
 
-    public override void Launch(Transform launchPosition, float force, bool instaKill)
+    public override void Launch(Transform launchPosition, float force, float launchAngle, bool instaKill)
     {
-        base.Launch(launchPosition, force, instaKill);
+        base.Launch(launchPosition, force, launchAngle, instaKill);
 
         this.instaKill = instaKill;
         if (instaKillOutline != null)
@@ -114,7 +114,7 @@ public class Treat : Launchable
             return true;
         }
         Pickup pickup = other.GetComponentInParent<Pickup>();
-        if (pickup != null && pickup.activationMethod == Pickup.ActivationType.Shoot)
+        if (pickup != null)
         {
             isActive = false;
             pickup.OnPickup();
@@ -150,24 +150,21 @@ public class Treat : Launchable
                 Pickup pickup = other.gameObject.GetComponentInParent<Pickup>();
                 if (pickup != null)
                 {
-                    if (pickup.activationMethod == Pickup.ActivationType.Shoot)
-                    {
-                        pickup.OnPickup();
-                        pickup.gameObject.SetActive(false);
-                        Despawn();
-                    }
-                    else
-                    {
-                        isActive = true;
-                    }
+                    pickup.OnPickup();
+                    pickup.gameObject.SetActive(false);
+                    Despawn();
                 }
                 else
                 {
-                    Invoke(nameof(Despawn), treatOnFloorLifetime);
+                    if (instaKillOutline != null)
+                    {
+                        instaKillOutline.enabled = false;
+                    }
                     if (audioSource != null && treatHittingFloorSound.soundClip != null)
                     {
                         treatHittingFloorSound.PlayOneShot(audioSource);
                     }
+                    Invoke(nameof(Despawn), treatOnFloorLifetime);
                 }
             }
         }

@@ -17,16 +17,24 @@ public class PlayerInput : MonoBehaviour
     [SerializeField]
     Transform handLeft;
 
+    [SerializeField]
+    [Tooltip("Made when the launchers are grabbed, unless the scene already has a Pickup Manager.")]
+    PickupManager pickupManagerPrefab;
+
     [Header("Treat Launcher")]
 
-    [SerializeField] 
+    [SerializeField]
     GameObject launcherRight;
 
     [SerializeField]
     GameObject launcherLeft;
 
-    [SerializeField] 
+    [SerializeField]
+    [Tooltip("Optional. A treats pool already in the scene; if empty, one is made from the prefab below.")]
     ObjectSpawner treatsSpawner;
+
+    [SerializeField]
+    ObjectSpawner treatsSpawnerPrefab;
 
     [SerializeField] 
     Transform treatLaunchPositionRight;
@@ -60,7 +68,18 @@ public class PlayerInput : MonoBehaviour
     float autofireRate = 6f;
 
     [SerializeField]
+    [Min(2)]
+    int numberOfShotsInSpread = 3;
+
+    [SerializeField]
+    [Range(0f, 90f)]
+    float maxSpreadAngle = 45f;
+
+    [SerializeField]
     string rapidFireText = "<color=#FF7310><size=1.2em>RAPID!</size></color>";
+
+    [SerializeField]
+    string spreadText = "<color=#3FD0FF><size=1.2em>SPREAD!</size></color>";
 
     [SerializeField]
     [Tooltip("Which launchers fire treats with their trigger.")]
@@ -168,6 +187,9 @@ public class PlayerInput : MonoBehaviour
     AimReticle reticleLeft;
 
     float shotSpeed => straightShots ? straightShotSpeed : launchForce;
+
+    bool spreadActive;
+    float spreadTimer;
 
     bool instaKillActive;
     float instaKillTimer;
@@ -319,6 +341,17 @@ public class PlayerInput : MonoBehaviour
             {
                 instaKillTimer = 0;
                 instaKillActive = false;
+                RefreshAmmoText();
+            }
+        }
+
+        if (spreadActive)
+        {
+            spreadTimer -= Time.deltaTime;
+            if (spreadTimer <= 0)
+            {
+                spreadTimer = 0;
+                spreadActive = false;
                 RefreshAmmoText();
             }
         }
@@ -639,6 +672,21 @@ public class PlayerInput : MonoBehaviour
         Haptics.PulseBoth(Haptics.Strength.Medium);
 
         GameManager.instance.GrabbedLaunchers();
+
+        // Older scenes keep their treats pool and Pickup Manager in the scene; otherwise they're made now
+        if (treatsSpawner == null && treatsSpawnerPrefab != null)
+        {
+            treatsSpawner = Instantiate(treatsSpawnerPrefab);
+        }
+        PickupManager pickupManager = PickupManager.instance;
+        if (pickupManager == null && pickupManagerPrefab != null)
+        {
+            pickupManager = Instantiate(pickupManagerPrefab);
+        }
+        if (pickupManager != null)
+        {
+            pickupManager.SetPlayerVisionPoint(eye);
+        }
     }
 
     IEnumerator AutofireRoutine(bool rightHand)
@@ -653,6 +701,12 @@ public class PlayerInput : MonoBehaviour
 
     void LaunchTreat(bool rightHand)
     {
+        if (spreadActive)
+        {
+            LaunchSpread(rightHand);
+            return;
+        }
+
         FireStyle style = Style(rightHand);
         int pellets = StylePellets(style);
         float spread = StyleSpread(style);
@@ -672,6 +726,20 @@ public class PlayerInput : MonoBehaviour
             if (treat == null) return;
             treat.shotId = shotId;
             if (style == FireStyle.Buckshot) treat.ShortenLife(0.4f);
+        }
+    }
+
+    // Spread Shot pickup: a fan of treats, evenly spaced from one side of Max Spread Angle to the other
+    void LaunchSpread(bool rightHand)
+    {
+        int shotId = ++lastShotId;
+        Transform muzzle = rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+        for (int i = 0; i < numberOfShotsInSpread; i++)
+        {
+            float angle = (1f - 2f * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle;
+            Treat treat = LaunchOneTreat(rightHand, muzzle, i == 0, angle);
+            if (treat == null) return;
+            treat.shotId = shotId;
         }
     }
 
@@ -697,7 +765,7 @@ public class PlayerInput : MonoBehaviour
         return LaunchOneTreat(rightHand, rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, true);
     }
 
-    Treat LaunchOneTreat(bool rightHand, Transform from, bool withFeedback)
+    Treat LaunchOneTreat(bool rightHand, Transform from, bool withFeedback, float angle = 0)
     {
         int variation = LoadedFood(rightHand);
         Treat treat = variation >= 0
@@ -711,7 +779,7 @@ public class PlayerInput : MonoBehaviour
         treat.foodVariation = variation;
         treat.shotId = 0;
         treat.gameObject.SetActive(true);
-        treat.Launch(from, shotSpeed, instaKillActive);
+        treat.Launch(from, shotSpeed, angle, instaKillActive);
         if (straightShots) treat.MakeStraightShot();
         // One sound and buzz per trigger pull, not per pellet
         if (withFeedback)
@@ -727,7 +795,7 @@ public class PlayerInput : MonoBehaviour
         Yarnball yarnball = treatsSpawner.GetObjectFromPool<Yarnball>(yarnballTreatSpawnerIndex);
         if (yarnball == null) return;
         yarnball.gameObject.SetActive(true);
-        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, false);
+        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, 0, false);
         if (straightShots) yarnball.MakeStraightShot();
         PlaySound(launcherYarnballSound, rightHand);
         Haptics.Pulse(rightHand, Haptics.Strength.Strong);
@@ -785,9 +853,18 @@ public class PlayerInput : MonoBehaviour
         RefreshAmmoText();
     }
 
+    public void ActivateSpread(float duration)
+    {
+        spreadActive = true;
+        spreadTimer += duration;
+        Haptics.PulseBoth(Haptics.Strength.Strong);
+        RefreshAmmoText();
+    }
+
     void RefreshAmmoText()
     {
         if (instaKillActive) ammoText.text = instaKillText;
+        else if (spreadActive) ammoText.text = spreadText;
         else if (rapidFireActive) ammoText.text = rapidFireText;
         else ammoText.text = defaultDisplayText;
     }

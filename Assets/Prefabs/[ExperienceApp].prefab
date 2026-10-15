@@ -416,7 +416,7 @@ MonoBehaviour:
   m_material: {fileID: 0}
   m_sharedMaterial: {fileID: 0}
   m_isDefaultMaterial: 0
-  m_padding: 2.438
+  m_padding: 0
   m_canvasRenderer: {fileID: 5600939734396798555}
   m_TextComponent: {fileID: 1691191905810449274}
   m_materialReferenceIndex: 1
@@ -1222,7 +1222,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977510622188944123}
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.637, z: -0}
+  m_LocalPosition: {x: 0, y: 0.3, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 977510621430673680}
@@ -1297,19 +1297,23 @@ MonoBehaviour:
   billboardUpdateFrequency: 0.2
   handRight: {fileID: 2084092611746225451}
   handLeft: {fileID: 977510622518784521}
+  pickupManagerPrefab: {fileID: 1504073715, guid: 6f7c2ad0c0e54a543ac23316171cb2f2,
+    type: 3}
   launcherRight: {fileID: 573315912397353760}
   launcherLeft: {fileID: 120319723378119119}
-  treatsSpawner: {fileID: 0}
+  treatsSpawnerPrefab: {fileID: 5150667049326835244, guid: 5bfce678b66ec5c4bbcf0c2bc4e70567,
+    type: 3}
   treatLaunchPositionRight: {fileID: 1413999898784427255}
   treatLaunchPositionLeft: {fileID: 1567301619170872856}
   launchForce: 6
   enableAutofire: 0
   autofireRate: 6
+  numberOfShotsInSpread: 3
+  maxSpreadAngle: 45
   ammoText: {fileID: 1442800102}
   eye: {fileID: 977510622112336780}
   _pickupMagnet: {fileID: 2402349129688171909}
   defaultDisplayText: ^ <rotate="-90">3</rotate> ^
-  instaKillText: "<color=#FFD700><size=1.5em>\u221E</size></color>"
   yarnballTreatSpawnerIndex: 4
   yarnballRechargeTime: 15
   yarnballRechargeBar: {fileID: 2073910737862725459}
@@ -1720,7 +1724,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 10}
+  m_AnchoredPosition: {x: 0, y: 22.599998}
   m_SizeDelta: {x: -60, y: 50}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &2073910737862725459
@@ -2260,7 +2264,7 @@ MonoBehaviour:
   m_material: {fileID: 0}
   m_sharedMaterial: {fileID: 0}
   m_isDefaultMaterial: 0
-  m_padding: 2.438
+  m_padding: 0
   m_canvasRenderer: {fileID: 3591743042833315231}
   m_TextComponent: {fileID: 1442800102}
   m_materialReferenceIndex: 1

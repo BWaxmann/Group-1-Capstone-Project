@@ -204,6 +204,17 @@ public static class CatChaosSceneGenerator
         }
     }
 
+    // Our prototypes play one long round of Brian's round system: the same min and max time, so it never ends early
+    internal static void SetSingleRound(SerializedObject gameSettings, float seconds)
+    {
+        foreach (string name in new[] { "roundMaxTimes", "roundMinTimes" })
+        {
+            SerializedProperty times = gameSettings.FindProperty(name);
+            times.arraySize = 1;
+            times.GetArrayElementAtIndex(0).floatValue = seconds;
+        }
+    }
+
     internal static int AdoptStrayProps()
     {
         HashSet<FlyingProp> known = new HashSet<FlyingProp>();
@@ -513,7 +524,7 @@ public static class CatChaosSceneGenerator
         log.AppendLine("Gravity beam on both grips; yarnball moved to A/X.");
 
         SerializedObject gameSettings = new SerializedObject(gameManager);
-        gameSettings.FindProperty("gameTime").floatValue = RoundLength;
+        SetSingleRound(gameSettings, RoundLength);
         gameSettings.ApplyModifiedPropertiesWithoutUndo();
         log.AppendLine($"Round length {RoundLength} s.");
 

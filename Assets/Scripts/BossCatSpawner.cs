@@ -10,10 +10,15 @@ public class BossCatSpawner : MonoBehaviour
     BossData[] bossPrefabs;
 
     [SerializeField]
+    [Tooltip("Time is from the start of each round.")]
     List<float> bossSpawnTimes = new List<float>();
+
+    [SerializeField]
+    AudioSource bossSpawnSoundSource;
 
     List<BossCat> bossInstances = new List<BossCat>();
     List<Transform> bossSpawnPoints = new List<Transform>();
+    List<SoundData> bossSpawnSounds = new List<SoundData>();
 
     void Start()
     {
@@ -29,7 +34,7 @@ public class BossCatSpawner : MonoBehaviour
 
         StartCoroutine(InitialiseRoutine());
 
-        GameManager.instance.GameStart += StartSpawnRoutine;
+        GameManager.instance.StartNewRound += StartSpawnRoutine;
     }
 
     IEnumerator InitialiseRoutine()
@@ -44,6 +49,8 @@ public class BossCatSpawner : MonoBehaviour
                 instance.gameObject.SetActive(false);
                 bossInstances.Add(instance);
                 bossSpawnPoints.Add(boss.spawnPoint);
+                bossSpawnSounds.Add(boss.soundOnSpawn);
+                yield return null;
                 yield return null;
             }
         }
@@ -54,37 +61,33 @@ public class BossCatSpawner : MonoBehaviour
         }
     }
 
-    public void StartSpawnRoutine()
+    public void StartSpawnRoutine(int round)
     {
-        StartCoroutine(SpawnRoutine());
+        // No boss set for this round (or the spawner has been switched off)
+        if (!isActiveAndEnabled || round < 1 || round > bossSpawnTimes.Count) return;
+
+        StartCoroutine(SpawnRoutine(round));
     }
 
-    IEnumerator SpawnRoutine()
+    IEnumerator SpawnRoutine(int round)
     {
-        for (int i = 0; i < bossSpawnTimes.Count; i++)
-        {
-            if (i == 0)
-            {
-                yield return new WaitForSeconds(bossSpawnTimes[0]);
-            }
-            else
-            {
-                yield return new WaitForSeconds(bossSpawnTimes[i] - bossSpawnTimes[i - 1]);
-            }
+        yield return new WaitForSeconds(bossSpawnTimes[round - 1]);
 
-            int index = Random.Range(0, bossInstances.Count);
+        if (bossInstances.Count == 0) yield break;
 
-            BossCat boss = bossInstances[index];
-            boss.gameObject.SetActive(true);
+        int index = Random.Range(0, bossInstances.Count);
 
-            Transform spawnPoint = bossSpawnPoints[index];
-            boss.Initialise(spawnPoint, spawnPoint.position);
+        BossCat boss = bossInstances[index];
+        boss.gameObject.SetActive(true);
 
-            bossInstances.RemoveAt(index);
-            bossSpawnPoints.RemoveAt(index);
-        }
+        Transform spawnPoint = bossSpawnPoints[index];
+        boss.Initialise(spawnPoint, spawnPoint.position);
 
-        GameManager.instance.GameStart -= StartSpawnRoutine;
+        if (bossSpawnSoundSource != null) bossSpawnSounds[index].PlayOneShot(bossSpawnSoundSource);
+
+        bossInstances.RemoveAt(index);
+        bossSpawnPoints.RemoveAt(index);
+        bossSpawnSounds.RemoveAt(index);
     }
 
     [Serializable]
@@ -96,7 +99,11 @@ public class BossCatSpawner : MonoBehaviour
         [SerializeField]
         Transform _spawnPoint;
 
+        [SerializeField]
+        SoundData _soundOnSpawn;
+
         public BossCat bossPrefab => _bossPrefab;
         public Transform spawnPoint => _spawnPoint;
+        public SoundData soundOnSpawn => _soundOnSpawn;
     }
 }

@@ -11,6 +11,9 @@ public class DefendPoint : MonoBehaviour
     Transform scoreDisplayPosition;
 
     [SerializeField]
+    Transform defendObject;
+
+    [SerializeField]
     [Min(0)]
     int hitParticlesIndex = 0;
 
@@ -80,7 +83,7 @@ public class DefendPoint : MonoBehaviour
                 GameManager.instance.ReceivePenalty(hitScorePenalty, scoreDisplayPosition.position, false);
             }
             Hit?.Invoke();
-            ParticleManager.instance.ShowParticleEffect(hitParticlesIndex, position);
+            ParticleManager.instance.ShowParticleEffect(hitParticlesIndex, defendObject != null ? defendObject.position : position);
             hitSound.PlayOneShot(hitSource);
             healthBar.value = Mathf.Max(healthBar.value * (1 - healthLossPerHit), minimumDisplayedHealth);
         }

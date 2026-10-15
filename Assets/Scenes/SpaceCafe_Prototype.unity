@@ -15517,7 +15517,22 @@ PrefabInstance:
       objectReference: {fileID: 7440272166285416836}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
         type: 3}
-      propertyPath: gameTime
+      propertyPath: roundMaxTimes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
+      propertyPath: roundMaxTimes.Array.data[0]
+      value: 180
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
+      propertyPath: roundMinTimes.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,
+        type: 3}
+      propertyPath: roundMinTimes.Array.data[0]
       value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 6657274221159390357, guid: 1db9752d27168e44eb8c460b6c8bb8ee,

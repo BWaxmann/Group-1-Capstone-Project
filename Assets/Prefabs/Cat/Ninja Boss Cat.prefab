@@ -269,7 +269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddae6cde33fa1cd4da159053ce5780a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  feedingScore: 700
+  feedingScore: 200
   scoreDisplayPosition: {fileID: 7575266315775918098}
   rotationSpeed: 12
   pickupDrops: []
@@ -288,7 +288,7 @@ MonoBehaviour:
   stunnedAnimationBool: DizzyCat
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
-  treatsUntilFull: 150
+  treatsUntilFull: 35
   moodCanvas: {fileID: 5164562339712232704}
   moodImage: {fileID: 1456673871926802083}
   healthBar: {fileID: 7906745371441607451}

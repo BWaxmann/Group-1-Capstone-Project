@@ -47,8 +47,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pregameDelay: 1
   pregameCountdownTime: 3
-  gameTime: 270
+  roundMaxTimes:
+  - 90
+  - 90
+  - 90
+  pauseBetweenRounds: 1
   fadeDuration: 1
+  particleManagerPrefab: {fileID: 3430501722288906063, guid: 52035a7c5563c4346a9650d3acffb850,
+    type: 3}
   pregameCanvas: {fileID: 0}
   countdownText: {fileID: 0}
   countdownEndText: GO!
@@ -59,6 +65,7 @@ MonoBehaviour:
   scoreText: {fileID: 0}
   bonusDisplay: {fileID: 0}
   bonusText: {fileID: 0}
+  roundText: {fileID: 0}
   timerText: {fileID: 0}
   postgameCanvas: {fileID: 0}
   timeUpText: {fileID: 0}
@@ -68,7 +75,8 @@ MonoBehaviour:
   catsFedText: {fileID: 0}
   penaltyText: {fileID: 0}
   finalScoreText: {fileID: 0}
-  scoreParticlePool: {fileID: 0}
+  scoreParticlePoolPrefab: {fileID: 4464022665838828940, guid: 4c962085e336b7141a4ee729f24db24a,
+    type: 3}
   soundEffectSource: {fileID: 893389621652222314}
   musicSource: {fileID: 5991186334920329714}
   countdownSound:
@@ -78,6 +86,10 @@ MonoBehaviour:
   countdownSoundIsCombined: 0
   separateGameStartSound: 1
   gameStartSound:
+    _soundClip: {fileID: 8300000, guid: 8d8f26c052b016a4fad98f437b0be3a0, type: 3}
+    _volume: 1
+    _pitch: 1
+  roundStartSound:
     _soundClip: {fileID: 8300000, guid: 8d8f26c052b016a4fad98f437b0be3a0, type: 3}
     _volume: 1
     _pitch: 1

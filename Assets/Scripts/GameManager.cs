@@ -1,9 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Liminal.Core.Fader;
 using Liminal.SDK.Core; // This is needed for ExperienceApp.End()
 using TMPro;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -16,12 +18,25 @@ public class GameManager : MonoBehaviour
     int pregameCountdownTime = 3;
 
     [SerializeField]
+    float[] roundMaxTimes = new float[] { 90, 90, 90 };
+
+    [SerializeField]
+    float[] roundMinTimes = new float[] { 30, 30, 30 };
+
+    [SerializeField]
     [Min(0)]
-    float gameTime = 200f;
+    int maxCatsToEndRoundEarly = 3;
+
+    [SerializeField]
+    [Min(0)]
+    float pauseBetweenRounds = 1f;
 
     [SerializeField]
     [Min(0)]
     float fadeDuration = 1f;
+
+    [SerializeField]
+    ParticleManager particleManagerPrefab;
 
     [Header("UI")]
 
@@ -60,6 +75,9 @@ public class GameManager : MonoBehaviour
     TMP_Text bonusText;
 
     [SerializeField]
+    TMP_Text roundText;
+
+    [SerializeField]
     TMP_Text timerText;
 
     [SerializeField]
@@ -88,7 +106,11 @@ public class GameManager : MonoBehaviour
     TMP_Text finalScoreText;
 
     [SerializeField]
+    [Tooltip("Optional. A score particle pool already in the scene; if empty, one is made from the prefab below.")]
     ObjectSpawner scoreParticlePool;
+
+    [SerializeField]
+    ObjectSpawner scoreParticlePoolPrefab;
 
     [Header("Sounds")]
 
@@ -97,7 +119,6 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     AudioSource musicSource;
-
 
     [SerializeField]
     SoundData countdownSound = new SoundData(1f, 1f);
@@ -112,6 +133,9 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     SoundData gameStartSound = new SoundData(1f, 1f);
+
+    [SerializeField]
+    SoundData roundStartSound = new SoundData(1f, 1f);
 
     [SerializeField]
     SoundData scoreUpSound = new SoundData(1f, 1f);
@@ -134,7 +158,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     [Min(0)]
-    float outroLength = 10f;
+    float outroLength = 1f;
 
     [SerializeField]
     SoundData postgameMusic = new SoundData(1f, 1f);
@@ -244,14 +268,21 @@ public class GameManager : MonoBehaviour
     public event GameStateChange StartCountdown;
     public event GameStateChange GameStart;
     public event GameStateChange FinaleStart;
+    public event GameStateChange EndRound;
     public event GameStateChange GameEnd;
 
+    public event Action<int> StartNewRound;
+
     bool playerInputsEnabled;
+    int currentRound;
+    int catsInScene;
     int catsFed;
     int penalties;
     int score;
     float scoreMultiplier;
+    bool endRoundEarly;
     GameState state;
+
     List<DefendPoint> defendPoints = new List<DefendPoint>();
 
     int comboCount;
@@ -341,6 +372,8 @@ public class GameManager : MonoBehaviour
 
         Invoke(nameof(InitiatePregame), pregameDelay);
         StartCountdown?.Invoke();
+
+        if (particleManagerPrefab != null && ParticleManager.instance == null) Instantiate(particleManagerPrefab);
     }
 
     IEnumerator PreGameRoutine()
@@ -362,27 +395,64 @@ public class GameManager : MonoBehaviour
     IEnumerator GameRoutine()
     {
         WaitForSeconds wait = new WaitForSeconds(1);
+        WaitForSeconds interRoundWait = new WaitForSeconds(pauseBetweenRounds);
 
-        if (Mathf.Floor(gameTime) < gameTime)
+        currentRound = 1;
+        bool roundEndedEarly = false;
+        for (int i = 0; i < roundMaxTimes.Length; i++)
         {
-            timerText.text = Mathf.CeilToInt(gameTime).ToString();
-            yield return new WaitForSeconds(gameTime % 1);
-        }
-
-        int steps = Mathf.FloorToInt(gameTime);
-        for (int i = 0; i < steps; i++)
-        {
-            timerText.text = (steps - i).ToString();
-
-            if (!finaleStarted && finaleDuration > 0 && steps - i <= finaleDuration)
+            if (i > 0)
             {
-                StartFinale();
+                yield return interRoundWait;
+
+                currentRound++;
+                roundStartSound.PlayOneShot(soundEffectSource);
+            }
+            if (roundText != null) roundText.text = currentRound.ToString();
+            StartNewRound?.Invoke(currentRound);
+
+            float roundTime = roundMaxTimes[i];
+            if (Mathf.Floor(roundTime) < roundTime)
+            {
+                timerText.text = Mathf.CeilToInt(roundTime).ToString();
+                yield return new WaitForSeconds(roundTime % 1);
             }
 
-            yield return wait;
+            int steps = Mathf.FloorToInt(roundTime);
+            for (int j = 0; j < steps; j++)
+            {
+                timerText.text = (steps - j).ToString();
+
+                // The finale is the end of the last round
+                if (!finaleStarted && finaleDuration > 0 && i == roundMaxTimes.Length - 1 && steps - j <= finaleDuration)
+                {
+                    StartFinale();
+                }
+
+                yield return wait;
+
+                if (endRoundEarly && j > roundMinTimes[i] && catsInScene <= maxCatsToEndRoundEarly)
+                {
+                    roundEndedEarly = true;
+                    break;
+                }
+            }
+
+            if (roundEndedEarly)
+            {
+                roundEndedEarly = false;
+            }
+            else
+            {
+                timerText.text = "0";
+            }
+            endRoundEarly = false;
+
+            EndRound?.Invoke();
         }
 
-        timerText.text = "0";
+        yield return StartCoroutine(FadeOutMusic());
+
         EndGame();
     }
 
@@ -414,6 +484,8 @@ public class GameManager : MonoBehaviour
         if (countdownSoundIsCombined) PlaySoundEffect(countdownSound);
 
         StartCoroutine(PreGameRoutine());
+
+        if (scoreParticlePool == null && scoreParticlePoolPrefab != null) scoreParticlePool = Instantiate(scoreParticlePoolPrefab);
     }
 
     void InitiateGame()
@@ -421,8 +493,6 @@ public class GameManager : MonoBehaviour
         if (separateGameStartSound) PlaySoundEffect(gameStartSound);
         PlayMusic(gameMusicIntroAndOutro);
         Invoke(nameof(BeginLoop), introLength);
-        //Invoke(nameof(PlayOutro), gameTime - outroLength);
-        StartCoroutine(FadeOutMusic());
         
         state = GameState.DuringGame;
         playerInputsEnabled = true;
@@ -734,6 +804,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void CatSpawned()
+    {
+        catsInScene++;
+    }
+
+    public void CatDespawned()
+    {
+        catsInScene--;
+    }
+
     public void FeedCat(int scoreValue, Vector3 position)
     {
         catsFed++;
@@ -767,6 +847,11 @@ public class GameManager : MonoBehaviour
         UpdateScore(-penaltyValue, position, playSoundFX);
     }
 
+    public void EndRoundEarly()
+    {
+        endRoundEarly = true;
+    }
+
     void PlaySoundEffect(SoundData sound)
     {
         if (soundEffectSource != null && sound.soundClip != null)
@@ -795,15 +880,8 @@ public class GameManager : MonoBehaviour
         PlayMusic(gameMusicLoop);
     }
 
-    void PlayOutro()
-    {
-        PlayMusic(gameMusicIntroAndOutro, gameMusicIntroAndOutro.soundClip.length - outroLength, false);
-    }
-
     IEnumerator FadeOutMusic()
     {
-        yield return new WaitForSeconds(gameTime - outroLength);
-
         float timer = outroLength;
         float currentVolume = musicSource.volume;
         while (timer > 0)

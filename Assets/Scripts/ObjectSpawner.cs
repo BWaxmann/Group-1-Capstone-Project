@@ -48,6 +48,7 @@ public class ObjectSpawner : MonoBehaviour
                     GameObject obj = SpawnNewObjectForPool(i);
                     obj.SetActive(false);
                     yield return null;
+                    yield return null;
                 }
             }
 

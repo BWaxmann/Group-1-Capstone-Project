@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -8,8 +8,8 @@ public class SpawnManager : MonoBehaviour
     [SerializeField]
     ObjectSpawner catSpawner;
 
-    [Tooltip("Cat spawning rotation will be taken from the spawn point transform.")] 
-    [SerializeField] 
+    [Tooltip("Cat spawning rotation will be taken from the spawn point transform.")]
+    [SerializeField]
     Transform spawnPointCentre;
 
     [SerializeField]
@@ -20,6 +20,12 @@ public class SpawnManager : MonoBehaviour
     Transform afterFeedingReturnPoint;
 
     [SerializeField]
+    [Tooltip("Seperate first by round, then waves within the round.")]
+    RoundData[] spawnRoundsData;
+
+    // Waves from scenes made before rounds existed (our prototypes). They play in round 1 when no rounds are set.
+    [SerializeField]
+    [HideInInspector]
     SpawnData[] spawnWavesData;
 
     [Header("Finale Rush")]
@@ -33,18 +39,14 @@ public class SpawnManager : MonoBehaviour
     [Min(0)]
     float finaleDelayBetweenSpawns = 3f;
 
-    public bool allWavesCompleted { get { return wavesCompleted >= spawnWavesData.Length; } }
-
     // While true, every spawner waits before sending its next cat (Cat Chaos pauses waves during its boss phase)
     public static bool holdSpawns;
 
-    int wavesCompleted = 0;
-    bool finaleDone;
     bool wavesStarted;
 
     void Start()
     {
-        GameManager.instance.GameStart += StartSpawningWaves;
+        GameManager.instance.StartNewRound += StartSpawningWaves;
         GameManager.instance.FinaleStart += StartFinaleRush;
         GameManager.instance.GameEnd += StopSpawning;
     }
@@ -53,9 +55,55 @@ public class SpawnManager : MonoBehaviour
     {
         if (GameManager.instance != null)
         {
-            GameManager.instance.GameStart -= StartSpawningWaves;
+            GameManager.instance.StartNewRound -= StartSpawningWaves;
             GameManager.instance.FinaleStart -= StartFinaleRush;
             GameManager.instance.GameEnd -= StopSpawning;
+        }
+    }
+
+    public void StartSpawningWaves(int round)
+    {
+        // Switched off (e.g. by a prototype scene that spawns its own cats)
+        if (!enabled || !gameObject.activeInHierarchy) return;
+        SpawnData[] waves = WavesForRound(round);
+        // No waves set up for this round
+        if (waves == null) return;
+
+        wavesStarted = true;
+        foreach (SpawnData data in waves)
+        {
+            StartCoroutine(SpawnWave(data));
+        }
+    }
+
+    SpawnData[] WavesForRound(int round)
+    {
+        if (spawnRoundsData != null && spawnRoundsData.Length > 0)
+        {
+            return round >= 1 && round <= spawnRoundsData.Length ? spawnRoundsData[round - 1].spawnWaves : null;
+        }
+        return round == 1 ? spawnWavesData : null;
+    }
+
+    IEnumerator SpawnWave(SpawnData data)
+    {
+        // Wait for delay before starting wave
+        yield return new WaitForSeconds(data.secondsAfterStartToBegin);
+
+        WaitForSeconds wait = new WaitForSeconds(data.delayBetweenSpawns);
+        for (int i = 0; i < data.numberOfTimesToSpawn; i++)
+        {
+            while (holdSpawns) yield return null;
+            // Older waves were saved before this setting existed (it loads as 0): they send one at a time
+            for (int j = 0; j < Mathf.Max(1, data.numberToSpawnAtATime); j++)
+            {
+                CatMovement cat = data.onlySpawnSpecificVariations
+                    ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
+                    : catSpawner.GetRandomObjectFromPool<CatMovement>();
+                SpawnCat(cat);
+            }
+
+            yield return wait;
         }
     }
 
@@ -76,17 +124,6 @@ public class SpawnManager : MonoBehaviour
             SpawnCat(catSpawner.GetRandomObjectFromPool<CatMovement>());
             yield return wait;
         }
-        finaleDone = true;
-
-        if (allWavesCompleted)
-        {
-            SpawnerShutDown();
-        }
-    }
-
-    void StopSpawning()
-    {
-        StopAllCoroutines();
     }
 
     void SpawnCat(CatMovement cat)
@@ -99,47 +136,23 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    public void StartSpawningWaves()
+    void StopSpawning()
     {
-        // Switched off (e.g. by the peekaboo prototype)
-        if (!enabled) return;
-
-        wavesStarted = true;
-        foreach (SpawnData data in spawnWavesData)
-        {
-            StartCoroutine(SpawnWave(data));
-        }
+        StopAllCoroutines();
     }
 
-    IEnumerator SpawnWave(SpawnData data)
+    public void EndRound()
     {
-        // Wait for delay before starting wave
-        yield return new WaitForSeconds(data.secondsAfterStartToBegin);
-
-        WaitForSeconds wait = new WaitForSeconds(data.delayBetweenSpawns);
-        for (int i = 0; i < data.numberOfTimesToSpawn; i++)
-        {
-            while (holdSpawns) yield return null;
-            CatMovement cat = data.onlySpawnSpecificVariations
-                ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
-                : catSpawner.GetRandomObjectFromPool<CatMovement>();
-            SpawnCat(cat);
-
-            yield return wait;
-        }
-
-        wavesCompleted++;
-        // Stay active until the finale rush has run, or it would be cut off
-        if (wavesCompleted >= spawnWavesData.Length && (finaleSpawnCount == 0 || finaleDone))
-        {
-            SpawnerShutDown();
-        }
+        StopAllCoroutines();
     }
 
-    void SpawnerShutDown()
+    [Serializable]
+    public struct RoundData
     {
-        GameManager.instance.GameStart -= StartSpawningWaves;
-        gameObject.SetActive(false);
+        [SerializeField]
+        SpawnData[] _spawnWaves;
+
+        public SpawnData[] spawnWaves => _spawnWaves;
     }
 
     [Serializable]
@@ -154,6 +167,10 @@ public class SpawnManager : MonoBehaviour
         int _numberOfTimesToSpawn;
 
         [SerializeField]
+        [Min(1)]
+        int _numberToSpawnAtATime;
+
+        [SerializeField]
         [Min(0)]
         float _delayBetweenSpawns;
 
@@ -165,6 +182,7 @@ public class SpawnManager : MonoBehaviour
 
         public float secondsAfterStartToBegin { get { return _secondsAfterStartToBegin; } }
         public int numberOfTimesToSpawn { get { return _numberOfTimesToSpawn; } }
+        public int numberToSpawnAtATime { get { return _numberToSpawnAtATime; } }
         public float delayBetweenSpawns { get { return _delayBetweenSpawns; } }
         public bool onlySpawnSpecificVariations { get { return _onlySpawnSpecificVariations; } }
         public int[] variationsToSpawn { get { return _variationsToSpawn; } }

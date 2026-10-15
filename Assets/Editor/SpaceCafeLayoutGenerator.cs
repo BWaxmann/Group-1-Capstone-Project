@@ -175,7 +175,7 @@ public static class SpaceCafeLayoutGenerator
         if (gameManager != null)
         {
             SerializedObject gameSettings = new SerializedObject(gameManager);
-            gameSettings.FindProperty("gameTime").floatValue = RoundLength;
+            CatChaosSceneGenerator.SetSingleRound(gameSettings, RoundLength);
             gameSettings.ApplyModifiedProperties();
             log.AppendLine($"Round length set to {RoundLength} seconds.");
         }
