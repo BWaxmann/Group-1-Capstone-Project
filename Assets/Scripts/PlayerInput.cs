@@ -233,9 +233,17 @@ public class PlayerInput : MonoBehaviour
     public bool fireStylesUnlocked { get; private set; }
     FireStyle styleLeft;
     FireStyle styleRight;
+    FireStyle? forcedStyle;
     static int lastShotId;
 
-    public FireStyle Style(bool rightHand) => rightHand ? styleRight : styleLeft;
+    public FireStyle Style(bool rightHand) => forcedStyle ?? (rightHand ? styleRight : styleLeft);
+
+    // Both launchers fire this style for a while (e.g. Scatter in Cat Cafe Waves' kitten stampede); null = back to normal
+    public void ForceFireStyle(FireStyle? style)
+    {
+        forcedStyle = style;
+        ShowStyles();
+    }
 
     public void UnlockFireStyles(bool unlocked)
     {
@@ -246,6 +254,7 @@ public class PlayerInput : MonoBehaviour
 
     void SwapStyle(bool rightHand, int direction)
     {
+        if (forcedStyle.HasValue) return;
         int count = System.Enum.GetValues(typeof(FireStyle)).Length;
         FireStyle next = (FireStyle)(((int)Style(rightHand) + direction + count) % count);
         if (rightHand) styleRight = next;
@@ -257,7 +266,7 @@ public class PlayerInput : MonoBehaviour
     // The launchers' little display shows each hand's style while they're unlocked
     void ShowStyles()
     {
-        if (!fireStylesUnlocked)
+        if (!fireStylesUnlocked || forcedStyle.HasValue)
         {
             RefreshAmmoText();
             return;
@@ -518,8 +527,8 @@ public class PlayerInput : MonoBehaviour
         {
             reticleRight.Configure(shotSpeed, !straightShots);
             reticleLeft.Configure(shotSpeed, !straightShots);
-            reticleRight.SetSpread(StyleSpread(styleRight));
-            reticleLeft.SetSpread(StyleSpread(styleLeft));
+            reticleRight.SetSpread(StyleSpread(Style(true)));
+            reticleLeft.SetSpread(StyleSpread(Style(false)));
             reticleRight.SetVisible(show);
             reticleLeft.SetVisible(show);
         }
@@ -868,7 +877,8 @@ public class PlayerInput : MonoBehaviour
 
     void RefreshAmmoText()
     {
-        if (instaKillActive) ammoText.text = instaKillText;
+        if (forcedStyle.HasValue) ammoText.text = $"<size=55%>{forcedStyle.Value.ToString().ToUpper()}!</size>";
+        else if (instaKillActive) ammoText.text = instaKillText;
         else if (spreadActive) ammoText.text = spreadText;
         else if (rapidFireActive) ammoText.text = rapidFireText;
         else ammoText.text = defaultDisplayText;

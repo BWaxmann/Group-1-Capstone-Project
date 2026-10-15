@@ -571,6 +571,24 @@ public class CatMovement : MonoBehaviour
         }
     }
 
+    // Another script moves this (pooled, just switched on) cat itself (Cat Cafe Waves kittens): nothing of its own
+    // runs, but it can still be hit by treats
+    public void TakeOver()
+    {
+        StopAllCoroutines();
+        currentState = AIState.Roaming;
+        isStunned = false;
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+        if (moodCanvas != null) moodCanvas.SetActive(false);
+    }
+
+    // The happy pop of confetti (and its sound) where the cat is, without it leaving
+    public void PopConfetti()
+    {
+        if (launchPopParticleIndex >= 0) ParticleManager.instance.ShowParticleEffect(launchPopParticleIndex, transform.position);
+        GameManager.instance.PlayCatPopSound(transform.position);
+    }
+
     // Picks up roaming again after another script took over the cat for a while (Cat Cafe Waves raids)
     public void ResumeRoaming()
     {

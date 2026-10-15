@@ -168,7 +168,7 @@ public class CatOrder : MonoBehaviour
         bool any = false;
         foreach (Renderer rend in GetComponentsInChildren<Renderer>())
         {
-            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend.GetComponentInParent<OrderBubble>() != null) continue;
+            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer || rend.GetComponentInParent<OrderBubble>() != null) continue;
             if (rend.GetComponentInParent<Canvas>() != null) continue;
             float height = rend.bounds.max.y - transform.position.y;
             top = any ? Mathf.Max(top, height) : height;

@@ -199,6 +199,24 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Props that can be caught pulse with a bright outline (seen through furniture too).")]
     public bool catchGlow = false;
 
+    [Header("Kitten Stampede (Stampede phases)")]
+
+    [Tooltip("Herds of little kittens gallop across the room in front of the player; any treat feeds one. " +
+             "Both launchers fire Scatter for the phase.")]
+    public bool stampedeScatter = true;
+    [Range(0.3f, 1f)] public float kittenScale = 0.55f;
+    [Min(1)] public int kittensPerHerdMin = 5;
+    [Min(1)] public int kittensPerHerdMax = 7;
+    [Min(0.5f)] public float herdGapMin = 2.2f;
+    [Min(0.5f)] public float herdGapMax = 3.2f;
+    [Min(0.5f)] public float kittenSpeedMin = 3.2f;
+    [Min(0.5f)] public float kittenSpeedMax = 4.2f;
+    [Min(0.1f)]
+    [Tooltip("Radius of each kitten's invisible hit area, in metres.")]
+    public float kittenHitRadius = 0.35f;
+    [Min(0)] public int kittenScore = 2;
+    [Min(0)] public int kittenCoins = 1;
+
     [Tooltip("The first catch phase starts by knocking up one prop that hangs in the air, with a hint, and the clock " +
              "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
     public bool catchIntro = false;
@@ -234,6 +252,22 @@ public class RushDirector : MonoBehaviour
     Vector3? AssistTarget(Treat treat)
     {
         Vector3? target = CatOrder.AssistTarget(treat, aimAssistAngle);
+        if (target == null && KittenRun.running.Count > 0)
+        {
+            // Any kitten will do (no colours in a stampede)
+            float best = aimAssistAngle;
+            foreach (KittenRun kitten in KittenRun.running)
+            {
+                if (kitten.isFed) continue;
+                Vector3 point = kitten.aimPoint;
+                float angle = Vector3.Angle(treat.velocity, point - treat.transform.position);
+                if (angle <= best)
+                {
+                    best = angle;
+                    target = point;
+                }
+            }
+        }
         if (target == null && ninja != null && ninja.feedable && ninja.gameObject.activeInHierarchy && !ninja.isFullyFed)
         {
             Vector3 point = ninjaHitbox != null ? ninjaHitbox.transform.TransformPoint(ninjaHitbox.center) : ninja.transform.position + Vector3.up * 0.3f;
@@ -334,6 +368,8 @@ public class RushDirector : MonoBehaviour
         playing = false;
         current = null;
         CatRaid.CancelAll();
+        KittenRun.EndAll();
+        if (player != null) player.ForceFireStyle(null);
         if (ninja != null) ninja.Leave();
         Say(closingLine);
     }
@@ -399,6 +435,12 @@ public class RushDirector : MonoBehaviour
                     break;
 
                 case Kind.Stampede:
+                    Haptics.PulseBoth(Haptics.Strength.Strong);
+                    CatRaid.CancelAll();
+                    SendCatsAway();
+                    yield return Stampede(phase);
+                    break;
+
                 case Kind.PopUp:
                     // Not built yet: plays as ordinary feeding for now (with its own banner and callout)
                     Debug.LogWarning($"[Cat Cafe Rush] {phase.kind} phase isn't built yet; it plays as feeding for {phase.seconds:F0} s.");
@@ -408,10 +450,94 @@ public class RushDirector : MonoBehaviour
         }
     }
 
-    // Phases where hungry cats with orders keep coming in (Stampede and Pop-up too, until they're built)
+    // Phases where hungry cats with orders keep coming in (Pop-up too, until it's built)
     static bool HasOrders(Kind kind)
     {
-        return kind != Kind.Catch;
+        return kind == Kind.Feed || kind == Kind.Boss || kind == Kind.PopUp;
+    }
+
+    // ---------- Cat Cafe Waves: kitten stampede ----------
+
+    // Herds of kittens gallop across the room in front of the player, from alternating sides, for the whole phase
+    IEnumerator Stampede(Phase phase)
+    {
+        float end = Time.time + phase.seconds;
+        if (stampedeScatter && player != null) player.ForceFireStyle(PlayerInput.FireStyle.Scatter);
+        yield return new WaitForSeconds(1.5f);   // the callout lands first
+
+        bool fromLeft = Random.value < 0.5f;
+        while (playing && Time.time < end - 3f)
+        {
+            List<Vector3> path = HerdPath(fromLeft);
+            if (path != null) StartCoroutine(SendHerd(path));
+            fromLeft = !fromLeft;
+            yield return new WaitForSeconds(Random.Range(herdGapMin, Mathf.Max(herdGapMin, herdGapMax)));
+        }
+        while (playing && Time.time < end) yield return null;
+
+        KittenRun.EndAll();
+        if (player != null) player.ForceFireStyle(null);
+    }
+
+    IEnumerator SendHerd(List<Vector3> path)
+    {
+        int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
+        float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));   // a herd keeps together
+        for (int i = 0; i < count && playing; i++)
+        {
+            CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+            if (cat != null)
+            {
+                KittenRun.Launch(cat, path, Random.Range(-0.6f, 0.6f), speed * Random.Range(0.92f, 1.08f),
+                                 kittenScale, kittenHitRadius, KittenFed);
+                if (i == 0) cat.DisappearParticleEffect();   // a puff of dust as the herd bursts in
+            }
+            yield return new WaitForSeconds(Random.Range(0.12f, 0.3f));
+        }
+    }
+
+    void KittenFed(KittenRun kitten)
+    {
+        Vector3 at = kitten.aimPoint;
+        GameManager.instance.FeedCat(kittenScore, at);
+        if (tipJar != null && kittenCoins > 0) tipJar.AddCoins(at, kittenCoins);
+    }
+
+    // A walkable run across the floor in front of the player, from one side to the other (around furniture, never
+    // through the player's space), or null if none could be found
+    List<Vector3> HerdPath(bool fromLeft)
+    {
+        if (player == null) return null;
+        Transform eye = player.eyePoint;
+        Vector3 head = eye != null ? eye.position : player.transform.position;
+        Vector3 forward = Flat(player.transform.forward);
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        float floorY = player.transform.position.y;
+        NavMeshPath navPath = new NavMeshPath();
+
+        for (int attempt = 0; attempt < 8; attempt++)
+        {
+            float depth = Random.Range(2.5f, 6.5f);
+            float width = Random.Range(3.5f, 5.5f);
+            Vector3 centre = head + forward * depth;
+            centre.y = floorY;
+            Vector3 side = right * width * (fromLeft ? 1f : -1f);
+            if (!NavMesh.SamplePosition(centre - side, out NavMeshHit start, 2f, NavMesh.AllAreas)) continue;
+            if (!NavMesh.SamplePosition(centre + side, out NavMeshHit finish, 2f, NavMesh.AllAreas)) continue;
+            // On the floor, not up on a table
+            if (Mathf.Abs(start.position.y - floorY) > 0.3f || Mathf.Abs(finish.position.y - floorY) > 0.3f) continue;
+            if (!NavMesh.CalculatePath(start.position, finish.position, NavMesh.AllAreas, navPath) ||
+                navPath.status != NavMeshPathStatus.PathComplete) continue;
+
+            float length = 0;
+            for (int i = 1; i < navPath.corners.Length; i++) length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
+            float straight = Vector3.Distance(start.position, finish.position);
+            // Long enough to see, and not a big detour round the room
+            if (straight < 4f || length > straight * 1.8f) continue;
+            return new List<Vector3>(navPath.corners);
+        }
+        return null;
     }
 
     void Update()
