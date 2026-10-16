@@ -209,8 +209,11 @@ public class GravityBeam : MonoBehaviour
         hand.holdDistance = Vector3.Distance(muzzle.position, prop.centre);
         prop.Hold(prop.transform.position);
 
-        catchStreak++;
-        GameManager.instance.AddBonus(catchScore * Mathf.Min(catchStreak, maxStreakMultiplier), prop.centre);
+        if (prop.FirstCatch())
+        {
+            catchStreak++;
+            GameManager.instance.AddBonus(catchScore * Mathf.Min(catchStreak, maxStreakMultiplier), prop.centre);
+        }
         Haptics.Pulse(hand.isRight, Haptics.Strength.Medium);
         if (CatChaosSettings.instance != null) CatChaosSettings.instance.PlayCatch(prop.centre);
     }

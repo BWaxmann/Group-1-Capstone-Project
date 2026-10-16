@@ -84,6 +84,7 @@ public class FlyingProp : MonoBehaviour
     float flightTime;
     bool drifting;
     bool falling;           // dropped off the beam away from its pile: straight down (it can still be grabbed)
+    bool caughtThisFlight;  // the catch score is paid once per time it's knocked flying
     LineRenderer homeRing;
     GameObject dragHint;
 
@@ -217,6 +218,7 @@ public class FlyingProp : MonoBehaviour
         flightTime = 0;
         drifting = false;
         falling = false;
+        caughtThisFlight = false;
         viewer = playerPosition;
         this.slowFall = slowFall;
         // It drifts about over the space between the player and where it came from, so it stays in front of them
@@ -312,6 +314,14 @@ public class FlyingProp : MonoBehaviour
     public void SetHoldTarget(Vector3 target)
     {
         holdTarget = target;
+    }
+
+    // True the first time it's caught since it was knocked flying (a dropped prop grabbed again doesn't score again)
+    public bool FirstCatch()
+    {
+        if (caughtThisFlight) return false;
+        caughtThisFlight = true;
+        return true;
     }
 
     // Let go of the beam: the prop flies back to its spot on the pile (in the ninja phases, only if it was let go over
