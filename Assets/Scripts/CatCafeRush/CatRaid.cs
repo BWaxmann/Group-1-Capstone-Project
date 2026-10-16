@@ -72,7 +72,7 @@ public class CatRaid : MonoBehaviour
     }
 
     // A floor spot near the target that this cat can actually run to (the target itself may be up on the counter)
-    static bool FloorSpotNear(Vector3 target, NavMeshAgent agent, out Vector3 spot)
+    public static bool FloorSpotNear(Vector3 target, NavMeshAgent agent, out Vector3 spot)
     {
         spot = Vector3.zero;
         float floorY = agent.transform.position.y;

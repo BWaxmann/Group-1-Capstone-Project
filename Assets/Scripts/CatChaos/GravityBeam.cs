@@ -44,6 +44,7 @@ public class GravityBeam : MonoBehaviour
         public bool isRight;
         public FlyingProp held;
         public float holdDistance;
+        public bool overHome;   // (ninja phases) the held prop is over its pile, ready to let go
         public FlyingProp locking;
         public float lockProgress;
         public LineRenderer beam;
@@ -109,8 +110,13 @@ public class GravityBeam : MonoBehaviour
         Vector3 start = muzzle.position;
         if (hand.held != null)
         {
-            // Reel the prop in to a comfortable distance, then it follows where the launcher points
-            hand.holdDistance = Mathf.MoveTowards(hand.holdDistance, holdDistance, Time.deltaTime * 6f);
+            // Reel the prop in to a comfortable distance, then it follows where the launcher points. In the ninja phases it
+            // has to be carried back to its pile, so it rides out as far as the pile is: point at the pile and it's there
+            float want = FlyingProp.dragHome ? Mathf.Clamp(Vector3.Distance(muzzle.position, hand.held.dropCentre), 0.8f, range) : holdDistance;
+            hand.holdDistance = Mathf.MoveTowards(hand.holdDistance, want, Time.deltaTime * 6f);
+            bool over = FlyingProp.dragHome && hand.held.nearHome;
+            if (over && !hand.overHome) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
+            hand.overHome = over;
             hand.held.SetHoldTarget(muzzle.position + muzzle.forward * hand.holdDistance);
             DrawBeam(hand.beam, start, hand.held.centre, 0.03f, 1f);
             hand.lockRing.enabled = false;

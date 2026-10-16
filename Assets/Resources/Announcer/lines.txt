@@ -12,6 +12,7 @@ stampede_2 | Kittens! Kittens everywhere! Feed them all!
 feed_combo | Combo orders! Some hungry cats want more than one treat! Fill their bellies to get those tips!
 feed_three | Bigger appetites now! Some cats want THREE treats! Keep filling those bellies!
 latch | A kitten's got your launcher! Shake it off!
+mafia | Watch out! The Mafia cat's after your tips! Feed him his whole order before he reaches the jar!
 catch | Oh no! Ninja Cat has scared off the customers! When it sends something flying, use the alternative trigger to catch it!
 catch_2 | The ninja's knocking things over! Use the alternative trigger to catch them!
 popup | Pop-up cats! Hit them while they're in the air!

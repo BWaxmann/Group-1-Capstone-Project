@@ -7,8 +7,9 @@ using Random = UnityEngine.Random;
 
 // Cat Cafe Waves' pop-up cats: whack-a-mole in the air. Pooled cats sit on the couches and chairs; now and then one
 // crouches, boings, and springs straight up, showing a colour, hangs at the top for a moment glowing gold, and drops
-// back onto its seat. The right colour while it's up pops it into confetti (and its seat is taken by a new cat); the
-// wrong colour gets an angry face. A miss costs nothing: it just lands and waits to jump again.
+// back onto its seat. It wants a quick string of treats while it's up (shown in its bubble, in order): land them all
+// and it pops into confetti (and its seat is taken by a new cat). The wrong colour gets an angry face; landing with
+// its order half eaten gets a grumpy one. A miss costs nothing more: it just lands and waits to jump again.
 public class PopUpCat : MonoBehaviour
 {
     [Serializable]
@@ -23,6 +24,13 @@ public class PopUpCat : MonoBehaviour
         [Min(0f)]
         [Tooltip("Seconds it hangs at the top: the easiest moment to hit it.")]
         public float hang = 0.4f;
+        [Min(0f)]
+        [Tooltip("...plus this much for each treat after the first.")]
+        public float hangPerExtraTreat = 0.15f;
+        [Min(1)]
+        [Tooltip("Fewest and most treats a cat wants in one jump (any mix of colours).")]
+        public int treatsMin = 2;
+        [Min(1)] public int treatsMax = 3;
         [Min(0.1f)] public float fallTime = 0.45f;
         [Min(0.1f)]
         [Tooltip("Radius of its invisible hit area, in metres.")]
@@ -44,7 +52,8 @@ public class PopUpCat : MonoBehaviour
     bool jumping;
     bool airborne;
     bool hit;
-    int food = -1;
+    readonly List<int> foods = new List<int>();
+    int step;
     float normalAnimatorSpeed = 1f;
     Vector3 normalScale;
 
@@ -53,7 +62,9 @@ public class PopUpCat : MonoBehaviour
 
     public bool isIdle => !jumping && !hit && isActiveAndEnabled;
     public bool isOut => airborne && !hit;
-    public int wantedFood => isOut ? food : -1;
+    public int wantedFood => isOut && step < foods.Count ? foods[step] : -1;
+    // How many treats it wanted this jump
+    public int treatCount => foods.Count;
     public Vector3 aimPoint => hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.2f;
 
     // Sits a pooled cat (switched off) on `seat`, facing the player
@@ -108,15 +119,17 @@ public class PopUpCat : MonoBehaviour
         if (look.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(look);
     }
 
-    // Springs up once, wanting `wanted` (a treat pool position), shown by `icon` in a bubble while it's up
-    public void Jump(int wanted, OrderBubble.Item icon, float bubbleScale)
+    // Springs up once, wanting `wanted` (treat pool positions, in order), shown by `icons` in a bubble while it's up
+    public void Jump(List<int> wanted, List<OrderBubble.Item> icons, float bubbleScale)
     {
-        if (!isIdle) return;
-        food = wanted;
-        StartCoroutine(JumpRoutine(icon, bubbleScale));
+        if (!isIdle || wanted.Count == 0) return;
+        foods.Clear();
+        foods.AddRange(wanted);
+        step = 0;
+        StartCoroutine(JumpRoutine(icons, bubbleScale));
     }
 
-    IEnumerator JumpRoutine(OrderBubble.Item icon, float bubbleScale)
+    IEnumerator JumpRoutine(List<OrderBubble.Item> icons, float bubbleScale)
     {
         jumping = true;
 
@@ -136,7 +149,7 @@ public class PopUpCat : MonoBehaviour
         // Up it springs (fast, slowing to the top), showing what it wants
         airborne = true;
         SetGlow(true);
-        ShowWant(icon, bubbleScale);
+        ShowWant(icons, bubbleScale);
         if (animator != null) animator.speed = normalAnimatorSpeed;
         Vector3 top = seat + Vector3.up * Random.Range(settings.heightMin, Mathf.Max(settings.heightMin, settings.heightMax));
         float t = 0;
@@ -152,10 +165,11 @@ public class PopUpCat : MonoBehaviour
         if (animator != null) animator.speed = 0f;
         Quaternion facing = transform.rotation;
         timer = 0;
-        while (timer < settings.hang)
+        float hang = settings.hang + settings.hangPerExtraTreat * (foods.Count - 1);
+        while (timer < hang)
         {
             timer += Time.deltaTime;
-            transform.position = top + Vector3.up * Mathf.Sin(timer / settings.hang * Mathf.PI) * 0.05f;
+            transform.position = top + Vector3.up * Mathf.Sin(timer / Mathf.Max(0.01f, hang) * Mathf.PI) * 0.05f;
             transform.rotation = facing * Quaternion.Euler(0, 0, Mathf.Sin(timer * 30f) * 8f);
             Pulse();
             yield return null;
@@ -172,18 +186,26 @@ public class PopUpCat : MonoBehaviour
             yield return null;
         }
         transform.position = seat;
+        transform.localScale = normalScale;
         airborne = false;
         SetGlow(false);
+        // Down with its order half eaten: grumpy
+        if (step > 0 && bubble != null)
+        {
+            bubble.Shake();
+            bubble.FlashFace(cat.grumpiestFace, 0.6f);
+            yield return new WaitForSeconds(0.6f);
+        }
         if (bubble != null) bubble.Hide();
         if (animator != null) animator.speed = 0.4f;
         jumping = false;
     }
 
-    // While it's up: the right colour pops it, the wrong one gets an angry face
+    // While it's up: the next colour in its order is eaten (the last one pops it), the wrong one gets an angry face
     bool Eat(Treat treat)
     {
-        if (!airborne || hit) return false;
-        if (food >= 0 && treat.foodVariation != food)
+        if (!airborne || hit || step >= foods.Count) return false;
+        if (foods[step] >= 0 && treat.foodVariation != foods[step])
         {
             if (bubble != null)
             {
@@ -192,11 +214,31 @@ public class PopUpCat : MonoBehaviour
             }
             return false;
         }
+        step++;
+        if (bubble != null) bubble.Advance();
+        if (step < foods.Count)
+        {
+            // One down: a happy squeak and a little swell
+            cat.Meow(Random.Range(1.2f, 1.4f));
+            StartCoroutine(Nom());
+            return false;
+        }
         hit = true;
         onHit?.Invoke(this);
         StopAllCoroutines();
         StartCoroutine(HitPop());
         return false;
+    }
+
+    IEnumerator Nom()
+    {
+        float t = 0;
+        while (t < 1f && !hit)
+        {
+            t += Time.deltaTime / 0.15f;
+            transform.localScale = normalScale * (1f + 0.15f * Mathf.Sin(Mathf.Min(t, 1f) * Mathf.PI));
+            yield return null;
+        }
     }
 
     IEnumerator HitPop()
@@ -244,13 +286,13 @@ public class PopUpCat : MonoBehaviour
         }
     }
 
-    void ShowWant(OrderBubble.Item icon, float bubbleScale)
+    void ShowWant(List<OrderBubble.Item> icons, float bubbleScale)
     {
-        if (food < 0) return;
+        if (icons == null || icons.Count == 0) return;
         if (bubble == null) bubble = OrderBubble.Create(transform);
         bubble.gameObject.SetActive(true);
         bubble.transform.localScale = Vector3.one * bubbleScale;
-        bubble.Show(new List<OrderBubble.Item> { icon }, new Vector3(0, BubbleHeight(bubbleScale), 0));
+        bubble.Show(icons, new Vector3(0, BubbleHeight(bubbleScale), 0));
     }
 
     // Just above its head

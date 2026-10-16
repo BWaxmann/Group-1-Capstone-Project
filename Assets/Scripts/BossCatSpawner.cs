@@ -16,6 +16,17 @@ public class BossCatSpawner : MonoBehaviour
     [SerializeField]
     AudioSource bossSpawnSoundSource;
 
+    // A boss prefab of this kind from the list (e.g. Cat Cafe Waves' Mafia heist borrows the Mafia cat), or null
+    public T Prefab<T>() where T : BossCat
+    {
+        if (bossPrefabs == null) return null;
+        foreach (BossData boss in bossPrefabs)
+        {
+            if (boss.bossPrefab is T found) return found;
+        }
+        return null;
+    }
+
     List<BossCat> bossInstances = new List<BossCat>();
     List<Transform> bossSpawnPoints = new List<Transform>();
     List<SoundData> bossSpawnSounds = new List<SoundData>();

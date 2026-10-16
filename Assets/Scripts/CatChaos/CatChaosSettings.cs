@@ -145,7 +145,7 @@ public class CatChaosSettings : MonoBehaviour
         go.transform.position = position;
         AudioSource source = go.AddComponent<AudioSource>();
         source.spatialBlend = 1f;
-        source.minDistance = 1.5f;
+        source.minDistance = 1.5f * SoundLevels.world;
         source.pitch = sound.pitch * pitch;
         source.PlayOneShot(sound.soundClip, sound.volume);
         Destroy(go, sound.soundClip.length / Mathf.Max(0.1f, Mathf.Abs(source.pitch)) + 0.1f);
