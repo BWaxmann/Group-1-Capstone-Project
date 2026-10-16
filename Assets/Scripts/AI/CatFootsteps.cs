@@ -10,6 +10,8 @@ public class CatFootsteps : MonoBehaviour
     [SerializeField]
     SoundData[] footstepClips;
 
+    public AudioSource source => footstepSource;
+
     [SerializeField]
     [Tooltip("If true, footstep clips will play in a random order; if false, footsteps will play in order provided.")]
     bool randomiseFootstepClipOrder = false;

@@ -209,6 +209,27 @@ public class CatMovement : MonoBehaviour
     protected virtual void OnEnable()
     {
         if (!active.Contains(this)) active.Add(this);
+        ApplyLoudness();
+    }
+
+    // Each of the cat's sounds carries as far as SoundLevels says (its footsteps are background sounds, the rest are
+    // the cat's own). Scaled from how each source was set up, so it can be applied again.
+    System.Collections.Generic.Dictionary<AudioSource, float> setUpMinDistance;
+
+    void ApplyLoudness()
+    {
+        if (setUpMinDistance == null)
+        {
+            setUpMinDistance = new System.Collections.Generic.Dictionary<AudioSource, float>();
+            foreach (AudioSource source in GetComponentsInChildren<AudioSource>(true)) setUpMinDistance[source] = source.minDistance;
+        }
+        CatFootsteps footsteps = GetComponentInChildren<CatFootsteps>(true);
+        AudioSource steps = footsteps != null ? footsteps.source : null;
+        foreach (System.Collections.Generic.KeyValuePair<AudioSource, float> source in setUpMinDistance)
+        {
+            if (source.Key == null) continue;
+            source.Key.minDistance = source.Value * (source.Key == steps ? SoundLevels.world : SoundLevels.cats);
+        }
     }
 
     protected virtual void Start()

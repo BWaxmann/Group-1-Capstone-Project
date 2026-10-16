@@ -871,6 +871,7 @@ public class GameManager : MonoBehaviour
             if (music.soundClip != null)
             {
                 music.PlayMusic(musicSource, startPoint, loop);
+                musicSource.volume *= SoundLevels.music;
             }
             else
             {
