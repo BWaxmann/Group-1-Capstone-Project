@@ -182,6 +182,12 @@ public class Outline : MonoBehaviour {
     // Retrieve or generate smooth normals
     foreach (var meshFilter in GetComponentsInChildren<MeshFilter>()) {
 
+      // Catastrophe Cafe: leave alone meshes the build can't change (Read/Write off, or merged by static batching).
+      // Changing them crashes the Quest build; the outline still shows, just without smoothed corners.
+      if (!CanChange(meshFilter.sharedMesh)) {
+        continue;
+      }
+
       // Skip if smooth normals have already been adopted
       if (!registeredMeshes.Add(meshFilter.sharedMesh)) {
         continue;
@@ -205,6 +211,10 @@ public class Outline : MonoBehaviour {
     // Clear UV3 on skinned mesh renderers
     foreach (var skinnedMeshRenderer in GetComponentsInChildren<SkinnedMeshRenderer>()) {
 
+      if (!CanChange(skinnedMeshRenderer.sharedMesh)) {
+        continue;
+      }
+
       // Skip if UV3 has already been reset
       if (!registeredMeshes.Add(skinnedMeshRenderer.sharedMesh)) {
         continue;
@@ -216,6 +226,10 @@ public class Outline : MonoBehaviour {
       // Combine submeshes
       CombineSubmeshes(skinnedMeshRenderer.sharedMesh, skinnedMeshRenderer.sharedMaterials);
     }
+  }
+
+  static bool CanChange(Mesh mesh) {
+    return mesh != null && mesh.isReadable && !mesh.name.StartsWith("Combined Mesh");
   }
 
   List<Vector3> SmoothNormals(Mesh mesh) {
