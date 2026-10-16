@@ -219,6 +219,9 @@ public class RushDirector : MonoBehaviour
     public bool missedPropsStayDown = false;
     [Tooltip("The finale ninja doesn't want feeding: it just makes a mess (the hungry cats clear out for it).")]
     public bool bossMakesMess = false;
+    [Tooltip("In the ninja phases a caught prop has to be dragged back over its pile and let go there (a ring marks the " +
+             "spot); let go anywhere else and it drops. Off: letting go sends it home by itself.")]
+    public bool dragPropsHome = true;
     [Min(0)]
     [Tooltip("At the end of the round each pile pays this many coins into the tip jar if it's whole (fewer if not).")]
     public int tidyBonusCoins = 0;
@@ -304,6 +307,19 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Announcer line the first time a kitten gets on a launcher. Empty = none.")]
     public string latchLine = "latch";
 
+    [Header("Mafia heist (feeding phases after the first)")]
+
+    [Tooltip("The Mafia cat swaggers in and strolls for the tip jar: feed him his whole order before he gets there (a wrong " +
+             "treat and he starts it over) or he scoops out a big handful of coins. Needs a tip jar, and a Boss Cat Spawner " +
+             "in the scene that has the Mafia cat.")]
+    public bool mafiaHeists = true;
+    [Min(0)]
+    [Tooltip("How many times he comes in each feeding phase (after the first).")]
+    public int heistsPerPhase = 1;
+    public MafiaHeist.Settings heist = new MafiaHeist.Settings();
+    [Tooltip("Announcer line the first time he comes in. Empty = none.")]
+    public string heistLine = "mafia";
+
     [Header("Vents")]
 
     [Tooltip("Cats can come in through the cafe's vents (objects named Vent... with a ...Lid inside): the lid swings open " +
@@ -359,6 +375,9 @@ public class RushDirector : MonoBehaviour
     readonly List<PropPile> propPiles = new List<PropPile>();
     float nextRaid;
     float nextLatch;
+    BossCat mafiaPrefab;
+    int feedPhasesSeen;
+    bool heistLineSaid;
     bool latchLineSaid;
     bool raidJarNext = true;
     bool catchIntroDone;
@@ -413,6 +432,12 @@ public class RushDirector : MonoBehaviour
 
     void Start()
     {
+        // The Mafia cat for heists, borrowed from the boss spawner (which may have switched itself off)
+        foreach (BossCatSpawner spawner in Resources.FindObjectsOfTypeAll<BossCatSpawner>())
+        {
+            if (spawner.gameObject.scene.IsValid() && mafiaPrefab == null) mafiaPrefab = spawner.Prefab<MafiaBossCat>();
+        }
+
         // How knocked props fly in this mode
         CatChaosSettings flight = CatChaosSettings.instance;
         if (flight != null)
@@ -462,6 +487,7 @@ public class RushDirector : MonoBehaviour
         Treat.aimAssistTarget = null;
         PropPile.toppleOnHit = false;
         PropPile.barsWaitForNinja = false;
+        FlyingProp.dragHome = false;
         SoundLevels.music = 1f;
         SoundLevels.cats = 1f;
         SoundLevels.world = 1f;
@@ -519,6 +545,7 @@ public class RushDirector : MonoBehaviour
         current = null;
         CatRaid.CancelAll();
         LauncherKitten.EndAll();
+        if (MafiaHeist.current != null) MafiaHeist.current.Cancel();
         KittenRun.EndAll();
         PopUpCat.EndAll();
         if (player != null) player.ForceFireStyle(null);
@@ -535,6 +562,7 @@ public class RushDirector : MonoBehaviour
             nextRaid = Time.time + phase.raidEvery * 0.6f;
             nextLatch = Time.time + phase.latchEvery * 0.5f;
             if (phase.kind != Kind.Feed || phase.latchEvery <= 0) LauncherKitten.EndAll();
+            if (phase.kind != Kind.Feed && MafiaHeist.current != null) MafiaHeist.current.Cancel();
 
             // Hungry cats only go for the piles in feeding phases (and only if this phase says so)
             CatMovement.targetingChanceOverride = phase.kind == Kind.Feed ? phase.attackChance : 0f;
@@ -550,11 +578,14 @@ public class RushDirector : MonoBehaviour
             bool ninjaPhase = phase.kind == Kind.Catch || phase.kind == Kind.Boss;
             // The piles' bars are only up while the ninja's about (each pops up again when it blows that pile up)
             if (!ninjaPhase) PropPile.HideBars();
+            FlyingProp.dragHome = dragPropsHome && ninjaPhase;
             Say(phase.line, ninjaPhase ? ninjaSting : null);
 
             switch (phase.kind)
             {
                 case Kind.Feed:
+                    // After the first feeding phase, the Mafia cat makes his move partway through
+                    if (++feedPhasesSeen > 1) StartCoroutine(Heists(phase));
                     yield return new WaitForSeconds(phase.seconds);
                     break;
 
@@ -693,10 +724,17 @@ public class RushDirector : MonoBehaviour
                 if (ready.Count > 0)
                 {
                     lastJumper = ready[Random.Range(0, ready.Count)];
-                    bool left = Random.value < 0.5f;
-                    sitters[lastJumper].Jump(left ? leftFood : rightFood,
-                                             new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour),
-                                             bubbleScale);
+                    // A quick string of treats, any mix of colours
+                    int count = Random.Range(popUp.treatsMin, Mathf.Max(popUp.treatsMin, popUp.treatsMax) + 1);
+                    List<int> wanted = new List<int>();
+                    List<OrderBubble.Item> icons = new List<OrderBubble.Item>();
+                    for (int i = 0; i < count; i++)
+                    {
+                        bool left = Random.value < 0.5f;
+                        wanted.Add(left ? leftFood : rightFood);
+                        icons.Add(new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour));
+                    }
+                    sitters[lastJumper].Jump(wanted, icons, bubbleScale);
                 }
             }
             float gap = Mathf.Lerp(popGapStart, popGapEnd, progress);
@@ -716,8 +754,10 @@ public class RushDirector : MonoBehaviour
     void PopUpHit(PopUpCat pop)
     {
         Vector3 at = pop.aimPoint;
-        GameManager.instance.FeedCat(popUpScore, at);
-        if (tipJar != null && popUpCoins > 0) tipJar.AddCoins(at, popUpCoins);
+        // Pays for each treat it wanted
+        int treats = Mathf.Max(1, pop.treatCount);
+        GameManager.instance.FeedCat(popUpScore * treats, at);
+        if (tipJar != null && popUpCoins > 0) tipJar.AddCoins(at, popUpCoins * treats);
         Haptics.PulseBoth(Haptics.Strength.Medium);
     }
 
@@ -1254,6 +1294,50 @@ public class RushDirector : MonoBehaviour
         }
         orders.Add(order);
         lastArrival = Time.time;
+    }
+
+    // ---------- Cat Cafe Waves: the Mafia heist ----------
+
+    // The Mafia cat's heists in a feeding phase, spread through its middle stretch, one at a time
+    IEnumerator Heists(Phase phase)
+    {
+        if (!mafiaHeists || heistsPerPhase <= 0 || mafiaPrefab == null) yield break;
+        float start = Time.time;
+        for (int i = 0; i < heistsPerPhase; i++)
+        {
+            float slot = phase.seconds / heistsPerPhase;
+            float at = start + slot * i + slot * Random.Range(0.2f, 0.45f);
+            while (playing && current == phase && (Time.time < at || MafiaHeist.current != null)) yield return null;
+            if (!playing || current != phase || tipJar == null) yield break;
+            StartHeist();
+        }
+    }
+
+    void StartHeist()
+    {
+        List<Transform> ways = entryDoors.Count > 0 ? entryDoors : doors;
+        if (ways.Count == 0) return;
+        Transform door = ways[Random.Range(0, ways.Count)];
+        Vector3 position = door.position;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) position = hit.position;
+
+        List<CatOrder.Food> foods = new List<CatOrder.Food>();
+        for (int i = 0; i < heist.treats; i++)
+        {
+            bool left = Random.value < 0.5f;
+            foods.Add(new CatOrder.Food
+            {
+                variation = left ? leftFood : rightFood,
+                icon = new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour)
+            });
+        }
+        MafiaHeist started = MafiaHeist.Begin(mafiaPrefab, transform, door, position, tipJar, foods, bubbleScale,
+                                              cleanShots ? hitboxGenerosity : 0f, heist, null);
+        if (started != null && !heistLineSaid)
+        {
+            heistLineSaid = true;
+            Say(heistLine);
+        }
     }
 
     // ---------- Cat Cafe Waves: vents ----------

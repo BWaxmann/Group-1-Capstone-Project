@@ -243,6 +243,14 @@ public class CatOrder : MonoBehaviour
         }
     }
 
+    // Back to the start of its order (the Mafia cat won't take a wrong treat lying down)
+    public void Restart()
+    {
+        if (step >= order.Count || runningOff) return;
+        step = 0;
+        if (bubble != null) bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
+    }
+
     // A good while of patience back (e.g. it was fed the right colour just as it set off to raid)
     public void RefillPatience(float fraction)
     {
