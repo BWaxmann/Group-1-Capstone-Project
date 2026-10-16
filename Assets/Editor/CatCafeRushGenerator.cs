@@ -362,8 +362,8 @@ public static class CatCafeRushGenerator
     // ---------- Cat Cafe Waves ----------
 
     const string WavesScene = "Assets/Scenes/CatCafeWaves.unity";
-    const string WavesFinaleBanner = "NINJA FINALE!\n<size=55%>Save the piles: catch everything!</size>";
-    const string WavesFinaleLine = "catch_2";   // until there's a finale line of its own
+    const string WavesFinaleBanner = "DINNER RUSH!\n<size=55%>Everyone is in: keep the cafe running!</size>";
+    const string WavesFinaleLine = "finale";
     const string WavesStartupMessage = "Feed the cats!\n<size=60%>Left trigger = Blue\nRight trigger = Orange\nAlternative trigger = catch</size>\n" +
                                        "<size=45%>Point at the launchers and pull the trigger</size>";
 
@@ -407,7 +407,7 @@ public static class CatCafeRushGenerator
         string ninjaBanner = WavesFinaleBanner;
         director.phases = new List<RushDirector.Phase>
         {
-            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 25, cats = 3, shortestOrder = 1, longestOrder = 1,
+            new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 3, shortestOrder = 1, longestOrder = 1,
                                      banner = "FEED THE CATS!", line = "feed_first" },
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 25, cats = 4, shortestOrder = 1, longestOrder = 2,
@@ -416,9 +416,9 @@ public static class CatCafeRushGenerator
                                      banner = "BIGGER APPETITES!", line = "feed_three", latchEvery = 4 },
             new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Use the alternative trigger to catch what flies</size>",
                                      line = "catch" },
-            new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 30, banner = "POP-UP CATS!", line = "popup" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Boss, seconds = 45, cats = 1, shortestOrder = 1, longestOrder = 2, banner = ninjaBanner,
-                                     line = WavesFinaleLine },
+            new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 20, banner = "POP-UP CATS!", line = "popup" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Remix, seconds = 60, cats = 3, shortestOrder = 1, longestOrder = 2, latchEvery = 14,
+                                     banner = WavesFinaleBanner, line = WavesFinaleLine },
         };
         // The manager on the speaker, fed cats leaving through holes, tips, and raids (instead of random pile attacks)
         director.announcer = true;

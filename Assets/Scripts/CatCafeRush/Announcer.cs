@@ -46,10 +46,12 @@ public class Announcer : MonoBehaviour
         public Line line;
         public AudioClip sting;
         public float queuedAt;
+        public bool urgent;
+        public System.Action<bool> done;   // true when it starts playing, false if it was dropped (waited too long)
     }
 
     readonly Dictionary<string, Line> lines = new Dictionary<string, Line>();
-    readonly Queue<Queued> queue = new Queue<Queued>();
+    readonly List<Queued> queue = new List<Queued>();
     readonly Dictionary<string, AudioClip> stings = new Dictionary<string, AudioClip>();
     AudioSource source;
 
@@ -102,7 +104,9 @@ public class Announcer : MonoBehaviour
 
     // Queues a line (by its id in lines.txt), optionally with a sting just before it. Unknown ids are skipped.
     // Other takes of a line are listed as id_2, id_3... and one is picked at random (not the same one twice running).
-    public void Say(string id, string sting = null)
+    // An urgent line (a hint about what's happening right now) goes ahead of anything waiting, though it never cuts off
+    // the line being said. `done` hears whether it was said (true, as it starts) or dropped for waiting too long.
+    public void Say(string id, string sting = null, System.Action<bool> done = null, bool urgent = false)
     {
         Line line = null;
         if (!string.IsNullOrEmpty(id))
@@ -111,8 +115,19 @@ public class Announcer : MonoBehaviour
             if (line == null) Debug.LogWarning($"[Announcer] No line called \"{id}\" in lines.txt.");
         }
         AudioClip stingClip = Sting(sting);
-        if (line == null && stingClip == null) return;
-        queue.Enqueue(new Queued { line = line, sting = stingClip, queuedAt = Time.time });
+        if (line == null && stingClip == null)
+        {
+            done?.Invoke(false);
+            return;
+        }
+        Queued queued = new Queued { line = line, sting = stingClip, queuedAt = Time.time, urgent = urgent, done = done };
+        if (!urgent) queue.Add(queued);
+        else
+        {
+            int at = 0;
+            while (at < queue.Count && queue[at].urgent) at++;
+            queue.Insert(at, queued);
+        }
     }
 
     readonly Dictionary<string, string> lastTake = new Dictionary<string, string>();
@@ -150,8 +165,13 @@ public class Announcer : MonoBehaviour
         while (true)
         {
             while (queue.Count == 0) yield return null;
-            Queued next = queue.Dequeue();
-            if (Time.time - next.queuedAt > maxWait) continue;
+            Queued next = queue[0];
+            queue.RemoveAt(0);
+            if (Time.time - next.queuedAt > maxWait)
+            {
+                next.done?.Invoke(false);
+                continue;
+            }
 
             if (next.sting != null)
             {
@@ -159,6 +179,7 @@ public class Announcer : MonoBehaviour
                 // The voice comes in over the tail of the sting
                 yield return new WaitForSeconds(next.line != null ? next.sting.length * 0.55f : next.sting.length);
             }
+            next.done?.Invoke(true);
             if (next.line == null) continue;
 
             ShowSubtitle(next.line.text);

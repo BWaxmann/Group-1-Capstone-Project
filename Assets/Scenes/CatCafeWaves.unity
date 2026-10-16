@@ -583,7 +583,7 @@ MonoBehaviour:
   worldLevel: 1.3
   phases:
   - kind: 0
-    seconds: 25
+    seconds: 20
     cats: 3
     shortestOrder: 1
     longestOrder: 1
@@ -635,7 +635,7 @@ MonoBehaviour:
     raidEvery: 0
     latchEvery: 0
   - kind: 4
-    seconds: 30
+    seconds: 20
     cats: 3
     shortestOrder: 1
     longestOrder: 1
@@ -644,18 +644,18 @@ MonoBehaviour:
     line: popup
     raidEvery: 0
     latchEvery: 0
-  - kind: 2
-    seconds: 45
-    cats: 1
+  - kind: 5
+    seconds: 60
+    cats: 3
     shortestOrder: 1
     longestOrder: 2
-    banner: 'NINJA FINALE!
+    banner: 'DINNER RUSH!
 
-      <size=55%>Save the piles: catch everything!</size>'
+      <size=55%>Everyone is in: keep the cafe running!</size>'
     attackChance: 0
-    line: catch_2
+    line: finale
     raidEvery: 0
-    latchEvery: 0
+    latchEvery: 14
   bannerSeconds: 2.5
   catPool: {fileID: 103450848}
   doors:

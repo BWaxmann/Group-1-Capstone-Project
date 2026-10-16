@@ -296,11 +296,15 @@ public class FlyingProp : MonoBehaviour
         StartCoroutine(PopIn());
     }
 
+    // Raised whenever the gravity beam grabs a prop (e.g. so the announcer can explain carrying it home, once)
+    public static event System.Action<FlyingProp> Grabbed;
+
     // The gravity beam has grabbed it
     public void Hold(Vector3 target)
     {
         if (state != State.Flying) return;
         state = State.Held;
+        Grabbed?.Invoke(this);
         holdTarget = target;
         velocity = Vector3.zero;
         falling = false;

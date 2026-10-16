@@ -4,24 +4,27 @@
 # and one is picked at random each time (never the same one twice running). A take with a recording always wins
 # over one without. The real voice is ElevenLabs (Joshua); any .wav left here is a Windows placeholder
 # (powershell -File Tools/make-announcer-voice.ps1 -Only <id> re-records one).
-welcome | Morning! Welcome to your first shift at Catastrophe Cafe. Blue treats are in your left hand, orange are in your right! Squeeze the trigger to send treats flying!
+welcome | Morning friend! Ready for your shift? Blue treats are in your left hand, orange are in your right! Squeeze the trigger to send treats flying! Pick up the Treat-o-matic 5000 when you're ready to start earning those tips!
 feed_first | Customers incoming! Feed them the coloured treat in their bubble, and see the tips fly your way!
 feed_first_2 | Customers! Feed them the colour in their bubble.
 stampede | Uh oh... kitten stampede! Feed as many as you can!
 stampede_2 | Kittens! Kittens everywhere! Feed them all!
 feed_combo | Combo orders! Some hungry cats want more than one treat! Fill their bellies to get those tips!
 feed_three | Bigger appetites now! Some cats want THREE treats! Keep filling those bellies!
-latch | A kitten's got your launcher! Shake it off!
-mafia | Watch out! The Mafia cat's after your tips! Feed him his whole order before he reaches the jar!
-catch | Oh no! Ninja Cat has scared off the customers! When it sends something flying, use the alternative trigger to catch it!
-catch_2 | The ninja's knocking things over! Use the alternative trigger to catch them!
-popup | Pop-up cats! Hit them while they're in the air!
-popup_2 | Heads up! Get them mid-jump!
+latch | A kitten's got your launcher! Shake your hand to get it off!
+mafia | Watch out! The Big Boss Cat is after your tips! Feed him his whole order before he reaches the jar!
+finale | Dinner rush! All the cats are here! Keep the cafe running, and keep your tips growing!
+carry | Nice catch! Now drag it back to its table and let go!
+busted | Busted! You stopped the Big Boss Cat. Your tips are safe!
+heist | Oh no! He's made off with your tips! Try to feed him faster next time!
+tidy | Let's see how tidy you kept the place?
+catch | Oh no! Pesky Ninja Cats! They love to make a mess. Use the alternative trigger to catch and carry the mess back to the table!
+popup | Pop-up cats! Feed them every treat in their bubble before they land!
 boss | The Ninja Cat is back, and it's hungry! Feed it this time to make it go away!
 boss_2 | Here comes the ninja boss! Fill it up, quick!
 boss_fed | You fed the Ninja Cat! Incredible!
 boss_fed_2 | Ninja: fed! You're a natural!
 boss_left | Ninja Cat got away! You'll get it next time!
 boss_left_2 | Gone in a puff of smoke! Next time!
-closing | And that's closing time! What a first shift. You did amazing!
+closing | Wow, closing time already! You did great today! Let's see how many tips you earned!
 closing_2 | Shift's over! The cats loved you.
