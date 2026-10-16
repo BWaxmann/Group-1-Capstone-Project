@@ -47,6 +47,10 @@ public class NinjaRushCat : BossCat
     // While true it stays where it is instead of blinking about (Cat Cafe Waves: while the first catch is explained)
     public bool holdStill;
 
+    // Cat Cafe Waves: before blinking to its next stop it waits (up to this many seconds) while the player still has props
+    // in the air or on the beam from its last one. 0 = it doesn't wait
+    public float waitForCatches = 0f;
+
     // Appears at `position` in a puff, facing the player
     public void BlinkTo(Vector3 position)
     {
@@ -140,6 +144,13 @@ public class NinjaRushCat : BossCat
 
             if (stops.Count > 0)
             {
+                float waited = 0;
+                while (waitForCatches > 0 && waited < waitForCatches && PropsStillUp())
+                {
+                    waited += targetUpdateFrequency;
+                    yield return updateWait;
+                }
+                if (currentState == AIState.Full) yield break;
                 int next = NextStop(lastStop);
                 lastStop = next;
                 Blink(stops[next]);
@@ -160,6 +171,15 @@ public class NinjaRushCat : BossCat
 
             yield return new WaitForSeconds(Random.Range(minimumSit, maximumSit));
         }
+    }
+
+    static bool PropsStillUp()
+    {
+        foreach (FlyingProp prop in FlyingProp.airborne)
+        {
+            if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held)) return true;
+        }
+        return false;
     }
 
     protected override IEnumerator RotationRoutine()

@@ -47,6 +47,19 @@ public class RushDirector : MonoBehaviour
         public float latchEvery = 0f;
     }
 
+    [Header("Between waves")]
+
+    [Min(0f)]
+    [Tooltip("When a phase's time is up the clock waits (up to this many seconds) for what's still going on to finish " +
+             "(customers being served, props in the air, kittens running) before the next phase starts. 0 = straight on.")]
+    public float wrapUpMax = 6f;
+    [Min(0f)]
+    [Tooltip("Nobody new comes in (customers, launcher kittens, the Mafia cat) for this many seconds at the end of a feeding phase.")]
+    public float lastCallSeconds = 3f;
+    [Min(0f)]
+    [Tooltip("The ninja waits (up to this many seconds) for the player to deal with what it last knocked flying before blinking on.")]
+    public float ninjaWaitsForCatches = 6f;
+
     [Header("Sound mix")]
 
     [Range(0f, 1.5f)]
@@ -222,6 +235,8 @@ public class RushDirector : MonoBehaviour
     [Tooltip("In the ninja phases a caught prop has to be dragged back over its pile and let go there (a ring marks the " +
              "spot); let go anywhere else and it drops. Off: letting go sends it home by itself.")]
     public bool dragPropsHome = true;
+    [Tooltip("Each ninja phase after the first starts with the piles restocked (props lost on the floor come back).")]
+    public bool restockPiles = true;
     [Min(0)]
     [Tooltip("At the end of the round each pile pays this many coins into the tip jar if it's whole (fewer if not).")]
     public int tidyBonusCoins = 0;
@@ -315,7 +330,10 @@ public class RushDirector : MonoBehaviour
     public bool mafiaHeists = true;
     [Min(0)]
     [Tooltip("How many times he comes in each feeding phase (after the first).")]
-    public int heistsPerPhase = 1;
+    public int heistsPerPhase = 2;
+    [Min(0)]
+    [Tooltip("Kittens he brings with him that charge the player's launchers (one each) while he goes for the jar.")]
+    public int heistGang = 2;
     public MafiaHeist.Settings heist = new MafiaHeist.Settings();
     [Tooltip("Announcer line the first time he comes in. Empty = none.")]
     public string heistLine = "mafia";
@@ -375,8 +393,10 @@ public class RushDirector : MonoBehaviour
     readonly List<PropPile> propPiles = new List<PropPile>();
     float nextRaid;
     float nextLatch;
+    bool windingDown;   // the end of a phase: nothing new starts
     BossCat mafiaPrefab;
     int feedPhasesSeen;
+    int ninjaPhasesSeen;
     bool heistLineSaid;
     bool latchLineSaid;
     bool raidJarNext = true;
@@ -555,8 +575,9 @@ public class RushDirector : MonoBehaviour
 
     IEnumerator RunPhases()
     {
-        foreach (Phase phase in phases)
+        for (int index = 0; index < phases.Count; index++)
         {
+            Phase phase = phases[index];
             if (!playing) yield break;
             current = phase;
             nextRaid = Time.time + phase.raidEvery * 0.6f;
@@ -579,6 +600,10 @@ public class RushDirector : MonoBehaviour
             // The piles' bars are only up while the ninja's about (each pops up again when it blows that pile up)
             if (!ninjaPhase) PropPile.HideBars();
             FlyingProp.dragHome = dragPropsHome && ninjaPhase;
+            if (ninjaPhase && ninjaPhasesSeen++ > 0 && restockPiles && FlyingProp.RestockAll() > 0)
+            {
+                FloatingWord.Show("Restocked!", player != null && player.eyePoint != null ? player.eyePoint.position + player.eyePoint.forward * 2f : transform.position, new Color(0.4f, 1f, 0.5f), 3f, 1.4f);
+            }
             Say(phase.line, ninjaPhase ? ninjaSting : null);
 
             switch (phase.kind)
@@ -586,7 +611,10 @@ public class RushDirector : MonoBehaviour
                 case Kind.Feed:
                     // After the first feeding phase, the Mafia cat makes his move partway through
                     if (++feedPhasesSeen > 1) StartCoroutine(Heists(phase));
-                    yield return new WaitForSeconds(phase.seconds);
+                    // Last orders: nobody new comes in for the last few seconds
+                    yield return new WaitForSeconds(Mathf.Max(0, phase.seconds - lastCallSeconds));
+                    windingDown = true;
+                    yield return new WaitForSeconds(Mathf.Min(lastCallSeconds, phase.seconds));
                     break;
 
                 case Kind.Catch:
@@ -658,7 +686,62 @@ public class RushDirector : MonoBehaviour
                     yield return PopUps(phase);
                     break;
             }
+
+            // Time's up: what's still going on gets a moment to finish before the next phase starts
+            if (index < phases.Count - 1) yield return WrapUp(phase, phases[index + 1]);
+            windingDown = false;
+            if (phase.kind == Kind.Stampede)
+            {
+                KittenRun.EndAll();
+                if (player != null) player.ForceFireStyle(null);
+            }
+            if (phase.kind == Kind.PopUp) PopUpCat.EndAll();
         }
+    }
+
+    // Time's up for `phase`: the round clock waits (a few seconds at most) while what's still going on finishes, so a
+    // wave gets to end before the next one starts
+    IEnumerator WrapUp(Phase phase, Phase next)
+    {
+        if (wrapUpMax <= 0) yield break;
+        windingDown = true;
+        bool paused = false;
+        float waited = 0;
+        while (playing && waited < wrapUpMax && StillGoing(phase, next))
+        {
+            if (!paused)
+            {
+                GameManager.instance.clockPaused = true;
+                paused = true;
+            }
+            waited += Time.deltaTime;
+            yield return null;
+        }
+        if (paused) GameManager.instance.clockPaused = false;
+    }
+
+    bool StillGoing(Phase phase, Phase next)
+    {
+        switch (phase.kind)
+        {
+            case Kind.Feed:
+                // Into another feeding phase it all just carries on
+                if (next.kind == Kind.Feed) return false;
+                if (MafiaHeist.current != null || LauncherKitten.active.Count > 0) return true;
+                return orders.Exists(o => o != null && o.isHungry && o.hasOrdered);
+            case Kind.Catch:
+            case Kind.Boss:
+                foreach (FlyingProp prop in FlyingProp.airborne)
+                {
+                    if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held)) return true;
+                }
+                return false;
+            case Kind.Stampede:
+                return KittenRun.running.Exists(kitten => kitten != null && kitten.feedable && !kitten.isFed);
+            case Kind.PopUp:
+                return PopUpCat.active.Exists(pop => pop != null && pop.isOut);
+        }
+        return false;
     }
 
     // Phases where hungry cats with orders keep coming in
@@ -741,8 +824,7 @@ public class RushDirector : MonoBehaviour
             yield return new WaitForSeconds(gap * Random.Range(0.8f, 1.2f));
         }
         while (playing && Time.time < end) yield return null;
-
-        PopUpCat.EndAll();
+        // (any still in the air get to land: see WrapUp)
     }
 
     PopUpCat SeatCat(Vector3 seat, Transform eye)
@@ -928,9 +1010,7 @@ public class RushDirector : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(herdGapMin, Mathf.Max(herdGapMin, herdGapMax)));
         }
         while (playing && Time.time < end) yield return null;
-
-        KittenRun.EndAll();
-        if (player != null) player.ForceFireStyle(null);
+        // (kittens still running get to finish: see WrapUp)
     }
 
     IEnumerator SendHerd(List<Vector3> path, List<Vector3> ups)
@@ -1220,6 +1300,7 @@ public class RushDirector : MonoBehaviour
     {
         if (!playing || current == null) return;
         if (raids) UpdateRaids();
+        if (windingDown) return;
         if (current.kind == Kind.Feed && current.latchEvery > 0) UpdateLatches();
         if (!HasOrders(current.kind)) return;
         if (Time.time - lastArrival < arrivalGap) return;
@@ -1308,7 +1389,7 @@ public class RushDirector : MonoBehaviour
             float slot = phase.seconds / heistsPerPhase;
             float at = start + slot * i + slot * Random.Range(0.2f, 0.45f);
             while (playing && current == phase && (Time.time < at || MafiaHeist.current != null)) yield return null;
-            if (!playing || current != phase || tipJar == null) yield break;
+            if (!playing || current != phase || tipJar == null || windingDown) yield break;
             StartHeist();
         }
     }
@@ -1333,10 +1414,28 @@ public class RushDirector : MonoBehaviour
         }
         MafiaHeist started = MafiaHeist.Begin(mafiaPrefab, transform, door, position, tipJar, foods, bubbleScale,
                                               cleanShots ? hitboxGenerosity : 0f, heist, null);
+        if (started != null && heistGang > 0) StartCoroutine(MafiaGang(position));
         if (started != null && !heistLineSaid)
         {
             heistLineSaid = true;
             Say(heistLine);
+        }
+    }
+
+    // The Mafia cat's gang: kittens that burst in with him and go for the player's launchers
+    IEnumerator MafiaGang(Vector3 at)
+    {
+        yield return new WaitForSeconds(0.6f);
+        for (int i = 0; i < heistGang && playing; i++)
+        {
+            List<Vector3> path = LatchPath(at);
+            CatMovement cat = path != null && catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+            if (cat != null)
+            {
+                LauncherKitten.Send(cat, path, player, launcherKitten, KittenLatched, (kitten, result) => { });
+                cat.DustPuff(KittenRun.DustSize);
+            }
+            yield return new WaitForSeconds(0.35f);
         }
     }
 
@@ -2016,6 +2115,7 @@ public class RushDirector : MonoBehaviour
         // Blowing up piles, its phase sends it away when it's over (a long phase or a slow catch intro mustn't time it
         // out early); otherwise it keeps its own timer, as in Cat Cafe Rush
         ninja.despawnAfterOverride = ninjaExplodesPiles ? 300f : 0f;
+        ninja.waitForCatches = ninjaWaitsForCatches;
         ninja.gameObject.SetActive(true);
         ninja.Initialise(transform, holdAt ?? stops[Random.Range(0, stops.Count)]);
         if (holdAt.HasValue) ninja.BlinkTo(holdAt.Value);

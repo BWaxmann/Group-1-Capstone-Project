@@ -574,6 +574,46 @@ public class GameManager : MonoBehaviour
         FinaleStart?.Invoke();
     }
 
+    // Turns the music down to `level` of where it is (e.g. under the Mafia cat's theme in Cat Cafe Waves) for `hold`
+    // seconds, then back up. EndDuck brings it back up sooner.
+    public void DuckMusic(float level, float hold)
+    {
+        if (musicSource == null) return;
+        if (duckRoutine != null) StopCoroutine(duckRoutine);
+        else unduckedVolume = musicSource.volume;
+        duckRoutine = StartCoroutine(DuckRoutine(level, hold));
+    }
+
+    public void EndDuck()
+    {
+        if (duckRoutine == null) return;
+        StopCoroutine(duckRoutine);
+        duckRoutine = StartCoroutine(DuckRoutine(1f, 0f));
+    }
+
+    Coroutine duckRoutine;
+    float unduckedVolume = 1f;
+
+    IEnumerator DuckRoutine(float level, float hold)
+    {
+        float target = unduckedVolume * level;
+        while (!Mathf.Approximately(musicSource.volume, target))
+        {
+            musicSource.volume = Mathf.MoveTowards(musicSource.volume, target, Time.deltaTime * unduckedVolume * 2f);
+            yield return null;
+        }
+        if (level < 1f)
+        {
+            yield return new WaitForSeconds(hold);
+            while (!Mathf.Approximately(musicSource.volume, unduckedVolume))
+            {
+                musicSource.volume = Mathf.MoveTowards(musicSource.volume, unduckedVolume, Time.deltaTime * unduckedVolume);
+                yield return null;
+            }
+        }
+        duckRoutine = null;
+    }
+
     IEnumerator RampMusicPitch(float targetPitch, float duration)
     {
         if (musicSource == null) yield break;

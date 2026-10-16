@@ -15,8 +15,8 @@ public class MafiaHeist : MonoBehaviour
     public class Settings
     {
         [Min(0.2f)]
-        [Tooltip("His strolling speed, in metres a second (slow and obvious: he's in no hurry).")]
-        public float walkSpeed = 0.8f;
+        [Tooltip("His strolling speed, in metres a second (he's impatient: he wants that money now).")]
+        public float walkSpeed = 1.6f;
         [Min(1)]
         [Tooltip("Treats in his order.")]
         public int treats = 3;
@@ -33,6 +33,12 @@ public class MafiaHeist : MonoBehaviour
         public string bustedText = "Busted!";
         public string heistText = "Heist!";
         public Color ringColour = new Color(1f, 0.15f, 0.1f);
+        [Range(0f, 1f)]
+        [Tooltip("How loud his theme (Resources/CafeSounds/mafia_theme) plays as he walks in. The music dips under it.")]
+        public float themeVolume = 0.8f;
+        [Range(0f, 1f)]
+        [Tooltip("How far the music dips under his theme (1 = not at all).")]
+        public float musicUnderTheme = 0.25f;
     }
 
     public enum Result { Busted, Stole, Cancelled }
@@ -52,6 +58,8 @@ public class MafiaHeist : MonoBehaviour
     Transform exitDoor;
     bool finished;
     float stagger;
+    AudioSource theme;
+    static AudioClip themeClip;
 
     // Brings a Mafia cat in at `door` (`position` on the floor there) to go after `jar`. Null if he can't get to it.
     public static MafiaHeist Begin(BossCat prefab, Transform parent, Transform door, Vector3 position, TipJar jar, List<CatOrder.Food> foods,
@@ -95,6 +103,7 @@ public class MafiaHeist : MonoBehaviour
         waddle.waddlesPerMetre = 1.1f;
         waddle.fullSpeed = settings.walkSpeed;
 
+        PlayTheme();
         ShowRing(true);
         warning = FloatingWord.Make("!", settings.ringColour, 5f);
         cat.Meow(0.8f);   // a low, knowing mrrow
@@ -216,6 +225,7 @@ public class MafiaHeist : MonoBehaviour
     {
         if (finished) return;
         finished = true;
+        StopTheme();
         ShowRing(false);
         if (warning != null) Destroy(warning);
         if (done != null) done(this, result);
@@ -252,6 +262,46 @@ public class MafiaHeist : MonoBehaviour
         if (ring != null) Destroy(ring.transform.parent.gameObject);
         if (warning != null) Destroy(warning);
         if (current == this) current = null;
+    }
+
+    // His theme, from the speakers (not from him), with the music dipped underneath
+    void PlayTheme()
+    {
+        if (themeClip == null) themeClip = Resources.Load<AudioClip>("CafeSounds/mafia_theme");
+        if (themeClip == null || settings.themeVolume <= 0) return;
+        GameObject holder = new GameObject("Mafia Theme");
+        theme = holder.AddComponent<AudioSource>();
+        theme.clip = themeClip;
+        theme.spatialBlend = 0f;
+        theme.volume = settings.themeVolume;
+        theme.Play();
+        Destroy(holder, themeClip.length + 0.2f);
+        if (GameManager.instance != null) GameManager.instance.DuckMusic(settings.musicUnderTheme, themeClip.length - 0.5f);
+    }
+
+    // Busted (or sent off): his theme fades out quickly and the music comes back
+    void StopTheme()
+    {
+        if (theme == null) return;
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.StartCoroutine(FadeOut(theme, 0.6f));
+            GameManager.instance.EndDuck();
+        }
+        theme = null;
+    }
+
+    static IEnumerator FadeOut(AudioSource source, float seconds)
+    {
+        float start = source != null ? source.volume : 0f;
+        float t = 0;
+        while (source != null && t < 1f)
+        {
+            t += Time.deltaTime / seconds;
+            source.volume = start * (1f - t);
+            yield return null;
+        }
+        if (source != null) Destroy(source.gameObject);
     }
 
     IEnumerator Hop(Vector3 from, Vector3 to, float seconds, float height)

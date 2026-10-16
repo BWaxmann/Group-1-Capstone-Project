@@ -39,6 +39,12 @@ public class LauncherKitten : MonoBehaviour
         [Min(1f)]
         [Tooltip("Seconds on the launcher before it gets bored and hops off by itself.")]
         public float boredAfter = 8f;
+        [Range(0f, 1f)]
+        [Tooltip("The chance a kitten goes for a launcher that already has a kitten on it, and climbs on top of that one.")]
+        public float stackChance = 0.35f;
+        [Min(0f)]
+        [Tooltip("How far up a stacked kitten sits on the one below, in metres.")]
+        public float stackHeight = 0.08f;
         public string hint = "SHAKE!";
         public Color hintColour = new Color(1f, 0.85f, 0.2f);
         public Color warningColour = new Color(1f, 0.55f, 0.1f);
@@ -66,6 +72,7 @@ public class LauncherKitten : MonoBehaviour
 
     bool latched;
     bool rightHand;
+    int stack;          // kittens already on that launcher when it got there (it sits on top of them)
     Transform launcher;
     Transform muzzle;
     float grip;
@@ -169,13 +176,25 @@ public class LauncherKitten : MonoBehaviour
         float right = armed ? FlatDistance(player.Launcher(true).position) : float.MaxValue;
         if (armed && (Mathf.Min(left, right) <= settings.leapDistance || run.held))
         {
-            StartCoroutine(Leap(right < left));
+            // The nearer launcher, unless another kitten has already gone for that one
+            bool toRight = right < left;
+            if (Claimed(toRight) && !Claimed(!toRight) && Random.value >= settings.stackChance) toRight = !toRight;
+            StartCoroutine(Leap(toRight));
         }
         else if (Time.time - startedAt > 12f)
         {
             // Couldn't get there (blocked somewhere): gives up
             Finish(Result.Cancelled, true);
         }
+    }
+
+    bool Claimed(bool hand)
+    {
+        foreach (LauncherKitten other in active)
+        {
+            if (other != this && !other.finished && other.launcher != null && other.rightHand == hand) return true;
+        }
+        return false;
     }
 
     float FlatDistance(Vector3 to)
@@ -188,7 +207,7 @@ public class LauncherKitten : MonoBehaviour
     // Where it clings on the launcher, and which way it faces there (looking back at the player)
     Vector3 LatchPosition(float slip)
     {
-        Vector3 offset = settings.latchOffset + new Vector3(0, 0, slip);
+        Vector3 offset = settings.latchOffset + new Vector3(0, settings.stackHeight * stack, slip);
         return muzzle.position + muzzle.rotation * offset;
     }
 
@@ -201,6 +220,11 @@ public class LauncherKitten : MonoBehaviour
     {
         rightHand = right;
         launcher = player.Launcher(right);
+        stack = 0;
+        foreach (LauncherKitten other in active)
+        {
+            if (other != this && !other.finished && other.launcher != null && other.rightHand == right) stack++;
+        }
         muzzle = player.LaunchPoint(right);
         if (muzzle == null) muzzle = launcher;
         run.Hold();

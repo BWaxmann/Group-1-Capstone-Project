@@ -90,13 +90,51 @@ public class FlyingProp : MonoBehaviour
     // Cat Cafe Waves' ninja phases: a caught prop has to be dragged back over its pile and let go there (a ring marks
     // the spot); let go anywhere else and it drops
     public static bool dragHome;
-    public static float dropRadius = 0.7f;
+    // The drop zone is the top of whatever the pile sits on (its table); this if nothing wide is found under it
+    public static float dropRadius = 0.8f;
+    bool zoneMeasured;
+    Vector3 zoneCentre;     // middle of the table top
+    float zoneRadius;
     public static string dragHintText = "Bring it home!";
     static int dragHintsShown;
     const int DragHints = 2;
 
-    public Vector3 homePosition => HomePosition();
-    public bool nearHome => state == State.Held && Vector3.Distance(centre, HomePosition()) <= dropRadius;
+    // Where to carry it back to: the middle of its pile's table top
+    public Vector3 dropCentre { get { MeasureZone(); return zoneCentre; } }
+    // Held anywhere over its pile's table (from just above the top to well up in the air)
+    public bool nearHome
+    {
+        get
+        {
+            if (state != State.Held) return false;
+            MeasureZone();
+            Vector3 c = centre;
+            float across = new Vector2(c.x - zoneCentre.x, c.z - zoneCentre.z).magnitude;
+            return across <= zoneRadius + 0.15f && c.y >= zoneCentre.y - 0.25f && c.y <= zoneCentre.y + 2f;
+        }
+    }
+
+    // Finds the table top under its home spot (the widest solid thing just below it)
+    void MeasureZone()
+    {
+        if (zoneMeasured) return;
+        zoneMeasured = true;
+        Vector3 home = HomePosition();
+        zoneCentre = home;
+        zoneRadius = dropRadius;
+        float widest = 0;
+        foreach (RaycastHit hit in Physics.RaycastAll(home + Vector3.up * 0.05f, Vector3.down, 1.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            Collider below = hit.collider;
+            if (below.GetComponentInParent<FlyingProp>() != null || below.GetComponentInParent<CatMovement>() != null) continue;
+            Bounds b = below.bounds;
+            float half = Mathf.Max(b.extents.x, b.extents.z);
+            if (half < 0.3f || half > 1.6f || half <= widest) continue;
+            widest = half;
+            zoneCentre = new Vector3(b.center.x, Mathf.Max(hit.point.y, b.max.y), b.center.z);
+            zoneRadius = Mathf.Clamp(Mathf.Min(b.extents.x, b.extents.z), 0.45f, 1.2f);
+        }
+    }
     float driftTimer;
     Vector3 driftVelocity;
     Vector3 viewer;
@@ -509,6 +547,24 @@ public class FlyingProp : MonoBehaviour
         glow.OutlineColor = Color.Lerp(settings.glowColour, Color.white, pulse * 0.6f);
     }
 
+    // Every prop that hit the floor and stayed down pops back onto its pile (a fresh stock of crockery, e.g. before the
+    // next ninja phase). Returns how many came back.
+    public static int RestockAll()
+    {
+        int back = 0;
+        CatChaosSettings settings = CatChaosSettings.instance;
+        foreach (FlyingProp prop in all)
+        {
+            if (prop == null || prop.state != State.Landed) continue;
+            prop.SettleHome();
+            prop.SetVisible(true);
+            prop.StartCoroutine(prop.PopIn());
+            if (settings != null && back % 3 == 0) settings.PlayRespawn(prop.transform.position);   // not a wall of sound
+            back++;
+        }
+        return back;
+    }
+
     // While it's held in a ninja phase: a ring round its spot on the pile, brighter once it's close enough to let go
     void UpdateHomeRing()
     {
@@ -519,10 +575,10 @@ public class FlyingProp : MonoBehaviour
         colour.a = Mathf.Lerp(0.5f, 1f, pulse);
         homeRing.startColor = homeRing.endColor = colour;
         homeRing.widthMultiplier = close ? 0.05f : 0.03f;
-        homeRing.transform.parent.position = HomePosition() + Vector3.up * 0.02f;
+        homeRing.transform.parent.position = zoneCentre + Vector3.up * 0.02f;
         if (dragHint != null)
         {
-            dragHint.transform.position = HomePosition() + Vector3.up * (0.45f + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * 0.05f);
+            dragHint.transform.position = zoneCentre + Vector3.up * (0.45f + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * 0.05f);
             FloatingWord.FacePlayer(dragHint.transform);
         }
     }
@@ -533,7 +589,8 @@ public class FlyingProp : MonoBehaviour
         {
             Transform holder = new GameObject("Drop Ring").transform;
             holder.rotation = Quaternion.Euler(90f, 0, 0);
-            homeRing = SpaceCafeVisuals.Ring(holder, "Ring", dropRadius * 0.6f, 0.03f, Color.white);
+            MeasureZone();
+            homeRing = SpaceCafeVisuals.Ring(holder, "Ring", zoneRadius, 0.03f, Color.white);
         }
         if (homeRing != null && homeRing.transform.parent.gameObject.activeSelf != show) homeRing.transform.parent.gameObject.SetActive(show);
     }

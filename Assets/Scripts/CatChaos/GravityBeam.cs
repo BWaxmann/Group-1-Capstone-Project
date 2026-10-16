@@ -112,7 +112,7 @@ public class GravityBeam : MonoBehaviour
         {
             // Reel the prop in to a comfortable distance, then it follows where the launcher points. In the ninja phases it
             // has to be carried back to its pile, so it rides out as far as the pile is: point at the pile and it's there
-            float want = FlyingProp.dragHome ? Mathf.Clamp(Vector3.Distance(muzzle.position, hand.held.homePosition), 0.8f, range) : holdDistance;
+            float want = FlyingProp.dragHome ? Mathf.Clamp(Vector3.Distance(muzzle.position, hand.held.dropCentre), 0.8f, range) : holdDistance;
             hand.holdDistance = Mathf.MoveTowards(hand.holdDistance, want, Time.deltaTime * 6f);
             bool over = FlyingProp.dragHome && hand.held.nearHome;
             if (over && !hand.overHome) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
