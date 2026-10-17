@@ -408,16 +408,17 @@ public static class CatCafeRushGenerator
         director.phases = new List<RushDirector.Phase>
         {
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 3, shortestOrder = 1, longestOrder = 1,
-                                     banner = "FEED THE CATS!", line = "feed_first" },
+                                     banner = "FEED THE CATS!", line = "feed_first", latchEvery = 12 },
             new RushDirector.Phase { kind = RushDirector.Kind.Stampede, seconds = 20, banner = "KITTEN STAMPEDE!", line = "stampede" },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 25, cats = 4, shortestOrder = 1, longestOrder = 2,
                                      banner = "COMBO ORDERS!", line = "feed_combo", latchEvery = 5 },
             new RushDirector.Phase { kind = RushDirector.Kind.Feed, seconds = 20, cats = 4, shortestOrder = 2, longestOrder = 3,
-                                     banner = "BIGGER APPETITES!", line = "feed_three", latchEvery = 4 },
+                                     banner = "BIGGER APPETITES!", latchEvery = 4 },
             new RushDirector.Phase { kind = RushDirector.Kind.Catch, seconds = 15, banner = "CATCH!\n<size=55%>Use the alternative trigger to catch what flies</size>",
                                      line = "catch" },
-            new RushDirector.Phase { kind = RushDirector.Kind.PopUp, seconds = 20, banner = "POP-UP CATS!", line = "popup" },
-            new RushDirector.Phase { kind = RushDirector.Kind.Remix, seconds = 60, cats = 3, shortestOrder = 1, longestOrder = 2, latchEvery = 14,
+            new RushDirector.Phase { kind = RushDirector.Kind.Spy, seconds = 20, banner = "SPY CATS!\n<size=55%>Look at them and wave your arms!</size>",
+                                     line = "spies" },
+            new RushDirector.Phase { kind = RushDirector.Kind.Remix, seconds = 90, cats = 3, shortestOrder = 3, longestOrder = 3, latchEvery = 14,
                                      banner = WavesFinaleBanner, line = WavesFinaleLine },
         };
         // The manager on the speaker, fed cats leaving through holes, tips, and raids (instead of random pile attacks)

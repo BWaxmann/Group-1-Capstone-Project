@@ -107,7 +107,7 @@ public class Treat : Launchable
         CatMovement cat = other.GetComponentInParent<CatMovement>();
         if (cat != null)
         {
-            if (cat.isFullyFed) return false;
+            if (cat.isFullyFed || !cat.takesTreats) return false;   // flies on past
             isActive = false;
             cat.HitByTreat(this);
             Despawn();

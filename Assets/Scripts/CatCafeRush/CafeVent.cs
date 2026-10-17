@@ -199,7 +199,8 @@ public class CafeVent : MonoBehaviour
         Vector3 look = landing.position - mouth;
         look.y = 0;
         cat.transform.localScale = cat.transform.localScale * scale;
-        cat.treatGate = NoTreats;   // not a customer yet: treats just bounce off
+        cat.treatGate = NoTreats;   // not a customer yet
+        cat.wantsTreats = () => false;   // treats fly straight past
         cat.transform.SetPositionAndRotation(inside, Quaternion.LookRotation(look.sqrMagnitude > 0.01f ? look : landing.forward));
         cat.gameObject.SetActive(true);
         cat.TakeOver();
@@ -251,6 +252,7 @@ public class CafeVent : MonoBehaviour
         CatChaosSettings sounds = CatChaosSettings.instance;
         if (sounds != null && !kitten) sounds.PlayLanded(to);
         cat.treatGate = null;
+        cat.wantsTreats = null;
         cat.transform.localScale = ownSize;
         waiting.Remove(cat);
         landed?.Invoke(cat, this);

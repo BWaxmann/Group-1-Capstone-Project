@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 // Cat Cafe Waves: a glass tip jar on the counter. Coins pop out of each fed cat and arc into it with a clink,
-// and the jar slowly fills with gold. Placeholder look (simple shapes) until proper art is made.
+// and the jar slowly fills with gold. When it's full it's sealed and set aside on the counter (up to two full jars stand
+// beside it), safe from raids, and this one starts again empty. Placeholder look (simple shapes) until proper art is made.
 public class TipJar : MonoBehaviour
 {
     const float JarRadius = 0.08f;
@@ -15,6 +17,17 @@ public class TipJar : MonoBehaviour
     [Min(0.1f)] public float coinFlightTime = 0.7f;
 
     public int coins { get; private set; }
+    // Coins in the full jars set aside
+    public int banked { get; private set; }
+    // Every coin earned and kept: the full jars and this one
+    public int total => banked + coins;
+    public string fullText = "Jar full!";
+
+    const int MaxFullJars = 2;
+    readonly List<TipJar> fullJars = new List<TipJar>();
+    Vector3 viewer;
+    float size = 1f;
+    bool sealedFull;   // a full jar standing on the counter (just for show)
 
     // The jar's mouth (where coins drop in)
     public Vector3 top => transform.position + Vector3.up * JarHeight * transform.lossyScale.y;
@@ -35,6 +48,8 @@ public class TipJar : MonoBehaviour
         away.y = 0;
         if (away.sqrMagnitude > 0.0001f) root.transform.rotation = Quaternion.LookRotation(away);
         TipJar jar = root.AddComponent<TipJar>();
+        jar.viewer = viewer;
+        jar.size = scale;
         jar.Build();
         return jar;
     }
@@ -130,6 +145,71 @@ public class TipJar : MonoBehaviour
         Clink(Random.Range(0.78f, 0.84f) + Mathf.Min(index, 4) * 0.03f, CoinVolume);
         if (punch != null) StopCoroutine(punch);
         punch = StartCoroutine(Punch());
+        if (!sealedFull && coins >= FullAfter) JarFull();
+    }
+
+    // Full! It's banked (safe from raids from now on): a sealed full jar appears beside it on the counter, and this one
+    // starts again empty
+    void JarFull()
+    {
+        banked += (int)FullAfter;
+        coins -= (int)FullAfter;
+        SetFill(coins / FullAfter);
+        FloatingWord.Show(fullText, top + Vector3.up * 0.25f, coinColour, 3f, 1.6f);
+        AudioClip ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
+        if (ding != null) clinkSource.PlayOneShot(ding, 0.9f);
+        if (fullJars.Count >= MaxFullJars) return;
+
+        Vector3? spot = FreeSpot();
+        if (spot == null) return;
+        TipJar full = Create(spot.Value, viewer, size);
+        full.sealedFull = true;
+        full.coins = (int)FullAfter;
+        full.SetFill(1f);
+        full.Seal();
+        fullJars.Add(full);
+        full.StartCoroutine(full.PopIn());
+    }
+
+    // A clear spot on the counter beside it (the same surface, nothing in the way, not on another jar)
+    Vector3? FreeSpot()
+    {
+        float step = 0.24f * size;
+        for (int k = 1; k <= 3; k++)
+        {
+            foreach (float side in new[] { 1f, -1f })
+            {
+                Vector3 spot = transform.position + transform.right * step * side * k;
+                if (fullJars.Exists(jar => jar != null && (jar.transform.position - spot).magnitude < step * 0.9f)) continue;
+                if (!Physics.Raycast(spot + Vector3.up * 0.3f, Vector3.down, out RaycastHit surface, 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
+                if (Mathf.Abs(surface.point.y - transform.position.y) > 0.04f) continue;
+                if (Physics.CheckSphere(surface.point + Vector3.up * JarHeight * 0.55f * size, JarRadius * 1.2f * size,
+                                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
+                return surface.point;
+            }
+        }
+        return null;
+    }
+
+    // A full jar's lid
+    void Seal()
+    {
+        GameObject lid = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, body, "Lid", new Color(0.55f, 0.4f, 0.25f));
+        lid.transform.localScale = new Vector3(JarRadius * 2.25f, 0.012f, JarRadius * 2.25f);
+        lid.transform.localPosition = Vector3.up * (JarHeight + 0.012f);
+    }
+
+    IEnumerator PopIn()
+    {
+        Vector3 scale = transform.localScale;
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / 0.35f;
+            transform.localScale = scale * Mathf.Max(0.01f, SpaceCafeVisuals.EaseOutBack(Mathf.Min(t, 1f)));
+            yield return null;
+        }
+        transform.localScale = scale;
     }
 
     // Coin clinks: soft and a little low, and never more than one every ClinkGap seconds, so a shower of coins (a

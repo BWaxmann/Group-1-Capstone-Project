@@ -47,11 +47,22 @@ public class Announcer : MonoBehaviour
         public AudioClip sting;
         public float queuedAt;
         public bool urgent;
+        public bool hold;     // the game holds off what's next until it's been said
+        public string id;
         public System.Action<bool> done;   // true when it starts playing, false if it was dropped (waited too long)
     }
 
     readonly Dictionary<string, Line> lines = new Dictionary<string, Line>();
     readonly List<Queued> queue = new List<Queued>();
+    Queued speaking;
+    bool isSpeaking;
+
+    // A line the game is waiting on (one that explains something) is queued or being said
+    public bool holding => (isSpeaking && speaking.hold) || queue.Exists(waiting => waiting.hold);
+    // Anything queued or being said
+    public bool talking => isSpeaking || queue.Count > 0;
+    // The id of the line being said (null if none)
+    public string saying => isSpeaking ? speaking.id : null;
     readonly Dictionary<string, AudioClip> stings = new Dictionary<string, AudioClip>();
     AudioSource source;
 
@@ -106,7 +117,7 @@ public class Announcer : MonoBehaviour
     // Other takes of a line are listed as id_2, id_3... and one is picked at random (not the same one twice running).
     // An urgent line (a hint about what's happening right now) goes ahead of anything waiting, though it never cuts off
     // the line being said. `done` hears whether it was said (true, as it starts) or dropped for waiting too long.
-    public void Say(string id, string sting = null, System.Action<bool> done = null, bool urgent = false)
+    public void Say(string id, string sting = null, System.Action<bool> done = null, bool urgent = false, bool hold = false)
     {
         Line line = null;
         if (!string.IsNullOrEmpty(id))
@@ -120,7 +131,7 @@ public class Announcer : MonoBehaviour
             done?.Invoke(false);
             return;
         }
-        Queued queued = new Queued { line = line, sting = stingClip, queuedAt = Time.time, urgent = urgent, done = done };
+        Queued queued = new Queued { line = line, sting = stingClip, queuedAt = Time.time, urgent = urgent, hold = hold, id = id, done = done };
         if (!urgent) queue.Add(queued);
         else
         {
@@ -173,6 +184,8 @@ public class Announcer : MonoBehaviour
                 continue;
             }
 
+            speaking = next;
+            isSpeaking = true;
             if (next.sting != null)
             {
                 source.PlayOneShot(next.sting, volume);
@@ -180,7 +193,10 @@ public class Announcer : MonoBehaviour
                 yield return new WaitForSeconds(next.line != null ? next.sting.length * 0.55f : next.sting.length);
             }
             next.done?.Invoke(true);
-            if (next.line == null) continue;
+            if (next.line == null) {
+                isSpeaking = false;
+                continue;
+            }
 
             ShowSubtitle(next.line.text);
             float length;
@@ -197,6 +213,7 @@ public class Announcer : MonoBehaviour
                 length = Mathf.Clamp(next.line.text.Length * 0.06f, 1.5f, 6f);
             }
             yield return new WaitForSeconds(length + 0.4f);
+            isSpeaking = false;
             if (queue.Count == 0) subtitleShowing = false;
         }
     }

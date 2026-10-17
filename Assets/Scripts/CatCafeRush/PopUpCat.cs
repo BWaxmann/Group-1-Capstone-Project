@@ -89,6 +89,7 @@ public class PopUpCat : MonoBehaviour
         cat.gameObject.SetActive(true);
         cat.TakeOver();
         cat.treatGate = pop.Eat;
+        cat.wantsTreats = () => pop.airborne && !pop.hit;   // only while it's up
         pop.enabled = true;
 
         pop.animator = cat.GetComponentInChildren<Animator>();
@@ -274,6 +275,7 @@ public class PopUpCat : MonoBehaviour
         if (animator != null) animator.speed = normalAnimatorSpeed;
         transform.localScale = normalScale;
         cat.treatGate = null;
+        cat.wantsTreats = null;
         enabled = false;
         cat.gameObject.SetActive(false);
     }

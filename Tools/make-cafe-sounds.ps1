@@ -4,6 +4,7 @@
 #   windup.wav       a rising cartoon wind-up (a cat getting ready to raid)
 #   boing.wav        a springy boing (a pop-up cat about to spring up)
 #   order_ding.wav   a counter-bell ding (a cat has just ordered)
+#   spy_sting.wav    a sneaky plucked-bass "dum-dum... da-dum" (a spy cat coming down from the ceiling)
 # Swap them for real sounds later (same names), no code changes needed.
 #   powershell -File Tools/make-cafe-sounds.ps1
 
@@ -175,6 +176,54 @@ public static class CafeSynth
         Save(path, buffer);
     }
 
+    // A plucked double-bass note (Karplus-Strong: a burst of noise ringing in a short delay line)
+    static void Pluck(float[] buffer, double start, double frequency, double loudness, double ring)
+    {
+        int first = (int)(start * Rate);
+        int length = Math.Max(2, (int)(Rate / frequency));
+        double[] line = new double[length];
+        for (int i = 0; i < length; i++) line[i] = random.NextDouble() * 2 - 1;
+        int at = 0;
+        for (int i = first; i < buffer.Length; i++)
+        {
+            double t = (i - first) / (double)Rate;
+            double next = line[(at + 1) % length];
+            double sample = line[at];
+            line[at] = 0.5 * (sample + next) * 0.996;
+            at = (at + 1) % length;
+            buffer[i] += (float)(sample * loudness * Math.Exp(-t / ring));
+        }
+    }
+
+    // A soft brush tick on a snare
+    static void Brush(float[] buffer, double start, double loudness)
+    {
+        int first = (int)(start * Rate);
+        double low = 0;
+        for (int i = first; i < buffer.Length && i < first + Rate / 6; i++)
+        {
+            double t = (i - first) / (double)Rate;
+            double noise = random.NextDouble() * 2 - 1;
+            low += 0.35 * (noise - low);
+            buffer[i] += (float)((noise - low) * loudness * Math.Exp(-t / 0.035));
+        }
+    }
+
+    // A sneaky spy motif: dum-dum... da-dum on a low plucked bass, with brush ticks
+    public static void SpySting(string path)
+    {
+        float[] buffer = Buffer(2.2);
+        double e = 82.41, g = 98.0, a = 110.0;
+        Pluck(buffer, 0.00, e, 1.0, 0.35);
+        Pluck(buffer, 0.26, e, 0.9, 0.35);
+        Brush(buffer, 0.13, 0.25);
+        Pluck(buffer, 0.78, g, 0.95, 0.3);
+        Pluck(buffer, 1.04, a, 1.0, 0.5);
+        Brush(buffer, 0.91, 0.25);
+        Brush(buffer, 1.17, 0.3);
+        Save(path, buffer);
+    }
+
     public static void Coin(string path)
     {
         float[] buffer = Buffer(0.45);
@@ -210,4 +259,5 @@ public static class CafeSynth
 [CafeSynth]::WindUp((Join-Path $folder 'windup.wav'))
 [CafeSynth]::Boing((Join-Path $folder 'boing.wav'))
 [CafeSynth]::Ding((Join-Path $folder 'order_ding.wav'))
+[CafeSynth]::SpySting((Join-Path $folder 'spy_sting.wav'))
 Get-ChildItem $folder -Filter *.wav | ForEach-Object { "made $($_.Name) ($([math]::Round($_.Length / 1024)) KB)" }

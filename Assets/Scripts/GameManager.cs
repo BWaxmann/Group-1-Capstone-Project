@@ -296,6 +296,18 @@ public class GameManager : MonoBehaviour
     // While true the round clock stands still (e.g. while something new is being explained)
     public bool clockPaused { get; set; }
 
+    // The scoreboard's texts, for modes that show their own numbers on it (Cat Cafe Waves shows tips)
+    public TMP_Text scoreDisplay => scoreText;
+    public TMP_Text bonusDisplayText => bonusText;
+    public TMP_Text countdownDisplay => countdownText;
+    public TMP_Text finalScoreDisplay => finalScoreText;
+    public TMP_Text catsFedDisplay => catsFedText;
+    public TMP_Text penaltyDisplay => penaltyText;
+    public GameObject finalScorePanelObject => finalScorePanel;
+    public GameObject timeUpObject => timeUpText;
+    public TMP_Text rankDisplay => rankText;
+    public TMP_Text bestScoreDisplay => bestScoreText;
+
     void Awake()
     {
         if (instance == null)
@@ -591,27 +603,37 @@ public class GameManager : MonoBehaviour
         duckRoutine = StartCoroutine(DuckRoutine(1f, 0f));
     }
 
+    // Sets how long a single-round game lasts, in seconds (before it starts: e.g. Cat Cafe Waves, to fit its waves)
+    public void SetRoundLength(float seconds)
+    {
+        if (roundMaxTimes != null && roundMaxTimes.Length == 1 && seconds > 0) roundMaxTimes[0] = seconds;
+    }
+
     Coroutine duckRoutine;
     float unduckedVolume = 1f;
 
     IEnumerator DuckRoutine(float level, float hold)
     {
-        float target = unduckedVolume * level;
-        while (!Mathf.Approximately(musicSource.volume, target))
-        {
-            musicSource.volume = Mathf.MoveTowards(musicSource.volume, target, Time.deltaTime * unduckedVolume * 2f);
-            yield return null;
-        }
+        // Eased both ways (down fairly quickly, back up gently), so it doesn't lurch
+        yield return FadeMusicTo(unduckedVolume * level, level < 1f ? 0.6f : 1.5f);
         if (level < 1f)
         {
             yield return new WaitForSeconds(hold);
-            while (!Mathf.Approximately(musicSource.volume, unduckedVolume))
-            {
-                musicSource.volume = Mathf.MoveTowards(musicSource.volume, unduckedVolume, Time.deltaTime * unduckedVolume);
-                yield return null;
-            }
+            yield return FadeMusicTo(unduckedVolume, 1.5f);
         }
         duckRoutine = null;
+    }
+
+    IEnumerator FadeMusicTo(float target, float seconds)
+    {
+        float from = musicSource.volume;
+        float t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / seconds;
+            musicSource.volume = Mathf.Lerp(from, target, Mathf.SmoothStep(0f, 1f, t));
+            yield return null;
+        }
     }
 
     IEnumerator RampMusicPitch(float targetPitch, float duration)

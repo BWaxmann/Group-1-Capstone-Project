@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -9,6 +10,11 @@ public class FloatingWord : MonoBehaviour
     float timer;
     float lifetime;
     TextMeshPro text;
+
+    // Finished words wait here to be used again, rather than being made and destroyed every time (a busy moment can
+    // pop several a second)
+    static readonly Stack<FloatingWord> spare = new Stack<FloatingWord>();
+    const int MaxSpare = 16;
 
     // Bold outlined text in the world (left where it is: the caller moves it about)
     public static GameObject Make(string words, Color colour, float size)
@@ -31,11 +37,25 @@ public class FloatingWord : MonoBehaviour
     public static void Show(string words, Vector3 at, Color colour, float size = 3f, float lifetime = 1f)
     {
         if (string.IsNullOrEmpty(words)) return;
-        GameObject holder = Make(words, colour, size);
-        holder.transform.position = at;
-        FloatingWord word = holder.AddComponent<FloatingWord>();
+        FloatingWord word = null;
+        while (word == null && spare.Count > 0) word = spare.Pop();   // (one left over from an earlier scene is gone)
+        if (word == null)
+        {
+            GameObject holder = Make(words, colour, size);
+            word = holder.AddComponent<FloatingWord>();
+            word.text = holder.GetComponent<TextMeshPro>();
+        }
+        else
+        {
+            word.text.text = words;
+            word.text.color = colour;
+            word.text.fontSize = size;
+            word.gameObject.SetActive(true);
+        }
+        word.timer = 0;
         word.lifetime = lifetime;
-        FacePlayer(holder.transform);
+        word.transform.position = at;
+        FacePlayer(word.transform);
     }
 
     public static void FacePlayer(Transform word)
@@ -45,17 +65,22 @@ public class FloatingWord : MonoBehaviour
         if (eye != null) word.rotation = Quaternion.LookRotation(word.position - eye.position);
     }
 
-    void Start()
-    {
-        text = GetComponent<TextMeshPro>();
-    }
-
     void Update()
     {
         timer += Time.deltaTime;
         transform.position += Vector3.up * 0.5f * Time.deltaTime;
         FacePlayer(transform);
         if (text != null) text.alpha = Mathf.Clamp01(1.5f * (1f - timer / lifetime));
-        if (timer > lifetime) Destroy(gameObject);
+        if (timer <= lifetime) return;
+        // Done: put away for next time (or gone, if there are plenty spare)
+        if (spare.Count < MaxSpare)
+        {
+            gameObject.SetActive(false);
+            spare.Push(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 }

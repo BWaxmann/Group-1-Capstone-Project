@@ -21,8 +21,14 @@ public class MafiaHeist : MonoBehaviour
         [Tooltip("Treats in his order.")]
         public int treats = 3;
         [Min(0)]
-        [Tooltip("Coins he scoops out of the jar if he gets to it.")]
+        [Tooltip("Coins he gets out of the jar if he's left to pillage it the whole time.")]
         public int steal = 10;
+        [Min(0.5f)]
+        [Tooltip("Seconds he pillages the jar once he gets to it (he can still be busted all the while).")]
+        public float pillageSeconds = 5f;
+        [Min(0.2f)]
+        [Tooltip("Seconds between his swats at the jar (a few coins spill each time).")]
+        public float swatEvery = 0.8f;
         [Min(0)] public int bustedScore = 15;
         [Min(0)]
         [Tooltip("Coins into the jar for busting him.")]
@@ -58,7 +64,7 @@ public class MafiaHeist : MonoBehaviour
     Transform exitDoor;
     bool finished;
     float stagger;
-    AudioSource theme;
+    SoundBite theme;
     static AudioClip themeClip;
 
     // Brings a Mafia cat in at `door` (`position` on the floor there) to go after `jar`. Null if he can't get to it.
@@ -140,8 +146,7 @@ public class MafiaHeist : MonoBehaviour
         }
         if (finished) yield break;
 
-        // Made it: up to the jar, scoop, and off with the coins
-        order.busy = true;   // too late now
+        // Made it: up to the jar, and he pillages it for a few seconds (still bustable all the while), then off with the coins
         agent.isStopped = true;
         agent.enabled = false;
         Vector3 from = transform.position;
@@ -153,9 +158,42 @@ public class MafiaHeist : MonoBehaviour
         Vector3 perch = upOnTop ? jar.transform.position - towards * 0.25f : from + towards * Mathf.Max(0, reach - 0.3f);
         yield return Hop(from, perch, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
-        if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger("AngryCat");
-        yield return new WaitForSeconds(0.2f);
-        int stolen = jar.Spill(transform.position, settings.steal);
+        // Swat after swat at the jar, a few coins spilling each time (a right treat puts him off his swing for a moment)
+        if (warning != null) warning.SetActive(true);
+        int swats = Mathf.Max(1, Mathf.RoundToInt(settings.pillageSeconds / settings.swatEvery));
+        int stolen = 0;
+        float pillage = 0;
+        for (int swat = 0; swat < swats && !finished; swat++)
+        {
+            float wait = settings.swatEvery;
+            while (wait > 0 && !finished)
+            {
+                wait -= Time.deltaTime;
+                pillage += Time.deltaTime;
+                if (stagger > 0)
+                {
+                    wait += Time.deltaTime;   // put off his swing
+                    stagger = Mathf.MoveTowards(stagger, 0, Time.deltaTime);
+                }
+                UpdateRing(1f);
+                if (warning != null)
+                {
+                    warning.transform.position = order.aboveBubble + Vector3.up * (0.15f + Mathf.Abs(Mathf.Sin(pillage * 12f)) * 0.06f);
+                    FloatingWord.FacePlayer(warning.transform);
+                }
+                yield return null;
+            }
+            if (finished) yield break;
+            if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger("AngryCat");
+            int share = Mathf.CeilToInt((settings.steal - stolen) / (float)(swats - swat));
+            stolen += jar.Spill(transform.position, share);
+            Haptics.PulseBoth(Haptics.Strength.Light);
+            if (swat % 2 == 0) cat.Meow(Random.Range(0.72f, 0.82f));
+        }
+        if (finished) yield break;
+
+        order.busy = true;   // too late now
+        if (warning != null) warning.SetActive(false);
         FloatingWord.Show(stolen > 0 ? $"{settings.heistText} -{stolen}" : settings.heistText, jar.top + Vector3.up * 0.25f, settings.ringColour, 4f, 1.6f);
         Haptics.PulseBoth(Haptics.Strength.Strong);
         cat.Meow(0.75f);
@@ -177,6 +215,7 @@ public class MafiaHeist : MonoBehaviour
         if (warning != null) warning.SetActive(false);
         if (order != null && order.isActiveAndEnabled) order.busy = true;
         cat.treatGate = t => false;
+        cat.wantsTreats = () => false;
         if (!agent.enabled) agent.enabled = true;
         if (agent.isOnNavMesh && exitDoor != null && NavMesh.SamplePosition(exitDoor.position, out NavMeshHit door, 1.5f, NavMesh.AllAreas))
         {
@@ -238,6 +277,7 @@ public class MafiaHeist : MonoBehaviour
     {
         if (agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = true;
         cat.treatGate = t => false;
+        cat.wantsTreats = () => false;
         yield return new WaitForSeconds(0.6f);
         cat.PopConfetti();
         Vanish();
@@ -268,40 +308,14 @@ public class MafiaHeist : MonoBehaviour
     void PlayTheme()
     {
         if (themeClip == null) themeClip = Resources.Load<AudioClip>("CafeSounds/mafia_theme");
-        if (themeClip == null || settings.themeVolume <= 0) return;
-        GameObject holder = new GameObject("Mafia Theme");
-        theme = holder.AddComponent<AudioSource>();
-        theme.clip = themeClip;
-        theme.spatialBlend = 0f;
-        theme.volume = settings.themeVolume;
-        theme.Play();
-        Destroy(holder, themeClip.length + 0.2f);
-        if (GameManager.instance != null) GameManager.instance.DuckMusic(settings.musicUnderTheme, themeClip.length - 0.5f);
+        theme = SoundBite.Play("Mafia Theme", themeClip, settings.themeVolume, settings.musicUnderTheme, fadeIn: 0.1f, fadeOut: 1.5f);
     }
 
-    // Busted (or sent off): his theme fades out quickly and the music comes back
+    // Busted (or sent off): his theme eases out and the music comes back
     void StopTheme()
     {
-        if (theme == null) return;
-        if (GameManager.instance != null)
-        {
-            GameManager.instance.StartCoroutine(FadeOut(theme, 0.6f));
-            GameManager.instance.EndDuck();
-        }
+        if (theme != null) theme.Stop(1.2f);
         theme = null;
-    }
-
-    static IEnumerator FadeOut(AudioSource source, float seconds)
-    {
-        float start = source != null ? source.volume : 0f;
-        float t = 0;
-        while (source != null && t < 1f)
-        {
-            t += Time.deltaTime / seconds;
-            source.volume = start * (1f - t);
-            yield return null;
-        }
-        if (source != null) Destroy(source.gameObject);
     }
 
     IEnumerator Hop(Vector3 from, Vector3 to, float seconds, float height)

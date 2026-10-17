@@ -178,6 +178,7 @@ public class CatOrder : MonoBehaviour
         step = 0;
         runningOff = false;
         cat.treatGate = Eat;
+        cat.wantsTreats = () => ordered && isHungry;   // not before it's ordered, nor once it's full or leaving
 
         if (bubble == null) bubble = OrderBubble.Create(transform);
         bubble.transform.localScale = Vector3.one * bubbleScale;

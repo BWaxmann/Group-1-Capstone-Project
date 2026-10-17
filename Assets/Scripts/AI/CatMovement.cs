@@ -503,6 +503,11 @@ public class CatMovement : MonoBehaviour
 
     public System.Func<Treat, bool> treatGate;
 
+    // Whether it'll take a treat at all right now (null = always). A cat that isn't after food (hasn't ordered, is leaving,
+    // is a spy...) lets treats fly straight past it, to the hungry cats behind
+    public System.Func<bool> wantsTreats;
+    public bool takesTreats => wantsTreats == null || wantsTreats();
+
     // The cat's face pictures and its pop-up mood display, for other scripts that show the cat's mood their own way
     public Sprite happiestFace => moodSprites != null && moodSprites.Length > 0 ? moodSprites[0] : null;
     public Sprite grumpiestFace => moodSprites != null && moodSprites.Length > 0 ? moodSprites[moodSprites.Length - 1] : null;

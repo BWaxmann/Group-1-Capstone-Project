@@ -100,6 +100,7 @@ public class KittenRun : MonoBehaviour
         cat.gameObject.SetActive(true);
         cat.TakeOver();
         cat.treatGate = run.Eat;
+        cat.wantsTreats = () => run.feedable && !run.fed;
         run.enabled = true;
 
         // Little legs going fast. The run cycle's speed is normally set from the navigation agent (which a kitten
@@ -222,6 +223,7 @@ public class KittenRun : MonoBehaviour
         if (hitbox != null) hitbox.enabled = false;
         SetLegs(0f);
         if (runAnimation != null) runAnimation.enabled = true;   // back to following the navigation agent
+        cat.wantsTreats = null;
         cat.treatGate = null;
         if (transform.parent != homeParent) transform.SetParent(homeParent, true);
         transform.localScale = normalScale;
