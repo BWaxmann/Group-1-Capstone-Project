@@ -27,9 +27,13 @@ public class TipsBoard : MonoBehaviour
         public string finalLabel = "Tips:";
         public string bestFormat = "Best tips: {0}";
         public string newBestText = "New best tips!";
+        [Tooltip("Show the best tips so far at the end. Off: Liminal doesn't keep anything between sessions, so it would always be 'new best'.")]
+        public bool showBest = false;
         [Min(0.5f)]
         [Tooltip("How much bigger the end-of-round tally is drawn on the board.")]
         public float tallyScale = 1.25f;
+        [Tooltip("Shown at the end whatever the tips (for now, for laughs). Empty = the line for the amount, from the list below.")]
+        public string alwaysLine = "That's more than enough for a Liminal VR Premium Subscription!";
         [Tooltip("What the tips could buy, from the smallest amount up.")]
         public List<Line> lines = new List<Line>
         {
@@ -37,7 +41,7 @@ public class TipsBoard : MonoBehaviour
             new Line { from = 5, text = "Enough for a nice coffee. Treat yourself!" },
             new Line { from = 12, text = "That's a brand new cat toy!" },
             new Line { from = 20, text = "A whole month of premium cat food!" },
-            new Line { from = 30, text = "You could get a Liminal subscription with that!" },
+            new Line { from = 30, text = "That's more than enough for a Liminal VR Premium Subscription!" },
             new Line { from = 45, text = "Wow! That's practically a new VR headset!" },
         };
     }
@@ -134,7 +138,7 @@ public class TipsBoard : MonoBehaviour
 
         GameObject panel = game.finalScorePanelObject;
         if (panel == null || !panel.activeInHierarchy) return;
-        if (!tallied)
+        if (!tallied && settings.showBest)
         {
             tallied = true;
             best = PlayerPrefs.GetInt(BestKey, 0);
@@ -159,6 +163,7 @@ public class TipsBoard : MonoBehaviour
         }
         if (game.bestScoreDisplay != null)
         {
+            game.bestScoreDisplay.gameObject.SetActive(settings.showBest);
             game.bestScoreDisplay.text = newBest ? settings.newBestText : string.Format(settings.bestFormat, Money(best));
         }
     }
@@ -226,6 +231,7 @@ public class TipsBoard : MonoBehaviour
     // The funny line for this much money: the highest one it's reached
     string Quip(float money)
     {
+        if (!string.IsNullOrEmpty(settings.alwaysLine)) return settings.alwaysLine;
         string chosen = "";
         float reached = float.MinValue;
         foreach (Line line in settings.lines)

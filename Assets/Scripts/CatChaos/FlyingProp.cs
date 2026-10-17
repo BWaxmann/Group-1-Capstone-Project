@@ -73,6 +73,12 @@ public class FlyingProp : MonoBehaviour
     Quaternion homeLocalRotation;
     Vector3 homeLocalScale;
 
+    // Stacked props: what it sits on at home, and how far it has sunk because some of that isn't home (it rests on
+    // what's left, or the table, instead of floating where the missing ones were)
+    Bounds homeBounds;
+    List<FlyingProp> supports;
+    float sunk;
+
     Renderer[] renderers;
     Renderer propRenderer;
     Vector3 velocity;
@@ -93,6 +99,9 @@ public class FlyingProp : MonoBehaviour
     public static bool dragHome;
     // The drop zone is the top of whatever the pile sits on (its table); this if nothing wide is found under it
     public static float dropRadius = 0.8f;
+    // How far past the table's edge (metres) a held prop still counts as over it: forgiving, since it's hard to be exact
+    // in the middle of everything (set per phase by the director)
+    public static float dropMargin = 0.15f;
     bool zoneMeasured;
     Vector3 zoneCentre;     // middle of the table top
     float zoneRadius;
@@ -111,7 +120,7 @@ public class FlyingProp : MonoBehaviour
             MeasureZone();
             Vector3 c = centre;
             float across = new Vector2(c.x - zoneCentre.x, c.z - zoneCentre.z).magnitude;
-            return across <= zoneRadius + 0.15f && c.y >= zoneCentre.y - 0.25f && c.y <= zoneCentre.y + 2f;
+            return across <= zoneRadius + dropMargin && c.y >= zoneCentre.y - 0.25f - dropMargin && c.y <= zoneCentre.y + 2f;
         }
     }
 
@@ -165,6 +174,8 @@ public class FlyingProp : MonoBehaviour
         homeLocalScale = transform.localScale;
         renderers = GetComponentsInChildren<Renderer>();
         propRenderer = renderers.Length > 0 ? renderers[0] : null;
+        homeBounds = propRenderer != null ? propRenderer.bounds : new Bounds(transform.position, Vector3.zero);
+        foreach (Renderer rend in renderers) homeBounds.Encapsulate(rend.bounds);
     }
 
     void Awake()
@@ -236,6 +247,7 @@ public class FlyingProp : MonoBehaviour
         SetTrail(settings, true);
         state = State.Flying;
         airborne.Add(this);
+        ResettleThoseOnTop();   // anything stacked on it drops onto what's left
         settings.PlayKnock(transform.position);
         if (burstPieces != null && burstPieces.Length > 0 && burstCount > 0)
         {
@@ -268,6 +280,7 @@ public class FlyingProp : MonoBehaviour
         transform.localScale = homeLocalScale;
         transform.SetParent(null, true);
         state = State.Toppled;
+        ResettleThoseOnTop();
         settings.PlayKnock(start);
         StartCoroutine(ToppleRoutine(start, land, side, settings));
         return true;
@@ -417,7 +430,7 @@ public class FlyingProp : MonoBehaviour
                 timer += dt;
                 float t = Mathf.Clamp01(timer / settings.returnDuration);
                 float eased = t * t * (3f - 2f * t);
-                Vector3 home = HomePosition();
+                Vector3 home = HomePosition() + Vector3.down * RestingDrop();   // onto what's there now
                 Vector3 position = Vector3.Lerp(returnStart, home, eased);
                 position.y += Mathf.Sin(t * Mathf.PI) * 0.5f;   // a little hop on the way back
                 transform.position = position;
@@ -655,6 +668,85 @@ public class FlyingProp : MonoBehaviour
         {
             trail.emitting = false;
             trail.Clear();
+        }
+        // Down onto what's actually there, and anything that was resting lower for want of this goes back up
+        sunk = RestingDrop();
+        if (sunk > 0) transform.position += Vector3.down * sunk;
+        ResettleThoseOnTop();
+    }
+
+    // The props it sits on at home (worked out once, from where everything started)
+    List<FlyingProp> Supports()
+    {
+        if (supports != null) return supports;
+        supports = new List<FlyingProp>();
+        Vector3 middle = homeBounds.center;
+        foreach (FlyingProp other in all)
+        {
+            if (other == null || other == this) continue;
+            Bounds below = other.homeBounds;
+            bool underneath = below.max.y <= middle.y && below.max.y >= homeBounds.min.y - 0.05f;
+            bool across = middle.x >= below.min.x - 0.03f && middle.x <= below.max.x + 0.03f &&
+                          middle.z >= below.min.z - 0.03f && middle.z <= below.max.z + 0.03f;
+            if (underneath && across) supports.Add(other);
+        }
+        return supports;
+    }
+
+    // How far below its home spot it should sit right now: 0 with what it sits on at home; otherwise down onto the
+    // highest of those that is, or the table under it if none are
+    float RestingDrop()
+    {
+        List<FlyingProp> under = Supports();
+        if (under.Count == 0) return 0f;
+        float top = float.MinValue;
+        foreach (FlyingProp support in under)
+        {
+            if (support != null && support.state == State.Home) top = Mathf.Max(top, support.homeBounds.max.y - support.sunk);
+        }
+        if (top == float.MinValue)
+        {
+            // None of them: the table (the first solid thing under it that isn't a prop or a cat)
+            RaycastHit[] hits = Physics.RaycastAll(homeBounds.center, Vector3.down, 2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            float nearest = float.MaxValue;
+            foreach (RaycastHit hit in hits)
+            {
+                if (hit.collider.GetComponentInParent<FlyingProp>() != null || hit.collider.GetComponentInParent<CatMovement>() != null) continue;
+                if (hit.distance < nearest)
+                {
+                    nearest = hit.distance;
+                    top = hit.point.y;
+                }
+            }
+            if (top == float.MinValue) return 0f;
+        }
+        return Mathf.Clamp(homeBounds.min.y - top, 0f, 1f);
+    }
+
+    // Props at home stacked on this one settle onto whatever is under them now (down when this leaves, up when it's back)
+    void ResettleThoseOnTop()
+    {
+        foreach (FlyingProp other in all)
+        {
+            if (other == null || other == this || other.state != State.Home || !other.Supports().Contains(this)) continue;
+            float drop = other.RestingDrop();
+            if (Mathf.Abs(drop - other.sunk) < 0.005f) continue;
+            other.StartCoroutine(other.SinkTo(drop));
+        }
+    }
+
+    System.Collections.IEnumerator SinkTo(float drop)
+    {
+        Vector3 from = transform.position;
+        Vector3 to = HomePosition() + Vector3.down * drop;
+        sunk = drop;
+        ResettleThoseOnTop();
+        float t = 0;
+        while (t < 1f && state == State.Home)
+        {
+            t = Mathf.Min(1f, t + Time.deltaTime / 0.2f);
+            transform.position = Vector3.Lerp(from, to, t * t);
+            yield return null;
         }
     }
 

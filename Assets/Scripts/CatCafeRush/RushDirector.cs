@@ -237,6 +237,12 @@ public class RushDirector : MonoBehaviour
     [Tooltip("In the ninja phases a caught prop has to be dragged back over its pile and let go there (a ring marks the " +
              "spot); let go anywhere else and it drops. Off: letting go sends it home by itself.")]
     public bool dragPropsHome = true;
+    [Min(0f)]
+    [Tooltip("How far past a pile's table edge (metres) a carried prop still counts as over it when let go.")]
+    public float propDropMargin = 0.35f;
+    [Min(0f)]
+    [Tooltip("The same in the Dinner Rush finale (more forgiving: there's a lot going on).")]
+    public float remixPropDropMargin = 0.6f;
     [Tooltip("Each ninja phase after the first starts with the piles restocked (props lost on the floor come back).")]
     public bool restockPiles = true;
     [Min(0)]
@@ -300,6 +306,13 @@ public class RushDirector : MonoBehaviour
     [Min(0.5f)] public float herdGapMax = 3.2f;
     [Min(0.5f)] public float kittenSpeedMin = 3.2f;
     [Min(0.5f)] public float kittenSpeedMax = 4.2f;
+    [Min(0f)]
+    [Tooltip("Seconds each herd runs around in front of the player (zig-zagging) before it heads off. 0 = straight across.")]
+    public float herdRoamMin = 5f;
+    [Min(0f)] public float herdRoamMax = 10f;
+    [Min(1)]
+    [Tooltip("Most kittens out at once (the Quest's limit: a new herd sends fewer if it would go over).")]
+    public int maxKittens = 24;
     [Min(0.1f)]
     [Tooltip("Radius of each kitten's invisible hit area, in metres.")]
     public float kittenHitRadius = 0.35f;
@@ -329,6 +342,17 @@ public class RushDirector : MonoBehaviour
     [Tooltip("With a tip jar, the chalkboard shows the tips (as money) instead of the score, fits its text to its boxes, " +
              "and ends with a funny line about what the tips could buy.")]
     public TipsBoard.Settings tipsBoard = new TipsBoard.Settings();
+
+    [Header("The shift")]
+
+    [Tooltip("The cat clock shows the time of day through the shift (Waves) instead of seconds left.")]
+    public bool shiftClock = true;
+    [Range(0f, 24f)] public float shiftStartHour = 9f;
+    [Range(0f, 24f)] public float shiftEndHour = 17f;
+    [Tooltip("The light goes from morning to evening over the shift (Waves).")]
+    public ShiftLight.Settings shiftLight = new ShiftLight.Settings();
+    [Tooltip("The sky outside goes from morning to night over the shift (Waves; Farland Skies - Low Poly).")]
+    public ShiftSky.Settings shiftSky = new ShiftSky.Settings();
 
     [Header("Mafia heist (feeding phases after the first)")]
 
@@ -459,8 +483,11 @@ public class RushDirector : MonoBehaviour
     // The waves' own clock: what's scheduled (phase lengths, the next kitten, heist, spy...) runs on this. It stands still
     // while the announcer explains something (the round clock too), so nothing new starts mid-sentence
     float clock;
+    bool waves;          // Cat Cafe Waves (a remix finale at the end): the round is a shift, as long as its phases
+    float shiftLength;
     bool wrapUpPaused;
     bool introPaused;   // the first catch's intro stops the clock
+    bool waveHeld;      // the wave waits (e.g. for the first spy to be dealt with while it's explained)
     bool holding => playing && voice != null && voice.holding;
 
     // Something the announcer explains (its `line`) may start: once it's been explained, any time; until then, not while
@@ -562,10 +589,21 @@ public class RushDirector : MonoBehaviour
         // round rather than squeezing the others
         float roundLength = 0;
         foreach (Phase phase in phases) roundLength += phase.seconds;
-        if (roundLength > 0 && phases.Exists(phase => phase.kind == Kind.Remix)) GameManager.instance.SetRoundLength(roundLength);
+        waves = roundLength > 0 && phases.Exists(phase => phase.kind == Kind.Remix);
+        if (waves)
+        {
+            shiftLength = roundLength;
+            GameManager.instance.SetRoundLength(roundLength);
+        }
         GameManager.instance.GameStart += OnGameStart;
         FlyingProp.Grabbed += PropGrabbed;
         GameManager.instance.GameEnd += OnGameEnd;
+        // (dressing only, so nothing else hangs on it)
+        if (waves && shiftClock)
+        {
+            try { GameManager.instance.UseShiftClock(shiftStartHour, shiftEndHour); }
+            catch (Exception e) { Debug.LogException(e); }
+        }
         if (ninjaPrefab != null)
         {
             ninja = Instantiate(ninjaPrefab, transform);
@@ -665,6 +703,14 @@ public class RushDirector : MonoBehaviour
         if (fedCatsUseHoles) MakeHoles();
         if (coinsPerTreat > 0) PlaceTipJar();
         if (tipJar != null) TipsBoard.Begin(tipJar, tipsBoard);
+        if (waves)
+        {
+            Func<float> shift = () => shiftLength > 0 ? clock / shiftLength : 0f;
+            try { ShiftSky.Begin(shiftSky, shift); }
+            catch (Exception e) { Debug.LogException(e); }
+            try { ShiftLight.Begin(gameObject, shiftLight, shift); }
+            catch (Exception e) { Debug.LogException(e); }   // dressing only: the round goes on without it
+        }
         piles.Clear();
         piles.AddRange(FindObjectsOfType<DefendPoint>());
         propPiles.Clear();
@@ -730,6 +776,7 @@ public class RushDirector : MonoBehaviour
             // The piles' bars are only up while the ninja's about (each pops up again when it blows that pile up)
             if (!ninjaPhase) PropPile.HideBars();
             FlyingProp.dragHome = dragPropsHome && ninjaPhase;
+            FlyingProp.dropMargin = phase.kind == Kind.Remix ? remixPropDropMargin : propDropMargin;
             if (ninjaPhase && ninjaPhasesSeen++ > 0 && restockPiles && FlyingProp.RestockAll() > 0)
             {
                 FloatingWord.Show("Restocked!", player != null && player.eyePoint != null ? player.eyePoint.position + player.eyePoint.forward * 2f : transform.position, new Color(0.4f, 1f, 0.5f), 3f, 1.4f);
@@ -1222,8 +1269,17 @@ public class RushDirector : MonoBehaviour
             }
             else
             {
-                path = Random.value < wallRunChance ? WallRun(out ups) : null;
-                if (path == null) path = HerdPath(fromLeft);
+                // A clear bit of wall isn't always found first time (the cafe is round): a few goes
+                path = null;
+                if (Random.value < wallRunChance)
+                {
+                    for (int tries = 0; tries < 3 && path == null; tries++) path = WallRun(out ups);
+                }
+                if (path == null)
+                {
+                    ups = null;
+                    path = RoamPath(fromLeft, Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
+                }
                 if (path != null) StartCoroutine(SendHerd(path, ups));
             }
             fromLeft = !fromLeft;
@@ -1236,6 +1292,7 @@ public class RushDirector : MonoBehaviour
     IEnumerator SendHerd(List<Vector3> path, List<Vector3> ups)
     {
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
+        count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));   // a herd keeps together
         for (int i = 0; i < count && playing; i++)
         {
@@ -1256,6 +1313,7 @@ public class RushDirector : MonoBehaviour
     IEnumerator Flood(CafeVent vent, List<Vector3> path, List<Vector3> ups)
     {
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
+        count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));
         float spread = ups != null ? 0.3f : 0.6f;
         yield return vent.Open();
@@ -1293,8 +1351,18 @@ public class RushDirector : MonoBehaviour
     {
         float start = clock;
         float end = start + phase.seconds;
-        yield return WaitClock(1.5f);   // the callout lands first
-        while (playing && !MayIntroduce(phase.line)) yield return null;
+        // The first spy drops in straight away and hangs there while it's explained (a player who knows what to do can
+        // wave it off at once). The wave waits until it's been dealt with and the announcer has finished.
+        yield return new WaitForSeconds(0.8f);
+        SpyCat first = SendSpy();
+        if (first != null)
+        {
+            first.holdBack = () => voice != null && voice.talking;
+            waveHeld = true;
+            while (playing && (!first.isFinished || (voice != null && voice.talking))) yield return null;
+            waveHeld = false;
+            yield return WaitClock(Mathf.Lerp(spyGapStart, spyGapEnd, 0f));
+        }
         while (playing && clock < end - (spy.lowerSeconds + spy.approachSeconds) * 0.6f)
         {
             // Each spy on its own timer: one still dangling doesn't hold up the next (as many as there are free vents)
@@ -1317,19 +1385,19 @@ public class RushDirector : MonoBehaviour
             yield return WaitClock(Random.Range(remixSpyGapMin, Mathf.Max(remixSpyGapMin, remixSpyGapMax)));
             while (playing && current == phase && !windingDown && (!RoomForMore || !MayIntroduce(SpyLine))) yield return null;
             if (!playing || current != phase || windingDown) yield break;
-            if (SendSpy()) BigStarted();
+            if (SendSpy() != null) BigStarted();
         }
     }
 
-    // One spy down a free ceiling vent
-    bool SendSpy()
+    // One spy down a free ceiling vent (null if none could go)
+    SpyCat SendSpy()
     {
         List<CafeVent> free = CeilingVents().FindAll(ceiling => !ceiling.busy);
-        if (free.Count == 0) return false;
+        if (free.Count == 0) return null;
         CafeVent vent = free[Random.Range(0, free.Count)];
         CatMovement cat = SpyToSend();
-        if (cat == null) return false;
-        return SpyCat.Begin(cat, vent, player, tipJar, spy, null) != null;
+        if (cat == null) return null;
+        return SpyCat.Begin(cat, vent, player, tipJar, spy, null);
     }
 
     // The spy in its gear (Resources/SpyCat/Spy Phat Cat, a few kept ready); without it, a phat cat from the pool
@@ -1485,6 +1553,48 @@ public class RushDirector : MonoBehaviour
         return null;
     }
 
+    // A herd's run that zig-zags about in front of the player for about `seconds` (the time to chase them down) before
+    // heading off out the other side: in from one side, from spot to spot across the floor in front of them, then away.
+    // Just across if no spots can be found.
+    List<Vector3> RoamPath(bool fromLeft, float seconds)
+    {
+        List<Vector3> across = HerdPath(fromLeft);
+        if (across == null || seconds <= 0 || player == null) return across;
+        Transform eye = player.eyePoint;
+        Vector3 head = eye != null ? eye.position : player.transform.position;
+        Vector3 forward = Flat(player.transform.forward);
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        Vector3 right = Vector3.Cross(Vector3.up, forward);
+        float floorY = across[0].y;
+        float wanted = seconds * (kittenSpeedMin + kittenSpeedMax) * 0.5f;
+
+        List<Vector3> route = new List<Vector3> { across[0] };
+        Vector3 at = across[0];
+        float length = 0;
+        NavMeshPath leg = new NavMeshPath();
+        for (int tries = 0; tries < 40 && length < wanted; tries++)
+        {
+            Vector3 spot = head + forward * Random.Range(2.2f, 6f) + right * Random.Range(-3.5f, 3.5f);
+            spot.y = floorY;
+            if (!NavMesh.SamplePosition(spot, out NavMeshHit floor, 1f, NavMesh.AllAreas) || Mathf.Abs(floor.position.y - floorY) > 0.3f) continue;
+            float straight = Flat(floor.position - at).magnitude;
+            if (straight < 1.8f) continue;   // a proper dash, not a shuffle
+            if (!NavMesh.CalculatePath(at, floor.position, NavMesh.AllAreas, leg) || leg.status != NavMeshPathStatus.PathComplete) continue;
+            float legLength = 0;
+            for (int i = 1; i < leg.corners.Length; i++) legLength += Vector3.Distance(leg.corners[i - 1], leg.corners[i]);
+            if (legLength > straight * 1.6f + 0.5f) continue;   // not the long way round the furniture
+            for (int i = 1; i < leg.corners.Length; i++) route.Add(leg.corners[i]);
+            length += legLength;
+            at = floor.position;
+        }
+        if (route.Count < 2) return across;
+        // ...then away out the far side
+        Vector3 exit = across[across.Count - 1];
+        if (!NavMesh.CalculatePath(at, exit, NavMesh.AllAreas, leg) || leg.status != NavMeshPathStatus.PathComplete) return across;
+        for (int i = 1; i < leg.corners.Length; i++) route.Add(leg.corners[i]);
+        return route;
+    }
+
     // A run up a wall in front of the player, Bombchu style: across the floor, a leap up onto the wall (over whatever's
     // against it: couches, cushions), a scurry along it, a leap back down and away across the floor (`ups` says which
     // way is up on each stretch). Null if no clear bit of wall with floor in front of it could be found
@@ -1619,8 +1729,8 @@ public class RushDirector : MonoBehaviour
     {
         if (playing)
         {
-            if (!holding && !introPaused) clock += Time.deltaTime;   // in step with the round clock
-            GameManager.instance.clockPaused = wrapUpPaused || introPaused || holding;
+            if (!holding && !introPaused && !waveHeld) clock += Time.deltaTime;   // in step with the round clock
+            GameManager.instance.clockPaused = wrapUpPaused || introPaused || holding || waveHeld;
         }
         if (!playing || current == null) return;
         if (raids) UpdateRaids();
@@ -2474,11 +2584,23 @@ public class RushDirector : MonoBehaviour
     // ---------- Cat Cafe Waves: the end-of-round tidy bonus ----------
 
     const float TidyBonusSeconds = 3f;
+    const float TidyWaitMax = 15f;
 
     // Each pile pays into the tip jar (and the score) by how much of it is still standing
     IEnumerator TidyBonus()
     {
         if ((tidyBonusCoins <= 0 && tidyBonusScore <= 0) || propPiles.Count == 0) yield break;
+        // Everything the ninja last sent flying comes down first (caught and carried home, or landed), so a pile that
+        // was just blown up isn't counted while its plates are still in the air. The clock waits too (not forever).
+        float waited = 0;
+        wrapUpPaused = true;
+        while (playing && FlyingProp.airborne.Count > 0 && waited < TidyWaitMax)
+        {
+            waited += Time.deltaTime;
+            yield return null;
+        }
+        wrapUpPaused = false;
+        if (!playing) yield break;
         SayOnce(tidyLine);
         if (!string.IsNullOrEmpty(tidyBonusBanner)) GameManager.instance.ShowBanner(tidyBonusBanner, bannerSeconds);
         yield return new WaitForSeconds(0.6f);

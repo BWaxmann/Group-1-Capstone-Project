@@ -87,6 +87,7 @@ public class LauncherKitten : MonoBehaviour
     Vector3 lastShakeDirection;
     Vector2 tilt;
     GameObject hint;
+    TMPro.TMP_Text hintText;
     GameObject warning;
     float startedAt;
     readonly List<Collider> switchedOff = new List<Collider>();
@@ -265,6 +266,7 @@ public class LauncherKitten : MonoBehaviour
         run.SetLegs(0f);
         Haptics.Pulse(rightHand, Haptics.Strength.Medium);
         hint = FloatingWord.Make(settings.hint, settings.hintColour, 0.9f);
+        hintText = hint.GetComponent<TMPro.TMP_Text>();
         scrabbling = false;
         onLatched?.Invoke(this);
     }
@@ -347,6 +349,11 @@ public class LauncherKitten : MonoBehaviour
         {
             hint.transform.position = transform.position + Vector3.up * (0.14f + Mathf.Abs(Mathf.Sin(Time.time * 6f)) * 0.03f);
             FloatingWord.FacePlayer(hint.transform);
+            // Throbs and flashes, so it reads as urgent (faster the longer it's been on)
+            float beat = Mathf.Lerp(7f, 11f, Mathf.Clamp01((Time.time - latchedAt) / 4f));
+            float pulse = Mathf.Abs(Mathf.Sin((Time.time - latchedAt) * beat));
+            hint.transform.localScale = Vector3.one * (1f + 0.35f * pulse);
+            if (hintText != null) hintText.color = Color.Lerp(settings.hintColour, new Color(1f, 0.2f, 0.15f), pulse);
         }
     }
 

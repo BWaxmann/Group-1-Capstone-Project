@@ -64,6 +64,11 @@ public class SpyCat : MonoBehaviour
     public enum Result { Scared, Stole, Cancelled }
 
     public static readonly List<SpyCat> active = new List<SpyCat>();
+
+    // While this says so, it hangs there swinging gently instead of coming in (it can still be scared off): e.g. the first
+    // spy of the wave, while the announcer explains what to do
+    public Func<bool> holdBack;
+    public bool isFinished => finished;
     static int hintsShown;
     const int Hints = 2;
     static readonly int Spying = Animator.StringToHash("Spying");
@@ -106,6 +111,7 @@ public class SpyCat : MonoBehaviour
         spy.done = done;
         spy.finished = false;
         spy.nerve = 0;
+        spy.holdBack = null;
         spy.enabled = true;
         // Switched on (tucked up inside the vent, out of sight) before anything runs: a pooled cat starts off switched off,
         // and nothing can run on a switched-off cat
@@ -176,6 +182,20 @@ public class SpyCat : MonoBehaviour
             t += Time.deltaTime / settings.lowerSeconds;
             Hang(anchor, Mathf.Lerp(0.2f, rope, Mathf.SmoothStep(0, 1, t)), 0, toward);
             Scare(false);   // can't be scared yet: the player gets to see it arrive
+            yield return null;
+        }
+
+        // Held back for now: a gentle sway where it is (and it can be scared off already)
+        float sway = 0;
+        while (holdBack != null && holdBack())
+        {
+            sway += Time.deltaTime;
+            Hang(anchor, rope, 8f * Mathf.Deg2Rad * Mathf.Sin(sway * 2f * Mathf.PI / settings.swingPeriod), toward);
+            if (Scare())
+            {
+                yield return Scared();
+                yield break;
+            }
             yield return null;
         }
 

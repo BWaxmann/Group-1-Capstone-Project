@@ -429,7 +429,7 @@ public class GameManager : MonoBehaviour
             float roundTime = roundMaxTimes[i];
             if (Mathf.Floor(roundTime) < roundTime)
             {
-                timerText.text = Mathf.CeilToInt(roundTime).ToString();
+                timerText.text = ClockText(roundTime, roundTime);
                 yield return new WaitForSeconds(roundTime % 1);
             }
 
@@ -437,7 +437,7 @@ public class GameManager : MonoBehaviour
             for (int j = 0; j < steps; j++)
             {
                 while (clockPaused) yield return null;
-                timerText.text = (steps - j).ToString();
+                timerText.text = ClockText(steps - j, roundTime);
 
                 // The finale is the end of the last round
                 if (!finaleStarted && finaleDuration > 0 && i == roundMaxTimes.Length - 1 && steps - j <= finaleDuration)
@@ -460,7 +460,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                timerText.text = "0";
+                timerText.text = ClockText(0, roundTime);
             }
             endRoundEarly = false;
 
@@ -601,6 +601,45 @@ public class GameManager : MonoBehaviour
         if (duckRoutine == null) return;
         StopCoroutine(duckRoutine);
         duckRoutine = StartCoroutine(DuckRoutine(1f, 0f));
+    }
+
+    // Cat Cafe Waves: the clock shows the time of day through a shift (e.g. 9:00 AM to 5:00 PM, in five-minute steps)
+    // instead of seconds left, filling the clock face
+    public void UseShiftClock(float startHour, float endHour)
+    {
+        shiftClock = true;
+        shiftStartHour = startHour;
+        shiftEndHour = endHour;
+        if (timerText == null) return;
+        // The clock's other labels (its canvas can still be switched off here, so it's found by the parent, not .canvas)
+        Transform face = timerText.transform.parent != null ? timerText.transform.parent : timerText.transform;
+        foreach (TMP_Text other in face.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (other != timerText) other.gameObject.SetActive(false);
+        }
+        RectTransform box = timerText.rectTransform;
+        box.anchorMin = Vector2.zero;
+        box.anchorMax = Vector2.one;
+        box.offsetMin = box.offsetMax = Vector2.zero;
+        timerText.enableWordWrapping = false;
+        timerText.enableAutoSizing = true;
+        timerText.fontSizeMax = Mathf.Max(timerText.fontSizeMax, 80f);
+        timerText.text = ClockText(1f, 1f);
+    }
+
+    bool shiftClock;
+    float shiftStartHour = 9f;
+    float shiftEndHour = 17f;
+
+    string ClockText(float secondsLeft, float roundLength)
+    {
+        if (!shiftClock) return Mathf.CeilToInt(secondsLeft).ToString();
+        float through = roundLength > 0 ? Mathf.Clamp01(1f - secondsLeft / roundLength) : 1f;
+        int minutes = Mathf.FloorToInt((shiftStartHour + (shiftEndHour - shiftStartHour) * through) * 12f) * 5;
+        int hour = (minutes / 60) % 24;
+        string half = hour < 12 ? "AM" : "PM";
+        int shown = hour % 12 == 0 ? 12 : hour % 12;
+        return $"{shown}:{minutes % 60:00} {half}";
     }
 
     // Sets how long a single-round game lasts, in seconds (before it starts: e.g. Cat Cafe Waves, to fit its waves)
