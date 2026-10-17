@@ -384,9 +384,6 @@ public class RushDirector : MonoBehaviour
     [Min(0.5f)] public float spyGapStart = 4f;
     [Min(0.5f)] public float spyGapEnd = 2.5f;
     [Range(0f, 1f)]
-    [Tooltip("Not used now (each spy comes on its own timer).")]
-    public float spyDoubleFrom = 0.5f;
-    [Range(0f, 1f)]
     [Tooltip("The spy music (Resources/CafeSounds/spy_music_intro, then spy_music_loop) all through a Spy phase. 0 = none.")]
     public float spyMusicVolume = 0.5f;
     [Range(0f, 1f)]
@@ -396,19 +393,15 @@ public class RushDirector : MonoBehaviour
     [Header("Remix finale (Remix phases)")]
 
     [Tooltip("The finale mixes every wave: the ninja making a slower mess, customers ordering (the phase's Cats), launcher " +
-             "kittens (its Latch Every), pop-up cats on the couches, the Mafia cat and a kitten flood. Never more than this " +
-             "many big things at once (a heist, a kitten on a launcher, a pop-up cat in the air); the rest wait their turn.")]
+             "kittens (its Latch Every), spy cats, the Mafia cat and a kitten flood. Never more than this many big things " +
+             "at once (a heist, a kitten on a launcher, a spy, the flood); the rest wait their turn.")]
     [Min(1)] public int remixMaxBusy = 1;
     [Min(0)]
     [Tooltip("Seconds of breather in the finale after a big thing finishes before the next may start (so they come one after another, not in a pile).")]
     public float remixBreather = 6f;
-    [Tooltip("Pop-up cats on the couches in the finale (paused for now: not used).")]
-    [Min(0)] public int remixPopUpSeats = 0;
     [Tooltip("Seconds between spy cats in the finale (0 = none).")]
     [Min(0)] public float remixSpyGapMin = 14f;
     [Min(0)] public float remixSpyGapMax = 20f;
-    [Min(0.5f)] public float remixPopGapStart = 7f;
-    [Min(0.5f)] public float remixPopGapEnd = 4.5f;
     [Min(0)] public int remixHeists = 2;
     [Min(0)] public int remixHeistGang = 1;
     [Range(0f, 1f)]
@@ -829,9 +822,9 @@ public class RushDirector : MonoBehaviour
                     break;
 
                 case Kind.Remix:
-                    // The finale: a bit of every wave at once, but only a couple of big things at a time. Customers
+                    // The finale: a bit of every wave at once, but one big thing at a time. Customers
                     // keep ordering (Update), launcher kittens come by (Latch Every), the ninja makes a slower mess,
-                    // pop-up cats sit on the couches, the Mafia cat drops in, and a kitten flood pours out once
+                    // spies drop in now and then, the Mafia cat strolls in, and a kitten flood pours out once
                     Haptics.PulseBoth(Haptics.Strength.Huge);
                     yield return WaitClock(1f);
                     SummonNinja(true);
@@ -2157,15 +2150,19 @@ public class RushDirector : MonoBehaviour
     FlyingProp PropInView(Transform eye)
     {
         if (eye == null) return null;
+        // In front of where the player stands to play (the rig's forward, not wherever they happen to be looking), and
+        // off a pile on a table: never a loose prop like a plant on the floor beside them
+        Vector3 ahead = player != null ? Flat(player.transform.forward) : Flat(eye.forward);
+        if (ahead.sqrMagnitude < 0.001f) ahead = Flat(eye.forward);
         FlyingProp best = null;
         float bestAngle = 50f;
         foreach (FlyingProp prop in FlyingProp.all)
         {
-            if (prop == null || prop.state != FlyingProp.State.Home) continue;
+            if (prop == null || prop.state != FlyingProp.State.Home || prop.isLoose) continue;
             Vector3 to = prop.centre - eye.position;
             float distance = Flat(to).magnitude;
             if (distance < 1.2f || distance > 5f) continue;
-            float angle = Vector3.Angle(Flat(eye.forward), Flat(to));
+            float angle = Vector3.Angle(ahead, Flat(to));
             if (angle < bestAngle)
             {
                 bestAngle = angle;
