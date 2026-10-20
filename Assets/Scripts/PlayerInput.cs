@@ -2,7 +2,6 @@
 using Liminal.SDK.VR;
 using Liminal.SDK.VR.Input;
 using Valve.VR;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -76,12 +75,6 @@ public class PlayerInput : MonoBehaviour
     float maxSpreadAngle = 45f;
 
     [SerializeField]
-    string rapidFireText = "<color=#FF7310><size=1.2em>RAPID!</size></color>";
-
-    [SerializeField]
-    string spreadText = "<color=#3FD0FF><size=1.2em>SPREAD!</size></color>";
-
-    [SerializeField]
     [Tooltip("Which launchers fire treats with their trigger.")]
     bool shootWithLeft = true;
 
@@ -94,49 +87,32 @@ public class PlayerInput : MonoBehaviour
     [Tooltip("Space Cafe: each hand's launcher fires its own food, and flicking that hand's thumbstick left/right switches it (no yarnballs).")]
     bool baristaMode = false;
 
+    [Header("Display")]
+
     [SerializeField]
-    TMP_Text ammoText;
+    Image launcherLeftDisplayFace;
+
+    [SerializeField]
+    Image launcherRightDisplayFace;
+
+    [SerializeField]
+    Sprite[] defaultFaces;
+
+    [SerializeField]
+    Sprite[] happyFaces;
+
+    [SerializeField]
+    Sprite[] scaredFaces;
+
+    [SerializeField]
+    [Min(0)]
+    float faceSwapDuration = 1f;
 
     [SerializeField]
     Transform eye;
 
     [SerializeField]
     Transform _pickupMagnet;
-
-    [SerializeField]
-    string defaultDisplayText = "^ <rotate=\"-90\">3</rotate> ^";
-
-    [SerializeField]
-    string instaKillText = "<color=#FFD700><size=1.5em>∞</size></color>";
-
-    [Header("Yarnball")]
-
-    [SerializeField]
-    [Tooltip("Grip as in the original game, the A/X button (frees the grip for the gravity beam), or off.")]
-    YarnballButton yarnballButton = YarnballButton.Grip;
-
-    [SerializeField]
-    [Min(0)]
-    int yarnballTreatSpawnerIndex = 4;
-
-    [SerializeField]
-    [Min(0)]
-    float yarnballRechargeTime = 15f;
-
-    [SerializeField]
-    Slider yarnballRechargeBar;
-
-    [SerializeField]
-    Image yarnballRechargeBarImage;
-
-    [SerializeField]
-    Color yarnballRechargingColour = new Color(0.5f, 0, 0);
-
-    [SerializeField]
-    Color yarnballReadyColour = Color.green;
-
-    [SerializeField]
-    bool yarnballReadyOnStart;
 
     [SerializeField]
     [Range(0f, 1f)]
@@ -177,9 +153,6 @@ public class PlayerInput : MonoBehaviour
     Coroutine rightHandAutofire;
     Coroutine leftHandAutofire;
 
-    bool yarnballReady;
-    float yarnballRechargeTimer;
-
     bool gripHeldRight;
     bool gripHeldLeft;
 
@@ -193,6 +166,9 @@ public class PlayerInput : MonoBehaviour
 
     bool instaKillActive;
     float instaKillTimer;
+
+    Expression leftExpression;
+    Expression rightExpression;
 
     float rapidFireTimer;
     bool rapidFireActive => rapidFireTimer > 0;
@@ -246,14 +222,12 @@ public class PlayerInput : MonoBehaviour
     public void ForceFireStyle(FireStyle? style)
     {
         forcedStyle = style;
-        ShowStyles();
     }
 
     public void UnlockFireStyles(bool unlocked)
     {
         fireStylesUnlocked = unlocked;
         if (!unlocked) styleLeft = styleRight = FireStyle.Single;
-        ShowStyles();
     }
 
     void SwapStyle(bool rightHand, int direction)
@@ -264,18 +238,6 @@ public class PlayerInput : MonoBehaviour
         if (rightHand) styleRight = next;
         else styleLeft = next;
         Haptics.Pulse(rightHand, Haptics.Strength.Medium);
-        ShowStyles();
-    }
-
-    // The launchers' little display shows each hand's style while they're unlocked
-    void ShowStyles()
-    {
-        if (!fireStylesUnlocked || forcedStyle.HasValue)
-        {
-            RefreshAmmoText();
-            return;
-        }
-        ammoText.text = $"<size=55%>{styleLeft.ToString().ToUpper()}  |  {styleRight.ToString().ToUpper()}</size>";
     }
 
     // Spread of each style (degrees either side) and pellets per shot
@@ -339,13 +301,18 @@ public class PlayerInput : MonoBehaviour
         launcherRight.gameObject.SetActive(false);
         GameManager.instance.GameEnd += StopLaunchers;
 
-        ammoText.text = defaultDisplayText;
-
-        yarnballReady = yarnballReadyOnStart;
-        yarnballRechargeTimer = yarnballReady ? yarnballRechargeTime : 0;
-        SetYarnballBar();
-        // No yarnball in this scene: its recharge bar goes too
-        if (yarnballButton == YarnballButton.Off && yarnballRechargeBar != null) yarnballRechargeBar.gameObject.SetActive(false);
+        if (launcherLeftDisplayFace != null)
+        {
+            leftExpression = Expression.Default;
+            launcherLeftDisplayFace.sprite = defaultFaces[0];
+            StartCoroutine(ExpressionUpdateRoutine(false));
+        }
+        if (launcherRightDisplayFace != null)
+        {
+            rightExpression = Expression.Default;
+            launcherRightDisplayFace.sprite = defaultFaces[0];
+            StartCoroutine(ExpressionUpdateRoutine(true));
+        }
 
         StartCoroutine(UpdateBillboardsRoutine());
     }
@@ -359,7 +326,6 @@ public class PlayerInput : MonoBehaviour
             {
                 instaKillTimer = 0;
                 instaKillActive = false;
-                RefreshAmmoText();
             }
         }
 
@@ -370,7 +336,6 @@ public class PlayerInput : MonoBehaviour
             {
                 spreadTimer = 0;
                 spreadActive = false;
-                RefreshAmmoText();
             }
         }
 
@@ -385,20 +350,7 @@ public class PlayerInput : MonoBehaviour
                     // Back to one shot per pull
                     StopLaunchers();
                 }
-                RefreshAmmoText();
             }
-        }
-
-        if (!yarnballReady && yarnballButton != YarnballButton.Off)
-        {
-            yarnballRechargeTimer += Time.deltaTime;
-            if (yarnballRechargeTimer >= yarnballRechargeTime)
-            {
-                yarnballRechargeTimer = yarnballRechargeTime;
-                yarnballReady = true;
-                yarnballRechargedSound.PlayOneShot(launcherAudioSourceRight);
-            }
-            SetYarnballBar();
         }
 
         // Grip state is tracked every frame so a press is only counted once
@@ -422,20 +374,6 @@ public class PlayerInput : MonoBehaviour
         // In the editor the mouse also works: left click = right trigger, right click = right grip.
         if (launchersActive)
         {
-            // In barista mode the grips switch food instead (handled by the Space Cafe)
-            if (yarnballReady && !baristaMode && yarnballButton != YarnballButton.Off)
-            {
-                bool useGrip = yarnballButton == YarnballButton.Grip;
-                if (useGrip ? gripDownRight : FaceButtonDown(true))
-                {
-                    LaunchYarnball(true);
-                }
-                else if (useGrip ? gripDownLeft : FaceButtonDown(false))
-                {
-                    LaunchYarnball(false);
-                }
-            }
-
             if (enableAutofire || rapidFireActive)
             {
                 if (shootWithRight && TriggerDown(true) && rightHandAutofire == null)
@@ -810,20 +748,6 @@ public class PlayerInput : MonoBehaviour
         return treat;
     }
 
-    void LaunchYarnball(bool rightHand)
-    {
-        Yarnball yarnball = treatsSpawner.GetObjectFromPool<Yarnball>(yarnballTreatSpawnerIndex);
-        if (yarnball == null) return;
-        yarnball.gameObject.SetActive(true);
-        yarnball.Launch(rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft, shotSpeed, 0, false);
-        if (straightShots) yarnball.MakeStraightShot();
-        PlaySound(launcherYarnballSound, rightHand);
-        Haptics.Pulse(rightHand, Haptics.Strength.Strong);
-
-        yarnballReady = false;
-        yarnballRechargeTimer = 0;
-    }
-
     void PlaySound(SoundData sound, bool rightHand)
     {
         if (rightHand)
@@ -863,14 +787,12 @@ public class PlayerInput : MonoBehaviour
     {
         instaKillActive = true;
         instaKillTimer += duration;
-        RefreshAmmoText();
     }
 
     public void EnableRapidFire(float duration)
     {
         rapidFireTimer += duration;
         Haptics.PulseBoth(Haptics.Strength.Strong);
-        RefreshAmmoText();
     }
 
     public void ActivateSpread(float duration)
@@ -878,16 +800,6 @@ public class PlayerInput : MonoBehaviour
         spreadActive = true;
         spreadTimer += duration;
         Haptics.PulseBoth(Haptics.Strength.Strong);
-        RefreshAmmoText();
-    }
-
-    void RefreshAmmoText()
-    {
-        if (forcedStyle.HasValue) ammoText.text = $"<size=55%>{forcedStyle.Value.ToString().ToUpper()}!</size>";
-        else if (instaKillActive) ammoText.text = instaKillText;
-        else if (spreadActive) ammoText.text = spreadText;
-        else if (rapidFireActive) ammoText.text = rapidFireText;
-        else ammoText.text = defaultDisplayText;
     }
 
     public void StopLaunchers()
@@ -905,9 +817,92 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
-    void SetYarnballBar()
+    public void ChangeFaceExpression(Expression expression, bool rightHand)
     {
-        yarnballRechargeBar.value = Mathf.Clamp01(yarnballRechargeTimer / yarnballRechargeTime);
-        yarnballRechargeBarImage.color = yarnballReady ? yarnballReadyColour : yarnballRechargingColour;
+        if (rightHand)
+        {
+            rightExpression = expression;
+        }
+        else
+        {
+            leftExpression = expression;
+        }
     }
+
+    IEnumerator ExpressionUpdateRoutine(bool rightHand)
+    {
+        float timer = 0;
+        int faceIndex = 0;
+        bool changeImage;
+        Expression previousExpression = Expression.Default;
+        Expression currentExpression;
+        while (true)
+        {
+            changeImage = false;
+            currentExpression = rightHand ? rightExpression : leftExpression;
+            if (currentExpression != previousExpression)
+            {
+                timer = 0;
+                faceIndex = 0;
+                changeImage = true;
+            }
+            else
+            {
+                timer += Time.deltaTime;
+                if (timer >= faceSwapDuration)
+                {
+                    timer = 0;
+                    faceIndex++;
+                    changeImage = true;
+                }
+            }
+            previousExpression = currentExpression;
+
+            if (changeImage)
+            {
+                Sprite face;
+                switch (currentExpression)
+                {
+                    case Expression.Happy:
+                        if (faceIndex >= happyFaces.Length)
+                        {
+                            faceIndex = 0;
+                        }
+                        face = happyFaces[faceIndex];
+                        break;
+                    case Expression.Scared:
+                        if (faceIndex >= scaredFaces.Length)
+                        {
+                            faceIndex = 0;
+                        }
+                        face = scaredFaces[faceIndex];
+                        break;
+                    default:
+                        if (faceIndex >= defaultFaces.Length)
+                        {
+                            faceIndex = 0;
+                        }
+                        face = defaultFaces[faceIndex];
+                        break;
+                }
+                if (rightHand)
+                {
+                    launcherRightDisplayFace.sprite = face;
+                }
+                else
+                {
+                    launcherLeftDisplayFace.sprite = face;
+                }
+            }
+
+            yield return null;
+        }
+    }
+}
+
+public enum Expression
+{
+    Default,
+    Happy,
+    Scared
 }

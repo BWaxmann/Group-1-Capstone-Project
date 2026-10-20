@@ -131,14 +131,30 @@ public class LauncherKitten : MonoBehaviour
     // PlayerInput asks this before every shot.
     public static bool BlocksFire(bool rightHand)
     {
+        if (IsKittenLatched(rightHand, out LauncherKitten kitten))
+        {
+            kitten.BlockedShot();
+            return true;
+        }
+        return false;
+    }
+
+    public static bool IsKittenLatched(bool rightHand)
+    {
+        return IsKittenLatched(rightHand, out _);
+    }
+
+    public static bool IsKittenLatched(bool rightHand, out LauncherKitten latched)
+    {
         foreach (LauncherKitten kitten in active)
         {
             if (kitten.latched && kitten.rightHand == rightHand)
             {
-                kitten.BlockedShot();
+                latched = kitten;
                 return true;
             }
         }
+        latched = null;
         return false;
     }
 
