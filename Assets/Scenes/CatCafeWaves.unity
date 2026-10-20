@@ -8112,10 +8112,6 @@ PrefabInstance:
       propertyPath: treatsSpawner
       value: 
       objectReference: {fileID: 239547139}
-    - target: {fileID: 894574103, guid: a727da49b44d50341ab071e657b48c70, type: 3}
-      propertyPath: yarnballButton
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 2084092611420802037, guid: a727da49b44d50341ab071e657b48c70,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -8171,100 +8167,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4086955661830854340, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 22.599998
-      objectReference: {fileID: 0}
-    - target: {fileID: 2002398327999314086, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 627861189605552023, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 627861189605552023, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1691191905810449274, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_textInfo.characterCount
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1691191905810449274, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_textInfo.spaceCount
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1691191905810449274, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_textInfo.wordCount
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1691191905810449274, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_textInfo.lineCount
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1691191905810449274, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_textInfo.pageCount
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0.29738012
-      objectReference: {fileID: 0}
-    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 0.9547592
-      objectReference: {fileID: 0}
-    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
---- !u!1 &894574102 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 977510622188944123, guid: a727da49b44d50341ab071e657b48c70,
-    type: 3}
-  m_PrefabInstance: {fileID: 894574101}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &894574103
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894574102}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d37feec0ba7ebf14ae1df474044ef968, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  catchWithLeft: 1
-  catchWithRight: 1
-  aimAngle: 20
-  range: 15
-  holdDistance: 1.3
-  lockOnTime: 0
-  catchScore: 5
-  maxStreakMultiplier: 5
-  beamColour: {r: 0.72, g: 0.38, b: 1, a: 1}
 --- !u!1 &895747036
 GameObject:
   m_ObjectHideFlags: 0

@@ -1047,6 +1047,7 @@ GameObject:
   - component: {fileID: 977510622188944122}
   - component: {fileID: 894574103}
   - component: {fileID: 9153070864054079722}
+  - component: {fileID: 1770632349868942538}
   m_Layer: 0
   m_Name: VRAvatar
   m_TagString: Untagged
@@ -1061,7 +1062,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 977510622188944123}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalRotation: {x: 0, y: -0.29738012, z: -0, w: 0.9547592}
   m_LocalPosition: {x: 0, y: 0.3, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -1159,9 +1160,12 @@ MonoBehaviour:
   baristaMode: 0
   launcherLeftDisplayFace: {fileID: 4577330572766160562}
   launcherRightDisplayFace: {fileID: 6780108211474185680}
-  defaultFaces: []
-  happyFaces: []
-  scaredFaces: []
+  defaultFaces:
+  - {fileID: 21300000, guid: 24c88e5a0a8bc9749b6eada167b81a69, type: 3}
+  happyFaces:
+  - {fileID: 21300000, guid: 7cddd4592889e2a48b24745a4d8279e0, type: 3}
+  scaredFaces:
+  - {fileID: 21300000, guid: aae97993ad16b4a4eb729943a9541916, type: 3}
   faceSwapDuration: 1
   eye: {fileID: 977510622112336780}
   _pickupMagnet: {fileID: 2402349129688171909}
@@ -1196,6 +1200,27 @@ NavMeshObstacle:
   m_CarveOnlyStationary: 0
   m_Center: {x: 0, y: 0.363, z: 0}
   m_TimeToStationary: 0.5
+--- !u!114 &1770632349868942538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977510622188944123}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d37feec0ba7ebf14ae1df474044ef968, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  catchWithLeft: 1
+  catchWithRight: 1
+  aimAngle: 20
+  range: 15
+  holdDistance: 1.3
+  lockOnTime: 0
+  catchScore: 5
+  maxStreakMultiplier: 5
+  beamColour: {r: 0.72, g: 0.38, b: 1, a: 1}
 --- !u!1 &977510622321449625
 GameObject:
   m_ObjectHideFlags: 0

@@ -131,12 +131,6 @@ public class PlayerInput : MonoBehaviour
     [Tooltip("Sound to play when firing a treat.")]
     SoundData launcherFireSound = new SoundData(1f, 1f);
 
-    [SerializeField]
-    SoundData launcherYarnballSound = new SoundData(1f, 1f);
-
-    [SerializeField]
-    SoundData yarnballRechargedSound = new SoundData(1f, 1f);
-
     public delegate void FaceCamera(Vector3 position);
     public static event FaceCamera TurnToFaceCamera;
 

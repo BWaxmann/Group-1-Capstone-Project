@@ -284,6 +284,7 @@ public class LauncherKitten : MonoBehaviour
         hint = FloatingWord.Make(settings.hint, settings.hintColour, 0.9f);
         hintText = hint.GetComponent<TMPro.TMP_Text>();
         scrabbling = false;
+        player.ChangeFaceExpression(Expression.Scared, rightHand);
         onLatched?.Invoke(this);
     }
 
@@ -437,6 +438,7 @@ public class LauncherKitten : MonoBehaviour
     // Lets go of the launcher (it can fire again)
     void Let()
     {
+        player.ChangeFaceExpression(Expression.Happy, rightHand);
         latched = false;
         if (hint != null) Destroy(hint);
         transform.SetParent(null, true);
@@ -445,6 +447,7 @@ public class LauncherKitten : MonoBehaviour
     void Finish(Result result, bool dismiss)
     {
         if (finished) return;
+        player.ChangeFaceExpression(Expression.Default, rightHand);
         finished = true;
         latched = false;
         StopAllCoroutines();
