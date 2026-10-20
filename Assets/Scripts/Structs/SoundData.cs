@@ -28,11 +28,23 @@ public struct SoundData
         _pitch = pitch;
     }
 
+    public SoundData(AudioClip clip, float volume, float pitch)
+    {
+        _soundClip = clip;
+        _volume = volume;
+        _pitch = pitch;
+    }
+
     public void PlayOneShot(AudioSource source)
+    {
+        PlayOneShot(source, 1f);
+    }
+
+    public void PlayOneShot(AudioSource source, float pitchMultiplier)
     {
         if (source != null && soundClip != null)
         {
-            source.pitch = _pitch;
+            source.pitch = _pitch * pitchMultiplier;
             source.PlayOneShot(soundClip, volume);
         }
     }

@@ -138,6 +138,18 @@ public class ObjectSpawner : MonoBehaviour
         return list[Random.Range(0, list.Count)];
     }
 
+    // The variations whose prefab name contains `part` (e.g. "Phat" for the phat cats), for picking a particular kind
+    public int[] VariationsNamed(string part)
+    {
+        List<int> found = new List<int>();
+        if (objectsInPool == null) return found.ToArray();
+        for (int i = 0; i < objectsInPool.Length; i++)
+        {
+            if (objectsInPool[i].prefab != null && objectsInPool[i].prefab.name.Contains(part)) found.Add(i);
+        }
+        return found.ToArray();
+    }
+
     [Serializable]
     public struct ObjectVariation
     {

@@ -81,6 +81,41 @@
       "name": "/actions/mixedreality/in/ExternalCamera",
       "type": "pose",
       "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/Back",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/Joystick",
+      "type": "vector2",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/JoystickNearPress",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/JoystickPress",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/Secondary",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/Touch",
+      "type": "boolean",
+      "requirement": "optional"
+    },
+    {
+      "name": "/actions/default/in/Trigger",
+      "type": "vector1",
+      "requirement": "optional"
     }
   ],
   "action_sets": [

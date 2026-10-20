@@ -11,6 +11,9 @@ public abstract class BossCat : CatMovement
 
     public override bool isBoss => true;
 
+    // A director that ends the boss's visit itself can make it stay longer than Despawn After (seconds; 0 = as set)
+    public float despawnAfterOverride = 0f;
+
     public override void Initialise(Transform spawnPoint, Vector3 spawnPosition)
     {
         base.Initialise(spawnPoint, spawnPosition);
@@ -19,7 +22,7 @@ public abstract class BossCat : CatMovement
 
     protected virtual IEnumerator DespawnRoutine()
     {
-        yield return new WaitForSeconds(despawnAfter);
+        yield return new WaitForSeconds(despawnAfterOverride > 0 ? despawnAfterOverride : despawnAfter);
 
         if (currentState != AIState.Full)
         {

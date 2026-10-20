@@ -1,0 +1,8 @@
+<!--
+  Stops IL2CPP from stripping code that the Liminal SDK and our scripts reach indirectly
+  (by reflection, serialized references or Resources). Only affects IL2CPP builds, i.e. the Quest APK.
+-->
+<linker>
+  <assembly fullname="Liminal.SDK" preserve="all" />
+  <assembly fullname="Assembly-CSharp" preserve="all" />
+</linker>

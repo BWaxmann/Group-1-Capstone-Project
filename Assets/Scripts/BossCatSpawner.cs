@@ -16,6 +16,17 @@ public class BossCatSpawner : MonoBehaviour
     [SerializeField]
     AudioSource bossSpawnSoundSource;
 
+    // A boss prefab of this kind from the list (e.g. Cat Cafe Waves' Mafia heist borrows the Mafia cat), or null
+    public T Prefab<T>() where T : BossCat
+    {
+        if (bossPrefabs == null) return null;
+        foreach (BossData boss in bossPrefabs)
+        {
+            if (boss.bossPrefab is T found) return found;
+        }
+        return null;
+    }
+
     List<BossCat> bossInstances = new List<BossCat>();
     List<Transform> bossSpawnPoints = new List<Transform>();
     List<SoundData> bossSpawnSounds = new List<SoundData>();
@@ -63,12 +74,17 @@ public class BossCatSpawner : MonoBehaviour
 
     public void StartSpawnRoutine(int round)
     {
+        // No boss set for this round (or the spawner has been switched off)
+        if (!isActiveAndEnabled || round < 1 || round > bossSpawnTimes.Count) return;
+
         StartCoroutine(SpawnRoutine(round));
     }
 
     IEnumerator SpawnRoutine(int round)
     {
         yield return new WaitForSeconds(bossSpawnTimes[round - 1]);
+
+        if (bossInstances.Count == 0) yield break;
 
         int index = Random.Range(0, bossInstances.Count);
 
@@ -78,7 +94,7 @@ public class BossCatSpawner : MonoBehaviour
         Transform spawnPoint = bossSpawnPoints[index];
         boss.Initialise(spawnPoint, spawnPoint.position);
 
-        bossSpawnSounds[index].PlayOneShot(bossSpawnSoundSource);
+        if (bossSpawnSoundSource != null) bossSpawnSounds[index].PlayOneShot(bossSpawnSoundSource);
 
         bossInstances.RemoveAt(index);
         bossSpawnPoints.RemoveAt(index);
