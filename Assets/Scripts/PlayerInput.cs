@@ -236,7 +236,7 @@ public class PlayerInput : MonoBehaviour
 
     // Spread of each style (degrees either side) and pellets per shot
     static float StyleSpread(FireStyle style) => style == FireStyle.Scatter ? 14f : style == FireStyle.Buckshot ? 5f : 0f;
-    static int StylePellets(FireStyle style) => style == FireStyle.Scatter ? 5 : style == FireStyle.Buckshot ? 7 : 1;
+    static int StylePellets(FireStyle style) => style == FireStyle.Scatter ? 3 : style == FireStyle.Buckshot ? 7 : 1;
 
     // Colours each launcher's aim reticle (e.g. the colour that hand fires); null = the reticle's own colours
     public void SetReticleColours(Color left, Color right)
