@@ -41,7 +41,6 @@ public class WallWalkingTestScript : MonoBehaviour
     {
         if (visibleCat != null)
         {
-            // TODO: move visible cat to analogous position on wall
             Vector3 analoguePosition = transform.position;
             Vector3 visiblePosition = Vector3.zero;
             visiblePosition.y = wallBottomY + Mathf.Abs(analoguePosition.z - analogueLowerLeft.z);
@@ -52,8 +51,7 @@ public class WallWalkingTestScript : MonoBehaviour
             direction.y = 0;
             direction.Normalize();
             visiblePosition += roomCentre;
-            Debug.DrawLine(visiblePosition - direction, visiblePosition + direction, Color.red, 1f);
-            if (Physics.Raycast(visiblePosition - direction, direction * 2f, out RaycastHit hit, 5f))
+            if (Physics.Raycast(visiblePosition - 0.5f * direction, direction, out RaycastHit hit, 2f))
             {
                 visibleCat.position = hit.point;
                 visibleCat.rotation = Quaternion.RotateTowards(visibleCat.rotation, 

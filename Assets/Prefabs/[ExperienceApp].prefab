@@ -1176,14 +1176,6 @@ MonoBehaviour:
     _soundClip: {fileID: 8300000, guid: 26d71ba23f6610847ba286b22fcea0d3, type: 3}
     _volume: 1
     _pitch: 1
-  launcherYarnballSound:
-    _soundClip: {fileID: 8300000, guid: 26d71ba23f6610847ba286b22fcea0d3, type: 3}
-    _volume: 1
-    _pitch: 1
-  yarnballRechargedSound:
-    _soundClip: {fileID: 8300000, guid: 40f210fe1386059428888a0323ec3f49, type: 3}
-    _volume: 1
-    _pitch: 1
 --- !u!208 &9153070864054079722
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -1198,7 +1190,7 @@ NavMeshObstacle:
   m_MoveThreshold: 0.1
   m_Carve: 1
   m_CarveOnlyStationary: 0
-  m_Center: {x: 0, y: 0.363, z: 0}
+  m_Center: {x: 0, y: 0.7, z: 0}
   m_TimeToStationary: 0.5
 --- !u!114 &1770632349868942538
 MonoBehaviour:
