@@ -459,7 +459,10 @@ public class RushDirector : MonoBehaviour
     Phase current;
     float lastArrival = -100f;
     bool playing;
+
+    [SerializeField]
     Announcer voice;
+    
     TipJar tipJar;
     readonly List<Vector3> holes = new List<Vector3>();
     readonly List<Transform> entryDoors = new List<Transform>();
@@ -605,7 +608,14 @@ public class RushDirector : MonoBehaviour
 
         if (announcer)
         {
-            voice = gameObject.AddComponent<Announcer>();
+            if (voice == null)
+            {
+                voice.GetComponent<Announcer>();
+                if (voice == null)
+                {
+                    voice = gameObject.AddComponent<Announcer>();
+                }
+            }
             StartCoroutine(Welcome());
         }
     }

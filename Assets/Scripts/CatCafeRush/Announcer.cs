@@ -64,12 +64,21 @@ public class Announcer : MonoBehaviour
     // The id of the line being said (null if none)
     public string saying => isSpeaking ? speaking.id : null;
     readonly Dictionary<string, AudioClip> stings = new Dictionary<string, AudioClip>();
+    
+    [SerializeField]
     AudioSource source;
 
-    RectTransform subtitle;
+    [SerializeField]
+    RectTransform subtitleCanvas;
+
+    [SerializeField]
     RectTransform subtitlePanel;
+
     CanvasGroup subtitleGroup;
+
+    [SerializeField]
     TextMeshProUGUI subtitleText;
+
     bool subtitleShowing;
     bool subtitlePlaced;
     bool following;
@@ -78,18 +87,48 @@ public class Announcer : MonoBehaviour
     void Awake()
     {
         instance = this;
-        source = gameObject.AddComponent<AudioSource>();
-        source.playOnAwake = false;
-        source.spatialBlend = 0f;   // the cafe speaker: heard the same from everywhere
+        if (source == null)
+        {
+            source = GetComponent<AudioSource>();
+            if (source == null)
+            {
+                source = gameObject.AddComponent<AudioSource>();
+                source.playOnAwake = false;
+                source.spatialBlend = 0f;   // the cafe speaker: heard the same from everywhere
+            }
+        }
         LoadLines();
-        BuildSubtitle();
+        if (subtitleCanvas == null)
+        {
+            BuildSubtitle();
+        }
+        else
+        {
+            // Allow for using subtitle canvas built in the editor
+            if (subtitlePanel == null)
+            {
+                subtitlePanel = (RectTransform)subtitleCanvas.GetChild(0);
+            }
+            subtitleGroup = subtitleCanvas.GetComponent<CanvasGroup>();
+            if (subtitleGroup == null)
+            {
+                subtitleGroup = subtitleCanvas.gameObject.AddComponent<CanvasGroup>();
+                SetUpSubtitleGroup();
+            }
+            if (subtitleText == null)
+            {
+                subtitleText = subtitleCanvas.GetComponentInChildren<TextMeshProUGUI>();
+            }
+            OnTop(subtitleText.fontMaterial);
+            subtitleCanvas.gameObject.SetActive(false);
+        }
         StartCoroutine(Run());
     }
 
     void OnDestroy()
     {
         if (instance == this) instance = null;
-        if (subtitle != null) Destroy(subtitle.gameObject);
+        if (subtitleCanvas != null) Destroy(subtitleCanvas.gameObject);
     }
 
     void LoadLines()
@@ -226,13 +265,11 @@ public class Announcer : MonoBehaviour
         Canvas canvas = root.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
         canvas.sortingOrder = 100;
-        subtitle = (RectTransform)root.transform;
-        subtitle.sizeDelta = new Vector2(Width, MaxHeight);
-        subtitle.localScale = Vector3.one * CanvasScale;
+        subtitleCanvas = (RectTransform)root.transform;
+        subtitleCanvas.sizeDelta = new Vector2(Width, MaxHeight);
+        subtitleCanvas.localScale = Vector3.one * CanvasScale;
         subtitleGroup = root.AddComponent<CanvasGroup>();
-        subtitleGroup.alpha = 0;
-        subtitleGroup.blocksRaycasts = false;
-        subtitleGroup.interactable = false;
+        SetUpSubtitleGroup();
 
         // The panel grows to fit the words: Unity's layout measures them (wrapped to the panel's width) every time
         GameObject panel = new GameObject("Panel", typeof(RectTransform));
@@ -271,6 +308,13 @@ public class Announcer : MonoBehaviour
         root.SetActive(false);
     }
 
+    void SetUpSubtitleGroup()
+    {
+        subtitleGroup.alpha = 0;
+        subtitleGroup.blocksRaycasts = false;
+        subtitleGroup.interactable = false;
+    }
+
     // Drawn over the room, so a cat or the counter can't hide the subtitle
     static Material OnTop(Material material)
     {
@@ -284,7 +328,7 @@ public class Announcer : MonoBehaviour
             $"<color=#{ColorUtility.ToHtmlStringRGB(speakerColour)}>{speakerName}:</color> ";
         if (!subtitleShowing && subtitleGroup.alpha <= 0.01f) subtitlePlaced = false;   // appear where the player is looking
         subtitleShowing = true;
-        subtitle.gameObject.SetActive(true);
+        subtitleCanvas.gameObject.SetActive(true);
 
         // A short line gets a narrower panel; anything longer wraps inside the full width. The layout then sizes
         // the panel's height to the wrapped words.
@@ -296,12 +340,12 @@ public class Announcer : MonoBehaviour
 
     void LateUpdate()
     {
-        if (subtitle == null) return;
+        if (subtitleCanvas == null) return;
 
         subtitleGroup.alpha = Mathf.MoveTowards(subtitleGroup.alpha, subtitleShowing ? 1f : 0f, Time.deltaTime / 0.2f);
         if (!subtitleShowing && subtitleGroup.alpha <= 0f)
         {
-            if (subtitle.gameObject.activeSelf) subtitle.gameObject.SetActive(false);
+            if (subtitleCanvas.gameObject.activeSelf) subtitleCanvas.gameObject.SetActive(false);
             return;
         }
 
@@ -325,8 +369,8 @@ public class Announcer : MonoBehaviour
 
         Vector3 forward = Quaternion.Euler(0, yaw, 0) * Vector3.forward;
         Vector3 target = head.position + forward * subtitleDistance + Vector3.down * subtitleDrop;
-        subtitle.position = subtitlePlaced ? Vector3.Lerp(subtitle.position, target, Time.deltaTime * 10f) : target;
-        subtitle.rotation = Quaternion.LookRotation(subtitle.position - head.position);
+        subtitleCanvas.position = subtitlePlaced ? Vector3.Lerp(subtitleCanvas.position, target, Time.deltaTime * 10f) : target;
+        subtitleCanvas.rotation = Quaternion.LookRotation(subtitleCanvas.position - head.position);
         subtitlePlaced = true;
     }
 
