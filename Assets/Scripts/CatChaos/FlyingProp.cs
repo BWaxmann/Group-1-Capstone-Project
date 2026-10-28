@@ -101,7 +101,7 @@ public class FlyingProp : MonoBehaviour
     public static float dropRadius = 0.8f;
     // How far past the table's edge (metres) a held prop still counts as over it: forgiving, since it's hard to be exact
     // in the middle of everything (set per phase by the director)
-    public static float dropMargin = 0.15f;
+    public static float dropMargin = 3f;
     bool zoneMeasured;
     Vector3 zoneCentre;     // middle of the table top
     float zoneRadius;
