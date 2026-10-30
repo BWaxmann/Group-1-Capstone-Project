@@ -20,6 +20,22 @@ public static class SpaceCafeVisuals
     // A circle drawn with a line, in the XY plane of its parent
     public static LineRenderer Ring(Transform parent, string name, float radius, float width, Color colour, int segments = 48)
     {
+        LineRenderer template = CafePrefabs.RingTemplate;
+        if (template != null)
+        {
+            // Styled in the editor (its material); the circle, size and colour from here
+            LineRenderer styled = Object.Instantiate(template, parent, false);
+            styled.gameObject.SetActive(true);
+            styled.enabled = true;
+            styled.name = name;
+            styled.useWorldSpace = false;
+            styled.widthMultiplier = width;
+            styled.startColor = colour;
+            styled.endColor = colour;
+            SetRing(styled, radius, 1f);
+            return styled;
+        }
+
         GameObject ringObject = new GameObject(name);
         ringObject.transform.SetParent(parent, false);
 

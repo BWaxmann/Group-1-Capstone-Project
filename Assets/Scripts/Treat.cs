@@ -96,14 +96,15 @@ public class Treat : Launchable
             foreach (RaycastHit hit in hits)
             {
                 if (hit.collider.transform.IsChildOf(transform)) continue;
-                if (CleanHit(hit.collider)) return;
+                if (CleanHit(hit)) return;
             }
         }
         lastPosition = now;
     }
 
-    bool CleanHit(Collider other)
+    bool CleanHit(RaycastHit hit)
     {
+        Collider other = hit.collider;
         CatMovement cat = other.GetComponentInParent<CatMovement>();
         if (cat != null)
         {
@@ -122,8 +123,53 @@ public class Treat : Launchable
             Despawn();
             return true;
         }
-        return false;
+
+        // Clean shots fly through the things that move (kittens, flying props, the vents' lids) but splat on the cafe
+        // itself: walls, floor, furniture, props sitting on a pile, and anything squishable
+        if (other.isTrigger) return false;
+        if (other.GetComponentInParent<PlayerInput>() != null || other.GetComponentInParent<Launchable>() != null) return false;
+        FlyingProp prop = other.GetComponentInParent<FlyingProp>();
+        if (prop != null && prop.state != FlyingProp.State.Home) return false;
+        Squishable squishable = other.GetComponentInParent<Squishable>();
+        if (prop == null && squishable == null && other.attachedRigidbody != null) return false;
+        Splat(hit, squishable, prop);
+        return true;
     }
+
+    // Hit the cafe: a splat where it landed, the thing it hit reacts, and it's gone
+    void Splat(RaycastHit hit, Squishable squishable, FlyingProp prop)
+    {
+        isActive = false;
+        if (squishable != null) squishable.Squish();
+        if (prop != null)
+        {
+            PropPile pile = prop.GetComponentInParent<PropPile>();
+            if (pile != null) pile.Rattle(0.6f);
+        }
+
+        ParticleSystem splat = CafePrefabs.SplatPrefab;
+        if (splat != null)
+        {
+            ParticleSystem made = Instantiate(splat, hit.point, Quaternion.LookRotation(hit.normal));
+            Destroy(made.gameObject, made.main.duration + made.main.startLifetime.constantMax + 0.5f);
+        }
+        else if (ParticleManager.instance != null)
+        {
+            ParticleManager.instance.ShowParticleEffect(SplatParticleIndex, hit.point, 0.5f);
+        }
+
+        // One soft pap per moment, not one per pellet of a scatter shot
+        if (treatHittingFloorSound.soundClip != null && Time.time >= nextSplatSound)
+        {
+            nextSplatSound = Time.time + 0.08f;
+            AudioSource.PlayClipAtPoint(treatHittingFloorSound.soundClip, hit.point, 0.6f * SoundLevels.world);
+        }
+        Despawn();
+    }
+
+    // The cats' eating crumbs, small (the Particle Manager's pool), when no splat prefab is set
+    const int SplatParticleIndex = 0;
+    static float nextSplatSound;
 
     public override void OnCollisionEnter(Collision other)
     {
