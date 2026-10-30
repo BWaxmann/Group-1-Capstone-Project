@@ -26,10 +26,7 @@ public class GrabbableLaunchers : MonoBehaviour
             outlines = GetComponentsInChildren<Outline>();
         }
 
-        if (outlines != null && outlines.Length > 0)
-        {
-            Highlight(false);
-        }
+        Highlight(false);
 
         StartCoroutine(SetPositionRoutine());
     }
@@ -59,12 +56,11 @@ public class GrabbableLaunchers : MonoBehaviour
 
     public void Highlight(bool turnOn)
     {
-        baseEffect.SetActive(turnOn);
-
-        if (highlightEffect != null)
+        if (highlightEffect != null && baseEffect != null)
         {
             highlightEffect.SetActive(turnOn);
             baseEffect.SetActive(!turnOn);
+            return;
         }
 
         foreach (Outline o in outlines)
