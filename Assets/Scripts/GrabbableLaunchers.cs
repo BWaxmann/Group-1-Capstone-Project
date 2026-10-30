@@ -16,6 +16,10 @@ public class GrabbableLaunchers : MonoBehaviour
     [Tooltip("Optional. Switched on while a hand is near (a glow, ring or any effect made in the editor).")]
     GameObject highlightEffect;
 
+    [SerializeField]
+    [Tooltip("Optional. Switched on while a hand is near (a glow, ring or any effect made in the editor).")]
+    GameObject baseEffect;
+
     void Start()
     {
         if (outlines == null || outlines.Length == 0)
@@ -56,11 +60,14 @@ public class GrabbableLaunchers : MonoBehaviour
 
     public void Highlight(bool turnOn)
     {
+        baseEffect.SetActive(turnOn);
+
         if (highlightEffect != null)
         {
             if (highlightEffect.activeSelf != turnOn)
             {
                 highlightEffect.SetActive(turnOn);
+                baseEffect.SetActive(!turnOn);
             }
         }
 
