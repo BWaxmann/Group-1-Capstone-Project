@@ -51,6 +51,10 @@ public class GameManager : MonoBehaviour
     string startupMessage = "";
 
     [SerializeField]
+    [Tooltip("Optional. Boxes the start-up message is spread across instead (split at blank lines, one part per box). Empty = all in the countdown text.")]
+    TMP_Text[] startupBoxes;
+
+    [SerializeField]
     [Tooltip("When the countdown canvas shares a board with the score (e.g. the chalkboard), announcements hide the score while they show.")]
     bool bannerReplacesGameUI = false;
 
@@ -323,7 +327,7 @@ public class GameManager : MonoBehaviour
 
         if (!string.IsNullOrEmpty(startupMessage) && countdownText != null)
         {
-            countdownText.text = startupMessage;
+            ShowStartupMessage();
             pregameCanvas.SetActive(true);
         }
 
@@ -488,10 +492,40 @@ public class GameManager : MonoBehaviour
         ExitGame();
     }
 
+    // The start-up message across the boxes if there are any (one part per box, split at blank lines), else in the
+    // countdown text
+    void ShowStartupMessage()
+    {
+        if (startupBoxes == null || startupBoxes.Length == 0)
+        {
+            countdownText.text = startupMessage;
+            return;
+        }
+
+        string[] parts = startupMessage.Replace("\r", "").Split(new[] { "\n\n" }, System.StringSplitOptions.RemoveEmptyEntries);
+        for (int i = 0; i < startupBoxes.Length; i++)
+        {
+            if (startupBoxes[i] == null) continue;
+            startupBoxes[i].text = i < parts.Length ? parts[i].Trim() : "";
+            startupBoxes[i].gameObject.SetActive(i < parts.Length);
+        }
+        countdownText.text = "";
+    }
+
+    void HideStartupBoxes()
+    {
+        if (startupBoxes == null) return;
+        foreach (TMP_Text box in startupBoxes)
+        {
+            if (box != null) box.gameObject.SetActive(false);
+        }
+    }
+
     void InitiatePregame()
     {
         state = GameState.PreGame;
         pregameCanvas.SetActive(true);
+        HideStartupBoxes();
         if (countdownSoundIsCombined) PlaySoundEffect(countdownSound);
 
         StartCoroutine(PreGameRoutine());

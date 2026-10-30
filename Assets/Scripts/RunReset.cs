@@ -21,6 +21,7 @@ public static class RunReset
         SoundBite.ResetStatics();
 
         // Shared settings and counters (the scene sets its own again as it starts)
+        CafePrefabs.instance = null;
         MafiaHeist.current = null;
         CatMovement.targetingChanceOverride = -1f;
         PropPile.toppleOnHit = false;

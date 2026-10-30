@@ -17,9 +17,26 @@ public class FloatingWord : MonoBehaviour
     internal static void ResetStatics() => spare.Clear();   // (a new run: see RunReset)
     const int MaxSpare = 16;
 
-    // Bold outlined text in the world (left where it is: the caller moves it about)
+    // Bold outlined text in the world (left where it is: the caller moves it about). From the Cafe Prefabs slot if one
+    // is set (the prefab's font and style, this text, colour and size); otherwise built here.
     public static GameObject Make(string words, Color colour, float size)
     {
+        FloatingWord prefab = CafePrefabs.FloatingWordPrefab;
+        if (prefab != null)
+        {
+            FloatingWord word = Instantiate(prefab);
+            word.name = "Word: " + words;
+            word.enabled = false;   // only Show() makes it float and fade
+            TextMeshPro label = word.GetComponentInChildren<TextMeshPro>();
+            if (label != null)
+            {
+                label.text = words;
+                label.color = colour;
+                label.fontSize = size;
+            }
+            return word.gameObject;
+        }
+
         GameObject holder = new GameObject("Word: " + words);
         TextMeshPro text = holder.AddComponent<TextMeshPro>();
         text.text = words;
@@ -43,8 +60,9 @@ public class FloatingWord : MonoBehaviour
         if (word == null)
         {
             GameObject holder = Make(words, colour, size);
-            word = holder.AddComponent<FloatingWord>();
-            word.text = holder.GetComponent<TextMeshPro>();
+            word = holder.GetComponent<FloatingWord>();
+            if (word == null) word = holder.AddComponent<FloatingWord>();
+            word.text = holder.GetComponentInChildren<TextMeshPro>();
         }
         else
         {
@@ -53,6 +71,7 @@ public class FloatingWord : MonoBehaviour
             word.text.fontSize = size;
             word.gameObject.SetActive(true);
         }
+        word.enabled = true;
         word.timer = 0;
         word.lifetime = lifetime;
         word.transform.position = at;
