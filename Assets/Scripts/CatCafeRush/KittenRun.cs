@@ -28,6 +28,7 @@ public class KittenRun : MonoBehaviour
 
     CatMovement cat;
     TrailRenderer dust;
+    bool dustFromTemplate;
     SphereCollider hitbox;
     List<Vector3> path;
     List<Vector3> ups;      // which way is up on each stretch of the path (null = it's all floor)
@@ -287,7 +288,15 @@ public class KittenRun : MonoBehaviour
 
     void SetDust(bool on)
     {
-        if (on && dust == null)
+        if (on && dust == null && CafePrefabs.KittenTrailTemplate != null)
+        {
+            // Styled in the editor
+            dust = Instantiate(CafePrefabs.KittenTrailTemplate, transform, false);
+            dust.gameObject.SetActive(true);
+            dust.name = "Dust Trail";
+            dustFromTemplate = true;
+        }
+        else if (on && dust == null)
         {
             if (dustMaterial == null) dustMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
             dust = gameObject.AddComponent<TrailRenderer>();
@@ -304,7 +313,7 @@ public class KittenRun : MonoBehaviour
         }
         if (dust == null) return;
         // The trail is sized in the world, whatever size the cat is
-        dust.widthMultiplier = 0.19f;
+        if (!dustFromTemplate) dust.widthMultiplier = 0.19f;
         dust.Clear();
         dust.emitting = on;
     }

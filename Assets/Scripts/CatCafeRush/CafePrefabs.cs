@@ -12,7 +12,24 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("A pop-up word (score, Shake!, Shoo!, tips...). Its TextMeshPro sets the font and style; the text, colour and size are set per word.")]
     FloatingWord floatingWord;
 
+    [Header("Effects")]
+
+    [SerializeField]
+    [Tooltip("Optional. A LineRenderer whose material styles every ring the game draws (patience, warning, drop zone, spy nerve, heist). The circle, its size and colour are set by code.")]
+    LineRenderer ringTemplate;
+
+    [SerializeField]
+    [Tooltip("Optional. A TrailRenderer that styles the kittens' dust trail.")]
+    TrailRenderer kittenTrailTemplate;
+
+    [SerializeField]
+    [Tooltip("Optional. A TrailRenderer that styles the trail behind a flying prop.")]
+    TrailRenderer propTrailTemplate;
+
     public static FloatingWord FloatingWordPrefab => instance != null ? instance.floatingWord : null;
+    public static LineRenderer RingTemplate => instance != null ? instance.ringTemplate : null;
+    public static TrailRenderer KittenTrailTemplate => instance != null ? instance.kittenTrailTemplate : null;
+    public static TrailRenderer PropTrailTemplate => instance != null ? instance.propTrailTemplate : null;
 
     void Awake()
     {

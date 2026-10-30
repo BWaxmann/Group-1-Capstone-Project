@@ -653,7 +653,14 @@ public class FlyingProp : MonoBehaviour
 
     void SetTrail(CatChaosSettings settings, bool on)
     {
-        if (on && settings != null && settings.airborneTrail && trail == null)
+        if (on && settings != null && settings.airborneTrail && trail == null && CafePrefabs.PropTrailTemplate != null)
+        {
+            // Styled in the editor
+            trail = Instantiate(CafePrefabs.PropTrailTemplate, transform, false);
+            trail.gameObject.SetActive(true);
+            trail.name = "Trail";
+        }
+        else if (on && settings != null && settings.airborneTrail && trail == null)
         {
             trail = gameObject.AddComponent<TrailRenderer>();
             trail.sharedMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
