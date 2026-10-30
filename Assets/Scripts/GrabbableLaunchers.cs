@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class GrabbableLaunchers : MonoBehaviour
 {
@@ -23,13 +24,29 @@ public class GrabbableLaunchers : MonoBehaviour
             Highlight(false);
         }
 
-        Invoke(nameof(SetPosition), Time.deltaTime);
+        StartCoroutine(SetPositionRoutine());
     }
 
-    void SetPosition()
+    // Up to the player's eye level, once the rig has it (it can take a few frames after start)
+    IEnumerator SetPositionRoutine()
     {
+        PlayerInput player = FindObjectOfType<PlayerInput>();
+        float giveUpAt = Time.time + 5f;
+        while ((player == null || player.eyePoint == null) && Time.time < giveUpAt)
+        {
+            yield return null;
+            if (player == null)
+            {
+                player = FindObjectOfType<PlayerInput>();
+            }
+        }
+        if (player == null || player.eyePoint == null)
+        {
+            yield break;
+        }
+
         Vector3 position = transform.position;
-        position.y = FindObjectOfType<PlayerInput>().eyePoint.position.y + playerVisionVerticalOffset;
+        position.y = player.eyePoint.position.y + playerVisionVerticalOffset;
         transform.position = position;
     }
 
