@@ -30,6 +30,14 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. The splat where a treat hits the cafe (walls, floor, furniture). Spawned facing out from the surface. Empty = a small puff of the cats' eating crumbs.")]
     ParticleSystem splat;
 
+    [Header("Cats")]
+
+    [SerializeField]
+    [Tooltip("Optional. The speech bubble over a customer: an OrderBubble prefab with its Bubble (the art that pops and shakes), Patience Ring, icon and queue anchors, chip and face set as wanted. Anything left unset on it is built in code.")]
+    OrderBubble orderBubble;
+
+    public static OrderBubble OrderBubblePrefab => instance != null ? instance.orderBubble : null;
+
     [Header("Aiming")]
 
     [SerializeField]

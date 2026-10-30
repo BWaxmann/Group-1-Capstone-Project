@@ -5,12 +5,42 @@ using UnityEngine;
 // The speech bubble above a customer cat. The big bubble shows the treat the cat wants right now;
 // any treats it wants after that queue up to the right, smaller and dimmer (like the active/next
 // marks in Arcane Practicum). A ring around the big bubble runs down as the cat's patience goes.
-// Placeholder art built from simple shapes.
+// Made from the Cafe Prefabs order bubble when one is set (its own art for the parts set below);
+// whatever isn't set is built from simple shapes.
 public class OrderBubble : MonoBehaviour
 {
     const float BubbleSize = 0.26f;
     const float NextScale = 0.5f;
     const float NextSpacing = 0.12f;
+
+    [Header("Prefab parts (optional: built in code when empty)")]
+
+    [SerializeField]
+    [Tooltip("The bubble art (pops in and shakes). Scale 1 = shown.")]
+    Transform bubble;
+
+    [SerializeField]
+    [Tooltip("The ring that runs down with the cat's patience. Its circle is drawn by code at Ring Radius.")]
+    LineRenderer patienceRing;
+
+    [SerializeField]
+    float ringRadius = BubbleSize * 0.58f;
+
+    [SerializeField]
+    [Tooltip("Where the current treat's icon goes. Empty = inside the bubble.")]
+    Transform iconAnchor;
+
+    [SerializeField]
+    [Tooltip("Where the queued treats line up. Empty = beside the bubble.")]
+    Transform queueAnchor;
+
+    [SerializeField]
+    [Tooltip("The art behind each queued treat (copied per chip). Empty = a flat white disc.")]
+    GameObject chipTemplate;
+
+    [SerializeField]
+    [Tooltip("The cat face that flashes for a wrong or served treat. Empty = a sprite made in code.")]
+    SpriteRenderer faceRenderer;
 
     public struct Item
     {
@@ -24,40 +54,47 @@ public class OrderBubble : MonoBehaviour
         }
     }
 
-    Transform bubble;
     Transform current;
     Transform queue;
-    LineRenderer patienceRing;
     readonly List<Item> items = new List<Item>();
     readonly List<Transform> spinners = new List<Transform>();
     Coroutine popRoutine;
     Coroutine shakeRoutine;
     Coroutine faceRoutine;
-    SpriteRenderer faceRenderer;
 
     public static OrderBubble Create(Transform cat)
     {
-        OrderBubble order = new GameObject("Order Bubble").AddComponent<OrderBubble>();
+        OrderBubble prefab = CafePrefabs.OrderBubblePrefab;
+        OrderBubble order = prefab != null ? Instantiate(prefab, cat, false) : new GameObject("Order Bubble").AddComponent<OrderBubble>();
+        order.name = "Order Bubble";
         order.transform.SetParent(cat, false);
         order.Build();
         order.gameObject.SetActive(false);
         return order;
     }
 
+    // Whatever the prefab didn't bring
     void Build()
     {
-        bubble = new GameObject("Bubble").transform;
-        bubble.SetParent(transform, false);
+        if (bubble == null)
+        {
+            bubble = new GameObject("Bubble").transform;
+            bubble.SetParent(transform, false);
 
-        GameObject back = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, bubble, "Back", new Color(1f, 1f, 1f, 0.95f));
-        back.transform.localScale = new Vector3(BubbleSize, BubbleSize, 0.03f);
+            GameObject back = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, bubble, "Back", new Color(1f, 1f, 1f, 0.95f));
+            back.transform.localScale = new Vector3(BubbleSize, BubbleSize, 0.03f);
 
-        GameObject tail = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, bubble, "Tail", new Color(1f, 1f, 1f, 0.95f));
-        tail.transform.localPosition = new Vector3(0.04f, -BubbleSize * 0.55f, 0);
-        tail.transform.localScale = new Vector3(0.06f, 0.06f, 0.02f);
+            GameObject tail = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, bubble, "Tail", new Color(1f, 1f, 1f, 0.95f));
+            tail.transform.localPosition = new Vector3(0.04f, -BubbleSize * 0.55f, 0);
+            tail.transform.localScale = new Vector3(0.06f, 0.06f, 0.02f);
+        }
 
-        patienceRing = SpaceCafeVisuals.Ring(bubble, "Patience", BubbleSize * 0.58f, 0.012f, Color.green);
-        patienceRing.transform.localPosition = new Vector3(0, 0, -0.02f);
+        if (patienceRing == null)
+        {
+            patienceRing = SpaceCafeVisuals.Ring(bubble, "Patience", ringRadius, 0.012f, Color.green);
+            patienceRing.transform.localPosition = new Vector3(0, 0, -0.02f);
+        }
+        if (chipTemplate != null) chipTemplate.SetActive(false);   // only its copies show
     }
 
     // Shows a whole order: the first treat big, the rest queued after it
@@ -97,15 +134,15 @@ public class OrderBubble : MonoBehaviour
         spinners.Clear();
         if (items.Count == 0) return;
 
-        current = MakeFoodIcon(bubble, items[0], 1f, "Current");
+        current = MakeFoodIcon(iconAnchor != null ? iconAnchor : bubble, items[0], 1f, "Current");
         AddSpinner(current);
-        current.localPosition = new Vector3(0, 0, -0.04f);
+        if (iconAnchor == null) current.localPosition = new Vector3(0, 0, -0.04f);
         // If a face is flashing, the treat reappears when it finishes
         if (faceRenderer != null && faceRenderer.gameObject.activeSelf) current.gameObject.SetActive(false);
 
         // The rest of the order, smaller and dimmer, lined up to the right
         queue = new GameObject("Queue").transform;
-        queue.SetParent(transform, false);
+        queue.SetParent(queueAnchor != null ? queueAnchor : transform, false);
         for (int i = 1; i < items.Count; i++)
         {
             Transform chip = new GameObject($"Next {i}").transform;
@@ -113,8 +150,16 @@ public class OrderBubble : MonoBehaviour
             chip.localPosition = new Vector3(BubbleSize * 0.5f + NextSpacing * (i - 0.4f), -BubbleSize * 0.25f, 0);
             chip.localScale = Vector3.one * NextScale;
 
-            GameObject back = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, chip, "Back", new Color(1f, 1f, 1f, 0.7f));
-            back.transform.localScale = new Vector3(BubbleSize, BubbleSize, 0.03f);
+            if (chipTemplate != null)
+            {
+                GameObject chipArt = Instantiate(chipTemplate, chip, false);
+                chipArt.SetActive(true);
+            }
+            else
+            {
+                GameObject back = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, chip, "Back", new Color(1f, 1f, 1f, 0.7f));
+                back.transform.localScale = new Vector3(BubbleSize, BubbleSize, 0.03f);
+            }
 
             Item dimmed = items[i];
             dimmed.colour = Color.Lerp(dimmed.colour, new Color(0.45f, 0.45f, 0.5f), 0.35f);
@@ -165,7 +210,7 @@ public class OrderBubble : MonoBehaviour
 
     public void SetPatience(float fraction)
     {
-        SpaceCafeVisuals.SetRing(patienceRing, BubbleSize * 0.58f, fraction);
+        SpaceCafeVisuals.SetRing(patienceRing, ringRadius, fraction);
         Color colour = fraction > 0.5f ? Color.Lerp(new Color(1f, 0.8f, 0.1f), new Color(0.3f, 0.95f, 0.4f), (fraction - 0.5f) * 2f)
                                        : Color.Lerp(new Color(1f, 0.35f, 0.2f), new Color(1f, 0.8f, 0.1f), fraction * 2f);
         patienceRing.startColor = patienceRing.endColor = colour;
