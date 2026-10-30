@@ -86,6 +86,17 @@ public static class QuestBuild
         BatchBuild(WavesScene, "Waves");
     }
 
+    // A Liminal-like build: Mono, 32-bit, the way Liminal's app runs experiences (it loads them as managed code, so it
+    // can't be IL2CPP). Slower than the usual IL2CPP build: this is the one to test frame rate with. (Liminal's quality
+    // settings, e.g. 4x MSAA, aren't applied here; the real check is the .limapp inside their app.)
+    static bool monoBuild;
+
+    public static void BatchBuildWavesMono()
+    {
+        monoBuild = true;
+        BatchBuild(WavesScene, "Waves-Mono");
+    }
+
     static void BatchBuild(string scene, string name)
     {
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
@@ -138,8 +149,8 @@ public static class QuestBuild
             EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
 
             // 64-bit (IL2CPP + ARM64) runs on every Quest; the project's default Mono build is 32-bit only
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
-            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, monoBuild ? ScriptingImplementation.Mono2x : ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures = monoBuild ? AndroidArchitecture.ARMv7 : AndroidArchitecture.ARM64;
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3 });
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel28;
