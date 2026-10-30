@@ -26,6 +26,7 @@ public class FloatingWord : MonoBehaviour
         {
             FloatingWord word = Instantiate(prefab);
             word.name = "Word: " + words;
+            word.gameObject.SetActive(true);
             word.enabled = false;   // only Show() makes it float and fade
             TextMeshPro label = word.GetComponentInChildren<TextMeshPro>();
             if (label != null)

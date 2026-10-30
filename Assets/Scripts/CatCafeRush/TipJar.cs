@@ -67,6 +67,7 @@ public class TipJar : MonoBehaviour
         TipJar prefab = CafePrefabs.TipJarPrefab;
         GameObject root = prefab != null ? Instantiate(prefab.gameObject) : new GameObject("Tip Jar");
         root.name = "Tip Jar";
+        root.SetActive(true);   // (a template kept switched off in the scene comes out switched off)
         root.transform.position = position;
         root.transform.localScale = Vector3.one * scale;
         Vector3 away = position - viewer;
@@ -132,7 +133,7 @@ public class TipJar : MonoBehaviour
         text.color = new Color(1f, 0.95f, 0.8f);
         text.enableWordWrapping = false;
         text.rectTransform.sizeDelta = new Vector2(0.2f, 0.08f);
-        text.fontMaterial.renderQueue = 3003;   // drawn over the glass
+        if (text.fontSharedMaterial != null) text.fontMaterial.renderQueue = 3003;   // drawn over the glass
     }
 
     void SetFill(float amount)

@@ -70,6 +70,7 @@ public class AimReticle : MonoBehaviour
         AimReticle prefab = CafePrefabs.ReticlePrefab;
         AimReticle reticle = prefab != null ? Instantiate(prefab) : new GameObject(name).AddComponent<AimReticle>();
         reticle.name = name;
+        reticle.gameObject.SetActive(true);
         reticle.launchPoint = launchPoint;
         reticle.ignoreRoot = ignoreRoot;
         return reticle;
