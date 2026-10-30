@@ -30,11 +30,23 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. The splat where a treat hits the cafe (walls, floor, furniture). Spawned facing out from the surface. Empty = a small puff of the cats' eating crumbs.")]
     ParticleSystem splat;
 
+    [Header("Aiming")]
+
+    [SerializeField]
+    [Tooltip("Optional. The reticle shown where a shot will land: an AimReticle with its Outer Ring and Inner Dot LineRenderers set, each drawn at a radius of 1 (they're scaled to size, so any shape works). Empty = two circles drawn in code.")]
+    AimReticle reticle;
+
+    [SerializeField]
+    [Tooltip("Optional. A LineRenderer that styles the catch beam from the launcher to a prop (material, width, colours). Its points are drawn by code. Empty = a plain glowing line.")]
+    LineRenderer beamTemplate;
+
     public static FloatingWord FloatingWordPrefab => instance != null ? instance.floatingWord : null;
     public static LineRenderer RingTemplate => instance != null ? instance.ringTemplate : null;
     public static TrailRenderer KittenTrailTemplate => instance != null ? instance.kittenTrailTemplate : null;
     public static TrailRenderer PropTrailTemplate => instance != null ? instance.propTrailTemplate : null;
     public static ParticleSystem SplatPrefab => instance != null ? instance.splat : null;
+    public static AimReticle ReticlePrefab => instance != null ? instance.reticle : null;
+    public static LineRenderer BeamTemplate => instance != null ? instance.beamTemplate : null;
 
     void Awake()
     {

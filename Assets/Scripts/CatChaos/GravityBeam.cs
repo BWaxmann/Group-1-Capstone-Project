@@ -59,6 +59,10 @@ public class GravityBeam : MonoBehaviour
         public Vector3 lastMuzzle;
         public Vector3 velocity;   // of the launcher, smoothed
         public bool tracking;
+        public bool beamFromTemplate;
+        public float beamWidth;    // the template's, as authored
+        public Color beamStart;
+        public Color beamEnd;
         public bool overHome;   // (ninja phases) the held prop is over its pile, ready to let go
         public FlyingProp locking;
         public float lockProgress;
@@ -152,7 +156,7 @@ public class GravityBeam : MonoBehaviour
             if (over && !hand.overHome) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
             hand.overHome = over;
             hand.held.SetHoldTarget(muzzle.position + muzzle.forward * hand.holdDistance);
-            DrawBeam(hand.beam, start, hand.held.centre, 0.03f, 1f);
+            DrawBeam(hand, start, hand.held.centre, 0.03f, 1f);
             hand.lockRing.enabled = false;
         }
         else
@@ -170,7 +174,7 @@ public class GravityBeam : MonoBehaviour
             {
                 hand.lockProgress += Time.deltaTime;
                 float fraction = lockOnTime > 0 ? hand.lockProgress / lockOnTime : 1f;
-                DrawBeam(hand.beam, start, target.centre, Mathf.Lerp(0.008f, 0.02f, fraction), Mathf.Lerp(0.35f, 0.8f, fraction));
+                DrawBeam(hand, start, target.centre, Mathf.Lerp(0.008f, 0.02f, fraction), Mathf.Lerp(0.35f, 0.8f, fraction));
                 ShowLockRing(hand, target.centre, fraction);
                 if (fraction >= 1f)
                 {
@@ -182,7 +186,7 @@ public class GravityBeam : MonoBehaviour
             else
             {
                 // Nothing in reach: a short, faint "searching" beam
-                DrawBeam(hand.beam, start, start + muzzle.forward * 0.5f, 0.01f, 0.45f);
+                DrawBeam(hand, start, start + muzzle.forward * 0.5f, 0.01f, 0.45f);
                 hand.lockRing.enabled = false;
             }
         }
@@ -281,8 +285,9 @@ public class GravityBeam : MonoBehaviour
     }
 
     // A slightly wobbly line, so it reads as an energy beam rather than a laser pointer
-    void DrawBeam(LineRenderer line, Vector3 start, Vector3 end, float width, float alpha)
+    void DrawBeam(Hand hand, Vector3 start, Vector3 end, float width, float alpha)
     {
+        LineRenderer line = hand.beam;
         Vector3 direction = end - start;
         Vector3 side = Vector3.Cross(direction, Vector3.up);
         if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
@@ -295,6 +300,20 @@ public class GravityBeam : MonoBehaviour
             float wobble = Mathf.Sin(t * Mathf.PI) * 0.025f;
             Vector3 offset = side * Mathf.Sin(t * 9f - Time.time * 14f) * wobble + up * Mathf.Cos(t * 7f - Time.time * 11f) * wobble;
             line.SetPosition(i, Vector3.Lerp(start, end, t) + offset);
+        }
+
+        if (hand.beamFromTemplate)
+        {
+            // The template's look, at this strength (the strongest beam is the template as authored)
+            float strength = width / 0.03f;
+            line.widthMultiplier = hand.beamWidth * strength;
+            Color head = hand.beamStart;
+            Color tail = hand.beamEnd;
+            head.a *= alpha;
+            tail.a *= alpha * 0.6f;
+            line.startColor = head;
+            line.endColor = tail;
+            return;
         }
 
         line.widthMultiplier = width;
@@ -311,15 +330,32 @@ public class GravityBeam : MonoBehaviour
         Hand hand = new Hand { isRight = isRight };
         Transform muzzle = player.LaunchPoint(isRight);
 
-        GameObject beamObject = new GameObject(isRight ? "Gravity Beam Right" : "Gravity Beam Left");
-        beamObject.transform.SetParent(transform, false);
-        hand.beam = beamObject.AddComponent<LineRenderer>();
-        hand.beam.sharedMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
-        hand.beam.useWorldSpace = true;
-        hand.beam.positionCount = BeamPoints;
-        hand.beam.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        hand.beam.receiveShadows = false;
-        hand.beam.numCapVertices = 2;
+        LineRenderer template = CafePrefabs.BeamTemplate;
+        if (template != null)
+        {
+            // Styled in the editor: its material, width and colours (faded with the beam); the line itself drawn here
+            hand.beam = Instantiate(template, transform, false);
+            hand.beam.gameObject.SetActive(true);
+            hand.beam.name = isRight ? "Gravity Beam Right" : "Gravity Beam Left";
+            hand.beam.useWorldSpace = true;
+            hand.beam.positionCount = BeamPoints;
+            hand.beamFromTemplate = true;
+            hand.beamWidth = template.widthMultiplier;
+            hand.beamStart = template.startColor;
+            hand.beamEnd = template.endColor;
+        }
+        else
+        {
+            GameObject beamObject = new GameObject(isRight ? "Gravity Beam Right" : "Gravity Beam Left");
+            beamObject.transform.SetParent(transform, false);
+            hand.beam = beamObject.AddComponent<LineRenderer>();
+            hand.beam.sharedMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
+            hand.beam.useWorldSpace = true;
+            hand.beam.positionCount = BeamPoints;
+            hand.beam.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            hand.beam.receiveShadows = false;
+            hand.beam.numCapVertices = 2;
+        }
 
         // The purple glow on the launcher while its beam is on
         hand.glow = SpaceCafeVisuals.Ring(muzzle, "Gravity Glow", 0.045f / Mathf.Max(0.0001f, muzzle.lossyScale.x), 0.012f, beamColour);

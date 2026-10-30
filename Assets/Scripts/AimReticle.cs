@@ -2,7 +2,8 @@ using UnityEngine;
 
 // Shows a ring where a launcher's shot will land, for both straight and arcing shots.
 // The ring turns gold and grows when it's over a hungry cat.
-// Created by PlayerInput for each launcher; no prefab or scene setup needed.
+// Created by PlayerInput for each launcher, from the Cafe Prefabs reticle if one is set (its own rings, any shape, drawn
+// at a radius of 1 and scaled to size); otherwise two circles drawn in code.
 public class AimReticle : MonoBehaviour
 {
     const int RingSegments = 40;
@@ -48,18 +49,27 @@ public class AimReticle : MonoBehaviour
         spreadDegrees = Mathf.Max(0f, degrees);
     }
 
+    [SerializeField]
+    [Tooltip("Optional, for a reticle prefab: the ring, drawn at a radius of 1. Empty = a circle drawn in code.")]
+    LineRenderer outerRing;
+
+    [SerializeField]
+    [Tooltip("Optional, for a reticle prefab: the centre dot, drawn at a radius of 1. Empty = a circle drawn in code.")]
+    LineRenderer innerDot;
+
     Transform launchPoint;
     Transform ignoreRoot;
     float speed;
     bool useGravity;
-
-    LineRenderer outerRing;
-    LineRenderer innerDot;
     bool visible = true;
+    bool outerFromPrefab;
+    bool innerFromPrefab;
 
     public static AimReticle Create(Transform launchPoint, Transform ignoreRoot, string name)
     {
-        AimReticle reticle = new GameObject(name).AddComponent<AimReticle>();
+        AimReticle prefab = CafePrefabs.ReticlePrefab;
+        AimReticle reticle = prefab != null ? Instantiate(prefab) : new GameObject(name).AddComponent<AimReticle>();
+        reticle.name = name;
         reticle.launchPoint = launchPoint;
         reticle.ignoreRoot = ignoreRoot;
         return reticle;
@@ -82,12 +92,16 @@ public class AimReticle : MonoBehaviour
 
     void Awake()
     {
+        outerFromPrefab = outerRing != null;
+        innerFromPrefab = innerDot != null;
+        if (outerFromPrefab && innerFromPrefab) return;
+
         Shader shader = Shader.Find("Sprites/Default");
         if (shader == null) shader = Shader.Find("UI/Default");
         Material material = new Material(shader);
 
-        outerRing = CreateRing("Ring", material, 1f, RingSegments);
-        innerDot = CreateRing("Dot", material, 0.2f, 12);
+        if (!outerFromPrefab) outerRing = CreateRing("Ring", material, 1f, RingSegments);
+        if (!innerFromPrefab) innerDot = CreateRing("Dot", material, 0.2f, 12);
     }
 
     LineRenderer CreateRing(string ringName, Material material, float radius, int segments)
@@ -139,17 +153,23 @@ public class AimReticle : MonoBehaviour
 
         Color colour = onCat ? onCatColour : normalColour;
         float width = radius * 0.15f;
-        SetLine(outerRing, colour, width, radius);
-        SetLine(innerDot, colour, width, radius * 0.2f);
+        SetLine(outerRing, colour, width, radius, outerFromPrefab);
+        SetLine(innerDot, colour, width, radius * 0.2f, innerFromPrefab);
         ShowRings(true);
     }
 
-    // Line widths don't follow the object's scale, so the ring is redrawn at its real size instead
-    void SetLine(LineRenderer line, Color colour, float width, float radius)
+    // Line widths don't follow the object's scale, so a ring drawn here is redrawn at its real size; a prefab's ring
+    // (any shape, drawn at a radius of 1) is scaled instead, so its shape stays
+    void SetLine(LineRenderer line, Color colour, float width, float radius, bool fromPrefab)
     {
         line.startColor = colour;
         line.endColor = colour;
         line.widthMultiplier = width;
+        if (fromPrefab)
+        {
+            line.transform.localScale = Vector3.one * radius;
+            return;
+        }
 
         int segments = line.positionCount;
         for (int i = 0; i < segments; i++)
