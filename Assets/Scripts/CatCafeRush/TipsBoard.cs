@@ -29,6 +29,8 @@ public class TipsBoard : MonoBehaviour
         [Min(0.5f)]
         [Tooltip("How much bigger the end-of-round tally is drawn on the board.")]
         public float tallyScale = 1.25f;
+        [Tooltip("Fit and rearrange the board's texts at runtime (auto-size, 'Tips' labels, tally layout). Turn off once the board is laid out in the editor: then only the values are written.")]
+        public bool fitToBoard = true;
         [Tooltip("Shown at the end whatever the tips (for now, for laughs). Empty = the line for the amount, from the list below.")]
         public string alwaysLine = "That's more than enough for a Liminal VR Premium Subscription!";
         [Tooltip("What the tips could buy, from the smallest amount up.")]
@@ -59,7 +61,7 @@ public class TipsBoard : MonoBehaviour
         board.game = game;
         board.jar = jar;
         board.settings = settings;
-        board.Restyle();
+        if (settings.fitToBoard) board.Restyle();
         return board;
     }
 
@@ -130,7 +132,7 @@ public class TipsBoard : MonoBehaviour
         GameObject panel = game.finalScorePanelObject;
         if (panel == null || !panel.activeInHierarchy) return;
         if (game.finalScoreDisplay != null) game.finalScoreDisplay.text = Money(coins);
-        if (!roomMade && game.rankDisplay != null)
+        if (settings.fitToBoard && !roomMade && game.rankDisplay != null)
         {
             roomMade = true;
             Arrange((RectTransform)panel.transform);

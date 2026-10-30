@@ -12,6 +12,10 @@ public class GrabbableLaunchers : MonoBehaviour
     [SerializeField]
     float playerVisionVerticalOffset;
 
+    [SerializeField]
+    [Tooltip("Optional. Switched on while a hand is near (a glow, ring or any effect made in the editor). With one set, the outlines aren't used.")]
+    GameObject highlightEffect;
+
     void Start()
     {
         if (outlines == null || outlines.Length == 0)
@@ -52,6 +56,15 @@ public class GrabbableLaunchers : MonoBehaviour
 
     public void Highlight(bool turnOn)
     {
+        if (highlightEffect != null)
+        {
+            if (highlightEffect.activeSelf != turnOn)
+            {
+                highlightEffect.SetActive(turnOn);
+            }
+            return;
+        }
+
         foreach (Outline o in outlines)
         {
             if (o != null)
