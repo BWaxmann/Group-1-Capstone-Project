@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4051944096050050537}
   - component: {fileID: 1122731366270827084}
   - component: {fileID: 2913909718299840134}
-  - component: {fileID: 5639352221381855870}
+  - component: {fileID: 5135819275847579518}
   m_Layer: 0
   m_Name: Cafe_Table_1
   m_TagString: Untagged
@@ -78,7 +78,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!64 &5639352221381855870
+--- !u!64 &5135819275847579518
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -89,6 +89,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Convex: 1
-  m_CookingOptions: 30
+  m_Convex: 0
+  m_CookingOptions: 14
   m_Mesh: {fileID: -4136152209513726184, guid: c58744332e88af04e9e765b400097f61, type: 3}
