@@ -600,6 +600,16 @@ public class RushDirector : MonoBehaviour
             try { GameManager.instance.UseShiftClock(shiftStartHour, shiftEndHour); }
             catch (Exception e) { Debug.LogException(e); }
         }
+        // The sky and light are up from the moment the scene loads (at the start of the shift: the clock only runs once
+        // the round starts), so nothing switches when the launchers are picked up
+        if (waves)
+        {
+            Func<float> shift = () => shiftLength > 0 ? clock / shiftLength : 0f;
+            try { ShiftSky.Begin(shiftSky, shift); }
+            catch (Exception e) { Debug.LogException(e); }
+            try { ShiftLight.Begin(gameObject, shiftLight, shift); }
+            catch (Exception e) { Debug.LogException(e); }   // dressing only: the round goes on without it
+        }
         if (ninjaPrefab != null)
         {
             ninja = Instantiate(ninjaPrefab, transform);
@@ -706,14 +716,6 @@ public class RushDirector : MonoBehaviour
         if (fedCatsUseHoles) MakeHoles();
         if (coinsPerTreat > 0) PlaceTipJar();
         if (tipJar != null) TipsBoard.Begin(tipJar, tipsBoard);
-        if (waves)
-        {
-            Func<float> shift = () => shiftLength > 0 ? clock / shiftLength : 0f;
-            try { ShiftSky.Begin(shiftSky, shift); }
-            catch (Exception e) { Debug.LogException(e); }
-            try { ShiftLight.Begin(gameObject, shiftLight, shift); }
-            catch (Exception e) { Debug.LogException(e); }   // dressing only: the round goes on without it
-        }
         piles.Clear();
         piles.AddRange(FindObjectsOfType<DefendPoint>());
         propPiles.Clear();
