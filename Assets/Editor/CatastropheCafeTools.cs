@@ -86,23 +86,6 @@ public static class CatastropheCafeTools
         }
     }
 
-    // Adds a cat hole where the Scene view is looking. Move it to the bottom-middle of the
-    // opening and point its blue arrow (Z) out into the room.
-    [MenuItem("GameObject/Catastrophe Cafe/Cat Hole", false, 10)]
-    static void CreateCatHole(MenuCommand command)
-    {
-        GameObject hole = new GameObject("Cat Hole");
-        GameObjectUtility.SetParentAndAlign(hole, command.context as GameObject);
-        if (command.context == null && SceneView.lastActiveSceneView != null)
-        {
-            hole.transform.position = SceneView.lastActiveSceneView.pivot;
-        }
-        hole.AddComponent<CatHole>();
-
-        Undo.RegisterCreatedObjectUndo(hole, "Create Cat Hole");
-        Selection.activeObject = hole;
-    }
-
     static string[] GetEnabledScenes()
     {
         var scenes = new System.Collections.Generic.List<string>();
