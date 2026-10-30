@@ -34,6 +34,8 @@ public class FloatingWord : MonoBehaviour
                 label.text = words;
                 label.color = colour;
                 label.fontSize = size;
+                label.alignment = TextAlignmentOptions.Center;   // a word sits centred on its point, whatever the prefab says
+                label.enableWordWrapping = false;
             }
             return word.gameObject;
         }
