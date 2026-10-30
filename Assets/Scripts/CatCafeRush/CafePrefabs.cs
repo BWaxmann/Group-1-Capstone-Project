@@ -26,10 +26,15 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. A TrailRenderer that styles the trail behind a flying prop.")]
     TrailRenderer propTrailTemplate;
 
+    [SerializeField]
+    [Tooltip("Optional. The splat where a treat hits the cafe (walls, floor, furniture). Spawned facing out from the surface. Empty = a small puff of the cats' eating crumbs.")]
+    ParticleSystem splat;
+
     public static FloatingWord FloatingWordPrefab => instance != null ? instance.floatingWord : null;
     public static LineRenderer RingTemplate => instance != null ? instance.ringTemplate : null;
     public static TrailRenderer KittenTrailTemplate => instance != null ? instance.kittenTrailTemplate : null;
     public static TrailRenderer PropTrailTemplate => instance != null ? instance.propTrailTemplate : null;
+    public static ParticleSystem SplatPrefab => instance != null ? instance.splat : null;
 
     void Awake()
     {

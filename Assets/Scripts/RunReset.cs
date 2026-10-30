@@ -19,6 +19,7 @@ public static class RunReset
         PropPile.ResetStatics();
         FloatingWord.ResetStatics();
         SoundBite.ResetStatics();
+        Squishable.ResetStatics();
 
         // Shared settings and counters (the scene sets its own again as it starts)
         CafePrefabs.instance = null;
