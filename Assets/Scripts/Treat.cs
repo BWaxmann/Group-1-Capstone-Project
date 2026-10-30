@@ -126,7 +126,7 @@ public class Treat : Launchable
 
         // Clean shots fly through the things that move (kittens, flying props, the vents' lids) but splat on the cafe
         // itself: walls, floor, furniture, props sitting on a pile, and anything squishable
-        if (other.isTrigger) return false;
+        if (other.isTrigger || other.GetComponentInParent<TreatsPassThrough>() != null) return false;
         if (other.GetComponentInParent<PlayerInput>() != null || other.GetComponentInParent<Launchable>() != null) return false;
         FlyingProp prop = other.GetComponentInParent<FlyingProp>();
         if (prop != null && prop.state != FlyingProp.State.Home) return false;
