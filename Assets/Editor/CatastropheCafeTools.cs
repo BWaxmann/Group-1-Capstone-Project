@@ -43,6 +43,24 @@ public static class CatastropheCafeTools
         return true;
     }
 
+    // The object with a slot for each thing the game's scripts spawn (see CafePrefabs_HowTo.md)
+    [MenuItem("Catastrophe Cafe/Add Cafe Prefabs To Scene", false, 5)]
+    static void AddCafePrefabs()
+    {
+        CafePrefabs existing = Object.FindObjectOfType<CafePrefabs>();
+        if (existing != null)
+        {
+            Selection.activeObject = existing.gameObject;
+            Debug.Log("[Catastrophe Cafe] The scene already has a Cafe Prefabs object: selected it.");
+            return;
+        }
+        GameObject made = new GameObject("Cafe Prefabs");
+        made.AddComponent<CafePrefabs>();
+        Undo.RegisterCreatedObjectUndo(made, "Add Cafe Prefabs");
+        Selection.activeObject = made;
+        Debug.Log("[Catastrophe Cafe] Cafe Prefabs added. Fill its slots with your prefabs; empty slots keep the built-in look. Save the scene.");
+    }
+
     [MenuItem("Catastrophe Cafe/Build for Valve Index (Windows)", false, 20)]
     static void BuildForIndex()
     {
