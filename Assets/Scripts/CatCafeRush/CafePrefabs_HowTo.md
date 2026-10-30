@@ -35,6 +35,10 @@ originals never draw.
 
 Hover over any field in the Inspector for the same notes.
 
+When the game starts, the Console says which slots are in use, e.g. `[Cat Cafe Waves] Cafe Prefabs: pop-up word from
+prefab, rings built in code, ...`. A prefab that isn't showing up usually isn't in its slot: a prefab that was deleted and
+made again is a new asset, so drag the new one into the slot again, and save the scene.
+
 ## Other slots that live elsewhere
 
 - **Launchers** > `GrabbableLaunchers` > **Highlight Effect**: the effect shown while a hand is near (Eleni's).
@@ -42,6 +46,12 @@ Hover over any field in the Inspector for the same notes.
   between the parts of the message).
 - **RushDirector** > Tips Board > **Fit To Board**: untick once the chalkboard is laid out by hand, so the code stops
   resizing its texts.
+
+## Quick start: the pop-up word
+
+Menu: **Catastrophe Cafe > Make Pop-Up Word Prefab**. That makes `Assets/Prefabs/UI/Pop-Up Word.prefab` (the built-in
+look, in the cafe font) and puts it in the Floating Word slot if that's empty. Save the scene, then restyle the prefab
+as you like: font, colour, outline. Its Font Size is only a preview: the game sets each word's size.
 
 ## Worked example: a nicer "Shoo!" (2 minutes)
 

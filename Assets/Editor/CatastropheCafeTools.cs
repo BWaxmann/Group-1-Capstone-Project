@@ -1,5 +1,6 @@
 using System.IO;
 using Liminal.SDK.VR;
+using TMPro;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -59,6 +60,54 @@ public static class CatastropheCafeTools
         Undo.RegisterCreatedObjectUndo(made, "Add Cafe Prefabs");
         Selection.activeObject = made;
         Debug.Log("[Catastrophe Cafe] Cafe Prefabs added. Fill its slots with your prefabs; empty slots keep the built-in look. Save the scene.");
+    }
+
+    const string PopUpWordPrefabPath = "Assets/Prefabs/UI/Pop-Up Word.prefab";
+    const string CafeFontPath = "Assets/Art/Fonts/Salted Caramel SDF.asset";
+
+    // A ready-made pop-up word prefab, the built-in look in the cafe's font, put straight into the Cafe Prefabs slot:
+    // restyle it from there. The game sets each word's text, colour and size; the prefab sets the font, style and alignment.
+    [MenuItem("Catastrophe Cafe/Make Pop-Up Word Prefab", false, 6)]
+    static void MakePopUpWordPrefab()
+    {
+        GameObject made = new GameObject("Pop-Up Word");
+        TextMeshPro text = made.AddComponent<TextMeshPro>();
+        TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CafeFontPath);
+        if (font != null) text.font = font;
+        text.text = "Pop-Up!";
+        text.fontSize = 3;
+        text.fontStyle = FontStyles.Bold;
+        text.alignment = TextAlignmentOptions.Center;
+        text.enableWordWrapping = false;
+        text.rectTransform.sizeDelta = new Vector2(2f, 1f);
+        made.AddComponent<FloatingWord>();
+
+        Directory.CreateDirectory(Path.GetDirectoryName(PopUpWordPrefabPath));
+        string path = AssetDatabase.GenerateUniqueAssetPath(PopUpWordPrefabPath);
+        GameObject prefab = PrefabUtility.SaveAsPrefabAsset(made, path);
+        Object.DestroyImmediate(made);
+
+        string where = "Drag it into the Floating Word slot of the scene's Cafe Prefabs object.";
+        CafePrefabs holder = Object.FindObjectOfType<CafePrefabs>();
+        if (holder != null)
+        {
+            SerializedObject serialized = new SerializedObject(holder);
+            SerializedProperty slot = serialized.FindProperty("floatingWord");
+            if (slot.objectReferenceValue == null)
+            {
+                slot.objectReferenceValue = prefab.GetComponent<FloatingWord>();
+                serialized.ApplyModifiedProperties();
+                where = "It's in the Floating Word slot of Cafe Prefabs: save the scene.";
+            }
+            else
+            {
+                where = "The Floating Word slot of Cafe Prefabs already has a prefab, so this one was left out of it.";
+            }
+        }
+
+        Selection.activeObject = prefab;
+        EditorGUIUtility.PingObject(prefab);
+        Debug.Log($"[Catastrophe Cafe] Made {path}. {where} Its Font Size is only a preview: the game sets each word's size.");
     }
 
     [MenuItem("Catastrophe Cafe/Build for Valve Index (Windows)", false, 20)]

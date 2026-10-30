@@ -82,10 +82,25 @@ public class CafePrefabs : MonoBehaviour
         if (instance == null)
         {
             instance = this;
+            Debug.Log("[Cat Cafe Waves] Cafe Prefabs: " + Summary());
         }
         else if (instance != this)
         {
             Destroy(gameObject);
         }
+    }
+
+    // Which slots are filled, for the Console: a prefab that isn't showing up usually isn't in its slot
+    string Summary()
+    {
+        return $"pop-up word {Which(floatingWord)}, rings {Which(ringTemplate)}, kitten trail {Which(kittenTrailTemplate)}, "
+             + $"prop trail {Which(propTrailTemplate)}, splat {Which(splat)}, order bubble {Which(orderBubble)}, "
+             + $"tip jar {Which(tipJar)}, rope {Which(ropeTemplate)}, recipe {Which(recipe)}, reticle {Which(reticle)}, "
+             + $"beam {Which(beamTemplate)}.";
+    }
+
+    static string Which(Object slot)
+    {
+        return slot != null ? "from prefab" : "built in code";
     }
 }
