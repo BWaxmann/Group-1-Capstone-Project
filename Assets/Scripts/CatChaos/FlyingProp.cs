@@ -355,16 +355,25 @@ public class FlyingProp : MonoBehaviour
     public void Release()
     {
         if (state != State.Held) return;
-        ShowHomeRing(false);
-        if (dragHint != null) Destroy(dragHint);
-        if (dragHome && !nearHome)
+        if (!dragHome || nearHome)
         {
-            state = State.Flying;
-            falling = true;
-            velocity = Vector3.zero;
-            flightTime = CatChaosSettings.instance != null ? CatChaosSettings.instance.catchableAfter : 0f;   // a quick save
+            ReturnHome();
             return;
         }
+        ShowHomeRing(false);
+        if (dragHint != null) Destroy(dragHint);
+        state = State.Flying;
+        falling = true;
+        velocity = Vector3.zero;
+        flightTime = CatChaosSettings.instance != null ? CatChaosSettings.instance.catchableAfter : 0f;   // a quick save
+    }
+
+    // Sent home (flicked back, or let go over its pile): it flies back to its spot
+    public void ReturnHome()
+    {
+        if (state != State.Held) return;
+        ShowHomeRing(false);
+        if (dragHint != null) Destroy(dragHint);
         state = State.Returning;
         timer = 0;
         returnStart = transform.position;

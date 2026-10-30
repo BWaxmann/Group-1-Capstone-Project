@@ -39,11 +39,26 @@ public class GravityBeam : MonoBehaviour
 
     public Color beamColour = new Color(0.72f, 0.38f, 1f);
 
+    [SerializeField]
+    [Tooltip("A quick flick of the hand while holding a prop sends it flying back to its table (Brian's idea). Off: only letting go returns it.")]
+    bool flickToReturn = true;
+
+    [SerializeField]
+    [Tooltip("How fast the hand has to move, in metres a second, to count as a flick.")]
+    float flickSpeed = 2.2f;
+
+    // A flick only counts once the prop has been held this long (the grab itself isn't one)
+    const float FlickAfter = 0.25f;
+
     class Hand
     {
         public bool isRight;
         public FlyingProp held;
         public float holdDistance;
+        public float heldSince;
+        public Vector3 lastMuzzle;
+        public Vector3 velocity;   // of the launcher, smoothed
+        public bool tracking;
         public bool overHome;   // (ninja phases) the held prop is over its pile, ready to let go
         public FlyingProp locking;
         public float lockProgress;
@@ -68,6 +83,7 @@ public class GravityBeam : MonoBehaviour
         GameManager.instance.GameEnd += ReleaseAll;
         catchStreak = 0;
         FlyingProp.Landed += EndStreak;
+        if (flickToReturn) FlyingProp.dragHintText = "Flick it home!";
     }
 
     void OnDestroy()
@@ -91,6 +107,18 @@ public class GravityBeam : MonoBehaviour
     void UpdateHand(Hand hand, bool allowed)
     {
         Transform muzzle = player.LaunchPoint(hand.isRight);
+        if (muzzle != null)
+        {
+            // How fast this hand is moving (for flicks)
+            Vector3 now = muzzle.position;
+            if (hand.tracking)
+            {
+                Vector3 velocity = (now - hand.lastMuzzle) / Mathf.Max(Time.deltaTime, 0.0001f);
+                hand.velocity = Vector3.Lerp(hand.velocity, velocity, Mathf.Clamp01(Time.deltaTime * 15f));
+            }
+            hand.lastMuzzle = now;
+            hand.tracking = true;
+        }
         bool beamOn = allowed && muzzle != null && player.GripHeld(hand.isRight);
 
         if (!beamOn)
@@ -108,7 +136,13 @@ public class GravityBeam : MonoBehaviour
         if (hand.held != null && hand.held.state != FlyingProp.State.Held) hand.held = null;
 
         Vector3 start = muzzle.position;
-        if (hand.held != null)
+        if (hand.held != null && flickToReturn && Time.time - hand.heldSince > FlickAfter && hand.velocity.magnitude >= flickSpeed)
+        {
+            // A flick: off it goes, home
+            Fling(hand);
+            hand.lockRing.enabled = false;
+        }
+        else if (hand.held != null)
         {
             // Reel the prop in to a comfortable distance, then it follows where the launcher points. In the ninja phases it
             // has to be carried back to its pile, so it rides out as far as the pile is: point at the pile and it's there
@@ -207,6 +241,8 @@ public class GravityBeam : MonoBehaviour
         if (!prop.isCatchable) return;
         hand.held = prop;
         hand.holdDistance = Vector3.Distance(muzzle.position, prop.centre);
+        hand.heldSince = Time.time;
+        hand.velocity = Vector3.zero;
         prop.Hold(prop.transform.position);
 
         if (prop.FirstCatch())
@@ -218,13 +254,24 @@ public class GravityBeam : MonoBehaviour
         if (CatChaosSettings.instance != null) CatChaosSettings.instance.PlayCatch(prop.centre);
     }
 
+    // Letting go: a flick as you let go still sends it home
     void Let(Hand hand)
     {
-        if (hand.held != null)
+        if (hand.held == null) return;
+        if (flickToReturn && hand.velocity.magnitude >= flickSpeed)
         {
-            hand.held.Release();
-            hand.held = null;
+            Fling(hand);
+            return;
         }
+        hand.held.Release();
+        hand.held = null;
+    }
+
+    void Fling(Hand hand)
+    {
+        hand.held.ReturnHome();
+        hand.held = null;
+        Haptics.Pulse(hand.isRight, Haptics.Strength.Medium);
     }
 
     void ReleaseAll()
