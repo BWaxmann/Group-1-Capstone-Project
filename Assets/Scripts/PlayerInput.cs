@@ -112,9 +112,6 @@ public class PlayerInput : MonoBehaviour
     Transform eye;
 
     [SerializeField]
-    Transform _pickupMagnet;
-
-    [SerializeField]
     [Range(0f, 1f)]
     [Tooltip("How far the grip must be squeezed to count as pressed on controllers with an analogue grip (e.g. Valve Index).")]
     float gripPressThreshold = 0.7f;
@@ -176,8 +173,6 @@ public class PlayerInput : MonoBehaviour
     int flickRight;
     bool stickHeldLeft;
     bool stickHeldRight;
-
-    public Vector3 pickupMagnet => _pickupMagnet.position;
 
     // Barista mode
     public bool isBaristaMode => baristaMode;
@@ -348,10 +343,8 @@ public class PlayerInput : MonoBehaviour
         }
 
         // Grip state is tracked every frame so a press is only counted once
-        bool gripDownRight = GripDown(true);
-        bool gripDownLeft = GripDown(false);
-        gripPressedLeft = gripDownLeft;
-        gripPressedRight = gripDownRight;
+        gripPressedLeft = GripDown(false);
+        gripPressedRight = GripDown(true);
         flickLeft = ReadThumbFlick(false);
         flickRight = ReadThumbFlick(true);
         if (fireStylesUnlocked && launchersActive && !baristaMode)

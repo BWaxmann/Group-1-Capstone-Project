@@ -1070,7 +1070,6 @@ Transform:
   - {fileID: 977510621431721321}
   - {fileID: 977510621214567754}
   - {fileID: 977510622737137800}
-  - {fileID: 2402349129688171909}
   m_Father: {fileID: 2084092611420802037}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
@@ -1161,14 +1160,14 @@ MonoBehaviour:
   launcherLeftDisplayFace: {fileID: 4577330572766160562}
   launcherRightDisplayFace: {fileID: 6780108211474185680}
   defaultFaces:
-  - {fileID: 21300000, guid: 24c88e5a0a8bc9749b6eada167b81a69, type: 3}
+  - {fileID: 21300000, guid: ed4c44c75ac277e4da8ed0ee204bdd37, type: 3}
   happyFaces:
-  - {fileID: 21300000, guid: 7cddd4592889e2a48b24745a4d8279e0, type: 3}
+  - {fileID: 21300000, guid: aab1d3f649eb54842987c073cbf2b32b, type: 3}
   scaredFaces:
-  - {fileID: 21300000, guid: aae97993ad16b4a4eb729943a9541916, type: 3}
+  - {fileID: 21300000, guid: f9bdc1915c20c1f45935fa187830393f, type: 3}
+  - {fileID: 21300000, guid: 3f8ac6c83d4ea4a47b1e7a55ef41ec1c, type: 3}
   faceSwapDuration: 1
   eye: {fileID: 977510622112336780}
-  _pickupMagnet: {fileID: 2402349129688171909}
   gripPressThreshold: 0.7
   launcherAudioSourceRight: {fileID: 2330815458311549678}
   launcherAudioSourceLeft: {fileID: 2740191476147212289}
@@ -1213,6 +1212,8 @@ MonoBehaviour:
   catchScore: 5
   maxStreakMultiplier: 5
   beamColour: {r: 0.72, g: 0.38, b: 1, a: 1}
+  flickToReturn: 1
+  flickSpeed: 2.2
 --- !u!1 &977510622321449625
 GameObject:
   m_ObjectHideFlags: 0
@@ -1606,7 +1607,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BuildType: 2
-  EditorType: 3
+  EditorType: 0
 --- !u!1 &2084092611746225450
 GameObject:
   m_ObjectHideFlags: 0
@@ -1997,36 +1998,6 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
---- !u!1 &8053473304912804113
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2402349129688171909}
-  m_Layer: 0
-  m_Name: Pickup Magnet
-  m_TagString: Untagged
-  m_Icon: {fileID: 1206586993520771344, guid: 0000000000000000d000000000000000, type: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2402349129688171909
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8053473304912804113}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 977510622806173442}
-  m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8712157337586789567
 GameObject:
   m_ObjectHideFlags: 0
@@ -2277,12 +2248,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5a3d39c72e99c0d4691e7e528ed91244, type: 3}
---- !u!4 &6647007267993149523 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 9202590476519657736, guid: 5a3d39c72e99c0d4691e7e528ed91244,
-    type: 3}
-  m_PrefabInstance: {fileID: 2560510395549954395}
-  m_PrefabAsset: {fileID: 0}
 --- !u!82 &2740191476147212289 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 400784093056196954, guid: 5a3d39c72e99c0d4691e7e528ed91244,
@@ -2304,6 +2269,12 @@ Transform:
 --- !u!1 &120319723378119119 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2460008308440703124, guid: 5a3d39c72e99c0d4691e7e528ed91244,
+    type: 3}
+  m_PrefabInstance: {fileID: 2560510395549954395}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6647007267993149523 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9202590476519657736, guid: 5a3d39c72e99c0d4691e7e528ed91244,
     type: 3}
   m_PrefabInstance: {fileID: 2560510395549954395}
   m_PrefabAsset: {fileID: 0}
@@ -2382,15 +2353,9 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 2726761680873444276}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &4088817528126571447 stripped
+--- !u!4 &6512570145507050172 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 2119228045548834819, guid: 5a3d39c72e99c0d4691e7e528ed91244,
-    type: 3}
-  m_PrefabInstance: {fileID: 2726761680873444276}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1413999898784427255 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 3911638130609897283, guid: 5a3d39c72e99c0d4691e7e528ed91244,
+  m_CorrespondingSourceObject: {fileID: 9202590476519657736, guid: 5a3d39c72e99c0d4691e7e528ed91244,
     type: 3}
   m_PrefabInstance: {fileID: 2726761680873444276}
   m_PrefabAsset: {fileID: 0}
@@ -2400,9 +2365,15 @@ AudioSource:
     type: 3}
   m_PrefabInstance: {fileID: 2726761680873444276}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &6512570145507050172 stripped
+--- !u!4 &1413999898784427255 stripped
 Transform:
-  m_CorrespondingSourceObject: {fileID: 9202590476519657736, guid: 5a3d39c72e99c0d4691e7e528ed91244,
+  m_CorrespondingSourceObject: {fileID: 3911638130609897283, guid: 5a3d39c72e99c0d4691e7e528ed91244,
+    type: 3}
+  m_PrefabInstance: {fileID: 2726761680873444276}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &4088817528126571447 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2119228045548834819, guid: 5a3d39c72e99c0d4691e7e528ed91244,
     type: 3}
   m_PrefabInstance: {fileID: 2726761680873444276}
   m_PrefabAsset: {fileID: 0}

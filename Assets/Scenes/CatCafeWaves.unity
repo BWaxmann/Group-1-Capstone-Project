@@ -890,10 +890,8 @@ MonoBehaviour:
     currency: $
     liveLabel: 'Tips:'
     finalLabel: 'Tips:'
-    bestFormat: 'Best tips: {0}'
-    newBestText: New best tips!
-    showBest: 0
     tallyScale: 1.25
+    fitToBoard: 1
     alwaysLine: That's more than enough for a Liminal VR Premium Subscription!
     lines:
     - from: 0
@@ -3300,7 +3298,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 4294967295
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &315471396
 Transform:
@@ -4486,6 +4484,11 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 40ce9079673068b4c9ada76063dcea99, type: 2}
+    - target: {fileID: 3002100922782927730, guid: 37ec1b64d908765418646da2904f7fe2,
+        type: 3}
+      propertyPath: playerVisionVerticalOffset
+      value: -0.25
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37ec1b64d908765418646da2904f7fe2, type: 3}
 --- !u!1 &423423920
@@ -6334,7 +6337,7 @@ PrefabInstance:
     - target: {fileID: 9057109582886568799, guid: d43f0a3c6a033264995908837bdbe7c8,
         type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 4294967295
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5470194546764378444, guid: d43f0a3c6a033264995908837bdbe7c8,
         type: 3}
@@ -8799,11 +8802,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2084092611420802039, guid: a727da49b44d50341ab071e657b48c70,
-        type: 3}
-      propertyPath: EditorType
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
 --- !u!1 &895747036
@@ -10179,7 +10177,7 @@ PrefabInstance:
     - target: {fileID: 3258633055270541998, guid: cf5fa6ef17001db46a29d0aa89c906ce,
         type: 3}
       propertyPath: m_StaticEditorFlags
-      value: 4294967295
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1973602100481484989, guid: cf5fa6ef17001db46a29d0aa89c906ce,
         type: 3}
@@ -24363,21 +24361,6 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: cfeadaf48c3b7ee4e816701872c80bbe, type: 2}
-    - target: {fileID: 5218053877760515484, guid: 061c1cbab4092fb429845d013f8312c9,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 40ce9079673068b4c9ada76063dcea99, type: 2}
-    - target: {fileID: 6306971017694268109, guid: 061c1cbab4092fb429845d013f8312c9,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 40ce9079673068b4c9ada76063dcea99, type: 2}
-    - target: {fileID: 6909836645052175738, guid: 061c1cbab4092fb429845d013f8312c9,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: cfeadaf48c3b7ee4e816701872c80bbe, type: 2}
     - target: {fileID: -1642987337737507646, guid: 061c1cbab4092fb429845d013f8312c9,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -24389,6 +24372,21 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: cfeadaf48c3b7ee4e816701872c80bbe, type: 2}
     - target: {fileID: 4177666105283883373, guid: 061c1cbab4092fb429845d013f8312c9,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: cfeadaf48c3b7ee4e816701872c80bbe, type: 2}
+    - target: {fileID: 5218053877760515484, guid: 061c1cbab4092fb429845d013f8312c9,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 40ce9079673068b4c9ada76063dcea99, type: 2}
+    - target: {fileID: 6306971017694268109, guid: 061c1cbab4092fb429845d013f8312c9,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 40ce9079673068b4c9ada76063dcea99, type: 2}
+    - target: {fileID: 6909836645052175738, guid: 061c1cbab4092fb429845d013f8312c9,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
