@@ -5,7 +5,8 @@ using UnityEngine;
 
 // Cat Cafe Waves: a glass tip jar on the counter. Coins pop out of each fed cat and arc into it with a clink,
 // and the jar slowly fills with gold. When it's full it's sealed and set aside on the counter (up to two full jars stand
-// beside it), safe from raids, and this one starts again empty. Placeholder look (simple shapes) until proper art is made.
+// beside it), safe from raids, and this one starts again empty. Made from the Cafe Prefabs tip jar when one is set (its
+// own art for the parts set below); whatever isn't set is built from simple shapes.
 public class TipJar : MonoBehaviour
 {
     const float JarRadius = 0.08f;
@@ -15,6 +16,28 @@ public class TipJar : MonoBehaviour
     public Color glassColour = new Color(0.75f, 0.9f, 1f, 0.3f);
     public Color coinColour = new Color(1f, 0.8f, 0.15f);
     [Min(0.1f)] public float coinFlightTime = 0.7f;
+
+    [Header("Prefab parts (optional: built in code when empty)")]
+
+    [SerializeField]
+    [Tooltip("The jar itself (rocks when swatted, bounces when a coin lands).")]
+    Transform body;
+
+    [SerializeField]
+    [Tooltip("The gold inside, authored FULL with its pivot at its base: it's squashed down in Y as the jar fills.")]
+    Transform fill;
+
+    [SerializeField]
+    [Tooltip("The lid, switched off; shown once the jar is full and set aside.")]
+    GameObject lid;
+
+    [SerializeField]
+    [Tooltip("A coin (copied for each one that flies in or spills out). Empty = a small gold disc.")]
+    GameObject coinPrefab;
+
+    [SerializeField]
+    [Tooltip("How tall the jar is, in metres at scale 1: where coins drop in and words float up.")]
+    float height = JarHeight;
 
     public int coins { get; private set; }
     // Coins in the full jars set aside
@@ -30,10 +53,10 @@ public class TipJar : MonoBehaviour
     bool sealedFull;   // a full jar standing on the counter (just for show)
 
     // The jar's mouth (where coins drop in)
-    public Vector3 top => transform.position + Vector3.up * JarHeight * transform.lossyScale.y;
+    public Vector3 top => transform.position + Vector3.up * height * transform.lossyScale.y;
 
-    Transform fill;
-    Transform body;
+    Vector3 fillScale;      // a prefab fill's authored (full) scale
+    bool fillFromPrefab;
     AudioSource clinkSource;
     AudioClip clink;
     Coroutine punch;
@@ -41,21 +64,43 @@ public class TipJar : MonoBehaviour
     // Builds a jar standing at `position`, its label turned towards `viewer` (scale 1 = about 22 cm tall)
     public static TipJar Create(Vector3 position, Vector3 viewer, float scale = 1f)
     {
-        GameObject root = new GameObject("Tip Jar");
+        TipJar prefab = CafePrefabs.TipJarPrefab;
+        GameObject root = prefab != null ? Instantiate(prefab.gameObject) : new GameObject("Tip Jar");
+        root.name = "Tip Jar";
         root.transform.position = position;
         root.transform.localScale = Vector3.one * scale;
         Vector3 away = position - viewer;
         away.y = 0;
         if (away.sqrMagnitude > 0.0001f) root.transform.rotation = Quaternion.LookRotation(away);
-        TipJar jar = root.AddComponent<TipJar>();
+        TipJar jar = root.GetComponent<TipJar>();
+        if (jar == null) jar = root.AddComponent<TipJar>();
         jar.viewer = viewer;
         jar.size = scale;
         jar.Build();
         return jar;
     }
 
+    // Whatever the prefab didn't bring
     void Build()
     {
+        fillFromPrefab = fill != null;
+        if (fillFromPrefab) fillScale = fill.localScale;
+        if (lid != null) lid.SetActive(false);
+        if (clinkSource == null) clinkSource = GetComponent<AudioSource>();
+        if (clinkSource == null)
+        {
+            clinkSource = gameObject.AddComponent<AudioSource>();
+            clinkSource.playOnAwake = false;
+            clinkSource.spatialBlend = 1f;
+            clinkSource.minDistance = 1.5f;
+        }
+        clink = Resources.Load<AudioClip>("CafeSounds/coin");
+        if (body != null)
+        {
+            SetFill(0);
+            return;
+        }
+
         body = new GameObject("Jar").transform;
         body.SetParent(transform, false);
 
@@ -88,19 +133,40 @@ public class TipJar : MonoBehaviour
         text.enableWordWrapping = false;
         text.rectTransform.sizeDelta = new Vector2(0.2f, 0.08f);
         text.fontMaterial.renderQueue = 3003;   // drawn over the glass
-
-        clinkSource = gameObject.AddComponent<AudioSource>();
-        clinkSource.playOnAwake = false;
-        clinkSource.spatialBlend = 1f;
-        clinkSource.minDistance = 1.5f;
-        clink = Resources.Load<AudioClip>("CafeSounds/coin");
     }
 
     void SetFill(float amount)
     {
-        float height = Mathf.Lerp(0.004f, JarHeight * 0.85f, Mathf.Clamp01(amount));
-        fill.localScale = new Vector3(JarRadius * 1.8f, height * 0.5f, JarRadius * 1.8f);
-        fill.localPosition = Vector3.up * height * 0.5f;
+        if (fill == null) return;
+        if (fillFromPrefab)
+        {
+            fill.localScale = new Vector3(fillScale.x, fillScale.y * Mathf.Max(0.02f, Mathf.Clamp01(amount)), fillScale.z);
+            return;
+        }
+        float gold = Mathf.Lerp(0.004f, JarHeight * 0.85f, Mathf.Clamp01(amount));
+        fill.localScale = new Vector3(JarRadius * 1.8f, gold * 0.5f, JarRadius * 1.8f);
+        fill.localPosition = Vector3.up * gold * 0.5f;
+    }
+
+    // A coin, from the prefab if there is one
+    GameObject MakeCoin(string coinName)
+    {
+        if (coinPrefab != null)
+        {
+            GameObject made = Instantiate(coinPrefab, transform);
+            made.name = coinName;
+            made.SetActive(true);
+            return made;
+        }
+        GameObject coin = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, coinName, coinColour);
+        coin.transform.localScale = new Vector3(0.05f, 0.004f, 0.05f);
+        return coin;
+    }
+
+    void DestroyCoin(GameObject coin)
+    {
+        if (coinPrefab == null) Destroy(coin.GetComponent<Renderer>().sharedMaterial);   // (a material made for it)
+        Destroy(coin);
     }
 
     // Coins pop out at `from` and arc into the jar one after another
@@ -120,8 +186,7 @@ public class TipJar : MonoBehaviour
 
     IEnumerator FlyCoin(Vector3 from, int index)
     {
-        GameObject coin = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Coin", coinColour);
-        coin.transform.localScale = new Vector3(0.05f, 0.004f, 0.05f);
+        GameObject coin = MakeCoin("Coin");
         coin.transform.position = from;
 
         Vector3 to = top + Vector3.up * 0.02f;
@@ -137,8 +202,7 @@ public class TipJar : MonoBehaviour
             coin.transform.Rotate(720f * Time.deltaTime, 0, 0, Space.Self);
             yield return null;
         }
-        Destroy(coin.GetComponent<Renderer>().sharedMaterial);
-        Destroy(coin);
+        DestroyCoin(coin);
 
         coins++;
         SetFill(coins / FullAfter);
@@ -183,7 +247,7 @@ public class TipJar : MonoBehaviour
                 if (fullJars.Exists(jar => jar != null && (jar.transform.position - spot).magnitude < step * 0.9f)) continue;
                 if (!Physics.Raycast(spot + Vector3.up * 0.3f, Vector3.down, out RaycastHit surface, 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
                 if (Mathf.Abs(surface.point.y - transform.position.y) > 0.04f) continue;
-                if (Physics.CheckSphere(surface.point + Vector3.up * JarHeight * 0.55f * size, JarRadius * 1.2f * size,
+                if (Physics.CheckSphere(surface.point + Vector3.up * height * 0.55f * size, JarRadius * 1.2f * size,
                                         Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
                 return surface.point;
             }
@@ -194,9 +258,14 @@ public class TipJar : MonoBehaviour
     // A full jar's lid
     void Seal()
     {
-        GameObject lid = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, body, "Lid", new Color(0.55f, 0.4f, 0.25f));
-        lid.transform.localScale = new Vector3(JarRadius * 2.25f, 0.012f, JarRadius * 2.25f);
-        lid.transform.localPosition = Vector3.up * (JarHeight + 0.012f);
+        if (lid != null)
+        {
+            lid.SetActive(true);
+            return;
+        }
+        GameObject made = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, body, "Lid", new Color(0.55f, 0.4f, 0.25f));
+        made.transform.localScale = new Vector3(JarRadius * 2.25f, 0.012f, JarRadius * 2.25f);
+        made.transform.localPosition = Vector3.up * (JarHeight + 0.012f);
     }
 
     IEnumerator PopIn()
@@ -258,8 +327,7 @@ public class TipJar : MonoBehaviour
     IEnumerator SpillCoin(Vector3 away, int index)
     {
         yield return new WaitForSeconds(index * 0.05f);
-        GameObject coin = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Spilt Coin", coinColour);
-        coin.transform.localScale = new Vector3(0.05f, 0.004f, 0.05f);
+        GameObject coin = MakeCoin("Spilt Coin");
         coin.transform.position = top;
         Vector3 sideways = Vector3.Cross(Vector3.up, away) * Random.Range(-0.7f, 0.7f);
         Vector3 velocity = away * Random.Range(0.8f, 1.6f) + sideways + Vector3.up * Random.Range(1.2f, 2f);
@@ -274,8 +342,7 @@ public class TipJar : MonoBehaviour
             coin.transform.Rotate(900f * Time.deltaTime, 0, 0, Space.Self);
             yield return null;
         }
-        Destroy(coin.GetComponent<Renderer>().sharedMaterial);
-        Destroy(coin);
+        DestroyCoin(coin);
     }
 
     IEnumerator Punch()

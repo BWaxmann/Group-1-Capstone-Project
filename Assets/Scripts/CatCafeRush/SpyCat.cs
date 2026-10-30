@@ -444,6 +444,19 @@ public class SpyCat : MonoBehaviour
 
     void MakeRope()
     {
+        LineRenderer template = CafePrefabs.RopeTemplate;
+        if (template != null)
+        {
+            // Styled in the editor; its ends set here
+            rope = Instantiate(template);
+            rope.gameObject.SetActive(true);
+            rope.name = "Spy Rope";
+            rope.useWorldSpace = true;
+            rope.positionCount = 2;
+            UpdateRope();
+            return;
+        }
+
         GameObject holder = new GameObject("Spy Rope");
         rope = holder.AddComponent<LineRenderer>();
         rope.sharedMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
@@ -503,6 +516,20 @@ public class SpyCat : MonoBehaviour
     // The recipe it snatched, held out in front of it as it makes off
     void MakeRecipeInPaws()
     {
+        float catScale = Mathf.Max(0.01f, cat.transform.lossyScale.x);
+        GameObject prefab = CafePrefabs.RecipePrefab;
+        if (prefab != null)
+        {
+            // Made in the editor; held out in front, sized as authored whatever size the cat is
+            recipe = Instantiate(prefab, cat.transform, false);
+            recipe.name = "Secret Recipe";
+            recipe.SetActive(true);
+            recipe.transform.position = cat.transform.position + cat.transform.forward * 0.35f + cat.transform.up * 0.15f;
+            recipe.transform.rotation = cat.transform.rotation * Quaternion.Euler(-70f, 0, 0);
+            recipe.transform.localScale = prefab.transform.localScale / catScale;
+            return;
+        }
+
         recipe = new GameObject("Secret Recipe");
         recipe.transform.SetParent(cat.transform, false);
         recipe.transform.position = cat.transform.position + cat.transform.forward * 0.35f + cat.transform.up * 0.15f;
