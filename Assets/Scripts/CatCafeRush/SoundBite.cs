@@ -8,6 +8,7 @@ using UnityEngine;
 public class SoundBite : MonoBehaviour
 {
     static readonly List<SoundBite> playing = new List<SoundBite>();
+    internal static void ResetStatics() => playing.Clear();   // (a new run: see RunReset)
 
     AudioSource main;
     AudioSource intro;
@@ -17,7 +18,7 @@ public class SoundBite : MonoBehaviour
 
     // Plays `clip` at `volume` with the music at `musicLevel` of its volume underneath. `introClip` (optional) plays first,
     // straight into `clip`; `loop` keeps `clip` going until Stop. Null if there's nothing to play.
-    public static SoundBite Play(string name, AudioClip clip, float volume, float musicLevel, AudioClip introClip = null,
+    public static SoundBite Play(string name, AudioClip clip, float volume, float musicLevel, AudioClip introClip,
                                  bool loop = false, float fadeIn = 0.15f, float fadeOut = 1f)
     {
         if (clip == null || volume <= 0) return null;

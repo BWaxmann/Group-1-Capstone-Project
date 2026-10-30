@@ -5,7 +5,8 @@ using UnityEngine;
 
 // Cat Cafe Waves: the chalkboard shows tips, in money, instead of a score. Every text on the board is made to fit its
 // box (sized to fit, one line where it's a word or a number), "Score" becomes "Tips", and the final tally ends with a
-// funny line about what the tips could buy (better the more you earned) and the best tips so far.
+// funny line about what the tips could buy (better the more you earned). No best tips: Liminal keeps nothing between
+// sessions.
 public class TipsBoard : MonoBehaviour
 {
     [Serializable]
@@ -25,10 +26,6 @@ public class TipsBoard : MonoBehaviour
         public string currency = "$";
         public string liveLabel = "Tips:";
         public string finalLabel = "Tips:";
-        public string bestFormat = "Best tips: {0}";
-        public string newBestText = "New best tips!";
-        [Tooltip("Show the best tips so far at the end. Off: Liminal doesn't keep anything between sessions, so it would always be 'new best'.")]
-        public bool showBest = false;
         [Min(0.5f)]
         [Tooltip("How much bigger the end-of-round tally is drawn on the board.")]
         public float tallyScale = 1.25f;
@@ -46,14 +43,9 @@ public class TipsBoard : MonoBehaviour
         };
     }
 
-    const string BestKey = "CatCafeWavesBestTips";
-
     GameManager game;
     TipJar jar;
     Settings settings;
-    bool tallied;
-    int best;
-    bool newBest;
     readonly HashSet<TMP_Text> fitted = new HashSet<TMP_Text>();
     bool scaledTally;
     bool roomMade;
@@ -67,7 +59,6 @@ public class TipsBoard : MonoBehaviour
         board.game = game;
         board.jar = jar;
         board.settings = settings;
-        board.tallied = false;
         board.Restyle();
         return board;
     }
@@ -138,18 +129,6 @@ public class TipsBoard : MonoBehaviour
 
         GameObject panel = game.finalScorePanelObject;
         if (panel == null || !panel.activeInHierarchy) return;
-        if (!tallied && settings.showBest)
-        {
-            tallied = true;
-            best = PlayerPrefs.GetInt(BestKey, 0);
-            newBest = coins > best;
-            if (newBest)
-            {
-                best = coins;
-                PlayerPrefs.SetInt(BestKey, best);
-                PlayerPrefs.Save();
-            }
-        }
         if (game.finalScoreDisplay != null) game.finalScoreDisplay.text = Money(coins);
         if (!roomMade && game.rankDisplay != null)
         {
@@ -161,11 +140,8 @@ public class TipsBoard : MonoBehaviour
             game.rankDisplay.enableWordWrapping = true;
             game.rankDisplay.text = Quip(coins * settings.coinValue);
         }
-        if (game.bestScoreDisplay != null)
-        {
-            game.bestScoreDisplay.gameObject.SetActive(settings.showBest);
-            game.bestScoreDisplay.text = newBest ? settings.newBestText : string.Format(settings.bestFormat, Money(best));
-        }
+        // No best tips: Liminal keeps nothing between sessions (and doesn't allow saving)
+        if (game.bestScoreDisplay != null) game.bestScoreDisplay.gameObject.SetActive(false);
     }
 
     // The tally: Cats Fed at the top, the tips in the middle (where the penalty goes, when it's switched off), and the

@@ -610,7 +610,7 @@ public class RushDirector : MonoBehaviour
         {
             if (voice == null)
             {
-                voice.GetComponent<Announcer>();
+                voice = GetComponent<Announcer>();
                 if (voice == null)
                 {
                     voice = gameObject.AddComponent<Announcer>();
@@ -2536,7 +2536,10 @@ public class RushDirector : MonoBehaviour
     }
 
     // Brings the ninja in at one of its stops; or at `holdAt`, where it stays put until told to go (holdStill)
-    void SummonNinja(bool boss, Vector3? holdAt = null)
+    // (no default parameter: Liminal doesn't allow ones that use Unity types)
+    void SummonNinja(bool boss) => SummonNinja(boss, null);
+
+    void SummonNinja(bool boss, Vector3? holdAt)
     {
         if (ninja == null) return;
         List<Vector3> stops;

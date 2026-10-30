@@ -70,6 +70,11 @@ public class SpyCat : MonoBehaviour
     public Func<bool> holdBack;
     public bool isFinished => finished;
     static int hintsShown;
+    internal static void ResetStatics()   // (a new run: see RunReset)
+    {
+        active.Clear();
+        hintsShown = 0;
+    }
     const int Hints = 2;
     static readonly int Spying = Animator.StringToHash("Spying");
 

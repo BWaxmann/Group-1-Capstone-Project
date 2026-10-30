@@ -14,6 +14,7 @@ public class FloatingWord : MonoBehaviour
     // Finished words wait here to be used again, rather than being made and destroyed every time (a busy moment can
     // pop several a second)
     static readonly Stack<FloatingWord> spare = new Stack<FloatingWord>();
+    internal static void ResetStatics() => spare.Clear();   // (a new run: see RunReset)
     const int MaxSpare = 16;
 
     // Bold outlined text in the world (left where it is: the caller moves it about)

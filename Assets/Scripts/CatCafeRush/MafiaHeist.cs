@@ -308,7 +308,7 @@ public class MafiaHeist : MonoBehaviour
     void PlayTheme()
     {
         if (themeClip == null) themeClip = Resources.Load<AudioClip>("CafeSounds/mafia_theme");
-        theme = SoundBite.Play("Mafia Theme", themeClip, settings.themeVolume, settings.musicUnderTheme, fadeIn: 0.1f, fadeOut: 1.5f);
+        theme = SoundBite.Play("Mafia Theme", themeClip, settings.themeVolume, settings.musicUnderTheme, null, fadeIn: 0.1f, fadeOut: 1.5f);
     }
 
     // Busted (or sent off): his theme eases out and the music comes back

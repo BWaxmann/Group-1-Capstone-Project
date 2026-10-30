@@ -101,12 +101,21 @@ public class FlyingProp : MonoBehaviour
     public static float dropRadius = 0.8f;
     // How far past the table's edge (metres) a held prop still counts as over it: forgiving, since it's hard to be exact
     // in the middle of everything (set per phase by the director)
-    public static float dropMargin = 3f;
+    const float DefaultDropMargin = 3f;
+    public static float dropMargin = DefaultDropMargin;
     bool zoneMeasured;
     Vector3 zoneCentre;     // middle of the table top
     float zoneRadius;
     public static string dragHintText = "Bring it home!";
     static int dragHintsShown;
+    internal static void ResetStatics()   // (a new run: see RunReset)
+    {
+        all.Clear();
+        airborne.Clear();
+        dragHome = false;
+        dropMargin = DefaultDropMargin;
+        dragHintsShown = 0;
+    }
     const int DragHints = 2;
 
     // Where to carry it back to: the middle of its pile's table top

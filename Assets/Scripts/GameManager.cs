@@ -7,6 +7,8 @@ using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+// Wakes before everything else in the scene, so a new run starts with every static put back first (RunReset)
+[DefaultExecutionOrder(-1000)]
 public class GameManager : MonoBehaviour
 {
     [SerializeField]
@@ -254,14 +256,6 @@ public class GameManager : MonoBehaviour
         new Rank(3500, "Purr-fect Barista")
     };
 
-    [SerializeField]
-    string newBestText = "NEW BEST SCORE!";
-
-    [SerializeField]
-    string bestScoreFormat = "Best: {0}";
-
-    const string BestScoreKey = "CatastropheCafe_BestScore";
-
     public static GameManager instance;
 
     public delegate void GameStateChange();
@@ -310,6 +304,7 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
+        if (instance == null) RunReset.ForNewRun();   // a new run (Liminal can run it again without a restart)
         if (instance == null)
         {
             instance = this;
@@ -761,20 +756,8 @@ public class GameManager : MonoBehaviour
             rankText.text = GetRankTitle(score);
         }
 
-        int best = PlayerPrefs.GetInt(BestScoreKey, 0);
-        bool newBest = score > best;
-        if (newBest)
-        {
-            best = score;
-            PlayerPrefs.SetInt(BestScoreKey, best);
-            PlayerPrefs.Save();
-        }
-
-        if (bestScoreText != null)
-        {
-            bestScoreText.gameObject.SetActive(true);
-            bestScoreText.text = newBest ? newBestText : string.Format(bestScoreFormat, best);
-        }
+        // No best score: Liminal keeps nothing between sessions (and doesn't allow saving), so there's nothing to beat
+        if (bestScoreText != null) bestScoreText.gameObject.SetActive(false);
     }
 
     string GetRankTitle(int finalScore)
@@ -847,7 +830,10 @@ public class GameManager : MonoBehaviour
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         ExperienceApp.End();
-        Application.Quit(); // Delete this for the Liminal build
+#if UNITY_STANDALONE
+        // Our own PC test builds only: Liminal never allows Application.Quit (the Liminal package is an Android build)
+        Application.Quit();
+#endif
 #endif
     }
 

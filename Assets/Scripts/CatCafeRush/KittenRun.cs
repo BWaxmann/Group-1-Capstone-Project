@@ -19,6 +19,11 @@ public class KittenRun : MonoBehaviour
     // herd doesn't turn into noise.
     const float MeowGap = 0.12f;
     static float lastMeow = -10f;
+    internal static void ResetStatics()   // (a new run: see RunReset)
+    {
+        running.Clear();
+        lastMeow = -10f;
+    }
     float nextMeow;
 
     CatMovement cat;
@@ -71,7 +76,7 @@ public class KittenRun : MonoBehaviour
     // between two path points) says which way is up on each: a stretch with a wall's face as its up is run up the wall,
     // Bombchu style. Leave it out for a run along the floor.
     public static KittenRun Launch(CatMovement cat, List<Vector3> path, float offset, float speed, float scale, float hitRadius,
-                                   Action<KittenRun> onFed, List<Vector3> ups = null)
+                                   Action<KittenRun> onFed, List<Vector3> ups)
     {
         // Take it over before it wakes up: no navmesh agent (this moves it), no roaming
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();

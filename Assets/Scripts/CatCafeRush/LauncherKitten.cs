@@ -99,7 +99,7 @@ public class LauncherKitten : MonoBehaviour
     public static LauncherKitten Send(CatMovement cat, List<Vector3> path, PlayerInput player, Settings settings,
                                       Action<LauncherKitten> onLatched, Action<LauncherKitten, Result> done)
     {
-        KittenRun run = KittenRun.Launch(cat, path, 0, settings.runSpeed, settings.runScale, 0f, null);
+        KittenRun run = KittenRun.Launch(cat, path, 0, settings.runSpeed, settings.runScale, 0f, null, null);
         run.holdAtEnd = true;
         LauncherKitten kitten = cat.GetComponent<LauncherKitten>();
         if (kitten == null) kitten = cat.gameObject.AddComponent<LauncherKitten>();

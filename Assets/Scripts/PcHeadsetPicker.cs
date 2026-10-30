@@ -30,7 +30,7 @@ public static class PcHeadsetPicker
         foreach (VREmulator emulator in Object.FindObjectsOfType<VREmulator>())
         {
 #if UNITY_EDITOR
-            if (emulator.EditorType != ESDKType.OVR && emulator.EditorType != ESDKType.OpenVR) continue;
+            if (emulator.EditorType == ESDKType.Emulator) continue;   // the mouse, chosen on purpose (anything else: the headset that's running)
             emulator.EditorType = type;
 #else
             emulator.BuildType = type;
