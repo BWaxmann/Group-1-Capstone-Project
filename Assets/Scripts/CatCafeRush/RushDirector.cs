@@ -351,8 +351,10 @@ public class RushDirector : MonoBehaviour
     [Range(0f, 24f)] public float shiftEndHour = 17f;
     [Tooltip("The light goes from morning to evening over the shift (Waves).")]
     public ShiftLight.Settings shiftLight = new ShiftLight.Settings();
-    [Tooltip("As the scene loads, build every letter into the fonts, compile the shaders and decode the sounds, so none of it stutters mid-round (Quest).")]
+    [Tooltip("In the lobby, a little each frame, build every letter into the fonts and decode the sounds, so none of it stutters mid-round (Quest). With a Shader Variants collection below, compile the shaders too.")]
     public bool warmUpAtStart = true;
+    [Tooltip("Optional: the shaders the game draws with, compiled in the lobby so the first boss cat (or anything new) doesn't stutter on the Quest. Make it with Catastrophe Cafe > Save Shader Variants From The Last Play, after a whole round in Play.")]
+    public ShaderVariantCollection shaderVariants;
     [Tooltip("The sky outside goes from morning to night over the shift (Waves; Farland Skies - Low Poly).")]
     public ShiftSky.Settings shiftSky = new ShiftSky.Settings();
 
@@ -612,11 +614,11 @@ public class RushDirector : MonoBehaviour
             try { ShiftLight.Begin(gameObject, shiftLight, shift); }
             catch (Exception e) { Debug.LogException(e); }   // dressing only: the round goes on without it
         }
-        // The costs that would otherwise hit as a stutter the first time something is shown, paid here instead
+        // The costs that would otherwise hit as a stutter the first time something is shown, paid in the lobby instead,
+        // a little each frame once the scene is up (never here: a wait in Start froze the Quest on the splash screen)
         if (waves && warmUpAtStart)
         {
-            try { Warmup.Run(); }
-            catch (Exception e) { Debug.LogException(e); }
+            StartCoroutine(Warmup.Run(shaderVariants));
         }
         if (ninjaPrefab != null)
         {

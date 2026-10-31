@@ -110,6 +110,63 @@ public static class CatastropheCafeTools
         Debug.Log($"[Catastrophe Cafe] Made {path}. {where} Its Font Size is only a preview: the game sets each word's size.");
     }
 
+    const string ShaderVariantsPath = "Assets/Settings/Cat Cafe Shader Variants.shadervariants";
+
+    // The shaders the last Play session drew with, saved as a collection for the Rush Director's Shader Variants slot:
+    // the game compiles them in the lobby, so the first boss cat (or anything new) doesn't stutter on the Quest.
+    // Clear the tracked list first (Edit > Project Settings > Graphics > Shader Loading), play a whole round, stop, run this.
+    [MenuItem("Catastrophe Cafe/Save Shader Variants From The Last Play", false, 7)]
+    static void SaveShaderVariants()
+    {
+        System.Reflection.BindingFlags any = System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+        System.Reflection.MethodInfo save = typeof(ShaderUtil).GetMethod("SaveCurrentShaderVariantCollection", any);
+        if (save == null)
+        {
+            Debug.LogWarning("[Catastrophe Cafe] This Unity can't save the tracked shaders from a menu. Use Edit > Project Settings > Graphics > Shader Loading > Save to asset, then drag the file into Rush Director > Shader Variants.");
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(ShaderVariantsPath));
+        save.Invoke(null, new object[] { ShaderVariantsPath });
+        AssetDatabase.ImportAsset(ShaderVariantsPath);
+        ShaderVariantCollection collection = AssetDatabase.LoadAssetAtPath<ShaderVariantCollection>(ShaderVariantsPath);
+        if (collection == null)
+        {
+            Debug.LogWarning($"[Catastrophe Cafe] Nothing was saved to {ShaderVariantsPath}. Play a whole round first, then stop and run this again.");
+            return;
+        }
+        if (collection.variantCount == 0)
+        {
+            Debug.LogWarning($"[Catastrophe Cafe] {ShaderVariantsPath} is empty: Unity hadn't tracked any shaders. Play a whole round first, then stop and run this again.");
+        }
+
+        string where = "Drag it into Rush Director > Shader Variants, on the Cat Cafe Rush object, and save the scene.";
+        RushDirector director = Object.FindObjectOfType<RushDirector>();
+        if (director != null)
+        {
+            SerializedObject serialized = new SerializedObject(director);
+            SerializedProperty slot = serialized.FindProperty("shaderVariants");
+            if (slot != null && slot.objectReferenceValue == collection)
+            {
+                where = "The Rush Director's Shader Variants slot already points at it.";
+            }
+            else if (slot != null && slot.objectReferenceValue == null)
+            {
+                slot.objectReferenceValue = collection;
+                serialized.ApplyModifiedProperties();
+                where = "It's in the Rush Director's Shader Variants slot: save the scene.";
+            }
+            else if (slot != null)
+            {
+                where = "The Rush Director's Shader Variants slot has another collection, so this one was left out of it.";
+            }
+        }
+
+        Selection.activeObject = collection;
+        EditorGUIUtility.PingObject(collection);
+        Debug.Log($"[Catastrophe Cafe] Saved {collection.shaderCount} shader(s), {collection.variantCount} variant(s), to {ShaderVariantsPath}. {where}");
+    }
+
     [MenuItem("Catastrophe Cafe/Build for Valve Index (Windows)", false, 20)]
     static void BuildForIndex()
     {

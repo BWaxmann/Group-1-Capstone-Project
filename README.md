@@ -66,7 +66,7 @@ from a CafePrefabs slot when one is filled.
 | Dinner Rush finale | Rush Director > **Remix finale** | Remix Breather (6 s), Flood At (0.45), Ninja Sit Min/Max (7 to 10 s) |
 | Vents | Rush Director > **Vents** | Cats Use Vents, Vent Chance (0.35), Kitten Vent Chance (0.5), Vent Arc (120) |
 | Tips and the board | Rush Director > **Cat Cafe Waves**, **Tips board** | Coins Per Treat, Boss Coins, Raid Spill Coins, Tidy Bonus Coins; Coin Value (0.5), Currency, labels, Always Line, Fit To Board |
-| Shift clock, sky, light | Rush Director > **The shift** | Shift Clock, Start/End Hour (9 to 17), Shift Sky (start 38, end 88, dusk from 78), Shift Light, Warm Up At Start |
+| Shift clock, sky, light | Rush Director > **The shift** | Shift Clock, Start/End Hour (9 to 17), Shift Sky (start 38, end 88, dusk from 78), Shift Light, Warm Up At Start, Shader Variants |
 | Sound mix | Rush Director > **Sound mix**; GameManager > **Sounds** | Music Level (0.8), Cat Level (1.3), World Level (1.3); the music clips and intro length |
 | Announcer | Rush Director > **Cat Cafe Waves**; Cat Cafe Rush > Announcer | Announcer on, line ids; Speaker Name, Subtitle Drop and Distance. Lines: `Resources/Announcer`, sounds: `Resources/CafeSounds` |
 | Start-up and end screen | GameManager > **UI**, **Finale**, **End Screen** | Startup Message and Boxes, Countdown, Finale Duration (30 s), Ranks |
@@ -98,10 +98,18 @@ BillboardCanvas (B), InstructionsText (B).
 **Pickups (B):** `Scripts/Pickups`. Cat Cafe Waves only allows x2 points (Rush Director > Allowed Pickups).
 
 **Editor menus (`Assets/Editor`):** Catastrophe Cafe > Editor Headset (Index or mouse), Add Cafe Prefabs To Scene,
-Make Pop-Up Word Prefab, Build for Valve Index. QuestBuild makes the Quest APKs.
+Make Pop-Up Word Prefab, Save Shader Variants From The Last Play, Build for Valve Index. QuestBuild makes the Quest APKs.
 
 **Not used by Cat Cafe Waves** (kept until closer to release, Brian's call): CatChaosDirector, the two scene
 generators, SpaceCafeVisuals, WallWalkingTestScript, NinjaWaypoints, WaypointManager, Speen, Yarnball, TrajectoryPreview.
+
+## Stutters on the Quest
+
+The warm-up (Rush Director > The shift > Warm Up At Start) builds the fonts' letters and decodes the sounds in the
+lobby, a little each frame. A shader is compiled the first time something is drawn with it, which is the hitch at the
+first boss cat; to pay that in the lobby too: Edit > Project Settings > Graphics > Shader Loading > Clear, play a whole
+round in the editor, stop, Catastrophe Cafe > Save Shader Variants From The Last Play, save the scene. Never call
+Shader.WarmupAllShaders: on the Quest it compiles every variant in the build and freezes the splash screen for minutes.
 
 ## Working together
 
