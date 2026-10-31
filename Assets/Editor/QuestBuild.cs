@@ -306,7 +306,7 @@ public static class QuestBuild
         }
 
         password = NewPassword();
-        var process = Process.Start(new ProcessStartInfo
+        Process process = Process.Start(new ProcessStartInfo
         {
             FileName = keytool,
             Arguments = $"-genkeypair -storetype JKS -keystore \"{Path.GetFullPath(KeystorePath)}\" -alias {KeyAlias} " +
@@ -355,7 +355,7 @@ public static class QuestBuild
     {
         const string letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         byte[] bytes = new byte[24];
-        using (var random = RandomNumberGenerator.Create())
+        using (RandomNumberGenerator random = RandomNumberGenerator.Create())
         {
             random.GetBytes(bytes);
         }

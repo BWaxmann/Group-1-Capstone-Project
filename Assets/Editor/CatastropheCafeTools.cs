@@ -215,7 +215,7 @@ public static class CatastropheCafeTools
 
     static string[] GetEnabledScenes()
     {
-        var scenes = new System.Collections.Generic.List<string>();
+        System.Collections.Generic.List<string> scenes = new System.Collections.Generic.List<string>();
         foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
         {
             if (scene.enabled)
