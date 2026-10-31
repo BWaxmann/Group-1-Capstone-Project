@@ -1063,7 +1063,7 @@ public class GameManager : MonoBehaviour
 
     void FadeOut()
     {
-        ScreenFader fader = ScreenFader.Instance;
+        IScreenFader fader = ScreenFader.Instance;
         fader?.FadeToBlack(fadeDuration);
     }
 
