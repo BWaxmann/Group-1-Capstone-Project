@@ -80,9 +80,17 @@ public class SpawnManager : MonoBehaviour
     {
         if (spawnRoundsData != null && spawnRoundsData.Length > 0)
         {
-            return round >= 1 && round <= spawnRoundsData.Length ? spawnRoundsData[round - 1].spawnWaves : null;
+            if (round >= 1 && round <= spawnRoundsData.Length)
+            {
+                return spawnRoundsData[round - 1].spawnWaves;
+            }
+            return null;
         }
-        return round == 1 ? spawnWavesData : null;
+        if (round == 1)
+        {
+            return spawnWavesData;
+        }
+        return null;
     }
 
     IEnumerator SpawnWave(SpawnData data)
@@ -97,9 +105,15 @@ public class SpawnManager : MonoBehaviour
             // Older waves were saved before this setting existed (it loads as 0): they send one at a time
             for (int j = 0; j < Mathf.Max(1, data.numberToSpawnAtATime); j++)
             {
-                CatMovement cat = data.onlySpawnSpecificVariations
-                    ? catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn)
-                    : catSpawner.GetRandomObjectFromPool<CatMovement>();
+                CatMovement cat;
+                if (data.onlySpawnSpecificVariations)
+                {
+                    cat = catSpawner.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(data.variationsToSpawn);
+                }
+                else
+                {
+                    cat = catSpawner.GetRandomObjectFromPool<CatMovement>();
+                }
                 SpawnCat(cat);
             }
 

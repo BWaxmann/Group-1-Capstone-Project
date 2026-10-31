@@ -42,7 +42,15 @@ public class SoundBite : MonoBehaviour
 
         playing.Add(bite);
         Duck();
-        float length = loop ? -1f : (float)(start - AudioSettings.dspTime) + clip.length;
+        float length;
+        if (loop)
+        {
+            length = -1f;
+        }
+        else
+        {
+            length = (float)(start - AudioSettings.dspTime) + clip.length;
+        }
         bite.StartCoroutine(bite.Run(fadeIn, fadeOut, length));
         return bite;
     }
@@ -91,7 +99,15 @@ public class SoundBite : MonoBehaviour
 
     IEnumerator FadeAway(float seconds)
     {
-        float from = main != null ? main.volume : 0f;
+        float from;
+        if (main != null)
+        {
+            from = main.volume;
+        }
+        else
+        {
+            from = 0f;
+        }
         float t = 0;
         while (t < 1f)
         {

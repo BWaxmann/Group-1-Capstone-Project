@@ -29,7 +29,14 @@ public class CatJuice : MonoBehaviour
         if (juice == null)
         {
             juice = cat.gameObject.AddComponent<CatJuice>();
-            juice.model = animator != null ? animator.transform : cat.transform;
+            if (animator != null)
+            {
+                juice.model = animator.transform;
+            }
+            else
+            {
+                juice.model = cat.transform;
+            }
             juice.modelBaseScale = juice.model.localScale;
             juice.head = FindHead(juice.model);
         }

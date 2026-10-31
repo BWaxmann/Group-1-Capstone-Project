@@ -152,10 +152,25 @@ public class MafiaHeist : MonoBehaviour
         Vector3 from = transform.position;
         Vector3 towards = Flat(jar.transform.position - from);
         float reach = towards.magnitude;
-        towards = reach > 0.001f ? towards / reach : transform.forward;
+        if (reach > 0.001f)
+        {
+            towards = towards / reach;
+        }
+        else
+        {
+            towards = transform.forward;
+        }
         transform.rotation = Quaternion.LookRotation(towards);
         bool upOnTop = jar.transform.position.y - from.y > 0.35f;
-        Vector3 perch = upOnTop ? jar.transform.position - towards * 0.25f : from + towards * Mathf.Max(0, reach - 0.3f);
+        Vector3 perch;
+        if (upOnTop)
+        {
+            perch = jar.transform.position - towards * 0.25f;
+        }
+        else
+        {
+            perch = from + towards * Mathf.Max(0, reach - 0.3f);
+        }
         yield return Hop(from, perch, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
         // Swat after swat at the jar, a few coins spilling each time (a right treat puts him off his swing for a moment)

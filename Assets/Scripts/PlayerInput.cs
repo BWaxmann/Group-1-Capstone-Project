@@ -154,7 +154,11 @@ public class PlayerInput : MonoBehaviour
     {
         get
         {
-            return straightShots ? straightShotSpeed : launchForce;
+            if (straightShots)
+            {
+                return straightShotSpeed;
+            }
+            return launchForce;
         }
     }
 
@@ -204,19 +208,35 @@ public class PlayerInput : MonoBehaviour
 
     public int LoadedFood(bool rightHand)
     {
-        return rightHand ? loadedTreatVariationRight : loadedTreatVariationLeft;
+        if (rightHand)
+        {
+            return loadedTreatVariationRight;
+        }
+        return loadedTreatVariationLeft;
     }
     public Transform Launcher(bool rightHand)
     {
-        return rightHand ? launcherRight.transform : launcherLeft.transform;
+        if (rightHand)
+        {
+            return launcherRight.transform;
+        }
+        return launcherLeft.transform;
     }
     public bool GripPressed(bool rightHand)
     {
-        return rightHand ? gripPressedRight : gripPressedLeft;
+        if (rightHand)
+        {
+            return gripPressedRight;
+        }
+        return gripPressedLeft;
     }
     public Transform LaunchPoint(bool rightHand)
     {
-        return rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+        if (rightHand)
+        {
+            return treatLaunchPositionRight;
+        }
+        return treatLaunchPositionLeft;
     }
 
     // The player's head (what billboards turn to face)
@@ -277,11 +297,27 @@ public class PlayerInput : MonoBehaviour
     // Spread of each style (degrees either side) and pellets per shot
     static float StyleSpread(FireStyle style)
     {
-        return style == FireStyle.Scatter ? 14f : style == FireStyle.Buckshot ? 5f : 0f;
+        if (style == FireStyle.Scatter)
+        {
+            return 14f;
+        }
+        if (style == FireStyle.Buckshot)
+        {
+            return 5f;
+        }
+        return 0f;
     }
     static int StylePellets(FireStyle style)
     {
-        return style == FireStyle.Scatter ? 3 : style == FireStyle.Buckshot ? 7 : 1;
+        if (style == FireStyle.Scatter)
+        {
+            return 3;
+        }
+        if (style == FireStyle.Buckshot)
+        {
+            return 7;
+        }
+        return 1;
     }
 
     // Colours each launcher's aim reticle (e.g. the colour that hand fires); null = the reticle's own colours
@@ -323,7 +359,15 @@ public class PlayerInput : MonoBehaviour
     // True for as long as that hand's grip is squeezed (in the editor, the right mouse button is the right grip)
     public bool GripHeld(bool rightHand)
     {
-        bool held = rightHand ? gripHeldRight : gripHeldLeft;
+        bool held;
+        if (rightHand)
+        {
+            held = gripHeldRight;
+        }
+        else
+        {
+            held = gripHeldLeft;
+        }
 #if UNITY_EDITOR
         if (rightHand) held |= Input.GetMouseButton(1);
 #endif
@@ -333,7 +377,11 @@ public class PlayerInput : MonoBehaviour
     // A firm left/right flick of that hand's thumbstick this frame: -1 left, +1 right, 0 none
     public int ThumbFlick(bool rightHand)
     {
-        return rightHand ? flickRight : flickLeft;
+        if (rightHand)
+        {
+            return flickRight;
+        }
+        return flickLeft;
     }
 
     public void LoadFood(bool rightHand, int treatPoolVariation)
@@ -527,7 +575,11 @@ public class PlayerInput : MonoBehaviour
     {
         IVRDevice device = VRDevice.Device;
         if (device == null) return null;
-        return rightHand ? device.PrimaryInputDevice : device.SecondaryInputDevice;
+        if (rightHand)
+        {
+            return device.PrimaryInputDevice;
+        }
+        return device.SecondaryInputDevice;
     }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -589,7 +641,15 @@ public class PlayerInput : MonoBehaviour
         IVRDevice device = VRDevice.Device;
         if (device != null && device.Name == "OpenVR")
         {
-            SteamVR_Input_Sources source = rightHand ? SteamVR_Input_Sources.RightHand : SteamVR_Input_Sources.LeftHand;
+            SteamVR_Input_Sources source;
+            if (rightHand)
+            {
+                source = SteamVR_Input_Sources.RightHand;
+            }
+            else
+            {
+                source = SteamVR_Input_Sources.LeftHand;
+            }
             SteamVR_Action_Boolean flickRightAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "SnapTurnRight");
             SteamVR_Action_Boolean flickLeftAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "SnapTurnLeft");
             if (flickRightAction != null && flickRightAction.GetStateDown(source)) direction = 1;
@@ -601,10 +661,26 @@ public class PlayerInput : MonoBehaviour
             float x = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OvrHand(rightHand)).x;
 #else
             IVRInputDevice input = GetHandInput(rightHand);
-            float x = input != null ? input.GetAxis2D(VRAxis.One).x : 0f;
+            float x;
+            if (input != null)
+            {
+                x = input.GetAxis2D(VRAxis.One).x;
+            }
+            else
+            {
+                x = 0f;
+            }
 #endif
             bool held = Mathf.Abs(x) > 0.7f;
-            bool wasHeld = rightHand ? stickHeldRight : stickHeldLeft;
+            bool wasHeld;
+            if (rightHand)
+            {
+                wasHeld = stickHeldRight;
+            }
+            else
+            {
+                wasHeld = stickHeldLeft;
+            }
             if (held && !wasHeld) direction = x > 0 ? 1 : -1;
             if (rightHand) stickHeldRight = held;
             else stickHeldLeft = held;
@@ -631,13 +707,26 @@ public class PlayerInput : MonoBehaviour
         IVRInputDevice input = GetHandInput(rightHand);
         if (input != null)
         {
-            held = input.HasButton(VRButton.Three)
-                ? input.GetButton(VRButton.Three)
-                : input.GetAxis1D(VRAxis.Three) >= gripPressThreshold;
+            if (input.HasButton(VRButton.Three))
+            {
+                held = input.GetButton(VRButton.Three);
+            }
+            else
+            {
+                held = input.GetAxis1D(VRAxis.Three) >= gripPressThreshold;
+            }
         }
 #endif
 
-        bool wasHeld = rightHand ? gripHeldRight : gripHeldLeft;
+        bool wasHeld;
+        if (rightHand)
+        {
+            wasHeld = gripHeldRight;
+        }
+        else
+        {
+            wasHeld = gripHeldLeft;
+        }
         if (rightHand) gripHeldRight = held;
         else gripHeldLeft = held;
 
@@ -716,7 +805,15 @@ public class PlayerInput : MonoBehaviour
         int pellets = StylePellets(style);
         float spread = StyleSpread(style);
         int shotId = ++lastShotId;
-        Transform muzzle = rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+        Transform muzzle;
+        if (rightHand)
+        {
+            muzzle = treatLaunchPositionRight;
+        }
+        else
+        {
+            muzzle = treatLaunchPositionLeft;
+        }
         for (int i = 0; i < pellets; i++)
         {
             // Spread the volley around the aim, inside a cone (the first pellet flies true)
@@ -738,7 +835,15 @@ public class PlayerInput : MonoBehaviour
     void LaunchSpread(bool rightHand)
     {
         int shotId = ++lastShotId;
-        Transform muzzle = rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+        Transform muzzle;
+        if (rightHand)
+        {
+            muzzle = treatLaunchPositionRight;
+        }
+        else
+        {
+            muzzle = treatLaunchPositionLeft;
+        }
         for (int i = 0; i < numberOfShotsInSpread; i++)
         {
             float angle = (1f - 2f * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle;
@@ -754,7 +859,15 @@ public class PlayerInput : MonoBehaviour
     // A pointer at the muzzle that can be turned, to aim a pellet off-centre
     Transform SpreadAim(bool rightHand, Transform muzzle)
     {
-        Transform aim = rightHand ? spreadAimRight : spreadAimLeft;
+        Transform aim;
+        if (rightHand)
+        {
+            aim = spreadAimRight;
+        }
+        else
+        {
+            aim = spreadAimLeft;
+        }
         if (aim == null)
         {
             aim = new GameObject("Spread Aim").transform;
@@ -773,9 +886,15 @@ public class PlayerInput : MonoBehaviour
     Treat LaunchOneTreat(bool rightHand, Transform from, bool withFeedback, float angle = 0)
     {
         int variation = LoadedFood(rightHand);
-        Treat treat = variation >= 0
-            ? treatsSpawner.GetObjectFromPool<Treat>(variation)
-            : treatsSpawner.GetRandomObjectFromPool<Treat>();
+        Treat treat;
+        if (variation >= 0)
+        {
+            treat = treatsSpawner.GetObjectFromPool<Treat>(variation);
+        }
+        else
+        {
+            treat = treatsSpawner.GetRandomObjectFromPool<Treat>();
+        }
         if (treat == null)
         {
             Debug.LogWarning($"[Space Cafe] {Time.timeSinceLevelLoad:F1}s: no treat available to fire (food {variation}, {(rightHand ? "right" : "left")} hand)");
@@ -886,7 +1005,14 @@ public class PlayerInput : MonoBehaviour
         while (true)
         {
             changeImage = false;
-            currentExpression = rightHand ? rightExpression : leftExpression;
+            if (rightHand)
+            {
+                currentExpression = rightExpression;
+            }
+            else
+            {
+                currentExpression = leftExpression;
+            }
             if (currentExpression != previousExpression)
             {
                 timer = 0;

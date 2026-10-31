@@ -132,7 +132,15 @@ public static class QuestBuild
         string aliasName = PlayerSettings.Android.keyaliasName;
         string aliasPass = PlayerSettings.Android.keyaliasPass;
         VREmulator emulator = GetEmulator();
-        int buildType = emulator != null ? (int)emulator.BuildType : -1;
+        int buildType;
+        if (emulator != null)
+        {
+            buildType = (int)emulator.BuildType;
+        }
+        else
+        {
+            buildType = -1;
+        }
         bool exportProject = EditorUserBuildSettings.exportAsGoogleAndroidProject;
         bool appBundle = EditorUserBuildSettings.buildAppBundle;
         AndroidBuildSystem buildSystem = EditorUserBuildSettings.androidBuildSystem;
@@ -150,7 +158,14 @@ public static class QuestBuild
 
             // 64-bit (IL2CPP + ARM64) runs on every Quest; the project's default Mono build is 32-bit only
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, monoBuild ? ScriptingImplementation.Mono2x : ScriptingImplementation.IL2CPP);
-            PlayerSettings.Android.targetArchitectures = monoBuild ? AndroidArchitecture.ARMv7 : AndroidArchitecture.ARM64;
+            if (monoBuild)
+            {
+                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
+            }
+            else
+            {
+                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            }
             PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
             PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.OpenGLES3 });
             PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel28;
@@ -322,7 +337,11 @@ public static class QuestBuild
     static VREmulator GetEmulator()
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/[ExperienceApp].prefab");
-        return prefab != null ? prefab.GetComponentInChildren<VREmulator>(true) : null;
+        if (prefab != null)
+        {
+            return prefab.GetComponentInChildren<VREmulator>(true);
+        }
+        return null;
     }
 
     static void SetBuildType(VREmulator emulator, int type)
@@ -359,7 +378,15 @@ class QuestManifestTweak : IPostGenerateGradleAndroidProject
 
         // Add it right after the main activity's <action ... MAIN ... /> tag (whatever its spacing)
         int main = manifest.IndexOf("android.intent.action.MAIN", StringComparison.Ordinal);
-        int tagEnd = main >= 0 ? manifest.IndexOf("/>", main, StringComparison.Ordinal) : -1;
+        int tagEnd;
+        if (main >= 0)
+        {
+            tagEnd = manifest.IndexOf("/>", main, StringComparison.Ordinal);
+        }
+        else
+        {
+            tagEnd = -1;
+        }
         if (tagEnd < 0)
         {
             Debug.LogWarning("[Quest Build] Couldn't find the main activity in the Android manifest; the VR category wasn't added.");

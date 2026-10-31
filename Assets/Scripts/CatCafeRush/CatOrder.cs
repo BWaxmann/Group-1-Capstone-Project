@@ -37,7 +37,11 @@ public class CatOrder : MonoBehaviour
     {
         get
         {
-            return isHungry && ordered ? order[step].variation : -1;
+            if (isHungry && ordered)
+            {
+                return order[step].variation;
+            }
+            return -1;
         }
     }
 
@@ -54,7 +58,11 @@ public class CatOrder : MonoBehaviour
     {
         get
         {
-            return patienceTotal > 0 ? Mathf.Clamp01(patienceLeft / patienceTotal) : 1f;
+            if (patienceTotal > 0)
+            {
+                return Mathf.Clamp01(patienceLeft / patienceTotal);
+            }
+            return 1f;
         }
     }
 
@@ -76,7 +84,11 @@ public class CatOrder : MonoBehaviour
     {
         get
         {
-            return hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.2f;
+            if (hitbox != null)
+            {
+                return hitbox.transform.TransformPoint(hitbox.center);
+            }
+            return transform.position + Vector3.up * 0.2f;
         }
     }
 
@@ -128,9 +140,11 @@ public class CatOrder : MonoBehaviour
     {
         get
         {
-            return bubble != null
-                ? bubble.transform.position + Vector3.up * (0.15f + 0.26f * bubble.transform.lossyScale.y)
-                : transform.position + Vector3.up * 1f;
+            if (bubble != null)
+            {
+                return bubble.transform.position + Vector3.up * (0.15f + 0.26f * bubble.transform.lossyScale.y);
+            }
+            return transform.position + Vector3.up * 1f;
         }
     }
 
@@ -279,7 +293,15 @@ public class CatOrder : MonoBehaviour
         PlayDing();
 
         PlayerInput player = FindObjectOfType<PlayerInput>();
-        Transform eye = player != null ? player.eyePoint : null;
+        Transform eye;
+        if (player != null)
+        {
+            eye = player.eyePoint;
+        }
+        else
+        {
+            eye = null;
+        }
         if (eye == null) yield break;
         Vector3 look = eye.position - transform.position;
         look.y = 0;
@@ -354,7 +376,14 @@ public class CatOrder : MonoBehaviour
             if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer || rend.GetComponentInParent<OrderBubble>() != null) continue;
             if (rend.GetComponentInParent<Canvas>() != null) continue;
             float height = rend.bounds.max.y - transform.position.y;
-            top = any ? Mathf.Max(top, height) : height;
+            if (any)
+            {
+                top = Mathf.Max(top, height);
+            }
+            else
+            {
+                top = height;
+            }
             any = true;
         }
         return Mathf.Clamp(top, 0.3f, 1.2f) + 0.2f * bubbleScale;

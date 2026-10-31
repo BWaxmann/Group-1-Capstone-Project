@@ -82,7 +82,15 @@ public class ShiftSky : MonoBehaviour
                 sky.skyLayerColour.Add(own.color);
             }
         }
-        GameObject moon = string.IsNullOrEmpty(settings.moonName) ? null : GameObject.Find(settings.moonName);
+        GameObject moon;
+        if (string.IsNullOrEmpty(settings.moonName))
+        {
+            moon = null;
+        }
+        else
+        {
+            moon = GameObject.Find(settings.moonName);
+        }
         if (moon != null)
         {
             sky.moon = moon.GetComponentsInChildren<Renderer>();

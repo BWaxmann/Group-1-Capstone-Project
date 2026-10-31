@@ -65,7 +65,15 @@ public class OrderBubble : MonoBehaviour
     public static OrderBubble Create(Transform cat)
     {
         OrderBubble prefab = CafePrefabs.OrderBubblePrefab;
-        OrderBubble order = prefab != null ? Instantiate(prefab, cat, false) : new GameObject("Order Bubble").AddComponent<OrderBubble>();
+        OrderBubble order;
+        if (prefab != null)
+        {
+            order = Instantiate(prefab, cat, false);
+        }
+        else
+        {
+            order = new GameObject("Order Bubble").AddComponent<OrderBubble>();
+        }
         order.name = "Order Bubble";
         order.transform.SetParent(cat, false);
         order.Build();
@@ -203,7 +211,14 @@ public class OrderBubble : MonoBehaviour
         }
 
         GameObject dot = SpaceCafeVisuals.Shape(PrimitiveType.Sphere, icon, "Colour", item.colour);
-        dot.transform.localScale = madeModel ? new Vector3(0.16f, 0.16f, 0.01f) : new Vector3(0.14f, 0.14f, 0.05f);
+        if (madeModel)
+        {
+            dot.transform.localScale = new Vector3(0.16f, 0.16f, 0.01f);
+        }
+        else
+        {
+            dot.transform.localScale = new Vector3(0.14f, 0.14f, 0.05f);
+        }
         dot.transform.localPosition = new Vector3(0, 0, 0.025f);
         return icon;
     }
@@ -211,8 +226,15 @@ public class OrderBubble : MonoBehaviour
     public void SetPatience(float fraction)
     {
         SpaceCafeVisuals.SetRing(patienceRing, ringRadius, fraction);
-        Color colour = fraction > 0.5f ? Color.Lerp(new Color(1f, 0.8f, 0.1f), new Color(0.3f, 0.95f, 0.4f), (fraction - 0.5f) * 2f)
-                                       : Color.Lerp(new Color(1f, 0.35f, 0.2f), new Color(1f, 0.8f, 0.1f), fraction * 2f);
+        Color colour;
+        if (fraction > 0.5f)
+        {
+            colour = Color.Lerp(new Color(1f, 0.8f, 0.1f), new Color(0.3f, 0.95f, 0.4f), (fraction - 0.5f) * 2f);
+        }
+        else
+        {
+            colour = Color.Lerp(new Color(1f, 0.35f, 0.2f), new Color(1f, 0.8f, 0.1f), fraction * 2f);
+        }
         patienceRing.startColor = patienceRing.endColor = colour;
     }
 

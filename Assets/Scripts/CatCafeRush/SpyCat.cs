@@ -166,11 +166,26 @@ public class SpyCat : MonoBehaviour
         cat.treatGate = treat => false;   // it's not here to eat
         cat.wantsTreats = () => false;
         Transform eye = player.eyePoint;
-        Vector3 head = eye != null ? eye.position : player.transform.position + Vector3.up * 1.6f;
+        Vector3 head;
+        if (eye != null)
+        {
+            head = eye.position;
+        }
+        else
+        {
+            head = player.transform.position + Vector3.up * 1.6f;
+        }
         anchor = vent.opening;
         Vector3 toward = new Vector3(head.x - anchor.x, 0, head.z - anchor.z);
         float distance = toward.magnitude;
-        toward = distance > 0.01f ? toward / distance : Vector3.forward;
+        if (distance > 0.01f)
+        {
+            toward = toward / distance;
+        }
+        else
+        {
+            toward = Vector3.forward;
+        }
         cat.transform.SetPositionAndRotation(anchor + Vector3.up * 0.4f, Quaternion.LookRotation(toward));
         cat.gameObject.SetActive(true);
         cat.TakeOver();
@@ -178,7 +193,14 @@ public class SpyCat : MonoBehaviour
         if (waddle != null) waddle.enabled = false;   // hanging, not walking
         SetSpying(true);
         ropePoint = FindRopePoint(cat.transform);
-        backHeight = ropePoint != null ? Mathf.Max(0.1f, ropePoint.position.y - cat.transform.position.y) : BackHeight();
+        if (ropePoint != null)
+        {
+            backHeight = Mathf.Max(0.1f, ropePoint.position.y - cat.transform.position.y);
+        }
+        else
+        {
+            backHeight = BackHeight();
+        }
 
         yield return vent.Open();
         Sting();
@@ -360,7 +382,15 @@ public class SpyCat : MonoBehaviour
     void CleanUp()
     {
         SetSpying(false);
-        CatWaddle waddle = cat != null ? cat.GetComponent<CatWaddle>() : null;
+        CatWaddle waddle;
+        if (cat != null)
+        {
+            waddle = cat.GetComponent<CatWaddle>();
+        }
+        else
+        {
+            waddle = null;
+        }
         if (waddle != null) waddle.enabled = true;
         if (rope != null) Destroy(rope.gameObject);
         if (ring != null) Destroy(ring.transform.parent.gameObject);
@@ -381,7 +411,11 @@ public class SpyCat : MonoBehaviour
 
     Vector3 Hand(bool right)
     {
-        return player.hasLaunchers ? player.Launcher(right).position : player.transform.position;
+        if (player.hasLaunchers)
+        {
+            return player.Launcher(right).position;
+        }
+        return player.transform.position;
     }
 
     // How fast the hands are moving, the two averaged (smoothed)
@@ -523,7 +557,15 @@ public class SpyCat : MonoBehaviour
         Quaternion rotation = Quaternion.LookRotation(forward.sqrMagnitude > 0.001f ? forward : toward, up)
                               * Quaternion.Euler(0, Mathf.Sin(Time.time * 0.8f) * 6f, 0);
         cat.transform.rotation = rotation;
-        Vector3 offset = ropePoint != null ? ropePoint.position - cat.transform.position : rotation * Vector3.up * backHeight;
+        Vector3 offset;
+        if (ropePoint != null)
+        {
+            offset = ropePoint.position - cat.transform.position;
+        }
+        else
+        {
+            offset = rotation * Vector3.up * backHeight;
+        }
         cat.transform.position = clip - offset;
         UpdateRope();
     }

@@ -143,7 +143,15 @@ public class CatRaid : MonoBehaviour
 
         Vector3 look = target.position - transform.position;
         look.y = 0;
-        Quaternion facing = look.sqrMagnitude > 0.001f ? Quaternion.LookRotation(look) : transform.rotation;
+        Quaternion facing;
+        if (look.sqrMagnitude > 0.001f)
+        {
+            facing = Quaternion.LookRotation(look);
+        }
+        else
+        {
+            facing = transform.rotation;
+        }
         Quaternion turning = transform.rotation;
         float timer = 0;
         while (timer < settings.windUp)
@@ -194,12 +202,25 @@ public class CatRaid : MonoBehaviour
         Vector3 towards = target.position - from;
         towards.y = 0;
         float reach = towards.magnitude;
-        towards = reach > 0.001f ? towards / reach : transform.forward;
+        if (reach > 0.001f)
+        {
+            towards = towards / reach;
+        }
+        else
+        {
+            towards = transform.forward;
+        }
         transform.rotation = Quaternion.LookRotation(towards);
         bool upOnTop = target.position.y - from.y > 0.35f;
-        Vector3 landing = upOnTop
-            ? new Vector3(target.position.x, target.position.y, target.position.z) - towards * 0.25f
-            : from + towards * Mathf.Max(0, reach - 0.3f);
+        Vector3 landing;
+        if (upOnTop)
+        {
+            landing = new Vector3(target.position.x, target.position.y, target.position.z) - towards * 0.25f;
+        }
+        else
+        {
+            landing = from + towards * Mathf.Max(0, reach - 0.3f);
+        }
         yield return Hop(from, landing, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
         if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger("AngryCat");

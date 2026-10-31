@@ -32,7 +32,15 @@ public class FlutterPiece : MonoBehaviour
                 if (!any) { bounds = rend.bounds; any = true; }
                 else bounds.Encapsulate(rend.bounds);
             }
-            float largest = any ? Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z, 0.0001f) : 1f;
+            float largest;
+            if (any)
+            {
+                largest = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z, 0.0001f);
+            }
+            else
+            {
+                largest = 1f;
+            }
             piece.transform.localScale *= size * Random.Range(0.8f, 1.2f) / largest;
 
             FlutterPiece flutter = piece.AddComponent<FlutterPiece>();

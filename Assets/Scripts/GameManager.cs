@@ -572,7 +572,14 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < startupBoxes.Length; i++)
         {
             if (startupBoxes[i] == null) continue;
-            startupBoxes[i].text = i < parts.Length ? parts[i].Trim() : "";
+            if (i < parts.Length)
+            {
+                startupBoxes[i].text = parts[i].Trim();
+            }
+            else
+            {
+                startupBoxes[i].text = "";
+            }
             startupBoxes[i].gameObject.SetActive(i < parts.Length);
         }
         countdownText.text = "";
@@ -707,7 +714,15 @@ public class GameManager : MonoBehaviour
         shiftEndHour = endHour;
         if (timerText == null) return;
         // The clock's other labels (its canvas can still be switched off here, so it's found by the parent, not .canvas)
-        Transform face = timerText.transform.parent != null ? timerText.transform.parent : timerText.transform;
+        Transform face;
+        if (timerText.transform.parent != null)
+        {
+            face = timerText.transform.parent;
+        }
+        else
+        {
+            face = timerText.transform;
+        }
         foreach (TMP_Text other in face.GetComponentsInChildren<TMP_Text>(true))
         {
             if (other != timerText) other.gameObject.SetActive(false);
@@ -729,11 +744,35 @@ public class GameManager : MonoBehaviour
     string ClockText(float secondsLeft, float roundLength)
     {
         if (!shiftClock) return Mathf.CeilToInt(secondsLeft).ToString();
-        float through = roundLength > 0 ? Mathf.Clamp01(1f - secondsLeft / roundLength) : 1f;
+        float through;
+        if (roundLength > 0)
+        {
+            through = Mathf.Clamp01(1f - secondsLeft / roundLength);
+        }
+        else
+        {
+            through = 1f;
+        }
         int minutes = Mathf.FloorToInt((shiftStartHour + (shiftEndHour - shiftStartHour) * through) * 12f) * 5;
         int hour = (minutes / 60) % 24;
-        string half = hour < 12 ? "AM" : "PM";
-        int shown = hour % 12 == 0 ? 12 : hour % 12;
+        string half;
+        if (hour < 12)
+        {
+            half = "AM";
+        }
+        else
+        {
+            half = "PM";
+        }
+        int shown;
+        if (hour % 12 == 0)
+        {
+            shown = 12;
+        }
+        else
+        {
+            shown = hour % 12;
+        }
         return $"{shown}:{minutes % 60:00} {half}";
     }
 
@@ -839,7 +878,15 @@ public class GameManager : MonoBehaviour
 
     void ShowRankAndBestScore()
     {
-        RectTransform panel = finalScorePanel != null ? finalScorePanel.GetComponent<RectTransform>() : null;
+        RectTransform panel;
+        if (finalScorePanel != null)
+        {
+            panel = finalScorePanel.GetComponent<RectTransform>();
+        }
+        else
+        {
+            panel = null;
+        }
 
         if (rankText == null && finalScoreText != null && panel != null)
         {

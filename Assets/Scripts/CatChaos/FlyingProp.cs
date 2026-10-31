@@ -50,7 +50,11 @@ public class FlyingProp : MonoBehaviour
     {
         get
         {
-            return propRenderer != null ? propRenderer.bounds.center : transform.position;
+            if (propRenderer != null)
+            {
+                return propRenderer.bounds.center;
+            }
+            return transform.position;
         }
     }
 
@@ -59,7 +63,11 @@ public class FlyingProp : MonoBehaviour
     {
         get
         {
-            return state == State.Home ? Time.time - homeSince : 0f;
+            if (state == State.Home)
+            {
+                return Time.time - homeSince;
+            }
+            return 0f;
         }
     }
 
@@ -200,8 +208,22 @@ public class FlyingProp : MonoBehaviour
         homeLocalRotation = transform.localRotation;
         homeLocalScale = transform.localScale;
         renderers = GetComponentsInChildren<Renderer>();
-        propRenderer = renderers.Length > 0 ? renderers[0] : null;
-        homeBounds = propRenderer != null ? propRenderer.bounds : new Bounds(transform.position, Vector3.zero);
+        if (renderers.Length > 0)
+        {
+            propRenderer = renderers[0];
+        }
+        else
+        {
+            propRenderer = null;
+        }
+        if (propRenderer != null)
+        {
+            homeBounds = propRenderer.bounds;
+        }
+        else
+        {
+            homeBounds = new Bounds(transform.position, Vector3.zero);
+        }
         foreach (Renderer rend in renderers) homeBounds.Encapsulate(rend.bounds);
     }
 
@@ -383,7 +405,14 @@ public class FlyingProp : MonoBehaviour
         state = State.Flying;
         falling = true;
         velocity = Vector3.zero;
-        flightTime = CatChaosSettings.instance != null ? CatChaosSettings.instance.catchableAfter : 0f;   // a quick save
+        if (CatChaosSettings.instance != null)
+        {
+            flightTime = CatChaosSettings.instance.catchableAfter;
+        }
+        else
+        {
+            flightTime = 0f;
+        }   // a quick save
     }
 
     // Sent home (flicked back, or let go over its pile): it flies back to its spot
@@ -408,7 +437,14 @@ public class FlyingProp : MonoBehaviour
         // Bigger while it's in the air or held, so it's easy to spot; back to normal on the way home
         if (settings.airborneScale > 1f && (state == State.Flying || state == State.Held || state == State.Returning))
         {
-            grow = state == State.Returning ? Mathf.Clamp01(1f - timer / settings.returnDuration) : Mathf.MoveTowards(grow, 1f, dt * 5f);
+            if (state == State.Returning)
+            {
+                grow = Mathf.Clamp01(1f - timer / settings.returnDuration);
+            }
+            else
+            {
+                grow = Mathf.MoveTowards(grow, 1f, dt * 5f);
+            }
             transform.localScale = flyingScale * Mathf.Lerp(1f, settings.airborneScale, grow);
         }
 
@@ -441,7 +477,15 @@ public class FlyingProp : MonoBehaviour
                         driftVelocity = PickDrift(settings);
                     }
                     Vector3 sideways = Vector3.Lerp(new Vector3(velocity.x, 0, velocity.z), driftVelocity, 1f - Mathf.Exp(-3f * dt));
-                    float fall = slowFall ? Mathf.Min(0.08f, settings.driftFallSpeed) : settings.driftFallSpeed;
+                    float fall;
+                    if (slowFall)
+                    {
+                        fall = Mathf.Min(0.08f, settings.driftFallSpeed);
+                    }
+                    else
+                    {
+                        fall = settings.driftFallSpeed;
+                    }
                     float sink = Mathf.MoveTowards(velocity.y, -fall, settings.propGravity * dt);
                     velocity = new Vector3(sideways.x, sink, sideways.z);
                 }
@@ -515,7 +559,14 @@ public class FlyingProp : MonoBehaviour
         // Not into a wall: if one's close that way, head back towards the action instead
         if (WallAhead(transform.position, direction, 0.8f, out _))
         {
-            direction = toCentre.sqrMagnitude > 0.0001f ? toCentre.normalized : -direction;
+            if (toCentre.sqrMagnitude > 0.0001f)
+            {
+                direction = toCentre.normalized;
+            }
+            else
+            {
+                direction = -direction;
+            }
         }
         return direction * settings.driftSpeed * Random.Range(0.6f, 1.2f);
     }
@@ -634,10 +685,25 @@ public class FlyingProp : MonoBehaviour
         ShowHomeRing(true);
         bool close = nearHome;
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * (close ? 14f : 6f));
-        Color colour = close ? new Color(0.4f, 1f, 0.5f) : new Color(1f, 0.85f, 0.2f);
+        Color colour;
+        if (close)
+        {
+            colour = new Color(0.4f, 1f, 0.5f);
+        }
+        else
+        {
+            colour = new Color(1f, 0.85f, 0.2f);
+        }
         colour.a = Mathf.Lerp(0.5f, 1f, pulse);
         homeRing.startColor = homeRing.endColor = colour;
-        homeRing.widthMultiplier = close ? 0.05f : 0.03f;
+        if (close)
+        {
+            homeRing.widthMultiplier = 0.05f;
+        }
+        else
+        {
+            homeRing.widthMultiplier = 0.03f;
+        }
         homeRing.transform.parent.position = zoneCentre + Vector3.up * 0.02f;
         if (dragHint != null)
         {
@@ -795,11 +861,19 @@ public class FlyingProp : MonoBehaviour
 
     Vector3 HomePosition()
     {
-        return homeParent != null ? homeParent.TransformPoint(homeLocalPosition) : homeLocalPosition;
+        if (homeParent != null)
+        {
+            return homeParent.TransformPoint(homeLocalPosition);
+        }
+        return homeLocalPosition;
     }
     Quaternion HomeRotation()
     {
-        return homeParent != null ? homeParent.rotation * homeLocalRotation : homeLocalRotation;
+        if (homeParent != null)
+        {
+            return homeParent.rotation * homeLocalRotation;
+        }
+        return homeLocalRotation;
     }
 
     void SetVisible(bool visible)

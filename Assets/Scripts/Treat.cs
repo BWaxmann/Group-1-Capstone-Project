@@ -41,7 +41,11 @@ public class Treat : Launchable
     {
         get
         {
-            return rb != null ? rb.velocity : Vector3.zero;
+            if (rb != null)
+            {
+                return rb.velocity;
+            }
+            return Vector3.zero;
         }
     }
 

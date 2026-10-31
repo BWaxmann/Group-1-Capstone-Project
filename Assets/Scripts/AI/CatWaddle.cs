@@ -30,7 +30,14 @@ public class CatWaddle : MonoBehaviour
     {
         // The model sits under its animator object (the animator only squashes and shrinks it)
         Animator animator = GetComponentInChildren<Animator>();
-        body = animator != null && animator.transform != transform ? animator.transform : null;
+        if (animator != null && animator.transform != transform)
+        {
+            body = animator.transform;
+        }
+        else
+        {
+            body = null;
+        }
         if (body == null)
         {
             enabled = false;

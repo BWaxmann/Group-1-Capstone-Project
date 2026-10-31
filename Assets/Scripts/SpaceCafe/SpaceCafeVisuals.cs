@@ -62,7 +62,15 @@ public static class SpaceCafeVisuals
         float sweep = Mathf.PI * 2f * fraction;
         for (int i = 0; i < segments; i++)
         {
-            float t = line.loop ? i / (float)segments : i / (float)(segments - 1);
+            float t;
+            if (line.loop)
+            {
+                t = i / (float)segments;
+            }
+            else
+            {
+                t = i / (float)(segments - 1);
+            }
             float angle = Mathf.PI * 0.5f - t * sweep;
             line.SetPosition(i, new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * radius);
         }
@@ -173,7 +181,11 @@ public static class SpaceCafeVisuals
                 else local.Encapsulate(inRoot);
             }
         }
-        return any ? new Vector3(local.center.x, local.min.y, local.center.z) : Vector3.down * 0.1f;
+        if (any)
+        {
+            return new Vector3(local.center.x, local.min.y, local.center.z);
+        }
+        return Vector3.down * 0.1f;
     }
 
     public static float EaseOutBack(float t)

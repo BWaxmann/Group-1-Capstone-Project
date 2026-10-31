@@ -77,7 +77,15 @@ public class TipJar : MonoBehaviour
     public static TipJar Create(Vector3 position, Vector3 viewer, float scale = 1f)
     {
         TipJar prefab = CafePrefabs.TipJarPrefab;
-        GameObject root = prefab != null ? Instantiate(prefab.gameObject) : new GameObject("Tip Jar");
+        GameObject root;
+        if (prefab != null)
+        {
+            root = Instantiate(prefab.gameObject);
+        }
+        else
+        {
+            root = new GameObject("Tip Jar");
+        }
         root.name = "Tip Jar";
         root.SetActive(true);   // (a template kept switched off in the scene comes out switched off)
         root.transform.position = position;
@@ -316,7 +324,14 @@ public class TipJar : MonoBehaviour
         SetFill(coins / FullAfter);
         Vector3 away = transform.position - from;
         away.y = 0;
-        away = away.sqrMagnitude > 0.0001f ? away.normalized : transform.forward;
+        if (away.sqrMagnitude > 0.0001f)
+        {
+            away = away.normalized;
+        }
+        else
+        {
+            away = transform.forward;
+        }
         StartCoroutine(Rock(away));
         for (int i = 0; i < lost; i++) StartCoroutine(SpillCoin(away, i));
         return lost;

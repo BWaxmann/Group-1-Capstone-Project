@@ -40,7 +40,11 @@ public class CafePrefabs : MonoBehaviour
     {
         get
         {
-            return instance != null ? instance.orderBubble : null;
+            if (instance != null)
+            {
+                return instance.orderBubble;
+            }
+            return null;
         }
     }
 
@@ -54,7 +58,11 @@ public class CafePrefabs : MonoBehaviour
     {
         get
         {
-            return instance != null ? instance.tipJar : null;
+            if (instance != null)
+            {
+                return instance.tipJar;
+            }
+            return null;
         }
     }
 
@@ -72,14 +80,22 @@ public class CafePrefabs : MonoBehaviour
     {
         get
         {
-            return instance != null ? instance.ropeTemplate : null;
+            if (instance != null)
+            {
+                return instance.ropeTemplate;
+            }
+            return null;
         }
     }
     public static GameObject RecipePrefab
     {
         get
         {
-            return instance != null ? instance.recipe : null;
+            if (instance != null)
+            {
+                return instance.recipe;
+            }
+            return null;
         }
     }
 
@@ -97,49 +113,77 @@ public class CafePrefabs : MonoBehaviour
     {
         get
         {
-            return instance != null ? instance.floatingWord : null;
+            if (instance != null)
+            {
+                return instance.floatingWord;
+            }
+            return null;
         }
     }
     public static LineRenderer RingTemplate
     {
         get
         {
-            return instance != null ? instance.ringTemplate : null;
+            if (instance != null)
+            {
+                return instance.ringTemplate;
+            }
+            return null;
         }
     }
     public static TrailRenderer KittenTrailTemplate
     {
         get
         {
-            return instance != null ? instance.kittenTrailTemplate : null;
+            if (instance != null)
+            {
+                return instance.kittenTrailTemplate;
+            }
+            return null;
         }
     }
     public static TrailRenderer PropTrailTemplate
     {
         get
         {
-            return instance != null ? instance.propTrailTemplate : null;
+            if (instance != null)
+            {
+                return instance.propTrailTemplate;
+            }
+            return null;
         }
     }
     public static ParticleSystem SplatPrefab
     {
         get
         {
-            return instance != null ? instance.splat : null;
+            if (instance != null)
+            {
+                return instance.splat;
+            }
+            return null;
         }
     }
     public static AimReticle ReticlePrefab
     {
         get
         {
-            return instance != null ? instance.reticle : null;
+            if (instance != null)
+            {
+                return instance.reticle;
+            }
+            return null;
         }
     }
     public static LineRenderer BeamTemplate
     {
         get
         {
-            return instance != null ? instance.beamTemplate : null;
+            if (instance != null)
+            {
+                return instance.beamTemplate;
+            }
+            return null;
         }
     }
 
@@ -167,6 +211,10 @@ public class CafePrefabs : MonoBehaviour
 
     static string Which(Object slot)
     {
-        return slot != null ? "from prefab" : "built in code";
+        if (slot != null)
+        {
+            return "from prefab";
+        }
+        return "built in code";
     }
 }

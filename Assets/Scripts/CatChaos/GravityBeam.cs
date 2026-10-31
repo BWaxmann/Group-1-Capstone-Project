@@ -150,7 +150,15 @@ public class GravityBeam : MonoBehaviour
         {
             // Reel the prop in to a comfortable distance, then it follows where the launcher points. In the ninja phases it
             // has to be carried back to its pile, so it rides out as far as the pile is: point at the pile and it's there
-            float want = FlyingProp.dragHome ? Mathf.Clamp(Vector3.Distance(muzzle.position, hand.held.dropCentre), 0.8f, range) : holdDistance;
+            float want;
+            if (FlyingProp.dragHome)
+            {
+                want = Mathf.Clamp(Vector3.Distance(muzzle.position, hand.held.dropCentre), 0.8f, range);
+            }
+            else
+            {
+                want = holdDistance;
+            }
             hand.holdDistance = Mathf.MoveTowards(hand.holdDistance, want, Time.deltaTime * 6f);
             bool over = FlyingProp.dragHome && hand.held.nearHome;
             if (over && !hand.overHome) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
@@ -173,7 +181,15 @@ public class GravityBeam : MonoBehaviour
             if (target != null)
             {
                 hand.lockProgress += Time.deltaTime;
-                float fraction = lockOnTime > 0 ? hand.lockProgress / lockOnTime : 1f;
+                float fraction;
+                if (lockOnTime > 0)
+                {
+                    fraction = hand.lockProgress / lockOnTime;
+                }
+                else
+                {
+                    fraction = 1f;
+                }
                 DrawBeam(hand, start, target.centre, Mathf.Lerp(0.008f, 0.02f, fraction), Mathf.Lerp(0.35f, 0.8f, fraction));
                 ShowLockRing(hand, target.centre, fraction);
                 if (fraction >= 1f)
@@ -193,7 +209,14 @@ public class GravityBeam : MonoBehaviour
 
         float pulse = 0.75f + 0.25f * Mathf.Sin(Time.time * 10f);
         Color glowColour = beamColour;
-        glowColour.a = hand.held != null ? 1f : pulse;
+        if (hand.held != null)
+        {
+            glowColour.a = 1f;
+        }
+        else
+        {
+            glowColour.a = pulse;
+        }
         hand.glow.startColor = hand.glow.endColor = glowColour;
     }
 
@@ -336,7 +359,14 @@ public class GravityBeam : MonoBehaviour
             // Styled in the editor: its material, width and colours (faded with the beam); the line itself drawn here
             hand.beam = Instantiate(template, transform, false);
             hand.beam.gameObject.SetActive(true);
-            hand.beam.name = isRight ? "Gravity Beam Right" : "Gravity Beam Left";
+            if (isRight)
+            {
+                hand.beam.name = "Gravity Beam Right";
+            }
+            else
+            {
+                hand.beam.name = "Gravity Beam Left";
+            }
             hand.beam.useWorldSpace = true;
             hand.beam.positionCount = BeamPoints;
             hand.beamFromTemplate = true;

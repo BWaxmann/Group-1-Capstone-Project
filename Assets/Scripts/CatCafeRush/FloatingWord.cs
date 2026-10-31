@@ -87,7 +87,19 @@ public class FloatingWord : MonoBehaviour
     public static void FacePlayer(Transform word)
     {
         if (player == null) player = FindObjectOfType<PlayerInput>();
-        Transform eye = player != null ? player.eyePoint : (Camera.main != null ? Camera.main.transform : null);
+        Transform eye;
+        if (player != null)
+        {
+            eye = player.eyePoint;
+        }
+        else if (Camera.main != null)
+        {
+            eye = Camera.main.transform;
+        }
+        else
+        {
+            eye = null;
+        }
         if (eye != null) word.rotation = Quaternion.LookRotation(word.position - eye.position);
     }
 

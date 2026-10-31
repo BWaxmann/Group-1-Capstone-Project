@@ -86,13 +86,29 @@ public class Haptics : MonoBehaviour
             if (steamVibration == null) return;
         }
 
-        SteamVR_Input_Sources source = rightHand ? SteamVR_Input_Sources.RightHand : SteamVR_Input_Sources.LeftHand;
+        SteamVR_Input_Sources source;
+        if (rightHand)
+        {
+            source = SteamVR_Input_Sources.RightHand;
+        }
+        else
+        {
+            source = SteamVR_Input_Sources.LeftHand;
+        }
         steamVibration.Execute(0, duration, 160f, amplitude, source);
     }
 
     void PulseOculus(bool rightHand, float amplitude, float duration)
     {
-        OVRInput.Controller controller = rightHand ? OVRInput.Controller.RTouch : OVRInput.Controller.LTouch;
+        OVRInput.Controller controller;
+        if (rightHand)
+        {
+            controller = OVRInput.Controller.RTouch;
+        }
+        else
+        {
+            controller = OVRInput.Controller.LTouch;
+        }
         OVRInput.SetControllerVibration(1f, amplitude, controller);
 
         // Quest keeps vibrating until told to stop, so stop it after the duration

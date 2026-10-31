@@ -244,7 +244,11 @@ public static class CatastropheCafeTools
     {
         VREmulator emulator = GetEmulator();
         if (emulator == null) return ESDKType.Emulator;
-        return propertyName == "BuildType" ? emulator.BuildType : emulator.EditorType;
+        if (propertyName == "BuildType")
+        {
+            return emulator.BuildType;
+        }
+        return emulator.EditorType;
     }
 
     static void SetEmulatorType(string propertyName, ESDKType type)

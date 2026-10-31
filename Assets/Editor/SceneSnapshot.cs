@@ -27,8 +27,24 @@ public static class SceneSnapshot
         }
 
         PlayerInput player = Object.FindObjectOfType<PlayerInput>();
-        Vector3 centre = player != null ? player.transform.position : Vector3.zero;
-        Vector3 forward = player != null ? player.transform.forward : Vector3.forward;
+        Vector3 centre;
+        if (player != null)
+        {
+            centre = player.transform.position;
+        }
+        else
+        {
+            centre = Vector3.zero;
+        }
+        Vector3 forward;
+        if (player != null)
+        {
+            forward = player.transform.forward;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         forward.y = 0;
         forward.Normalize();
 
@@ -99,7 +115,15 @@ public static class SceneSnapshot
         EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
 
         PlayerInput player = Object.FindObjectOfType<PlayerInput>();
-        Vector3 centre = player != null ? player.transform.position : Vector3.zero;
+        Vector3 centre;
+        if (player != null)
+        {
+            centre = player.transform.position;
+        }
+        else
+        {
+            centre = Vector3.zero;
+        }
         System.Text.StringBuilder report = new System.Text.StringBuilder($"[Report] {scenePath}, player at {centre}, facing {(player != null ? player.transform.forward : Vector3.forward)}\n");
         foreach (RaycastHit hit in Physics.RaycastAll(centre + Vector3.up * 3f, Vector3.down, 10f))
         {

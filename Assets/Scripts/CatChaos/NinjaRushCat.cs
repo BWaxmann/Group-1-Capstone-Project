@@ -211,6 +211,10 @@ public class NinjaRushCat : BossCat
     Vector3 ViewerPosition()
     {
         if (Camera.main != null) return Camera.main.transform.position;
-        return player != null ? player.transform.position : Vector3.zero;
+        if (player != null)
+        {
+            return player.transform.position;
+        }
+        return Vector3.zero;
     }
 }

@@ -217,7 +217,11 @@ public class CatMovement : MonoBehaviour
     {
         get
         {
-            return currentState == AIState.Targeting ? targetDefendPoint : null;
+            if (currentState == AIState.Targeting)
+            {
+                return targetDefendPoint;
+            }
+            return null;
         }
     }
 
@@ -232,7 +236,11 @@ public class CatMovement : MonoBehaviour
     {
         get
         {
-            return targetingChanceOverride >= 0 ? targetingChanceOverride : roamingToTargetingChance;
+            if (targetingChanceOverride >= 0)
+            {
+                return targetingChanceOverride;
+            }
+            return roamingToTargetingChance;
         }
     }
 
@@ -254,7 +262,15 @@ public class CatMovement : MonoBehaviour
             foreach (AudioSource source in GetComponentsInChildren<AudioSource>(true)) setUpMinDistance[source] = source.minDistance;
         }
         CatFootsteps footsteps = GetComponentInChildren<CatFootsteps>(true);
-        AudioSource steps = footsteps != null ? footsteps.source : null;
+        AudioSource steps;
+        if (footsteps != null)
+        {
+            steps = footsteps.source;
+        }
+        else
+        {
+            steps = null;
+        }
         foreach (System.Collections.Generic.KeyValuePair<AudioSource, float> source in setUpMinDistance)
         {
             if (source.Key == null) continue;
@@ -549,14 +565,22 @@ public class CatMovement : MonoBehaviour
     {
         get
         {
-            return moodSprites != null && moodSprites.Length > 0 ? moodSprites[0] : null;
+            if (moodSprites != null && moodSprites.Length > 0)
+            {
+                return moodSprites[0];
+            }
+            return null;
         }
     }
     public Sprite grumpiestFace
     {
         get
         {
-            return moodSprites != null && moodSprites.Length > 0 ? moodSprites[moodSprites.Length - 1] : null;
+            if (moodSprites != null && moodSprites.Length > 0)
+            {
+                return moodSprites[moodSprites.Length - 1];
+            }
+            return null;
         }
     }
     public GameObject moodDisplay
@@ -775,7 +799,15 @@ public class CatMovement : MonoBehaviour
         juice.Hit(2f);
 
         // Hit-pause: the cat holds still for a split second so the final hit lands
-        float animatorSpeed = animator != null ? animator.speed : 1f;
+        float animatorSpeed;
+        if (animator != null)
+        {
+            animatorSpeed = animator.speed;
+        }
+        else
+        {
+            animatorSpeed = 1f;
+        }
         if (animator != null) animator.speed = 0f;
         yield return new WaitForSeconds(finisherFreeze);
         if (animator != null) animator.speed = animatorSpeed;

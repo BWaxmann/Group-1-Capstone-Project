@@ -72,7 +72,14 @@ public class CafeVent : MonoBehaviour
     {
         Mesh lidMesh = LidMesh(lid);
         if (lidMesh == null) return false;
-        hinge = lid.parent != null && lid.parent != transform && lid.parent.name.ToLowerInvariant().Contains("pivot") ? lid.parent : lid;
+        if (lid.parent != null && lid.parent != transform && lid.parent.name.ToLowerInvariant().Contains("pivot"))
+        {
+            hinge = lid.parent;
+        }
+        else
+        {
+            hinge = lid;
+        }
 
         // The lid's middle, and its three half-widths, in the world
         Bounds local = lidMesh.bounds;
@@ -118,7 +125,14 @@ public class CafeVent : MonoBehaviour
 
         // Where a cat lands: on the floor a little out from the vent
         Vector3 flat = new Vector3(normal.x, 0, normal.z);
-        flat = flat.sqrMagnitude > 0.01f ? flat.normalized : Vector3.zero;
+        if (flat.sqrMagnitude > 0.01f)
+        {
+            flat = flat.normalized;
+        }
+        else
+        {
+            flat = Vector3.zero;
+        }
         // (further out if something's in the way of the jump, e.g. a shelf under a high vent)
         NavMeshHit floor = new NavMeshHit();
         bool found = false;
@@ -146,7 +160,15 @@ public class CafeVent : MonoBehaviour
 
         landing = new GameObject("Vent Landing").transform;
         landing.SetParent(transform, true);
-        Vector3 into = flat != Vector3.zero ? flat : new Vector3(viewer.x - floor.position.x, 0, viewer.z - floor.position.z);
+        Vector3 into;
+        if (flat != Vector3.zero)
+        {
+            into = flat;
+        }
+        else
+        {
+            into = new Vector3(viewer.x - floor.position.x, 0, viewer.z - floor.position.z);
+        }
         landing.SetPositionAndRotation(floor.position, Quaternion.LookRotation(into.sqrMagnitude > 0.01f ? into : Vector3.forward));
         return true;
     }
@@ -155,7 +177,15 @@ public class CafeVent : MonoBehaviour
     // also can't move: then the lid's shape comes from its collider, and a moving copy of it takes over the drawing
     static Mesh LidMesh(Transform lid)
     {
-        MeshFilter shape = lid != null ? lid.GetComponent<MeshFilter>() : null;
+        MeshFilter shape;
+        if (lid != null)
+        {
+            shape = lid.GetComponent<MeshFilter>();
+        }
+        else
+        {
+            shape = null;
+        }
         if (shape == null || shape.sharedMesh == null) return null;
         if (!shape.sharedMesh.name.StartsWith("Combined Mesh")) return shape.sharedMesh;
 
@@ -243,7 +273,15 @@ public class CafeVent : MonoBehaviour
 
         // It pokes out, looking into the room
         cat.Meow(kitten ? Random.Range(1.5f, 1.9f) : Random.Range(0.95f, 1.1f));
-        float emerge = kitten ? 0.15f : 0.35f;
+        float emerge;
+        if (kitten)
+        {
+            emerge = 0.15f;
+        }
+        else
+        {
+            emerge = 0.35f;
+        }
         float t = 0;
         while (t < 1f)
         {

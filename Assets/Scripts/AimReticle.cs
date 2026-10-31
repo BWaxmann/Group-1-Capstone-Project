@@ -68,7 +68,15 @@ public class AimReticle : MonoBehaviour
     public static AimReticle Create(Transform launchPoint, Transform ignoreRoot, string name)
     {
         AimReticle prefab = CafePrefabs.ReticlePrefab;
-        AimReticle reticle = prefab != null ? Instantiate(prefab) : new GameObject(name).AddComponent<AimReticle>();
+        AimReticle reticle;
+        if (prefab != null)
+        {
+            reticle = Instantiate(prefab);
+        }
+        else
+        {
+            reticle = new GameObject(name).AddComponent<AimReticle>();
+        }
         reticle.name = name;
         reticle.gameObject.SetActive(true);
         reticle.launchPoint = launchPoint;
@@ -152,7 +160,15 @@ public class AimReticle : MonoBehaviour
         transform.position = hit.point + hit.normal * 0.01f;
         transform.rotation = Quaternion.LookRotation(hit.normal);
 
-        Color colour = onCat ? onCatColour : normalColour;
+        Color colour;
+        if (onCat)
+        {
+            colour = onCatColour;
+        }
+        else
+        {
+            colour = normalColour;
+        }
         float width = radius * 0.15f;
         SetLine(outerRing, colour, width, radius, outerFromPrefab);
         SetLine(innerDot, colour, width, radius * 0.2f, innerFromPrefab);

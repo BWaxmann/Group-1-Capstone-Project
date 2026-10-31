@@ -514,7 +514,14 @@ public class RushDirector : MonoBehaviour
         PickupManager.allowed = index => allowedPickups.Contains(index);
         Treat.cleanShots = cleanShots;
         Treat.aimAssistTurnSpeed = aimAssistTurnSpeed;
-        Treat.aimAssistTarget = aimAssistAngle > 0 ? (System.Func<Treat, Vector3?>)AssistTarget : null;
+        if (aimAssistAngle > 0)
+        {
+            Treat.aimAssistTarget = (System.Func<Treat, Vector3?>)AssistTarget;
+        }
+        else
+        {
+            Treat.aimAssistTarget = null;
+        }
         PropPile.barsWaitForNinja = ninjaExplodesPiles;
         SoundLevels.music = musicLevel;
         SoundLevels.cats = catLevel;
@@ -546,7 +553,15 @@ public class RushDirector : MonoBehaviour
         }
         if (target == null && ninja != null && ninja.feedable && ninja.gameObject.activeInHierarchy && !ninja.isFullyFed)
         {
-            Vector3 point = ninjaHitbox != null ? ninjaHitbox.transform.TransformPoint(ninjaHitbox.center) : ninja.transform.position + Vector3.up * 0.3f;
+            Vector3 point;
+            if (ninjaHitbox != null)
+            {
+                point = ninjaHitbox.transform.TransformPoint(ninjaHitbox.center);
+            }
+            else
+            {
+                point = ninja.transform.position + Vector3.up * 0.3f;
+            }
             if (Vector3.Angle(treat.velocity, point - treat.transform.position) <= aimAssistAngle) target = point;
         }
         return target;
@@ -663,7 +678,15 @@ public class RushDirector : MonoBehaviour
         if (!FlyingProp.dragHome || !playing) return;
         // The catch phase's own line already says to carry things back: no need for both
         Phase catchPhase = phases.Find(p => p.kind == Kind.Catch);
-        string taught = catchPhase != null ? catchPhase.line : null;
+        string taught;
+        if (catchPhase != null)
+        {
+            taught = catchPhase.line;
+        }
+        else
+        {
+            taught = null;
+        }
         if (!string.IsNullOrEmpty(taught) && (heardLines.Contains(taught) || pendingLines.Contains(taught))) return;
         SayOnce(carryLine);
     }
@@ -766,7 +789,14 @@ public class RushDirector : MonoBehaviour
             if (!Feeding(phase.kind) && MafiaHeist.current != null) MafiaHeist.current.Cancel();
 
             // Hungry cats only go for the piles in feeding phases (and only if this phase says so)
-            CatMovement.targetingChanceOverride = phase.kind == Kind.Feed ? phase.attackChance : 0f;
+            if (phase.kind == Kind.Feed)
+            {
+                CatMovement.targetingChanceOverride = phase.attackChance;
+            }
+            else
+            {
+                CatMovement.targetingChanceOverride = 0f;
+            }
             PropPile.toppleOnHit = attacksTopple;
 
             string banner = phase.banner;
@@ -780,7 +810,14 @@ public class RushDirector : MonoBehaviour
             // The piles' bars are only up while the ninja's about (each pops up again when it blows that pile up)
             if (!ninjaPhase) PropPile.HideBars();
             FlyingProp.dragHome = dragPropsHome && ninjaPhase;
-            FlyingProp.dropMargin = phase.kind == Kind.Remix ? remixPropDropMargin : propDropMargin;
+            if (phase.kind == Kind.Remix)
+            {
+                FlyingProp.dropMargin = remixPropDropMargin;
+            }
+            else
+            {
+                FlyingProp.dropMargin = propDropMargin;
+            }
             if (ninjaPhase && ninjaPhasesSeen++ > 0 && restockPiles && FlyingProp.RestockAll() > 0)
             {
                 FloatingWord.Show("Restocked!", player != null && player.eyePoint != null ? player.eyePoint.position + player.eyePoint.forward * 2f : transform.position, new Color(0.4f, 1f, 0.5f), 3f, 1.4f);
@@ -1042,9 +1079,25 @@ public class RushDirector : MonoBehaviour
         while (playing && clock < end - 3f)
         {
             // Now and then (and first off) the herd floods in through a vent up high
-            CafeVent vent = (first && firstHerdFloods) || Random.value < floodChance ? FloodVent() : null;
+            CafeVent vent;
+            if ((first && firstHerdFloods) || Random.value < floodChance)
+            {
+                vent = FloodVent();
+            }
+            else
+            {
+                vent = null;
+            }
             first = false;
-            List<Vector3> path = vent != null ? FloodPath(vent.floorSpot) : null;
+            List<Vector3> path;
+            if (vent != null)
+            {
+                path = FloodPath(vent.floorSpot);
+            }
+            else
+            {
+                path = null;
+            }
             if (path != null)
             {
                 StartCoroutine(Flood(vent, path));
@@ -1068,7 +1121,15 @@ public class RushDirector : MonoBehaviour
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));   // a herd keeps together
         for (int i = 0; i < count && playing; i++)
         {
-            CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+            CatMovement cat;
+            if (catPool != null)
+            {
+                cat = catPool.GetRandomObjectFromPool<CatMovement>();
+            }
+            else
+            {
+                cat = null;
+            }
             if (cat != null)
             {
                 KittenRun.Launch(cat, path, Random.Range(-0.6f, 0.6f), speed * Random.Range(0.92f, 1.08f),
@@ -1089,7 +1150,15 @@ public class RushDirector : MonoBehaviour
         yield return vent.Open();
         for (int i = 0; i < count && playing; i++)
         {
-            CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+            CatMovement cat;
+            if (catPool != null)
+            {
+                cat = catPool.GetRandomObjectFromPool<CatMovement>();
+            }
+            else
+            {
+                cat = null;
+            }
             if (cat == null) break;
             float offset = Random.Range(-spread, spread);
             float kittenSpeed = speed * Random.Range(0.92f, 1.08f);
@@ -1203,8 +1272,20 @@ public class RushDirector : MonoBehaviour
         }
         if (catPool == null) return null;
         int[] phats = catPool.VariationsNamed("Phat");
-        CatMovement cat = phats.Length > 0 ? catPool.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(phats) : null;
-        return cat != null ? cat : catPool.GetRandomObjectFromPool<CatMovement>();
+        CatMovement cat;
+        if (phats.Length > 0)
+        {
+            cat = catPool.GetRandomObjectFromPoolFromGivenVariations<CatMovement>(phats);
+        }
+        else
+        {
+            cat = null;
+        }
+        if (cat != null)
+        {
+            return cat;
+        }
+        return catPool.GetRandomObjectFromPool<CatMovement>();
     }
 
     // The remix finale's kitten flood, partway through (when there's room for it)
@@ -1214,7 +1295,15 @@ public class RushDirector : MonoBehaviour
         while (playing && current == phase && (clock < at || !RoomForMore)) yield return null;
         if (!playing || current != phase || windingDown) yield break;
         CafeVent vent = FloodVent();
-        List<Vector3> path = vent != null ? FloodPath(vent.floorSpot) : null;
+        List<Vector3> path;
+        if (vent != null)
+        {
+            path = FloodPath(vent.floorSpot);
+        }
+        else
+        {
+            path = null;
+        }
         if (path == null) yield break;
         BigStarted();
         flooding = true;
@@ -1242,7 +1331,14 @@ public class RushDirector : MonoBehaviour
         NavMeshPath navPath = new NavMeshPath();
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         for (int attempt = 0; attempt < 8; attempt++)
         {
@@ -1272,9 +1368,24 @@ public class RushDirector : MonoBehaviour
     {
         if (player == null) return null;
         Transform eye = player.eyePoint;
-        Vector3 head = eye != null ? eye.position : player.transform.position;
+        Vector3 head;
+        if (eye != null)
+        {
+            head = eye.position;
+        }
+        else
+        {
+            head = player.transform.position;
+        }
         Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         float floorY = player.transform.position.y;
         NavMeshPath navPath = new NavMeshPath();
@@ -1311,9 +1422,24 @@ public class RushDirector : MonoBehaviour
         List<Vector3> across = HerdPath(fromLeft);
         if (across == null || seconds <= 0 || player == null) return across;
         Transform eye = player.eyePoint;
-        Vector3 head = eye != null ? eye.position : player.transform.position;
+        Vector3 head;
+        if (eye != null)
+        {
+            head = eye.position;
+        }
+        else
+        {
+            head = player.transform.position;
+        }
         Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         float floorY = across[0].y;
         float wanted = seconds * (kittenSpeedMin + kittenSpeedMax) * 0.5f;
@@ -1368,8 +1494,24 @@ public class RushDirector : MonoBehaviour
     {
         if (catPool == null) return;
         // Now and then through a vent
-        CafeVent vent = Random.value < ventChance ? FreeVent() : null;
-        List<Transform> ways = entryDoors.Count > 0 ? entryDoors : doors;
+        CafeVent vent;
+        if (Random.value < ventChance)
+        {
+            vent = FreeVent();
+        }
+        else
+        {
+            vent = null;
+        }
+        List<Transform> ways;
+        if (entryDoors.Count > 0)
+        {
+            ways = entryDoors;
+        }
+        else
+        {
+            ways = doors;
+        }
         if (vent == null && ways.Count == 0) return;
         CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
         if (cat == null) return;
@@ -1424,7 +1566,14 @@ public class RushDirector : MonoBehaviour
         {
             order.holeFor = NearestHole;
         }
-        order.orderSpotFor = orderMoments ? OrderSpot : (Func<CatOrder, Vector3?>)null;
+        if (orderMoments)
+        {
+            order.orderSpotFor = OrderSpot;
+        }
+        else
+        {
+            order.orderSpotFor = (Func<CatOrder, Vector3?>)null;
+        }
         order.wrongTreat = WrongTreat;
         order.patienceOut = PatienceOut;
         if (orderMoments)
@@ -1455,7 +1604,15 @@ public class RushDirector : MonoBehaviour
 
     void StartHeist(int gang)
     {
-        List<Transform> ways = entryDoors.Count > 0 ? entryDoors : doors;
+        List<Transform> ways;
+        if (entryDoors.Count > 0)
+        {
+            ways = entryDoors;
+        }
+        else
+        {
+            ways = doors;
+        }
         if (ways.Count == 0) return;
         Transform door = ways[Random.Range(0, ways.Count)];
         Vector3 position = door.position;
@@ -1488,7 +1645,15 @@ public class RushDirector : MonoBehaviour
         for (int i = 0; i < gang && playing; i++)
         {
             List<Vector3> path = LatchPath(at);
-            CatMovement cat = path != null && catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
+            CatMovement cat;
+            if (path != null && catPool != null)
+            {
+                cat = catPool.GetRandomObjectFromPool<CatMovement>();
+            }
+            else
+            {
+                cat = null;
+            }
             if (cat != null)
             {
                 LauncherKitten.Send(cat, path, player, launcherKitten, KittenLatched, (kitten, result) => { });
@@ -1509,12 +1674,27 @@ public class RushDirector : MonoBehaviour
         vents.Clear();
         if (player == null) return;
         Transform eye = player.eyePoint;
-        Vector3 viewer = eye != null ? eye.position : player.transform.position + Vector3.up * 1.5f;
+        Vector3 viewer;
+        if (eye != null)
+        {
+            viewer = eye.position;
+        }
+        else
+        {
+            viewer = player.transform.position + Vector3.up * 1.5f;
+        }
         float floorY = player.transform.position.y;
         if (NavMesh.SamplePosition(player.transform.position, out NavMeshHit floor, 2f, NavMesh.AllAreas)) floorY = floor.position.y;
         // A spot on the floor in front of the player that cats coming out of a vent must be able to reach
         Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         Vector3 room = player.transform.position + forward * 2.5f;
         if (NavMesh.SamplePosition(room, out NavMeshHit roomFloor, 2f, NavMesh.AllAreas)) room = roomFloor.position;
         foreach (MeshFilter lid in FindObjectsOfType<MeshFilter>())
@@ -1544,7 +1724,11 @@ public class RushDirector : MonoBehaviour
         List<CafeVent> free = vents.FindAll(vent =>
             vent != null && !vent.busy && (!floorOnly || vent.landsOnFloor) &&
             (forward.sqrMagnitude < 0.001f || Vector3.Angle(forward, Flat(vent.floorSpot - at)) <= ventArc));
-        return free.Count > 0 ? free[Random.Range(0, free.Count)] : null;
+        if (free.Count > 0)
+        {
+            return free[Random.Range(0, free.Count)];
+        }
+        return null;
     }
 
     // ---------- Cat Cafe Waves: ordering where the player can see ----------
@@ -1558,7 +1742,15 @@ public class RushDirector : MonoBehaviour
     // nearest free spot they can
     Vector3? OrderSpot(CatOrder order)
     {
-        Transform eye = player != null ? player.eyePoint : null;
+        Transform eye;
+        if (player != null)
+        {
+            eye = player.eyePoint;
+        }
+        else
+        {
+            eye = null;
+        }
         if (eye == null) return null;
         if (InGoodView(eye, order.transform.position)) return null;
         if (!lookedForOrderSpots)
@@ -1614,7 +1806,14 @@ public class RushDirector : MonoBehaviour
     {
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         for (float distance = 2.5f; distance <= 6.5f; distance += 0.8f)
         {
             for (float angle = -50f; angle <= 50f; angle += 10f)
@@ -1651,8 +1850,24 @@ public class RushDirector : MonoBehaviour
         if (catPool == null) return;
 
         // Out of a vent sometimes: it drops down, then makes its run
-        CafeVent vent = Random.value < kittenVentChance ? FreeVent(true) : null;
-        List<Vector3> path = vent != null ? LatchPath(vent.floorSpot) : null;
+        CafeVent vent;
+        if (Random.value < kittenVentChance)
+        {
+            vent = FreeVent(true);
+        }
+        else
+        {
+            vent = null;
+        }
+        List<Vector3> path;
+        if (vent != null)
+        {
+            path = LatchPath(vent.floorSpot);
+        }
+        else
+        {
+            path = null;
+        }
         if (path != null)
         {
             CatMovement fromVent = catPool.GetRandomObjectFromPool<CatMovement>();
@@ -1698,17 +1913,40 @@ public class RushDirector : MonoBehaviour
     // From `from` (or a door in front of the player) to the floor just outside the player's space
     List<Vector3> LatchPath(Vector3? from)
     {
-        List<Transform> ways = entryDoors.Count > 0 ? entryDoors : doors;
+        List<Transform> ways;
+        if (entryDoors.Count > 0)
+        {
+            ways = entryDoors;
+        }
+        else
+        {
+            ways = doors;
+        }
         if (player == null || (from == null && ways.Count == 0)) return null;
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         float front = Mathf.Max(0.5f, playerSpace.z * 0.5f) + 0.4f;
         NavMeshPath navPath = new NavMeshPath();
         for (int attempt = 0; attempt < 6; attempt++)
         {
-            Transform door = from == null ? ways[Random.Range(0, ways.Count)] : null;
+            Transform door;
+            if (from == null)
+            {
+                door = ways[Random.Range(0, ways.Count)];
+            }
+            else
+            {
+                door = null;
+            }
             if (from == null && door == null) continue;
             Vector3 spot = at + forward * front + right * Random.Range(-0.5f, 0.5f);
             if (!NavMesh.SamplePosition(spot, out NavMeshHit end, 1.2f, NavMesh.AllAreas)) continue;
@@ -1731,15 +1969,42 @@ public class RushDirector : MonoBehaviour
         introPaused = true;
         yield return new WaitForSeconds(1.2f);
 
-        Transform eye = player != null ? player.eyePoint : null;
-        Vector3 viewer = eye != null ? eye.position : (player != null ? player.transform.position : transform.position);
+        Transform eye;
+        if (player != null)
+        {
+            eye = player.eyePoint;
+        }
+        else
+        {
+            eye = null;
+        }
+        Vector3 viewer;
+        if (eye != null)
+        {
+            viewer = eye.position;
+        }
+        else if (player != null)
+        {
+            viewer = player.transform.position;
+        }
+        else
+        {
+            viewer = transform.position;
+        }
         FlyingProp prop = PropInView(eye);
 
         // The ninja appears right beside it and flicks it up: its opening move (then it waits until it's caught)
         if (prop != null && ninja != null)
         {
             Vector3 towards = Flat(viewer - prop.centre);
-            towards = towards.sqrMagnitude > 0.001f ? towards.normalized : Vector3.forward;
+            if (towards.sqrMagnitude > 0.001f)
+            {
+                towards = towards.normalized;
+            }
+            else
+            {
+                towards = Vector3.forward;
+            }
             if (NavMesh.SamplePosition(prop.centre + towards * 0.4f, out NavMeshHit beside, 1f, NavMesh.AllAreas))
             {
                 SummonNinja(false, beside.position);
@@ -1783,7 +2048,15 @@ public class RushDirector : MonoBehaviour
         if (eye == null) return null;
         // In front of where the player stands to play (the rig's forward, not wherever they happen to be looking), and
         // off a pile on a table: never a loose prop like a plant on the floor beside them
-        Vector3 ahead = player != null ? Flat(player.transform.forward) : Flat(eye.forward);
+        Vector3 ahead;
+        if (player != null)
+        {
+            ahead = Flat(player.transform.forward);
+        }
+        else
+        {
+            ahead = Flat(eye.forward);
+        }
         if (ahead.sqrMagnitude < 0.001f) ahead = Flat(eye.forward);
         FlyingProp best = null;
         float bestAngle = 50f;
@@ -1815,8 +2088,24 @@ public class RushDirector : MonoBehaviour
         bool jarFirst = tipJar != null || raidJarNext;
         for (int attempt = 0; attempt < (tipJar != null ? 1 : 2); attempt++)
         {
-            bool useJar = attempt == 0 ? jarFirst : !jarFirst;
-            CatRaid.Target target = useJar ? JarTarget() : PileTarget();
+            bool useJar;
+            if (attempt == 0)
+            {
+                useJar = jarFirst;
+            }
+            else
+            {
+                useJar = !jarFirst;
+            }
+            CatRaid.Target target;
+            if (useJar)
+            {
+                target = JarTarget();
+            }
+            else
+            {
+                target = PileTarget();
+            }
             if (target == null) continue;
             foreach (CatOrder raider in Raiders(target.position))
             {
@@ -1853,7 +2142,15 @@ public class RushDirector : MonoBehaviour
     // Hungry cats far enough from the target for the run to be seen, the ones in the player's view first
     List<CatOrder> Raiders(Vector3 target)
     {
-        Transform eye = player != null ? player.eyePoint : null;
+        Transform eye;
+        if (player != null)
+        {
+            eye = player.eyePoint;
+        }
+        else
+        {
+            eye = null;
+        }
         List<CatOrder> inView = new List<CatOrder>();
         List<CatOrder> others = new List<CatOrder>();
         foreach (CatOrder order in orders)
@@ -1907,11 +2204,27 @@ public class RushDirector : MonoBehaviour
     void PickEntryDoors()
     {
         entryDoors.Clear();
-        Vector3 facing = player != null ? Flat(player.transform.forward) : Vector3.zero;
+        Vector3 facing;
+        if (player != null)
+        {
+            facing = Flat(player.transform.forward);
+        }
+        else
+        {
+            facing = Vector3.zero;
+        }
         foreach (Transform door in doors)
         {
             if (door == null) continue;
-            Vector3 to = player != null ? Flat(door.position - player.transform.position) : Vector3.zero;
+            Vector3 to;
+            if (player != null)
+            {
+                to = Flat(door.position - player.transform.position);
+            }
+            else
+            {
+                to = Vector3.zero;
+            }
             if (entryArc >= 180f || facing.sqrMagnitude < 0.001f || Vector3.Angle(facing, to) <= entryArc) entryDoors.Add(door);
         }
         if (entryDoors.Count == 0) entryDoors.AddRange(doors.FindAll(door => door != null));
@@ -1947,8 +2260,28 @@ public class RushDirector : MonoBehaviour
     // right, so it's in view but out of the way of shots at the room. A Tip Jar Spot, if set, wins.
     void PlaceTipJar()
     {
-        Transform eye = player.eyePoint != null ? player.eyePoint : (Camera.main != null ? Camera.main.transform : null);
-        Vector3 head = eye != null ? eye.position : player.transform.position + Vector3.up * 1.6f;
+        Transform eye;
+        if (player.eyePoint != null)
+        {
+            eye = player.eyePoint;
+        }
+        else if (Camera.main != null)
+        {
+            eye = Camera.main.transform;
+        }
+        else
+        {
+            eye = null;
+        }
+        Vector3 head;
+        if (eye != null)
+        {
+            head = eye.position;
+        }
+        else
+        {
+            head = player.transform.position + Vector3.up * 1.6f;
+        }
         if (tipJarSpot != null)
         {
             tipJar = TipJar.Create(tipJarSpot.position, head, tipJarScale);
@@ -1990,7 +2323,14 @@ public class RushDirector : MonoBehaviour
 
         Vector3 forward = player.transform.forward;
         forward.y = 0;
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            forward = forward.normalized;
+        }
+        else
+        {
+            forward = Vector3.forward;
+        }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         Vector3 wanted = head + forward * 0.8f + right * 0.5f;
 
@@ -2014,7 +2354,14 @@ public class RushDirector : MonoBehaviour
         foreach (Renderer rend in catClock.GetComponentsInChildren<Renderer>())
         {
             if (rend.GetComponentInParent<Canvas>() != null) continue;
-            top = any ? Mathf.Min(top, rend.bounds.min.y) : rend.bounds.min.y;
+            if (any)
+            {
+                top = Mathf.Min(top, rend.bounds.min.y);
+            }
+            else
+            {
+                top = rend.bounds.min.y;
+            }
             any = true;
         }
         Vector3 centre = catClock.transform.position;
@@ -2156,7 +2503,11 @@ public class RushDirector : MonoBehaviour
         if (player == null || ninjaMinDistance <= 0) return ninjaStops;
         Vector3 at = player.transform.position;
         List<Vector3> away = ninjaStops.FindAll(stop => new Vector2(stop.x - at.x, stop.z - at.z).magnitude >= ninjaMinDistance);
-        return away.Count > 0 ? away : ninjaStops;
+        if (away.Count > 0)
+        {
+            return away;
+        }
+        return ninjaStops;
     }
 
     // Brings the ninja in at one of its stops; or at `holdAt`, where it stays put until told to go (holdStill)
@@ -2188,7 +2539,14 @@ public class RushDirector : MonoBehaviour
         ninja.holdStill = holdAt.HasValue;   // before it starts, or its first move happens straight away
         // Blowing up piles, its phase sends it away when it's over (a long phase or a slow catch intro mustn't time it
         // out early); otherwise it keeps its own timer, as in Cat Cafe Rush
-        ninja.despawnAfterOverride = ninjaExplodesPiles ? 300f : 0f;
+        if (ninjaExplodesPiles)
+        {
+            ninja.despawnAfterOverride = 300f;
+        }
+        else
+        {
+            ninja.despawnAfterOverride = 0f;
+        }
         ninja.waitForCatches = ninjaWaitsForCatches;
         ninja.wantsTreats = () => ninja.feedable;   // a ninja that can't be fed lets treats past
         ninja.gameObject.SetActive(true);
@@ -2202,13 +2560,28 @@ public class RushDirector : MonoBehaviour
     bool PileStops(out List<Vector3> stops, List<PropPile> forPiles)
     {
         stops = new List<Vector3>();
-        Vector3 viewer = player != null ? player.transform.position : transform.position;
+        Vector3 viewer;
+        if (player != null)
+        {
+            viewer = player.transform.position;
+        }
+        else
+        {
+            viewer = transform.position;
+        }
         foreach (PropPile pile in propPiles)
         {
             if (pile == null || !pile.isActiveAndEnabled) continue;
             Vector3 at = pile.transform.position;
             Vector3 towards = Flat(viewer - at);
-            towards = towards.sqrMagnitude > 0.001f ? towards.normalized : Vector3.forward;
+            if (towards.sqrMagnitude > 0.001f)
+            {
+                towards = towards.normalized;
+            }
+            else
+            {
+                towards = Vector3.forward;
+            }
             Vector3 beside = at + towards * 0.35f;
             if (!NavMesh.SamplePosition(beside, out NavMeshHit hit, 0.6f, NavMesh.AllAreas) &&
                 !NavMesh.SamplePosition(at, out hit, 1.5f, NavMesh.AllAreas)) continue;

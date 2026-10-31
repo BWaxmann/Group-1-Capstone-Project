@@ -201,8 +201,24 @@ public class LauncherKitten : MonoBehaviour
 
         // Running in: leaps at whichever launcher it gets near first (or the nearer one once it's as close as it gets)
         bool armed = player != null && player.hasLaunchers;
-        float left = armed ? FlatDistance(player.Launcher(false).position) : float.MaxValue;
-        float right = armed ? FlatDistance(player.Launcher(true).position) : float.MaxValue;
+        float left;
+        if (armed)
+        {
+            left = FlatDistance(player.Launcher(false).position);
+        }
+        else
+        {
+            left = float.MaxValue;
+        }
+        float right;
+        if (armed)
+        {
+            right = FlatDistance(player.Launcher(true).position);
+        }
+        else
+        {
+            right = float.MaxValue;
+        }
         if (armed && (Mathf.Min(left, right) <= settings.leapDistance || run.held))
         {
             // The nearer launcher, unless another kitten has already gone for that one
@@ -410,11 +426,27 @@ public class LauncherKitten : MonoBehaviour
         run.SetLegs(4f);
 
         // Flung the way the hand was going (off the end of the launcher if the hand was still)
-        Vector3 direction = throwVelocity.sqrMagnitude > 0.04f ? throwVelocity.normalized : muzzle.forward;
+        Vector3 direction;
+        if (throwVelocity.sqrMagnitude > 0.04f)
+        {
+            direction = throwVelocity.normalized;
+        }
+        else
+        {
+            direction = muzzle.forward;
+        }
         Vector3 velocity = direction * Mathf.Clamp(throwVelocity.magnitude * 1.5f, 2.5f, 6f) + Vector3.up * 1.5f;
         Vector3 spinAxis = Vector3.Cross(Vector3.up, velocity.sqrMagnitude > 0.01f ? velocity : transform.forward);
         if (spinAxis.sqrMagnitude < 0.001f) spinAxis = transform.right;
-        float floorY = player != null ? player.transform.position.y : transform.position.y - 1f;
+        float floorY;
+        if (player != null)
+        {
+            floorY = player.transform.position.y;
+        }
+        else
+        {
+            floorY = transform.position.y - 1f;
+        }
         float timer = 0;
         while (timer < 1.2f)
         {

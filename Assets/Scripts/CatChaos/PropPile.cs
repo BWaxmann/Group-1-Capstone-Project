@@ -81,9 +81,32 @@ public class PropPile : MonoBehaviour
     // A paw swipe (from a cat that marched over to attack the pile)
     void OnHit()
     {
-        Vector3 playerPosition = Viewer() != null ? viewer.position : transform.position - transform.forward;
-        bool knocked = toppleOnHit ? ToppleTop() : KnockTop(playerPosition, 0f);
-        shake = knocked ? Mathf.Max(shake, 0.6f) : 1f;
+        Vector3 playerPosition;
+        if (Viewer() != null)
+        {
+            playerPosition = viewer.position;
+        }
+        else
+        {
+            playerPosition = transform.position - transform.forward;
+        }
+        bool knocked;
+        if (toppleOnHit)
+        {
+            knocked = ToppleTop();
+        }
+        else
+        {
+            knocked = KnockTop(playerPosition, 0f);
+        }
+        if (knocked)
+        {
+            shake = Mathf.Max(shake, 0.6f);
+        }
+        else
+        {
+            shake = 1f;
+        }
     }
 
     // Tips the topmost prop that's home off the pile. False if nothing could go.
@@ -110,7 +133,11 @@ public class PropPile : MonoBehaviour
                 total++;
                 if (prop.state == FlyingProp.State.Home) home++;
             }
-            return total > 0 ? home / (float)total : 1f;
+            if (total > 0)
+            {
+                return home / (float)total;
+            }
+            return 1f;
         }
     }
 

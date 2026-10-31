@@ -17,7 +17,15 @@ public static class PcHeadsetPicker
 #if UNITY_EDITOR
         if (runtime != "Oculus" && runtime != "OpenVR") return;   // no headset running: as set
 #endif
-        ESDKType type = runtime == "Oculus" ? ESDKType.OVR : ESDKType.OpenVR;
+        ESDKType type;
+        if (runtime == "Oculus")
+        {
+            type = ESDKType.OVR;
+        }
+        else
+        {
+            type = ESDKType.OpenVR;
+        }
         // SteamVR's input (its actions) only starts once something of SteamVR's appears; in a build Liminal sets up its
         // SteamVR controllers before that happens, finds no actions and stops (the headset just shows grey). So it's
         // started here, first.

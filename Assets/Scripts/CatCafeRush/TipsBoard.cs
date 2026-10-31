@@ -75,17 +75,41 @@ public class TipsBoard : MonoBehaviour
     {
         foreach (TMP_Text anchor in new[] { game.scoreDisplay, game.countdownDisplay, game.finalScoreDisplay })
         {
-            Canvas canvas = anchor != null ? anchor.canvas : null;
+            Canvas canvas;
+            if (anchor != null)
+            {
+                canvas = anchor.canvas;
+            }
+            else
+            {
+                canvas = null;
+            }
             if (canvas == null) continue;
             canvas = canvas.rootCanvas;
             foreach (TMP_Text text in canvas.GetComponentsInChildren<TMP_Text>(true)) Fit(text);
         }
 
         // "Score" becomes "Tips" (the labels are the value's parent on the live board, and its neighbour at the end)
-        TMP_Text live = game.scoreDisplay.transform.parent != null ? game.scoreDisplay.transform.parent.GetComponent<TMP_Text>() : null;
+        TMP_Text live;
+        if (game.scoreDisplay.transform.parent != null)
+        {
+            live = game.scoreDisplay.transform.parent.GetComponent<TMP_Text>();
+        }
+        else
+        {
+            live = null;
+        }
         if (live != null) live.text = settings.liveLabel;
         // The tally panel only took the middle of the board: a bit bigger
-        Canvas tally = game.finalScoreDisplay != null ? game.finalScoreDisplay.canvas : null;
+        Canvas tally;
+        if (game.finalScoreDisplay != null)
+        {
+            tally = game.finalScoreDisplay.canvas;
+        }
+        else
+        {
+            tally = null;
+        }
         if (tally != null && !scaledTally)
         {
             scaledTally = true;
@@ -153,8 +177,24 @@ public class TipsBoard : MonoBehaviour
     // funny line under them, wider than the panel and on two lines if it needs them, with the best tips at the bottom
     void Arrange(RectTransform panel)
     {
-        TMP_Text penaltyLabel = game.penaltyDisplay != null ? Sibling(game.penaltyDisplay, "Penalty") : null;
-        TMP_Text tipsLabel = game.finalScoreDisplay != null ? Sibling(game.finalScoreDisplay, "Final Score") : null;
+        TMP_Text penaltyLabel;
+        if (game.penaltyDisplay != null)
+        {
+            penaltyLabel = Sibling(game.penaltyDisplay, "Penalty");
+        }
+        else
+        {
+            penaltyLabel = null;
+        }
+        TMP_Text tipsLabel;
+        if (game.finalScoreDisplay != null)
+        {
+            tipsLabel = Sibling(game.finalScoreDisplay, "Final Score");
+        }
+        else
+        {
+            tipsLabel = null;
+        }
         bool middleFree = game.penaltyDisplay != null && !game.penaltyDisplay.gameObject.activeSelf
                           && (penaltyLabel == null || !penaltyLabel.gameObject.activeSelf);
         if (middleFree && game.finalScoreDisplay != null)

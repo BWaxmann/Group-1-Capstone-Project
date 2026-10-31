@@ -67,7 +67,11 @@ public class KittenRun : MonoBehaviour
     {
         get
         {
-            return hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.15f;
+            if (hitbox != null)
+            {
+                return hitbox.transform.TransformPoint(hitbox.center);
+            }
+            return transform.position + Vector3.up * 0.15f;
         }
     }
     public bool isFed

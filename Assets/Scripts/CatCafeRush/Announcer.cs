@@ -78,7 +78,11 @@ public class Announcer : MonoBehaviour
     {
         get
         {
-            return isSpeaking ? speaking.id : null;
+            if (isSpeaking)
+            {
+                return speaking.id;
+            }
+            return null;
         }
     }
     readonly Dictionary<string, AudioClip> stings = new Dictionary<string, AudioClip>();
@@ -165,7 +169,15 @@ public class Announcer : MonoBehaviour
             if (parts.Length < 2) continue;
             string id = parts[0].Trim();
             string said = parts[1].Trim();
-            string shown = parts.Length > 2 && parts[2].Trim().Length > 0 ? parts[2].Trim() : said;
+            string shown;
+            if (parts.Length > 2 && parts[2].Trim().Length > 0)
+            {
+                shown = parts[2].Trim();
+            }
+            else
+            {
+                shown = said;
+            }
             lines[id] = new Line { text = shown, clip = Resources.Load<AudioClip>("Announcer/" + id) };
         }
     }
@@ -342,8 +354,15 @@ public class Announcer : MonoBehaviour
 
     void ShowSubtitle(string text)
     {
-        string name = string.IsNullOrEmpty(speakerName) ? "" :
-            $"<color=#{ColorUtility.ToHtmlStringRGB(speakerColour)}>{speakerName}:</color> ";
+        string name;
+        if (string.IsNullOrEmpty(speakerName))
+        {
+            name = "";
+        }
+        else
+        {
+            name = $"<color=#{ColorUtility.ToHtmlStringRGB(speakerColour)}>{speakerName}:</color> ";
+        }
         if (!subtitleShowing && subtitleGroup.alpha <= 0.01f) subtitlePlaced = false;   // appear where the player is looking
         subtitleShowing = true;
         subtitleCanvas.gameObject.SetActive(true);
@@ -387,7 +406,14 @@ public class Announcer : MonoBehaviour
 
         Vector3 forward = Quaternion.Euler(0, yaw, 0) * Vector3.forward;
         Vector3 target = head.position + forward * subtitleDistance + Vector3.down * subtitleDrop;
-        subtitleCanvas.position = subtitlePlaced ? Vector3.Lerp(subtitleCanvas.position, target, Time.deltaTime * 10f) : target;
+        if (subtitlePlaced)
+        {
+            subtitleCanvas.position = Vector3.Lerp(subtitleCanvas.position, target, Time.deltaTime * 10f);
+        }
+        else
+        {
+            subtitleCanvas.position = target;
+        }
         subtitleCanvas.rotation = Quaternion.LookRotation(subtitleCanvas.position - head.position);
         subtitlePlaced = true;
     }
@@ -399,6 +425,10 @@ public class Announcer : MonoBehaviour
     {
         if (player == null) player = FindObjectOfType<PlayerInput>();
         if (player != null && player.eyePoint != null && player.eyePoint.gameObject.activeInHierarchy) return player.eyePoint;
-        return Camera.main != null ? Camera.main.transform : null;
+        if (Camera.main != null)
+        {
+            return Camera.main.transform;
+        }
+        return null;
     }
 }
