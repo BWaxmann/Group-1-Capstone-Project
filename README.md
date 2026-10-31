@@ -27,7 +27,7 @@ little longer than the seconds add up to.
 
 | Object | Where | Components, and what they're for |
 |---|---|---|
-| **Cat Cafe Rush** | scene | **RushDirector** (J) runs the round phase by phase. **Announcer** (J) plays the manager's voice lines with subtitles. **CatChaosSettings** (J) is how props fly and how cats knock them. |
+| **Cat Cafe Rush** | scene | **RushDirector** (J) runs the round phase by phase. It is in parts: RushDirector.cs holds the settings and the lifecycle of the round, and RushDirector.Phases, .Feeding, .Stampede, .Vents, .Spies, .Heists, .LauncherKittens, .Raids, .Ninja and .TipJar each hold one job. **Announcer** (J) plays the manager's voice lines with subtitles. **CatChaosSettings** (J) is how props fly and how cats knock them. |
 | **CafePrefabs** | scene | **CafePrefabs** (J): a slot for each thing the scripts spawn (words, rings, splat, bubble, tip jar, rope, recipe, reticle, beam). Empty slot = built in code. See `Assets/Scripts/CatCafeRush/CafePrefabs_HowTo.md`. |
 | **Cat Spawn Manager** (x4) | scene | **SpawnManager** (B): the original wave spawners. The director holds them and brings cats in itself. |
 | **GameManager** | `Prefabs/GameManager` | **GameManager** (B): the round clock, countdown, score and tips canvases, music, finale ("LAST ORDERS!"), ranks, start-up message boxes, the 9-to-5 shift clock. |
@@ -73,7 +73,7 @@ from a CafePrefabs slot when one is filled.
 
 ## Scripts by job
 
-**The round:** RushDirector (J), Announcer (J), GameManager (B), SpawnManager (B), RunReset (J, puts every static back
+**The round:** RushDirector (J, in parts), Announcer (J), GameManager (B), SpawnManager (B), RunReset (J, puts every static back
 for Liminal's re-runs), Warmup (J, fonts, shaders and sounds loaded up front), SoundLevels (J), SoundBite (J),
 CafePrefabs (J).
 
