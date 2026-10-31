@@ -450,11 +450,12 @@ public class CatOrder : MonoBehaviour
 
         if (hole.HasValue)
         {
-            // In through the mouth of the hole, shrinking as it goes, then a little pop of confetti at the mouth
-            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+            // In through the mouth of the hole, shrinking as it goes, then a little pop of confetti at the mouth. The
+            // inside of the hole is off the navmesh, where the agent would hold the cat back at the mouth, so the agent
+            // is switched off for the slide (as for a hop down; the cat's next Initialise switches it back on)
+            if (agent != null)
             {
-                agent.isStopped = true;
-                agent.updateRotation = false;
+                agent.enabled = false;
             }
             diving = true;
             scaleBeforeDive = transform.localScale;
