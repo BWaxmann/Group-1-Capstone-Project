@@ -59,7 +59,6 @@ from a CafePrefabs slot when one is filled.
 | Launcher kittens | Rush Director > **Launcher kittens** | Shakes To Free (3), Shake Speed, Bored After (8 s), Stack Chance, Hint ("SHAKE!"); Latch Every on each phase |
 | Spy cats | Rush Director > **Spy cats** | Approach Seconds (8), Swing Period, Scare Seconds (2.2), Swings Needed (3), Look Angle, Steal Coins, spy music volumes |
 | Mafia heist | Rush Director > **Mafia heist** | Heists Per Phase (2), Heist Gang (2), Walk Speed, Treats (3), Steal (10), Pillage Seconds (5), theme volume |
-| Pop-up cats | Rush Director > **Pop-up Cats** | Seats (6), Pop Gap start/end, Double Pops From, Warning, Hang, Treats Min/Max |
 | Catch phase | Rush Director > **Ninja and the piles**, **Catching** | Drag Props Home, Prop Drop Margin (0.35, Dinner Rush 0.6), Restock Piles, Catch Aim Angle, Tidy Bonus |
 | How props fly | Cat Cafe Rush > **Cat Chaos Settings** | Max Airborne (4), launch speeds, drift, Respawn Delay, knock chance and reach, prop sounds |
 | The grip beam | GravityBeam (on the launchers at runtime) | Aim Angle (20), Range, Hold Distance (1.3), Flick To Return, Flick Speed (2.2) |
@@ -81,7 +80,7 @@ CafePrefabs (J).
 **Cats:** CatMovement (B), CatFootsteps (B), CatOrder (J), OrderBubble (J), CatRaid (J), CatJuice (J, squish on hit),
 CatWaddle (J, phat cats), BossCatSpawner and the BossCat family (B), CafeVent (J).
 
-**Phases:** KittenRun (J, stampede), LauncherKitten (J), PopUpCat (J), SpyCat (J), MafiaHeist (J), NinjaRushCat (J,
+**Phases:** KittenRun (J, stampede), LauncherKitten (J), SpyCat (J), MafiaHeist (J), NinjaRushCat (J,
 the catch phase ninja).
 
 **Player:** PlayerInput (B), GrabbableLaunchers (B), Treat and Launchable (B), AimReticle (J), GravityBeam (J),

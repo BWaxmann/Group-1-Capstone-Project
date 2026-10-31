@@ -5,24 +5,27 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-// Cat Cafe Rush: runs the round as a string of phases, one job at a time.
-// Feed: hungry cats wander in with colour orders (left launcher Blue, right Orange).
-// Catch: the cats run off, and the ninja blinks about knocking things into the air to catch (it can't be fed now).
-// Boss: the finale. The ninja can be fed (it ends when it's full), while it keeps knocking things up.
-// Stampede and Pop-up are the Cat Cafe Waves additions (still being built: for now the cats clear out for that long).
+// Cat Cafe Waves: runs the round as a string of phases (the playlist on the Rush Director), one job at a time.
+// Feed: hungry cats come in by the holes with colour orders (one colour per launcher); the Mafia cat and the launcher
+//       kittens make trouble partway through.
+// Stampede: herds of kittens gallop across the room (and pour out of the vents); any treat feeds them.
+// Catch: the cats run off, and the ninja blinks about knocking the piles into the air for the player to catch.
+// Spy: spy cats lower down on ropes from the ceiling vents after the secret recipe; waving your arms scares them off.
+// Remix: the finale, a bit of everything at once, then the tidy-up bonus.
+// Boss: the older finale (the ninja is fed, or makes a mess), kept for scenes that still use it.
 // Brian's wave spawners are off in this scene; this spawns the cats itself.
 public class RushDirector : MonoBehaviour
 {
-    // New kinds go on the end, so scenes that already have phases keep theirs
+    // The numbers are what the scene saves for each phase, so a kind keeps its number for good (4 was the pop-up
+    // cats, now gone); new kinds go on the end
     public enum Kind
     {
-        Feed,
-        Catch,
-        Boss,
-        Stampede,
-        PopUp,
-        Remix,  // the finale: a bit of everything at once (see the Remix finale settings)
-        Spy     // spy cats lower down from the ceiling vents after the recipe; the player waves them off
+        Feed = 0,
+        Catch = 1,
+        Boss = 2,
+        Stampede = 3,
+        Remix = 5,  // the finale: a bit of everything at once (see the Remix finale settings)
+        Spy = 6     // spy cats lower down from the ceiling vents after the recipe; the player waves them off
     }
 
     [Serializable]
@@ -384,7 +387,7 @@ public class RushDirector : MonoBehaviour
     [Header("Spy cats (Spy phases)")]
 
     [Tooltip("Spy cats (phat cats) lower down on ropes from the ceiling vents (vents high up that the player can see) after a " +
-             "secret recipe; looking at one and waving your arms scares it off. With no ceiling vent, Spy phases run pop-up cats instead.")]
+             "secret recipe; looking at one and waving your arms scares it off. With no ceiling vent in view, a Spy phase is ordinary feeding instead.")]
     public SpyCat.Settings spy = new SpyCat.Settings();
     [Min(0.5f)] public float spyGapStart = 4f;
     [Min(0.5f)] public float spyGapEnd = 2.5f;
@@ -431,24 +434,6 @@ public class RushDirector : MonoBehaviour
     [Range(0f, 180f)]
     [Tooltip("Only vents within this many degrees of where the player faces are used.")]
     public float ventArc = 120f;
-
-    [Header("Pop-up Cats (Pop-up phases)")]
-
-    [Min(1)]
-    [Tooltip("How many cats sit about (on the couches and chairs in front of the player, then the floor if short).")]
-    public int popUpSeats = 6;
-    [Min(0.3f)]
-    [Tooltip("Seconds between pops at the start of the phase...")]
-    public float popGapStart = 1.8f;
-    [Min(0.3f)]
-    [Tooltip("...and by the end.")]
-    public float popGapEnd = 1.0f;
-    [Range(0f, 1f)]
-    [Tooltip("How far through the phase two cats can be out at once (1 = never).")]
-    public float doublePopsFrom = 0.6f;
-    public PopUpCat.Settings popUp = new PopUpCat.Settings();
-    [Min(0)] public int popUpScore = 5;
-    [Min(0)] public int popUpCoins = 2;
 
     [Tooltip("The first catch phase starts by knocking up one prop that hangs in the air, with a hint, and the clock " +
              "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
@@ -532,17 +517,13 @@ public class RushDirector : MonoBehaviour
     Vector3? AssistTarget(Treat treat)
     {
         Vector3? target = CatOrder.AssistTarget(treat, aimAssistAngle);
-        if (target == null && (KittenRun.running.Count > 0 || PopUpCat.active.Count > 0))
+        if (target == null && KittenRun.running.Count > 0)
         {
-            // Any kitten or popped-up cat will do (no colours in those waves)
+            // Any kitten will do (no colours in the stampede)
             float best = aimAssistAngle;
             foreach (KittenRun kitten in KittenRun.running)
             {
                 if (!kitten.isFed && kitten.feedable) Consider(kitten.aimPoint);
-            }
-            foreach (PopUpCat pop in PopUpCat.active)
-            {
-                if (pop.isOut && pop.wantedFood == treat.foodVariation) Consider(pop.aimPoint);
             }
 
             void Consider(Vector3 point)
@@ -759,7 +740,6 @@ public class RushDirector : MonoBehaviour
         spyMusic = null;
         if (MafiaHeist.current != null) MafiaHeist.current.Cancel();
         KittenRun.EndAll();
-        PopUpCat.EndAll();
         if (player != null) player.ForceFireStyle(null);
         if (ninja != null) ninja.Leave();
         Say(closingLine);
@@ -862,7 +842,6 @@ public class RushDirector : MonoBehaviour
                     windingDown = true;
                     if (ninja != null) ninja.Leave();
                     if (MafiaHeist.current != null) MafiaHeist.current.Cancel();
-                    PopUpCat.EndAll();
                     SpyCat.EndAll();
                     if (playing) yield return TidyBonus();
                     while (playing) yield return null;
@@ -896,13 +875,6 @@ public class RushDirector : MonoBehaviour
                     yield return Stampede(phase);
                     break;
 
-                case Kind.PopUp:
-                    Haptics.PulseBoth(Haptics.Strength.Strong);
-                    CatRaid.CancelAll();
-                    SendCatsAway();
-                    yield return PopUps(phase);
-                    break;
-
                 case Kind.Spy:
                     Haptics.PulseBoth(Haptics.Strength.Strong);
                     CatRaid.CancelAll();
@@ -916,8 +888,11 @@ public class RushDirector : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogWarning("[Cat Cafe Waves] No ceiling vent the player can see for the spy cats: pop-up cats instead.");
-                        yield return PopUps(phase);
+                        Debug.LogWarning("[Cat Cafe Waves] No ceiling vent the player can see for the spy cats: ordinary feeding instead.");
+                        current = new Phase { kind = Kind.Feed, seconds = phase.seconds, cats = phase.cats, shortestOrder = phase.shortestOrder, longestOrder = phase.longestOrder };
+                        yield return WaitClock(Mathf.Max(0, phase.seconds - lastCallSeconds));
+                        windingDown = true;
+                        yield return WaitClock(Mathf.Min(lastCallSeconds, phase.seconds));
                     }
                     break;
             }
@@ -930,7 +905,6 @@ public class RushDirector : MonoBehaviour
                 KittenRun.EndAll();
                 if (player != null) player.ForceFireStyle(null);
             }
-            if (phase.kind == Kind.PopUp || phase.kind == Kind.Spy) PopUpCat.EndAll();
             if (phase.kind == Kind.Spy)
             {
                 SpyCat.EndAll();
@@ -979,10 +953,8 @@ public class RushDirector : MonoBehaviour
                 return false;
             case Kind.Stampede:
                 return KittenRun.running.Exists(kitten => kitten != null && kitten.feedable && !kitten.isFed);
-            case Kind.PopUp:
-                return PopUpCat.active.Exists(pop => pop != null && pop.isOut);
             case Kind.Spy:
-                return SpyCat.active.Count > 0 || PopUpCat.active.Exists(pop => pop != null && pop.isOut);
+                return SpyCat.active.Count > 0;
         }
         return false;
     }
@@ -1004,10 +976,6 @@ public class RushDirector : MonoBehaviour
         if (LauncherKitten.active.Count > 0) busy++;
         if (flooding) busy++;
         busy += SpyCat.active.Count;
-        foreach (PopUpCat pop in PopUpCat.active)
-        {
-            if (pop != null && pop.isOut) busy++;
-        }
         return busy;
     }
 
@@ -1029,172 +997,6 @@ public class RushDirector : MonoBehaviour
         if (current != null && current.kind == Kind.Remix) nextBigAt = clock + remixBreather;
     }
 
-    // ---------- Cat Cafe Waves: pop-up cats ----------
-
-    // Whack-a-mole in the air: cats sit on the couches and chairs in front of the player, and now and then one springs
-    // up showing a colour (faster as the phase goes on, two at once near the end). The right colour pops it, and a new
-    // cat takes its seat a moment later.
-    // Pop-up cats for the whole of `phase`: `seatCount` of them (and the gaps between pops) as set for Pop-up phases unless
-    // given (the remix finale has fewer, popping less often)
-    IEnumerator PopUps(Phase phase, int seatCount = -1, float gapStart = -1f, float gapEnd = -1f)
-    {
-        float start = clock;
-        float end = start + phase.seconds;
-        Transform eye = player != null ? player.eyePoint : null;
-        List<Vector3> seats = PopUpSeats(seatCount > 0 ? seatCount : popUpSeats);
-        if (gapStart <= 0) gapStart = popGapStart;
-        if (gapEnd <= 0) gapEnd = popGapEnd;
-        PopUpCat[] sitters = new PopUpCat[seats.Count];
-        float[] refillAt = new float[seats.Count];
-        for (int i = 0; i < seats.Count; i++)
-        {
-            sitters[i] = SeatCat(seats[i], eye);
-            yield return new WaitForSeconds(0.12f);
-        }
-        yield return WaitClock(1.2f);   // the callout lands first
-
-        int lastJumper = -1;
-        while (playing && clock < end - 1.5f && seats.Count > 0)
-        {
-            float progress = (clock - start) / phase.seconds;
-
-            // Popped cats' seats are taken by new ones after a moment
-            for (int i = 0; i < seats.Count; i++)
-            {
-                bool empty = sitters[i] == null || !sitters[i].isActiveAndEnabled;
-                if (!empty) continue;
-                if (refillAt[i] == 0) refillAt[i] = clock + 1.5f;
-                else if (clock >= refillAt[i])
-                {
-                    sitters[i] = SeatCat(seats[i], eye);
-                    refillAt[i] = 0;
-                }
-            }
-
-            int allowed = phase.kind == Kind.Remix ? 1 : progress >= doublePopsFrom ? 2 : 1;
-            int up = 0;
-            foreach (PopUpCat sitter in sitters)
-            {
-                if (sitter != null && sitter.isActiveAndEnabled && !sitter.isIdle) up++;
-            }
-            if (up < allowed && RoomForMore)
-            {
-                // Someone sitting (not the last one to jump, so it moves about)
-                List<int> ready = new List<int>();
-                for (int i = 0; i < seats.Count; i++)
-                {
-                    if (sitters[i] == null || !sitters[i].isIdle) continue;
-                    if (i == lastJumper && seats.Count > 1) continue;
-                    ready.Add(i);
-                }
-                if (ready.Count > 0)
-                {
-                    lastJumper = ready[Random.Range(0, ready.Count)];
-                    // A quick string of treats, any mix of colours
-                    int count = Random.Range(popUp.treatsMin, Mathf.Max(popUp.treatsMin, popUp.treatsMax) + 1);
-                    List<int> wanted = new List<int>();
-                    List<OrderBubble.Item> icons = new List<OrderBubble.Item>();
-                    for (int i = 0; i < count; i++)
-                    {
-                        bool left = Random.value < 0.5f;
-                        wanted.Add(left ? leftFood : rightFood);
-                        icons.Add(new OrderBubble.Item(left ? leftTreatPrefab : rightTreatPrefab, left ? leftColour : rightColour));
-                    }
-                    sitters[lastJumper].Jump(wanted, icons, bubbleScale);
-                }
-            }
-            float gap = Mathf.Lerp(gapStart, gapEnd, progress);
-            yield return WaitClock(gap * Random.Range(0.8f, 1.2f));
-        }
-        while (playing && clock < end) yield return null;
-        // (any still in the air get to land: see WrapUp)
-    }
-
-    PopUpCat SeatCat(Vector3 seat, Transform eye)
-    {
-        CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
-        return cat != null ? PopUpCat.Seat(cat, seat, eye, popUp, PopUpHit) : null;
-    }
-
-    void PopUpHit(PopUpCat pop)
-    {
-        Vector3 at = pop.aimPoint;
-        // Pays for each treat it wanted
-        int treats = Mathf.Max(1, pop.treatCount);
-        GameManager.instance.FeedCat(popUpScore * treats, at);
-        if (tipJar != null && popUpCoins > 0) tipJar.AddCoins(at, popUpCoins * treats);
-        Haptics.PulseBoth(Haptics.Strength.Medium);
-    }
-
-    static readonly string[] SeatNames = { "Couch", "Sofa", "Chair", "Armchair", "Stool", "Bench" };
-
-    // Seats in front of the player: the couches and chairs (a long couch seats two), up to Pop Up Seats of them.
-    // If there aren't enough, clear spots on the floor make up the rest.
-    List<Vector3> PopUpSeats(int wanted)
-    {
-        List<Vector3> seats = new List<Vector3>();
-        if (player == null) return seats;
-        Transform eye = player.eyePoint;
-        Vector3 head = eye != null ? eye.position : player.transform.position;
-        Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
-        float floorY = player.transform.position.y;
-
-        List<Vector3> found = new List<Vector3>();
-        List<bool> onCouch = new List<bool>();
-        foreach (Transform thing in FindObjectsOfType<Transform>())
-        {
-            if (!IsSeat(thing.name)) continue;
-            Bounds bounds;
-            if (!BoundsOf(thing, out bounds)) continue;
-            Vector3 to = Flat(bounds.center - head);
-            if (to.magnitude < 1.5f || to.magnitude > 8f || Vector3.Angle(forward, to) > 65f) continue;
-
-            // A long couch has room for two
-            bool couch = Mathf.Max(bounds.size.x, bounds.size.z) > 1.3f;
-            Vector3 along = bounds.size.x > bounds.size.z ? Vector3.right : Vector3.forward;
-            float half = Mathf.Max(bounds.size.x, bounds.size.z) * 0.25f;
-            foreach (Vector3 point in couch ? new[] { bounds.center - along * half, bounds.center + along * half } : new[] { bounds.center })
-            {
-                // Only seats the player can see a cat on (a table or the back of a couch can hide it)
-                if (SeatTop(point, bounds, floorY, out Vector3 seat) && CanSee(head, seat + Vector3.up * 0.4f))
-                {
-                    found.Add(seat);
-                    onCouch.Add(couch);
-                }
-            }
-        }
-
-        // Couches first (cats on them are easy to see), then the nearest to the middle of the view, keeping cats apart
-        List<int> order = new List<int>();
-        for (int i = 0; i < found.Count; i++) order.Add(i);
-        order.Sort((a, b) =>
-        {
-            if (onCouch[a] != onCouch[b]) return onCouch[a] ? -1 : 1;
-            return Vector3.Angle(forward, Flat(found[a] - head)).CompareTo(Vector3.Angle(forward, Flat(found[b] - head)));
-        });
-        foreach (int i in order)
-        {
-            Vector3 seat = found[i];
-            if (seats.Count >= wanted) break;
-            if (seats.Exists(other => Flat(other - seat).magnitude < 0.7f)) continue;
-            seats.Add(seat);
-        }
-
-        // Not enough seats: the floor in front, out in the open
-        for (int attempt = 0; attempt < 60 && seats.Count < wanted; attempt++)
-        {
-            Vector3 probe = head + Quaternion.Euler(0, Random.Range(-55f, 55f), 0) * forward * Random.Range(2.5f, 6f);
-            probe.y = floorY;
-            if (!NavMesh.SamplePosition(probe, out NavMeshHit floor, 0.5f, NavMesh.AllAreas)) continue;
-            if (Mathf.Abs(floor.position.y - floorY) > 0.15f) continue;
-            if (Physics.Raycast(floor.position + Vector3.up * 0.1f, Vector3.up, 2.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
-            if (seats.Exists(other => Flat(other - floor.position).magnitude < 1.2f)) continue;
-            seats.Add(floor.position);
-        }
-        return seats;
-    }
-
     // Nothing solid between the player's eye and `point` (cats, props and the player's own rig don't count)
     static bool CanSee(Vector3 eye, Vector3 point)
     {
@@ -1207,58 +1009,6 @@ public class RushDirector : MonoBehaviour
             return false;
         }
         return true;
-    }
-
-    static bool IsSeat(string name)
-    {
-        foreach (string seatName in SeatNames)
-        {
-            if (name.StartsWith(seatName)) return true;
-        }
-        return false;
-    }
-
-    static bool BoundsOf(Transform thing, out Bounds bounds)
-    {
-        bounds = new Bounds();
-        bool any = false;
-        foreach (Renderer rend in thing.GetComponentsInChildren<Renderer>())
-        {
-            if (!(rend is MeshRenderer) && !(rend is SkinnedMeshRenderer)) continue;
-            if (!any) bounds = rend.bounds;
-            else bounds.Encapsulate(rend.bounds);
-            any = true;
-        }
-        return any;
-    }
-
-    // Where a cat would sit at `point` on a seat: the highest surface there at seat height (not the back or arm)
-    static bool SeatTop(Vector3 point, Bounds bounds, float floorY, out Vector3 seat)
-    {
-        seat = Vector3.zero;
-        float best = float.MinValue;
-        Vector3 from = new Vector3(point.x, bounds.max.y + 0.2f, point.z);
-        foreach (RaycastHit hit in Physics.RaycastAll(from, Vector3.down, bounds.size.y + 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-        {
-            // Seat height (a table top is higher), facing up
-            float height = hit.point.y - floorY;
-            if (height < 0.25f || height > 0.65f || hit.normal.y < 0.7f) continue;
-            if (hit.point.y > best)
-            {
-                best = hit.point.y;
-                seat = hit.point;
-            }
-        }
-        if (best == float.MinValue)
-        {
-            // No collider to land on: the seat's walkable top, if cats can stand there
-            Vector3 guess = new Vector3(point.x, floorY + 0.45f, point.z);
-            if (!NavMesh.SamplePosition(guess, out NavMeshHit onSeat, 0.4f, NavMesh.AllAreas) ||
-                onSeat.position.y - floorY < 0.25f || onSeat.position.y - floorY > 0.65f) return false;
-            seat = onSeat.position;
-        }
-        // Not tucked under a table: it needs room to jump
-        return !Physics.Raycast(seat + Vector3.up * 0.15f, Vector3.up, 1.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 
     // ---------- Cat Cafe Waves: kitten stampede ----------

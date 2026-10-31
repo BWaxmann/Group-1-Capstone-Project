@@ -12,7 +12,6 @@ public static class RunReset
         CatOrder.all.Clear();
         CatRaid.active.Clear();
         LauncherKitten.active.Clear();
-        PopUpCat.active.Clear();
         KittenRun.ResetStatics();
         SpyCat.ResetStatics();
         FlyingProp.ResetStatics();
