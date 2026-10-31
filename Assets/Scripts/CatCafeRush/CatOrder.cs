@@ -59,8 +59,17 @@ public class CatOrder : MonoBehaviour
     // Called when the cat gets the last treat of its order (Cat Cafe Waves pays out tips)
     public System.Action<CatOrder> served;
 
-    // If set, a served cat runs to the hole this gives (from where it is) and dives in, instead of happy-launching
-    public System.Func<Vector3, Vector3?> holeFor;
+    // A hole in the cafe that cats come and go by (modelled into the couches): the floor just outside its mouth, and
+    // the way in through it
+    public struct Hole
+    {
+        public Vector3 outside;
+        public Vector3 inward;
+    }
+
+    // If set, a served cat runs to the hole this gives (from where it is) and goes in through it, instead of
+    // happy-launching
+    public System.Func<Vector3, Hole?> holeFor;
 
     // If set, a cat about to order (with an order moment) first walks to the spot this gives, if any (e.g. somewhere the
     // player can see it properly)
@@ -358,8 +367,15 @@ public class CatOrder : MonoBehaviour
         bubble.FlashFace(cat.happiestFace, 0f);
         cat.treatGate = null;
         served?.Invoke(this);
-        Vector3? hole = holeFor != null ? holeFor(transform.position) : null;
-        if (hole.HasValue) cat.leaveOverride = fedCat => LeaveThroughHole(hole.Value);
+        Hole? hole = null;
+        if (holeFor != null)
+        {
+            hole = holeFor(transform.position);
+        }
+        if (hole.HasValue)
+        {
+            cat.leaveOverride = fedCat => LeaveThroughHole(hole.Value);
+        }
         cat.FeedCat(true);
         StartCoroutine(HideBubbleSoon());
         return false;
@@ -379,17 +395,18 @@ public class CatOrder : MonoBehaviour
         cat.treatGate = t => false;
         if (bubble != null) bubble.Hide();
         cat.StopAllCoroutines();   // stops its roaming
-        StartCoroutine(RunRoutine(exit, false));
+        StartCoroutine(RunRoutine(exit, null));
     }
 
-    // A served cat scampers off happily and dives into the hole (the cat has already scored)
-    void LeaveThroughHole(Vector3 hole)
+    // A served cat scampers off happily and goes in through the hole (the cat has already scored)
+    void LeaveThroughHole(Hole hole)
     {
         runningOff = true;
-        StartCoroutine(RunRoutine(hole, true));
+        StartCoroutine(RunRoutine(hole.outside, hole));
     }
 
-    IEnumerator RunRoutine(Vector3 exit, bool served)
+    // Runs to `exit` and leaves: in through `hole` if given, otherwise it just disappears there
+    IEnumerator RunRoutine(Vector3 exit, Hole? hole)
     {
         if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
@@ -431,21 +448,37 @@ public class CatOrder : MonoBehaviour
             }
         }
 
-        if (served)
+        if (hole.HasValue)
         {
-            // Shrinks down into the hole, then a little pop of confetti
-            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = true;
+            // In through the mouth of the hole, shrinking as it goes, then a little pop of confetti at the mouth
+            if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+                agent.updateRotation = false;
+            }
             diving = true;
             scaleBeforeDive = transform.localScale;
             Vector3 start = transform.position;
+            Vector3 inward = hole.Value.inward;
+            Vector3 inside = hole.Value.outside + inward * 0.5f;
+            inside.y = start.y;
+            Quaternion facing = transform.rotation;
+            if (inward.sqrMagnitude > 0.001f)
+            {
+                facing = Quaternion.LookRotation(inward);
+            }
+            float seconds = 0.2f + Vector3.Distance(start, inside) * 0.25f;
             float t = 0;
             while (t < 1f)
             {
-                t += Time.deltaTime / 0.25f;
-                transform.localScale = scaleBeforeDive * Mathf.Lerp(1f, 0.1f, t * t);
-                transform.position = start + Vector3.down * 0.2f * t;
+                t += Time.deltaTime / seconds;
+                float along = Mathf.Clamp01(t);
+                transform.localScale = scaleBeforeDive * Mathf.Lerp(1f, 0.2f, along * along);
+                transform.position = Vector3.Lerp(start, inside, along);
+                transform.rotation = Quaternion.Slerp(transform.rotation, facing, Time.deltaTime * 10f);
                 yield return null;
             }
+            transform.position = hole.Value.outside + inward * 0.1f + Vector3.up * 0.1f;   // the pop is at the mouth
             cat.FinishLeaving();   // back to the pool
             yield break;
         }

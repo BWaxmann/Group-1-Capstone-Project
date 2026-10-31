@@ -207,7 +207,8 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Played before the ninja's catch and boss lines (from Resources/CafeSounds).")]
     public string ninjaSting = "ninja_sting";
 
-    [Tooltip("Fed cats run off to a hole in the floor (one at each door cats come in by) and dive in, instead of launching.")]
+    [Tooltip("Fed cats run off to the nearest hole cats come in by and go in through it, instead of launching. The holes " +
+             "are modelled into the cafe: each door marker sits in the mouth of one, facing out into the room.")]
     public bool fedCatsUseHoles = false;
 
     [Range(0f, 180f)]
@@ -468,7 +469,7 @@ public class RushDirector : MonoBehaviour
     Announcer voice;
     
     TipJar tipJar;
-    readonly List<Vector3> holes = new List<Vector3>();
+    readonly List<CatOrder.Hole> holes = new List<CatOrder.Hole>();
     readonly List<Transform> entryDoors = new List<Transform>();
     readonly List<DefendPoint> piles = new List<DefendPoint>();
     readonly List<PropPile> propPiles = new List<PropPile>();
@@ -1814,7 +1815,11 @@ public class RushDirector : MonoBehaviour
         }
         CatOrder order = CatOrder.Give(cat, foods, bubbleScale, cleanShots ? hitboxGenerosity : 0f, catSpeedMultiplier);
         order.served = Served;
-        order.holeFor = fedCatsUseHoles && holes.Count > 0 ? (Func<Vector3, Vector3?>)NearestHole : null;
+        order.holeFor = null;
+        if (fedCatsUseHoles && holes.Count > 0)
+        {
+            order.holeFor = NearestHole;
+        }
         order.orderSpotFor = orderMoments ? OrderSpot : (Func<CatOrder, Vector3?>)null;
         order.wrongTreat = WrongTreat;
         order.patienceOut = PatienceOut;
@@ -2281,12 +2286,15 @@ public class RushDirector : MonoBehaviour
 
     // ---------- Cat Cafe Waves: holes and the tip jar ----------
 
-    Vector3? NearestHole(Vector3 from)
+    CatOrder.Hole? NearestHole(Vector3 from)
     {
-        Vector3? best = null;
-        foreach (Vector3 hole in holes)
+        CatOrder.Hole? best = null;
+        foreach (CatOrder.Hole hole in holes)
         {
-            if (best == null || (hole - from).sqrMagnitude < (best.Value - from).sqrMagnitude) best = hole;
+            if (best == null || (hole.outside - from).sqrMagnitude < (best.Value.outside - from).sqrMagnitude)
+            {
+                best = hole;
+            }
         }
         return best;
     }
@@ -2305,30 +2313,30 @@ public class RushDirector : MonoBehaviour
         if (entryDoors.Count == 0) entryDoors.AddRange(doors.FindAll(door => door != null));
     }
 
-    // A dark round hole in the floor at each door cats come in by (they come out of them, and fed cats dive back in)
+    // The holes at the doors cats come in by. They are modelled into the cafe (the couches), with a door marker in the
+    // mouth of each, facing out into the room: so a hole is the floor just outside its marker and the way in behind it
     void MakeHoles()
     {
         holes.Clear();
         foreach (Transform door in entryDoors)
         {
-            if (door == null) continue;
-            Vector3 at = door.position;
-            if (NavMesh.SamplePosition(at, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) at = hit.position;
-            holes.Add(at);
-            HoleVisual(at);
+            if (door == null)
+            {
+                continue;
+            }
+            CatOrder.Hole hole = new CatOrder.Hole();
+            hole.outside = door.position;
+            if (NavMesh.SamplePosition(door.position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
+            {
+                hole.outside = floor.position;
+            }
+            hole.inward = -Flat(door.forward);
+            if (hole.inward.sqrMagnitude > 0.001f)
+            {
+                hole.inward = hole.inward.normalized;
+            }
+            holes.Add(hole);
         }
-    }
-
-    // A dark round hole with a rim, flat on the floor
-    GameObject HoleVisual(Vector3 at)
-    {
-        GameObject rim = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, transform, "Cat Hole", new Color(0.18f, 0.11f, 0.06f));
-        rim.transform.localScale = new Vector3(0.62f, 0.002f, 0.62f);
-        rim.transform.position = at + Vector3.up * 0.004f;
-        GameObject hole = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, rim.transform, "Dark", Color.black);
-        hole.GetComponent<Renderer>().sharedMaterial.renderQueue = 3001;
-        hole.transform.localScale = new Vector3(0.82f, 1.2f, 0.82f);
-        return rim;
     }
 
     // On the counter beside the cat clock (it stands on the counter), on whichever side is nearer the player's front
