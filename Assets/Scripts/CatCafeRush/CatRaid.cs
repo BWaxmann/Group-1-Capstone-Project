@@ -158,10 +158,10 @@ public class CatRaid : MonoBehaviour
         }
         order.rightTreat -= OnRightTreat;
         order.rightTreat += OnRightTreat;
-        routine = StartCoroutine(Run());
+        routine = StartCoroutine(RunRoutine());
     }
 
-    IEnumerator Run()
+    IEnumerator RunRoutine()
     {
         // Wind-up: stops, faces its target, wiggles, with a "!" and a rising sound
         cat.StopAllCoroutines();   // stops its roaming
@@ -257,7 +257,7 @@ public class CatRaid : MonoBehaviour
         {
             landing = from + towards * Mathf.Max(0, reach - 0.3f);
         }
-        yield return Hop(from, landing, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
+        yield return HopRoutine(from, landing, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
         if (animator != null && animator.runtimeAnimatorController != null)
         {
@@ -269,12 +269,12 @@ public class CatRaid : MonoBehaviour
 
         if (upOnTop)
         {
-            yield return Hop(transform.position, floorSpot, 0.4f, 0.3f);
+            yield return HopRoutine(transform.position, floorSpot, 0.4f, 0.3f);
         }
         Finish(Result.Swatted, true);
     }
 
-    IEnumerator Hop(Vector3 from, Vector3 to, float seconds, float height)
+    IEnumerator HopRoutine(Vector3 from, Vector3 to, float seconds, float height)
     {
         float timer = 0;
         while (timer < seconds)
@@ -410,7 +410,7 @@ public class CatRaid : MonoBehaviour
                 warning = FloatingWord.Make("!", settings.warningColour, 5f);
             }
             warning.SetActive(true);
-            StartCoroutine(BounceWarning());
+            StartCoroutine(BounceWarningRoutine());
         }
         else if (warning != null)
         {
@@ -418,7 +418,7 @@ public class CatRaid : MonoBehaviour
         }
     }
 
-    IEnumerator BounceWarning()
+    IEnumerator BounceWarningRoutine()
     {
         float timer = 0;
         while (warning != null && warning.activeSelf)

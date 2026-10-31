@@ -165,7 +165,7 @@ public class Announcer : MonoBehaviour
             OnTop(subtitleText.fontMaterial);
             subtitleCanvas.gameObject.SetActive(false);
         }
-        StartCoroutine(Run());
+        StartCoroutine(RunRoutine());
     }
 
     void OnDestroy()
@@ -300,7 +300,7 @@ public class Announcer : MonoBehaviour
         return clip;
     }
 
-    IEnumerator Run()
+    IEnumerator RunRoutine()
     {
         while (true)
         {

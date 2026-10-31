@@ -559,7 +559,7 @@ public class GameManager : MonoBehaviour
             EndRound?.Invoke();
         }
 
-        yield return StartCoroutine(FadeOutMusic());
+        yield return StartCoroutine(FadeOutMusicRoutine());
 
         EndGame();
     }
@@ -709,7 +709,7 @@ public class GameManager : MonoBehaviour
 
         Haptics.PulseBoth(Haptics.Strength.Huge);
         StartCoroutine(PostGameRoutine());
-        StartCoroutine(CelebrateRemainingCats());
+        StartCoroutine(CelebrateRemainingCatsRoutine());
         GameEnd?.Invoke();
     }
 
@@ -740,7 +740,7 @@ public class GameManager : MonoBehaviour
 
         PlaySoundEffect(finaleSound);
         Haptics.PulseBoth(Haptics.Strength.Strong);
-        StartCoroutine(RampMusicPitch(finaleMusicPitch, 2f));
+        StartCoroutine(RampMusicPitchRoutine(finaleMusicPitch, 2f));
 
         FinaleStart?.Invoke();
     }
@@ -869,16 +869,16 @@ public class GameManager : MonoBehaviour
     IEnumerator DuckRoutine(float level, float hold)
     {
         // Eased both ways (down fairly quickly, back up gently), so it doesn't lurch
-        yield return FadeMusicTo(unduckedVolume * level, level < 1f ? 0.6f : 1.5f);
+        yield return FadeMusicToRoutine(unduckedVolume * level, level < 1f ? 0.6f : 1.5f);
         if (level < 1f)
         {
             yield return new WaitForSeconds(hold);
-            yield return FadeMusicTo(unduckedVolume, 1.5f);
+            yield return FadeMusicToRoutine(unduckedVolume, 1.5f);
         }
         duckRoutine = null;
     }
 
-    IEnumerator FadeMusicTo(float target, float seconds)
+    IEnumerator FadeMusicToRoutine(float target, float seconds)
     {
         float from = musicSource.volume;
         float t = 0;
@@ -890,7 +890,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator RampMusicPitch(float targetPitch, float duration)
+    IEnumerator RampMusicPitchRoutine(float targetPitch, float duration)
     {
         if (musicSource == null)
         {
@@ -907,7 +907,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator CelebrateRemainingCats()
+    IEnumerator CelebrateRemainingCatsRoutine()
     {
         CatMovement[] cats = FindObjectsOfType<CatMovement>();
         foreach (CatMovement cat in cats)
@@ -946,11 +946,11 @@ public class GameManager : MonoBehaviour
             {
                 StopCoroutine(comboPunchRoutine);
             }
-            comboPunchRoutine = StartCoroutine(PunchScale(comboText.transform, 1.6f, 0.35f));
+            comboPunchRoutine = StartCoroutine(PunchScaleRoutine(comboText.transform, 1.6f, 0.35f));
         }
     }
 
-    IEnumerator PunchScale(Transform target, float peakScale, float duration)
+    IEnumerator PunchScaleRoutine(Transform target, float peakScale, float duration)
     {
         float timer = 0;
         while (timer < duration)
@@ -1221,7 +1221,7 @@ public class GameManager : MonoBehaviour
         PlayMusic(gameMusicLoop);
     }
 
-    IEnumerator FadeOutMusic()
+    IEnumerator FadeOutMusicRoutine()
     {
         float timer = outroLength;
         float currentVolume = musicSource.volume;

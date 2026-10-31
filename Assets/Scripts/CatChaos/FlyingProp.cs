@@ -408,7 +408,7 @@ public class FlyingProp : MonoBehaviour
         yield return new WaitForSeconds(settings.respawnDelay + 1f);
         SettleHome();
         settings.PlayRespawn(transform.position);
-        StartCoroutine(PopIn());
+        StartCoroutine(PopInRoutine());
     }
 
     // Raised whenever the gravity beam grabs a prop (e.g. so the announcer can explain carrying it home, once)
@@ -611,7 +611,7 @@ public class FlyingProp : MonoBehaviour
                     SettleHome();
                     SetVisible(true);
                     settings.PlayRespawn(transform.position);
-                    StartCoroutine(PopIn());
+                    StartCoroutine(PopInRoutine());
                 }
                 break;
         }
@@ -791,7 +791,7 @@ public class FlyingProp : MonoBehaviour
             }
             prop.SettleHome();
             prop.SetVisible(true);
-            prop.StartCoroutine(prop.PopIn());
+            prop.StartCoroutine(prop.PopInRoutine());
             if (settings != null && back % 3 == 0)
             {
                 settings.PlayRespawn(prop.transform.position);   // not a wall of sound
@@ -1001,11 +1001,11 @@ public class FlyingProp : MonoBehaviour
             {
                 continue;
             }
-            other.StartCoroutine(other.SinkTo(drop));
+            other.StartCoroutine(other.SinkToRoutine(drop));
         }
     }
 
-    System.Collections.IEnumerator SinkTo(float drop)
+    System.Collections.IEnumerator SinkToRoutine(float drop)
     {
         Vector3 from = transform.position;
         Vector3 to = HomePosition() + Vector3.down * drop;
@@ -1049,7 +1049,7 @@ public class FlyingProp : MonoBehaviour
         }
     }
 
-    System.Collections.IEnumerator PopIn()
+    System.Collections.IEnumerator PopInRoutine()
     {
         float t = 0;
         while (t < 0.35f && state == State.Home)

@@ -194,7 +194,7 @@ public class KittenRun : MonoBehaviour
         fed = true;
         TryMeow(1.75f, 2.05f);   // a happy squeak
         onFed?.Invoke(this);
-        StartCoroutine(HappyPop());
+        StartCoroutine(HappyPopRoutine());
         return false;
     }
 
@@ -258,7 +258,7 @@ public class KittenRun : MonoBehaviour
         Finish();
     }
 
-    IEnumerator HappyPop()
+    IEnumerator HappyPopRoutine()
     {
         // Off whatever it was clinging to first (a launcher kitten), so it pops where it is
         if (transform.parent != homeParent)

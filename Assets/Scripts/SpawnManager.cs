@@ -78,7 +78,7 @@ public class SpawnManager : MonoBehaviour
         wavesStarted = true;
         foreach (SpawnData data in waves)
         {
-            StartCoroutine(SpawnWave(data));
+            StartCoroutine(SpawnWaveRoutine(data));
         }
     }
 
@@ -99,7 +99,7 @@ public class SpawnManager : MonoBehaviour
         return null;
     }
 
-    IEnumerator SpawnWave(SpawnData data)
+    IEnumerator SpawnWaveRoutine(SpawnData data)
     {
         // Wait for delay before starting wave
         yield return new WaitForSeconds(data.secondsAfterStartToBegin);
@@ -134,11 +134,11 @@ public class SpawnManager : MonoBehaviour
     {
         if (finaleSpawnCount > 0 && isActiveAndEnabled && wavesStarted)
         {
-            StartCoroutine(FinaleRush());
+            StartCoroutine(FinaleRushRoutine());
         }
     }
 
-    IEnumerator FinaleRush()
+    IEnumerator FinaleRushRoutine()
     {
         WaitForSeconds wait = new WaitForSeconds(finaleDelayBetweenSpawns);
         for (int i = 0; i < finaleSpawnCount; i++)

@@ -547,11 +547,11 @@ public class CatOrder : MonoBehaviour
             cat.leaveOverride = fedCat => LeaveThroughHole(hole.Value);
         }
         cat.FeedCat(true);
-        StartCoroutine(HideBubbleSoon());
+        StartCoroutine(HideBubbleSoonRoutine());
         return false;
     }
 
-    IEnumerator HideBubbleSoon()
+    IEnumerator HideBubbleSoonRoutine()
     {
         yield return new WaitForSeconds(0.35f);
         if (bubble != null)
@@ -598,7 +598,7 @@ public class CatOrder : MonoBehaviour
             // Up on the furniture with no way down from there (e.g. the couch): it hops down to the floor first
             if (!CanWalkTo(exit) && FloorSpotTowards(exit, out Vector3 floor))
             {
-                yield return HopDown(floor);
+                yield return HopDownRoutine(floor);
             }
             agent.SetDestination(exit);
 
@@ -622,7 +622,7 @@ public class CatOrder : MonoBehaviour
                     closest = float.MaxValue;
                     if (FloorSpotTowards(exit, out floor))
                     {
-                        yield return HopDown(floor);
+                        yield return HopDownRoutine(floor);
                         agent.SetDestination(exit);
                     }
                 }
@@ -717,7 +717,7 @@ public class CatOrder : MonoBehaviour
     }
 
     // A quick hop off whatever it's on, down to `floor`
-    IEnumerator HopDown(Vector3 floor)
+    IEnumerator HopDownRoutine(Vector3 floor)
     {
         agent.enabled = false;
         Vector3 from = transform.position;

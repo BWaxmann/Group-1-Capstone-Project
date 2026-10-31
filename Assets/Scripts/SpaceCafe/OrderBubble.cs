@@ -341,10 +341,10 @@ public class OrderBubble : MonoBehaviour
         {
             StopCoroutine(popRoutine);
         }
-        popRoutine = StartCoroutine(PopIn());
+        popRoutine = StartCoroutine(PopInRoutine());
     }
 
-    IEnumerator PopIn()
+    IEnumerator PopInRoutine()
     {
         float timer = 0;
         while (timer < 0.3f)

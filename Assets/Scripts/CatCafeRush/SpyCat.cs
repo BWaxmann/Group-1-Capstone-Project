@@ -171,7 +171,7 @@ public class SpyCat : MonoBehaviour
         }
         cat.transform.position = vent.opening + Vector3.up * 0.6f;
         cat.gameObject.SetActive(true);
-        spy.StartCoroutine(spy.Run());
+        spy.StartCoroutine(spy.RunRoutine());
         return spy;
     }
 
@@ -194,7 +194,7 @@ public class SpyCat : MonoBehaviour
         }
     }
 
-    IEnumerator Run()
+    IEnumerator RunRoutine()
     {
         // Out of the pool, hidden in the vent until the lid's open
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
@@ -246,7 +246,7 @@ public class SpyCat : MonoBehaviour
             backHeight = BackHeight();
         }
 
-        yield return vent.Open();
+        yield return vent.OpenRoutine();
         Sting();
         MakeRope();
         StartWatchingHands();
@@ -276,7 +276,7 @@ public class SpyCat : MonoBehaviour
             Hang(anchor, rope, 8f * Mathf.Deg2Rad * Mathf.Sin(sway * 2f * Mathf.PI / settings.swingPeriod), toward);
             if (Scare())
             {
-                yield return Scared();
+                yield return ScaredRoutine();
                 yield break;
             }
             yield return null;
@@ -308,7 +308,7 @@ public class SpyCat : MonoBehaviour
 
             if (Scare())
             {
-                yield return Scared();
+                yield return ScaredRoutine();
                 yield break;
             }
             Vector3 middle = cat.transform.position + Vector3.up * backHeight * 0.5f;
@@ -330,7 +330,7 @@ public class SpyCat : MonoBehaviour
             jar.Spill(jar.transform.position + (cat.transform.position - jar.transform.position).normalized * 0.3f, settings.stealCoins);
         }
         HideRing();
-        yield return ZipUp(0.6f);
+        yield return ZipUpRoutine(0.6f);
         Finish(Result.Stole);
     }
 
@@ -369,7 +369,7 @@ public class SpyCat : MonoBehaviour
     }
 
     // Scared off: a yelp, and it shoots back up the rope
-    IEnumerator Scared()
+    IEnumerator ScaredRoutine()
     {
         HideRing();
         if (hintWord != null)
@@ -391,11 +391,11 @@ public class SpyCat : MonoBehaviour
         {
             Destroy(recipe);
         }
-        yield return ZipUp(0.45f);
+        yield return ZipUpRoutine(0.45f);
         Finish(Result.Scared);
     }
 
-    IEnumerator ZipUp(float seconds)
+    IEnumerator ZipUpRoutine(float seconds)
     {
         // Back up the rope to its vent (the top of the rope sliding back along the ceiling with it)
         Vector3 from = cat.transform.position;
@@ -422,7 +422,7 @@ public class SpyCat : MonoBehaviour
         CleanUp();
         if (vent != null)
         {
-            vent.StartCoroutine(vent.Close());
+            vent.StartCoroutine(vent.CloseRoutine());
         }
         done?.Invoke(this, result);
         // Back to the pool as it came
@@ -447,7 +447,7 @@ public class SpyCat : MonoBehaviour
     IEnumerator CancelRoutine()
     {
         HideRing();
-        yield return ZipUp(0.4f);
+        yield return ZipUpRoutine(0.4f);
         Finish(Result.Cancelled);
     }
 

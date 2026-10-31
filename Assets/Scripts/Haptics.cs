@@ -124,7 +124,7 @@ public class Haptics : MonoBehaviour
             {
                 StopCoroutine(stopRight);
             }
-            stopRight = StartCoroutine(StopOculusAfter(controller, duration));
+            stopRight = StartCoroutine(StopOculusAfterRoutine(controller, duration));
         }
         else
         {
@@ -132,11 +132,11 @@ public class Haptics : MonoBehaviour
             {
                 StopCoroutine(stopLeft);
             }
-            stopLeft = StartCoroutine(StopOculusAfter(controller, duration));
+            stopLeft = StartCoroutine(StopOculusAfterRoutine(controller, duration));
         }
     }
 
-    IEnumerator StopOculusAfter(OVRInput.Controller controller, float duration)
+    IEnumerator StopOculusAfterRoutine(OVRInput.Controller controller, float duration)
     {
         yield return new WaitForSecondsRealtime(duration);
         OVRInput.SetControllerVibration(0, 0, controller);

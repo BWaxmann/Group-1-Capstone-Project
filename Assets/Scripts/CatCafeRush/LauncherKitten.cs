@@ -269,7 +269,7 @@ public class LauncherKitten : MonoBehaviour
             {
                 toRight = !toRight;
             }
-            StartCoroutine(Leap(toRight));
+            StartCoroutine(LeapRoutine(toRight));
         }
         else if (Time.time - startedAt > 12f)
         {
@@ -309,7 +309,7 @@ public class LauncherKitten : MonoBehaviour
         return Quaternion.LookRotation(-muzzle.forward, muzzle.up);
     }
 
-    IEnumerator Leap(bool right)
+    IEnumerator LeapRoutine(bool right)
     {
         rightHand = right;
         launcher = player.Launcher(right);
@@ -423,12 +423,12 @@ public class LauncherKitten : MonoBehaviour
 
         if (grip <= 0f)
         {
-            StartCoroutine(Fly(handVelocity));
+            StartCoroutine(FlyRoutine(handVelocity));
             return;
         }
         if (Time.time - latchedAt > settings.boredAfter)
         {
-            StartCoroutine(HopOff());
+            StartCoroutine(HopOffRoutine());
             return;
         }
 
@@ -492,7 +492,7 @@ public class LauncherKitten : MonoBehaviour
     }
 
     // Shaken off: it goes flying the way the hand was going, tumbling, and lands in a puff of dust
-    IEnumerator Fly(Vector3 throwVelocity)
+    IEnumerator FlyRoutine(Vector3 throwVelocity)
     {
         Let();
         FloatingWord.Show(settings.shooText, transform.position + Vector3.up * 0.1f, settings.hintColour, 1.2f);
@@ -542,7 +542,7 @@ public class LauncherKitten : MonoBehaviour
     }
 
     // Got bored: a little hop off the launcher and away
-    IEnumerator HopOff()
+    IEnumerator HopOffRoutine()
     {
         Vector3 away = muzzle.forward;   // off the end of the launcher, away from the player
         Let();

@@ -111,11 +111,11 @@ public class MafiaHeist : MonoBehaviour
         heist.order.rightTreat += heist.RightTreat;
         heist.order.served = heist.Busted;
         current = heist;
-        heist.StartCoroutine(heist.Stroll());
+        heist.StartCoroutine(heist.StrollRoutine());
         return heist;
     }
 
-    IEnumerator Stroll()
+    IEnumerator StrollRoutine()
     {
         // A swagger: a slow walk with a big side-to-side rock
         CatWaddle waddle = GetComponent<CatWaddle>();
@@ -196,7 +196,7 @@ public class MafiaHeist : MonoBehaviour
         {
             perch = from + towards * Mathf.Max(0, reach - 0.3f);
         }
-        yield return Hop(from, perch, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
+        yield return HopRoutine(from, perch, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
         // Swat after swat at the jar, a few coins spilling each time (a right treat puts him off his swing for a moment)
         if (warning != null)
@@ -259,7 +259,7 @@ public class MafiaHeist : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         if (upOnTop)
         {
-            yield return Hop(transform.position, from, 0.4f, 0.3f);
+            yield return HopRoutine(transform.position, from, 0.4f, 0.3f);
         }
 
         // Swaggers off back the way he came, then he's gone
@@ -273,10 +273,10 @@ public class MafiaHeist : MonoBehaviour
             done(this, Result.Stole);
         }
         done = null;
-        yield return WalkOff();
+        yield return WalkOffRoutine();
     }
 
-    IEnumerator WalkOff()
+    IEnumerator WalkOffRoutine()
     {
         ShowRing(false);
         if (warning != null)
@@ -376,10 +376,10 @@ public class MafiaHeist : MonoBehaviour
         {
             current = null;
         }
-        StartCoroutine(result == Result.Busted ? PoofSoon() : WalkOff());
+        StartCoroutine(result == Result.Busted ? PoofSoonRoutine() : WalkOffRoutine());
     }
 
-    IEnumerator PoofSoon()
+    IEnumerator PoofSoonRoutine()
     {
         if (agent.isActiveAndEnabled && agent.isOnNavMesh)
         {
@@ -448,7 +448,7 @@ public class MafiaHeist : MonoBehaviour
         theme = null;
     }
 
-    IEnumerator Hop(Vector3 from, Vector3 to, float seconds, float height)
+    IEnumerator HopRoutine(Vector3 from, Vector3 to, float seconds, float height)
     {
         float timer = 0;
         while (timer < seconds)

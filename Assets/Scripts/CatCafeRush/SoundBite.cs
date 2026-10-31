@@ -55,7 +55,7 @@ public class SoundBite : MonoBehaviour
         {
             length = (float)(start - AudioSettings.dspTime) + clip.length;
         }
-        bite.StartCoroutine(bite.Run(fadeIn, fadeOut, length));
+        bite.StartCoroutine(bite.RunRoutine(fadeIn, fadeOut, length));
         return bite;
     }
 
@@ -79,7 +79,7 @@ public class SoundBite : MonoBehaviour
         return source;
     }
 
-    IEnumerator Run(float fadeIn, float fadeOut, float length)
+    IEnumerator RunRoutine(float fadeIn, float fadeOut, float length)
     {
         float t = 0;
         while (t < 1f)
@@ -107,10 +107,10 @@ public class SoundBite : MonoBehaviour
         playing.Remove(this);
         Duck();
         StopAllCoroutines();
-        StartCoroutine(FadeAway(seconds));
+        StartCoroutine(FadeAwayRoutine(seconds));
     }
 
-    IEnumerator FadeAway(float seconds)
+    IEnumerator FadeAwayRoutine(float seconds)
     {
         float from;
         if (main != null)

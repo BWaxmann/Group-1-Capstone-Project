@@ -224,20 +224,20 @@ public class TipJar : MonoBehaviour
     {
         if (count > 0 && isActiveAndEnabled)
         {
-            StartCoroutine(CoinShower(from, count));
+            StartCoroutine(CoinShowerRoutine(from, count));
         }
     }
 
-    IEnumerator CoinShower(Vector3 from, int count)
+    IEnumerator CoinShowerRoutine(Vector3 from, int count)
     {
         for (int i = 0; i < count; i++)
         {
-            StartCoroutine(FlyCoin(from + Random.insideUnitSphere * 0.08f, i));
+            StartCoroutine(FlyCoinRoutine(from + Random.insideUnitSphere * 0.08f, i));
             yield return new WaitForSeconds(0.09f);
         }
     }
 
-    IEnumerator FlyCoin(Vector3 from, int index)
+    IEnumerator FlyCoinRoutine(Vector3 from, int index)
     {
         GameObject coin = MakeCoin("Coin");
         coin.transform.position = from;
@@ -264,7 +264,7 @@ public class TipJar : MonoBehaviour
         {
             StopCoroutine(punch);
         }
-        punch = StartCoroutine(Punch());
+        punch = StartCoroutine(PunchRoutine());
         if (!sealedFull && coins >= FullAfter)
         {
             JarFull();
@@ -300,7 +300,7 @@ public class TipJar : MonoBehaviour
         full.SetFill(1f);
         full.Seal();
         fullJars.Add(full);
-        full.StartCoroutine(full.PopIn());
+        full.StartCoroutine(full.PopInRoutine());
     }
 
     // A clear spot on the counter beside it (the same surface, nothing in the way, not on another jar)
@@ -348,7 +348,7 @@ public class TipJar : MonoBehaviour
         made.transform.localPosition = Vector3.up * (JarHeight + 0.012f);
     }
 
-    IEnumerator PopIn()
+    IEnumerator PopInRoutine()
     {
         Vector3 scale = transform.localScale;
         float t = 0;
@@ -394,15 +394,15 @@ public class TipJar : MonoBehaviour
         {
             away = transform.forward;
         }
-        StartCoroutine(Rock(away));
+        StartCoroutine(RockRoutine(away));
         for (int i = 0; i < lost; i++)
         {
-            StartCoroutine(SpillCoin(away, i));
+            StartCoroutine(SpillCoinRoutine(away, i));
         }
         return lost;
     }
 
-    IEnumerator Rock(Vector3 away)
+    IEnumerator RockRoutine(Vector3 away)
     {
         Vector3 axis = Vector3.Cross(Vector3.up, away);
         float timer = 0;
@@ -417,7 +417,7 @@ public class TipJar : MonoBehaviour
         body.localRotation = Quaternion.identity;
     }
 
-    IEnumerator SpillCoin(Vector3 away, int index)
+    IEnumerator SpillCoinRoutine(Vector3 away, int index)
     {
         yield return new WaitForSeconds(index * 0.05f);
         GameObject coin = MakeCoin("Spilt Coin");
@@ -438,7 +438,7 @@ public class TipJar : MonoBehaviour
         DestroyCoin(coin);
     }
 
-    IEnumerator Punch()
+    IEnumerator PunchRoutine()
     {
         float timer = 0;
         while (timer < 0.18f)

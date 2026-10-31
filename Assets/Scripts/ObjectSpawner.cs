@@ -28,10 +28,10 @@ public class ObjectSpawner : MonoBehaviour
             return;
         }
 
-        StartCoroutine(SpawnInitial());
+        StartCoroutine(SpawnInitialRoutine());
     }
 
-    IEnumerator SpawnInitial()
+    IEnumerator SpawnInitialRoutine()
     {
         yield return new WaitForSeconds(initialPoolSpawnDelay);
 

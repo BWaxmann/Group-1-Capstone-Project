@@ -268,18 +268,18 @@ public class CafeVent : MonoBehaviour
 
     // Brings a pooled cat (switched off) out of the vent and down to the floor, then hands it over (`scale` shrinks it on
     // the way, e.g. for a kitten; it's back to its own size when it's handed over)
-    public IEnumerator Release(CatMovement cat, float scale, Action<CatMovement, CafeVent> landed)
+    public IEnumerator ReleaseRoutine(CatMovement cat, float scale, Action<CatMovement, CafeVent> landed)
     {
         busy = true;
         Hide(cat, scale);
-        yield return Open();
-        yield return Drop(cat, scale, landed);
+        yield return OpenRoutine();
+        yield return DropRoutine(cat, scale, landed);
         yield return new WaitForSeconds(0.3f);
-        yield return Close();
+        yield return CloseRoutine();
     }
 
     // Clank! The lid swings open (and stays open until Close: cats can Drop out meanwhile)
-    public IEnumerator Open()
+    public IEnumerator OpenRoutine()
     {
         busy = true;
         CatChaosSettings sounds = CatChaosSettings.instance;
@@ -287,12 +287,12 @@ public class CafeVent : MonoBehaviour
         {
             sounds.PlayKnock(mouth);
         }
-        yield return Swing(closedRotation, openRotation, 0.2f);
+        yield return SwingRoutine(closedRotation, openRotation, 0.2f);
     }
 
-    public IEnumerator Close()
+    public IEnumerator CloseRoutine()
     {
-        yield return Swing(openRotation, closedRotation, 0.25f);
+        yield return SwingRoutine(openRotation, closedRotation, 0.25f);
         CatChaosSettings sounds = CatChaosSettings.instance;
         if (sounds != null)
         {
@@ -330,7 +330,7 @@ public class CafeVent : MonoBehaviour
 
     // A cat out through the open vent: it pokes out and jumps down to the floor, then it's handed over. Kittens (a scale
     // below 1) are quicker about it and squeak
-    public IEnumerator Drop(CatMovement cat, float scale, Action<CatMovement, CafeVent> landed)
+    public IEnumerator DropRoutine(CatMovement cat, float scale, Action<CatMovement, CafeVent> landed)
     {
         Hide(cat, scale);
         Vector3 ownSize = waiting[cat];
@@ -398,7 +398,7 @@ public class CafeVent : MonoBehaviour
         return false;
     }
 
-    IEnumerator Swing(Quaternion from, Quaternion to, float seconds)
+    IEnumerator SwingRoutine(Quaternion from, Quaternion to, float seconds)
     {
         float t = 0;
         while (t < 1f)

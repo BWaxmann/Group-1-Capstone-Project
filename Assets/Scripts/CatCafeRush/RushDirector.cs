@@ -658,7 +658,7 @@ public class RushDirector : MonoBehaviour
         }
     }
 
-    IEnumerator WaitClock(float seconds)
+    IEnumerator WaitClockRoutine(float seconds)
     {
         float until = clock + seconds;
         while (clock < until)
@@ -805,7 +805,7 @@ public class RushDirector : MonoBehaviour
         // a little each frame once the scene is up (never here: a wait in Start froze the Quest on the splash screen)
         if (waves && warmUpAtStart)
         {
-            StartCoroutine(Warmup.Run(shaderVariants));
+            StartCoroutine(Warmup.RunRoutine(shaderVariants));
         }
         if (ninjaPrefab != null)
         {
@@ -823,11 +823,11 @@ public class RushDirector : MonoBehaviour
                     voice = gameObject.AddComponent<Announcer>();
                 }
             }
-            StartCoroutine(Welcome());
+            StartCoroutine(WelcomeRoutine());
         }
     }
 
-    IEnumerator Welcome()
+    IEnumerator WelcomeRoutine()
     {
         yield return new WaitForSeconds(1.5f);
         if (!playing)
@@ -987,7 +987,7 @@ public class RushDirector : MonoBehaviour
             SpaceCafeVisuals.TinUnderLauncher(player.Launcher(true), tinPrefab, rightColour, tinSize);
         }
 
-        StartCoroutine(RunPhases());
+        StartCoroutine(RunPhasesRoutine());
     }
 
     void OnGameEnd()
@@ -1015,7 +1015,7 @@ public class RushDirector : MonoBehaviour
         Say(closingLine);
     }
 
-    IEnumerator RunPhases()
+    IEnumerator RunPhasesRoutine()
     {
         for (int index = 0; index < phases.Count; index++)
         {
@@ -1087,12 +1087,12 @@ public class RushDirector : MonoBehaviour
                     // After the first feeding phase, the Mafia cat makes his move partway through
                     if (++feedPhasesSeen > 1)
                     {
-                        StartCoroutine(Heists(phase, heistsPerPhase, heistGang));
+                        StartCoroutine(HeistsRoutine(phase, heistsPerPhase, heistGang));
                     }
                     // Last orders: nobody new comes in for the last few seconds
-                    yield return WaitClock(Mathf.Max(0, phase.seconds - lastCallSeconds));
+                    yield return WaitClockRoutine(Mathf.Max(0, phase.seconds - lastCallSeconds));
                     windingDown = true;
-                    yield return WaitClock(Mathf.Min(lastCallSeconds, phase.seconds));
+                    yield return WaitClockRoutine(Mathf.Min(lastCallSeconds, phase.seconds));
                     break;
 
                 case Kind.Catch:
@@ -1101,7 +1101,7 @@ public class RushDirector : MonoBehaviour
                     SendCatsAway();
                     if (catchIntro && !catchIntroDone)
                     {
-                        yield return CatchIntro();
+                        yield return CatchIntroRoutine();
                     }
                     if (ninja != null && ninja.gameObject.activeInHierarchy && ninja.holdStill)
                     {
@@ -1110,10 +1110,10 @@ public class RushDirector : MonoBehaviour
                     }
                     else
                     {
-                        yield return WaitClock(1f);
+                        yield return WaitClockRoutine(1f);
                         SummonNinja(false);
                     }
-                    yield return WaitClock(Mathf.Max(0, phase.seconds - 1f));
+                    yield return WaitClockRoutine(Mathf.Max(0, phase.seconds - 1f));
                     if (ninja != null)
                     {
                         ninja.Leave();
@@ -1126,7 +1126,7 @@ public class RushDirector : MonoBehaviour
                     Haptics.PulseBoth(Haptics.Strength.Huge);
                     CatRaid.CancelAll();
                     SendCatsAway();
-                    yield return WaitClock(1f);
+                    yield return WaitClockRoutine(1f);
                     SummonNinja(true);
                     float messUntil = clock + Mathf.Max(0, phase.seconds - 1f - TidyBonusSeconds);
                     while (playing && clock < messUntil)
@@ -1139,7 +1139,7 @@ public class RushDirector : MonoBehaviour
                     }
                     if (playing)
                     {
-                        yield return TidyBonus();
+                        yield return TidyBonusRoutine();
                     }
                     while (playing)
                     {
@@ -1152,18 +1152,18 @@ public class RushDirector : MonoBehaviour
                     // keep ordering (Update), launcher kittens come by (Latch Every), the ninja makes a slower mess,
                     // spies drop in now and then, the Mafia cat strolls in, and a kitten flood pours out once
                     Haptics.PulseBoth(Haptics.Strength.Huge);
-                    yield return WaitClock(1f);
+                    yield return WaitClockRoutine(1f);
                     SummonNinja(true);
                     if (ninja != null)
                     {
                         ninja.Configure(false, bossKnocksPerStop, remixNinjaSitMin, remixNinjaSitMax, ninjaExplodesPiles && ninja.piles.Count > 0);
                     }
-                    StartCoroutine(Heists(phase, remixHeists, remixHeistGang));
+                    StartCoroutine(HeistsRoutine(phase, remixHeists, remixHeistGang));
                     if (remixFloodAt > 0)
                     {
-                        StartCoroutine(RemixFlood(phase));
+                        StartCoroutine(RemixFloodRoutine(phase));
                     }
-                    StartCoroutine(RemixSpies(phase));
+                    StartCoroutine(RemixSpiesRoutine(phase));
                     float remixUntil = clock + Mathf.Max(0, phase.seconds - 1f - TidyBonusSeconds);
                     while (playing && clock < remixUntil)
                     {
@@ -1183,7 +1183,7 @@ public class RushDirector : MonoBehaviour
                     SpyCat.EndAll();
                     if (playing)
                     {
-                        yield return TidyBonus();
+                        yield return TidyBonusRoutine();
                     }
                     while (playing)
                     {
@@ -1193,7 +1193,7 @@ public class RushDirector : MonoBehaviour
 
                 case Kind.Boss:
                     Haptics.PulseBoth(Haptics.Strength.Huge);
-                    yield return WaitClock(1f);
+                    yield return WaitClockRoutine(1f);
                     SummonNinja(true);
                     float timer = 1f;
                     while (playing && timer < phase.seconds && ninja.gameObject.activeInHierarchy && !ninja.isFullyFed)
@@ -1222,7 +1222,7 @@ public class RushDirector : MonoBehaviour
                     Haptics.PulseBoth(Haptics.Strength.Strong);
                     CatRaid.CancelAll();
                     SendCatsAway();
-                    yield return Stampede(phase);
+                    yield return StampedeRoutine(phase);
                     break;
 
                 case Kind.Spy:
@@ -1234,15 +1234,15 @@ public class RushDirector : MonoBehaviour
                         spyMusic = SoundBite.Play("Spy Music", Resources.Load<AudioClip>("CafeSounds/spy_music_loop"), spyMusicVolume,
                                                   musicUnderSpyMusic, Resources.Load<AudioClip>("CafeSounds/spy_music_intro"),
                                                   loop: true, fadeIn: 0.05f);
-                        yield return SpyCats(phase);
+                        yield return SpyCatsRoutine(phase);
                     }
                     else
                     {
                         Debug.LogWarning("[Cat Cafe Waves] No ceiling vent the player can see for the spy cats: ordinary feeding instead.");
                         current = new Phase { kind = Kind.Feed, seconds = phase.seconds, cats = phase.cats, shortestOrder = phase.shortestOrder, longestOrder = phase.longestOrder };
-                        yield return WaitClock(Mathf.Max(0, phase.seconds - lastCallSeconds));
+                        yield return WaitClockRoutine(Mathf.Max(0, phase.seconds - lastCallSeconds));
                         windingDown = true;
-                        yield return WaitClock(Mathf.Min(lastCallSeconds, phase.seconds));
+                        yield return WaitClockRoutine(Mathf.Min(lastCallSeconds, phase.seconds));
                     }
                     break;
             }
@@ -1250,7 +1250,7 @@ public class RushDirector : MonoBehaviour
             // Time's up: what's still going on gets a moment to finish before the next phase starts
             if (index < phases.Count - 1)
             {
-                yield return WrapUp(phase, phases[index + 1]);
+                yield return WrapUpRoutine(phase, phases[index + 1]);
             }
             windingDown = false;
             if (phase.kind == Kind.Stampede)
@@ -1275,7 +1275,7 @@ public class RushDirector : MonoBehaviour
 
     // Time's up for `phase`: the round clock waits (a few seconds at most) while what's still going on finishes, so a
     // wave gets to end before the next one starts
-    IEnumerator WrapUp(Phase phase, Phase next)
+    IEnumerator WrapUpRoutine(Phase phase, Phase next)
     {
         if (wrapUpMax <= 0)
         {
@@ -1418,14 +1418,14 @@ public class RushDirector : MonoBehaviour
     // ---------- Cat Cafe Waves: kitten stampede ----------
 
     // Herds of kittens gallop across the room in front of the player, from alternating sides, for the whole phase
-    IEnumerator Stampede(Phase phase)
+    IEnumerator StampedeRoutine(Phase phase)
     {
         float end = clock + phase.seconds;
         if (stampedeScatter && player != null)
         {
             player.ForceFireStyle(PlayerInput.FireStyle.Scatter);
         }
-        yield return WaitClock(1.5f);   // the callout lands first
+        yield return WaitClockRoutine(1.5f);   // the callout lands first
 
         bool fromLeft = Random.value < 0.5f;
         bool first = true;
@@ -1453,18 +1453,18 @@ public class RushDirector : MonoBehaviour
             }
             if (path != null)
             {
-                StartCoroutine(Flood(vent, path));
+                StartCoroutine(FloodRoutine(vent, path));
             }
             else
             {
                 path = RoamPath(fromLeft, Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
                 if (path != null)
                 {
-                    StartCoroutine(SendHerd(path));
+                    StartCoroutine(SendHerdRoutine(path));
                 }
             }
             fromLeft = !fromLeft;
-            yield return WaitClock(Random.Range(herdGapMin, Mathf.Max(herdGapMin, herdGapMax)));
+            yield return WaitClockRoutine(Random.Range(herdGapMin, Mathf.Max(herdGapMin, herdGapMax)));
         }
         while (playing && clock < end)
         {
@@ -1473,7 +1473,7 @@ public class RushDirector : MonoBehaviour
         // (kittens still running get to finish: see WrapUp)
     }
 
-    IEnumerator SendHerd(List<Vector3> path)
+    IEnumerator SendHerdRoutine(List<Vector3> path)
     {
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
         count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
@@ -1503,13 +1503,13 @@ public class RushDirector : MonoBehaviour
     }
 
     // A herd pouring out of a vent: the lid clanks open, the kittens drop out one after another and tear off along `path`
-    IEnumerator Flood(CafeVent vent, List<Vector3> path)
+    IEnumerator FloodRoutine(CafeVent vent, List<Vector3> path)
     {
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
         count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));
         float spread = 0.6f;
-        yield return vent.Open();
+        yield return vent.OpenRoutine();
         for (int i = 0; i < count && playing; i++)
         {
             CatMovement cat;
@@ -1527,7 +1527,7 @@ public class RushDirector : MonoBehaviour
             }
             float offset = Random.Range(-spread, spread);
             float kittenSpeed = speed * Random.Range(0.92f, 1.08f);
-            vent.StartCoroutine(vent.Drop(cat, kittenScale, (kitten, from) =>
+            vent.StartCoroutine(vent.DropRoutine(cat, kittenScale, (kitten, from) =>
             {
                 if (playing && current != null && (current.kind == Kind.Stampede || current.kind == Kind.Remix))
                 {
@@ -1542,7 +1542,7 @@ public class RushDirector : MonoBehaviour
             yield return new WaitForSeconds(Random.Range(0.14f, 0.26f));
         }
         yield return new WaitForSeconds(1.2f);   // the last ones land
-        yield return vent.Close();
+        yield return vent.CloseRoutine();
     }
 
     // ---------- Cat Cafe Waves: spy cats ----------
@@ -1554,7 +1554,7 @@ public class RushDirector : MonoBehaviour
     }
 
     // Spies through the phase, a new one every so often (quicker as it goes on), however many are still dangling
-    IEnumerator SpyCats(Phase phase)
+    IEnumerator SpyCatsRoutine(Phase phase)
     {
         float start = clock;
         float end = start + phase.seconds;
@@ -1571,7 +1571,7 @@ public class RushDirector : MonoBehaviour
                 yield return null;
             }
             waveHeld = false;
-            yield return WaitClock(Mathf.Lerp(spyGapStart, spyGapEnd, 0f));
+            yield return WaitClockRoutine(Mathf.Lerp(spyGapStart, spyGapEnd, 0f));
         }
         while (playing && clock < end - (spy.lowerSeconds + spy.approachSeconds) * 0.6f)
         {
@@ -1579,7 +1579,7 @@ public class RushDirector : MonoBehaviour
             float progress = (clock - start) / phase.seconds;
             SendSpy();
             float gap = Mathf.Lerp(spyGapStart, spyGapEnd, progress);
-            yield return WaitClock(gap * Random.Range(0.8f, 1.2f));
+            yield return WaitClockRoutine(gap * Random.Range(0.8f, 1.2f));
         }
         while (playing && clock < end)
         {
@@ -1589,7 +1589,7 @@ public class RushDirector : MonoBehaviour
     }
 
     // The finale's spies, now and then (when there's room for one)
-    IEnumerator RemixSpies(Phase phase)
+    IEnumerator RemixSpiesRoutine(Phase phase)
     {
         if (remixSpyGapMax <= 0 || CeilingVents().Count == 0)
         {
@@ -1598,7 +1598,7 @@ public class RushDirector : MonoBehaviour
         float end = clock + phase.seconds;
         while (playing && current == phase && !windingDown && clock < end - (spy.lowerSeconds + spy.approachSeconds))
         {
-            yield return WaitClock(Random.Range(remixSpyGapMin, Mathf.Max(remixSpyGapMin, remixSpyGapMax)));
+            yield return WaitClockRoutine(Random.Range(remixSpyGapMin, Mathf.Max(remixSpyGapMin, remixSpyGapMax)));
             while (playing && current == phase && !windingDown && (!RoomForMore || !MayIntroduce(SpyLine)))
             {
                 yield return null;
@@ -1684,7 +1684,7 @@ public class RushDirector : MonoBehaviour
     }
 
     // The remix finale's kitten flood, partway through (when there's room for it)
-    IEnumerator RemixFlood(Phase phase)
+    IEnumerator RemixFloodRoutine(Phase phase)
     {
         float at = clock + phase.seconds * remixFloodAt;
         while (playing && current == phase && (clock < at || !RoomForMore))
@@ -1711,7 +1711,7 @@ public class RushDirector : MonoBehaviour
         }
         BigStarted();
         flooding = true;
-        yield return Flood(vent, path);
+        yield return FloodRoutine(vent, path);
         flooding = false;
     }
 
@@ -2035,7 +2035,7 @@ public class RushDirector : MonoBehaviour
         if (vent != null)
         {
             droppingIn++;
-            vent.StartCoroutine(vent.Release(cat, 1f, OutOfVent));
+            vent.StartCoroutine(vent.ReleaseRoutine(cat, 1f, OutOfVent));
             return;
         }
         Transform door = ways[Random.Range(0, ways.Count)];
@@ -2106,7 +2106,7 @@ public class RushDirector : MonoBehaviour
     // ---------- Cat Cafe Waves: the Mafia heist ----------
 
     // The Mafia cat's heists in a feeding phase, spread through its middle stretch, one at a time
-    IEnumerator Heists(Phase phase, int count, int gang)
+    IEnumerator HeistsRoutine(Phase phase, int count, int gang)
     {
         if (!mafiaHeists || count <= 0 || mafiaPrefab == null)
         {
@@ -2165,7 +2165,7 @@ public class RushDirector : MonoBehaviour
                                               cleanShots ? hitboxGenerosity : 0f, heist, HeistOver);
         if (started != null && gang > 0)
         {
-            StartCoroutine(MafiaGang(position, gang));
+            StartCoroutine(MafiaGangRoutine(position, gang));
         }
         if (started != null)
         {
@@ -2175,7 +2175,7 @@ public class RushDirector : MonoBehaviour
     }
 
     // The Mafia cat's gang: kittens that burst in with him and go for the player's launchers
-    IEnumerator MafiaGang(Vector3 at, int gang)
+    IEnumerator MafiaGangRoutine(Vector3 at, int gang)
     {
         yield return new WaitForSeconds(0.6f);
         for (int i = 0; i < gang && playing; i++)
@@ -2488,7 +2488,7 @@ public class RushDirector : MonoBehaviour
             }
             nextLatch = float.MaxValue;   // set again when it's over
             BigStarted();
-            vent.StartCoroutine(vent.Release(fromVent, launcherKitten.runScale, (cat, landedFrom) =>
+            vent.StartCoroutine(vent.ReleaseRoutine(fromVent, launcherKitten.runScale, (cat, landedFrom) =>
             {
                 if (playing && current != null && Feeding(current.kind) && current.latchEvery > 0)
                 {
@@ -2604,7 +2604,7 @@ public class RushDirector : MonoBehaviour
 
     // The first catch of the run, taught by doing: the clock stops, one prop in front of the player pops up and hangs
     // in the air with a hint by it, and play carries on once it's caught (or after a while anyway, no fail)
-    IEnumerator CatchIntro()
+    IEnumerator CatchIntroRoutine()
     {
         catchIntroDone = true;
         introPaused = true;
@@ -3169,11 +3169,11 @@ public class RushDirector : MonoBehaviour
     {
         if (wrongColourLeaves)
         {
-            StartCoroutine(StormOff(order));
+            StartCoroutine(StormOffRoutine(order));
         }
     }
 
-    IEnumerator StormOff(CatOrder order)
+    IEnumerator StormOffRoutine(CatOrder order)
     {
         yield return new WaitForSeconds(0.6f);
         if (order == null || !order.isHungry || !playing)
@@ -3391,7 +3391,7 @@ public class RushDirector : MonoBehaviour
     const float TidyWaitMax = 15f;
 
     // Each pile pays into the tip jar (and the score) by how much of it is still standing
-    IEnumerator TidyBonus()
+    IEnumerator TidyBonusRoutine()
     {
         if ((tidyBonusCoins <= 0 && tidyBonusScore <= 0) || propPiles.Count == 0)
         {

@@ -18,7 +18,7 @@ public static class Warmup
     // How long one frame may spend on this (of the 13.9 ms a 72 Hz frame has)
     const float FrameBudgetMs = 4f;
 
-    public static IEnumerator Run(ShaderVariantCollection shaderVariants)
+    public static IEnumerator RunRoutine(ShaderVariantCollection shaderVariants)
     {
         // Two frames drawn first, so the splash screen is gone and the cafe is in view before any of this
         yield return null;
