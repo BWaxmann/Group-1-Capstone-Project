@@ -12,6 +12,7 @@ public class CatOrder : MonoBehaviour
     public struct Food
     {
         public int variation;           // position in the treat pool, as fired by PlayerInput
+
         public OrderBubble.Item icon;   // what the bubble shows
     }
 
@@ -54,6 +55,7 @@ public class CatOrder : MonoBehaviour
             return ordered;
         }
     }
+
     public float patienceFraction
     {
         get
@@ -106,6 +108,7 @@ public class CatOrder : MonoBehaviour
     public struct Hole
     {
         public Vector3 outside;
+
         public Vector3 inward;
     }
 

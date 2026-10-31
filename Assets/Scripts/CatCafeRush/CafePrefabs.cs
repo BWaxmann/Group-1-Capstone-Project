@@ -87,6 +87,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static GameObject RecipePrefab
     {
         get
@@ -120,6 +121,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static LineRenderer RingTemplate
     {
         get
@@ -131,6 +133,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static TrailRenderer KittenTrailTemplate
     {
         get
@@ -142,6 +145,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static TrailRenderer PropTrailTemplate
     {
         get
@@ -153,6 +157,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static ParticleSystem SplatPrefab
     {
         get
@@ -164,6 +169,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static AimReticle ReticlePrefab
     {
         get
@@ -175,6 +181,7 @@ public class CafePrefabs : MonoBehaviour
             return null;
         }
     }
+
     public static LineRenderer BeamTemplate
     {
         get

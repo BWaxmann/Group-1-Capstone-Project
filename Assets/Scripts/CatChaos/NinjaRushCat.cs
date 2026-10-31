@@ -42,6 +42,7 @@ public class NinjaRushCat : BossCat
     // Cat Cafe Waves: it only goes for the prop piles (stops[i] is beside piles[i]) and sends a whole pile flying at
     // once, choosing piles that still have props on them
     public List<PropPile> piles = new List<PropPile>();
+
     public bool explodePiles;
 
     // While true it stays where it is instead of blinking about (Cat Cafe Waves: while the first catch is explained)

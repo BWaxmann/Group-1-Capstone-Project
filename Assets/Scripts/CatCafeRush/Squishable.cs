@@ -31,6 +31,7 @@ public class Squishable : MonoBehaviour
 
     static PlayerInput player;
     static float nextLook;
+
     internal static void ResetStatics()   // (a new run: see RunReset)
     {
         player = null;

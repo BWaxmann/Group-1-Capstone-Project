@@ -19,6 +19,7 @@ public class CafeVent : MonoBehaviour
     Transform landing;  // on the floor below/in front, facing into the room (cats leave from here as if it were a door)
 
     public bool busy { get; private set; }
+
     public Transform exit
     {
         get
@@ -26,6 +27,7 @@ public class CafeVent : MonoBehaviour
             return landing;
         }
     }
+
     public Vector3 floorSpot
     {
         get
@@ -33,6 +35,7 @@ public class CafeVent : MonoBehaviour
             return landing.position;
         }
     }
+
     // Just outside the lid, where cats come out
     public Vector3 opening
     {
@@ -41,6 +44,7 @@ public class CafeVent : MonoBehaviour
             return mouth;
         }
     }
+
     // How far a cat drops from the opening to where it lands
     public float dropHeight
     {
@@ -49,6 +53,7 @@ public class CafeVent : MonoBehaviour
             return mouth.y - landing.position.y;
         }
     }
+
     // False for a vent whose cats land up on something (a platform, a shelf) and find their own way down
     public bool landsOnFloor { get; private set; }
 

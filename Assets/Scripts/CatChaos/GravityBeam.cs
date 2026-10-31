@@ -53,21 +53,37 @@ public class GravityBeam : MonoBehaviour
     class Hand
     {
         public bool isRight;
+
         public FlyingProp held;
+
         public float holdDistance;
+
         public float heldSince;
+
         public Vector3 lastMuzzle;
+
         public Vector3 velocity;   // of the launcher, smoothed
+
         public bool tracking;
+
         public bool beamFromTemplate;
+
         public float beamWidth;    // the template's, as authored
+
         public Color beamStart;
+
         public Color beamEnd;
+
         public bool overHome;   // (ninja phases) the held prop is over its pile, ready to let go
+
         public FlyingProp locking;
+
         public float lockProgress;
+
         public LineRenderer beam;
+
         public LineRenderer glow;
+
         public LineRenderer lockRing;
     }
 

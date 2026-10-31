@@ -45,6 +45,7 @@ public class OrderBubble : MonoBehaviour
     public struct Item
     {
         public GameObject prefab;
+
         public Color colour;
 
         public Item(GameObject prefab, Color colour)

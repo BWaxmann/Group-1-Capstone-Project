@@ -8,12 +8,16 @@ public class CatWaddle : MonoBehaviour
 {
     [Tooltip("How far the body rocks side to side at full speed, in degrees.")]
     public float rockDegrees = 8f;
+
     [Tooltip("How far the body twists with each step, in degrees.")]
     public float twistDegrees = 3f;
+
     [Tooltip("How high each step lifts the body, in metres.")]
     public float bobHeight = 0.03f;
+
     [Tooltip("Waddles (one left and one right step) per metre travelled.")]
     public float waddlesPerMetre = 1.6f;
+
     [Tooltip("Speed (m/s) at which the waddle is at its fullest.")]
     public float fullSpeed = 1f;
 

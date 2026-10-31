@@ -16,18 +16,29 @@ public class Announcer : MonoBehaviour
 
     [Tooltip("Shown before each subtitle. Empty = no name.")]
     public string speakerName = "Manager";
+
     public Color speakerColour = new Color(1f, 0.8f, 0.4f);
-    [Range(0f, 1f)] public float volume = 1f;
+
+    [Range(0f, 1f)]
+    public float volume = 1f;
+
     [Tooltip("A queued line that has waited this long is dropped (its moment has passed).")]
-    [Min(0.5f)] public float maxWait = 4f;
+    [Min(0.5f)]
+    public float maxWait = 4f;
 
     [Header("Subtitles")]
-    [Min(0.5f)] public float subtitleDistance = 1.6f;
+    [Min(0.5f)]
+    public float subtitleDistance = 1.6f;
+
     [Tooltip("How far below eye height the subtitle sits, in metres.")]
     public float subtitleDrop = 0.4f;
+
     [Tooltip("How far the head can turn before the subtitle follows, in degrees.")]
-    [Range(0f, 60f)] public float subtitleFollowAngle = 20f;
-    [Min(0.1f)] public float subtitleFollowSpeed = 4f;
+    [Range(0f, 60f)]
+    public float subtitleFollowAngle = 20f;
+
+    [Min(0.1f)]
+    public float subtitleFollowSpeed = 4f;
 
     const float Width = 760f;
     const float MaxHeight = 300f;
@@ -38,17 +49,24 @@ public class Announcer : MonoBehaviour
     class Line
     {
         public string text;
+
         public AudioClip clip;
     }
 
     struct Queued
     {
         public Line line;
+
         public AudioClip sting;
+
         public float queuedAt;
+
         public bool urgent;
+
         public bool hold;     // the game holds off what's next until it's been said
+
         public string id;
+
         public System.Action<bool> done;   // true when it starts playing, false if it was dropped (waited too long)
     }
 
@@ -65,6 +83,7 @@ public class Announcer : MonoBehaviour
             return (isSpeaking && speaking.hold) || queue.Exists(waiting => waiting.hold);
         }
     }
+
     // Anything queued or being said
     public bool talking
     {
@@ -73,6 +92,7 @@ public class Announcer : MonoBehaviour
             return isSpeaking || queue.Count > 0;
         }
     }
+
     // The id of the line being said (null if none)
     public string saying
     {
@@ -85,6 +105,7 @@ public class Announcer : MonoBehaviour
             return null;
         }
     }
+
     readonly Dictionary<string, AudioClip> stings = new Dictionary<string, AudioClip>();
     
     [SerializeField]

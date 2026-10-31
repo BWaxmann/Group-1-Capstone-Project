@@ -308,6 +308,7 @@ public class GameManager : MonoBehaviour
             return scoreText;
         }
     }
+
     public TMP_Text bonusDisplayText
     {
         get
@@ -315,6 +316,7 @@ public class GameManager : MonoBehaviour
             return bonusText;
         }
     }
+
     public TMP_Text countdownDisplay
     {
         get
@@ -322,6 +324,7 @@ public class GameManager : MonoBehaviour
             return countdownText;
         }
     }
+
     public TMP_Text finalScoreDisplay
     {
         get
@@ -329,6 +332,7 @@ public class GameManager : MonoBehaviour
             return finalScoreText;
         }
     }
+
     public TMP_Text catsFedDisplay
     {
         get
@@ -336,6 +340,7 @@ public class GameManager : MonoBehaviour
             return catsFedText;
         }
     }
+
     public TMP_Text penaltyDisplay
     {
         get
@@ -343,6 +348,7 @@ public class GameManager : MonoBehaviour
             return penaltyText;
         }
     }
+
     public GameObject finalScorePanelObject
     {
         get
@@ -350,6 +356,7 @@ public class GameManager : MonoBehaviour
             return finalScorePanel;
         }
     }
+
     public GameObject timeUpObject
     {
         get
@@ -357,6 +364,7 @@ public class GameManager : MonoBehaviour
             return timeUpText;
         }
     }
+
     public TMP_Text rankDisplay
     {
         get
@@ -364,6 +372,7 @@ public class GameManager : MonoBehaviour
             return rankText;
         }
     }
+
     public TMP_Text bestScoreDisplay
     {
         get
@@ -1291,6 +1300,7 @@ public class GameManager : MonoBehaviour
     public struct Rank
     {
         public int minimumScore;
+
         public string title;
 
         public Rank(int minimumScore, string title)

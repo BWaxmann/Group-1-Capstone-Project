@@ -13,22 +13,29 @@ public class ShiftSky : MonoBehaviour
     public class Settings
     {
         public bool enabled = true;
+
         [Range(0f, 100f)]
         [Tooltip("The sky's time of day (Farland's 0-100: dawn about 25, day 40-65, sunset 75-80, night from 90) at the start of the shift.")]
         public float startTimeOfDay = 38f;
+
         [Range(0f, 100f)]
         [Tooltip("The sky's time of day at the end of the shift.")]
         public float endTimeOfDay = 88f;
+
         [Tooltip("Keep the sky's sun and moon lights (real-time, with shadows: they light the whole cafe and are costly on the Quest).")]
         public bool sunAndMoonLights = false;
+
         [Range(0f, 100f)]
         [Tooltip("The sky's time of day when the painted night sky around the cafe (Sky Layer below) starts fading in over the real sky.")]
         public float duskFrom = 78f;
+
         [Range(0f, 100f)]
         [Tooltip("...and when it's all painted night sky.")]
         public float nightFrom = 88f;
+
         [Tooltip("The moon in the roof hole (hidden in daylight; it comes out at dusk, when the player isn't looking up).")]
         public string moonName = "1226 Moon";
+
         [Tooltip("The material of the painted sky around the cafe: faded out by day, so the real sky shows behind the buildings.")]
         public string skyLayer = "Parallax_Sky";
     }

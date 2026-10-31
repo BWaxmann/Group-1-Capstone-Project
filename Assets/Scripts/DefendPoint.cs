@@ -51,6 +51,7 @@ public class DefendPoint : MonoBehaviour
             return transform.position;
         }
     }
+
     public bool shieldActive
     {
         get

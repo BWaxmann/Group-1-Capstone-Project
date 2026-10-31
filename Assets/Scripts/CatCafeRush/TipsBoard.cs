@@ -14,6 +14,7 @@ public class TipsBoard : MonoBehaviour
     {
         [Tooltip("This line shows from this much money up (until the next line's amount).")]
         public float from;
+
         public string text;
     }
 
@@ -23,16 +24,23 @@ public class TipsBoard : MonoBehaviour
         [Min(0.01f)]
         [Tooltip("What one coin in the tip jar is worth.")]
         public float coinValue = 0.5f;
+
         public string currency = "$";
+
         public string liveLabel = "Tips:";
+
         public string finalLabel = "Tips:";
+
         [Min(0.5f)]
         [Tooltip("How much bigger the end-of-round tally is drawn on the board.")]
         public float tallyScale = 1.25f;
+
         [Tooltip("Fit and rearrange the board's texts at runtime (auto-size, 'Tips' labels, tally layout). Turn off once the board is laid out in the editor: then only the values are written.")]
         public bool fitToBoard = true;
+
         [Tooltip("Shown at the end whatever the tips (for now, for laughs). Empty = the line for the amount, from the list below.")]
         public string alwaysLine = "That's more than enough for a Liminal VR Premium Subscription!";
+
         [Tooltip("What the tips could buy, from the smallest amount up.")]
         public List<Line> lines = new List<Line>
         {

@@ -8,6 +8,7 @@ using UnityEngine;
 public class SoundBite : MonoBehaviour
 {
     static readonly List<SoundBite> playing = new List<SoundBite>();
+
     internal static void ResetStatics()
     {
         playing.Clear();

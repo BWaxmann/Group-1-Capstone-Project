@@ -135,6 +135,7 @@ public class BossCatSpawner : MonoBehaviour
                 return _bossPrefab;
             }
         }
+
         public Transform spawnPoint
         {
             get
@@ -142,6 +143,7 @@ public class BossCatSpawner : MonoBehaviour
                 return _spawnPoint;
             }
         }
+
         public SoundData soundOnSpawn
         {
             get

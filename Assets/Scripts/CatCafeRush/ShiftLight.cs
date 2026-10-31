@@ -12,8 +12,10 @@ public class ShiftLight : MonoBehaviour
     public class Settings
     {
         public bool enabled = true;
+
         [Tooltip("The scene's light through the shift, left = start of the shift, right = the end (white = as it was set up).")]
         public Gradient tint = DefaultTint();
+
         [Range(0f, 2f)]
         [Tooltip("How bright the sky is at the end of the shift, compared with how it was set up.")]
         public float eveningSkyExposure = 0.7f;

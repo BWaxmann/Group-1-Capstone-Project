@@ -172,6 +172,7 @@ public class PlayerInput : MonoBehaviour
     Expression rightExpression;
 
     float rapidFireTimer;
+
     bool rapidFireActive
     {
         get
@@ -198,6 +199,7 @@ public class PlayerInput : MonoBehaviour
             return baristaMode;
         }
     }
+
     public bool hasLaunchers
     {
         get
@@ -214,6 +216,7 @@ public class PlayerInput : MonoBehaviour
         }
         return loadedTreatVariationLeft;
     }
+
     public Transform Launcher(bool rightHand)
     {
         if (rightHand)
@@ -222,6 +225,7 @@ public class PlayerInput : MonoBehaviour
         }
         return launcherLeft.transform;
     }
+
     public bool GripPressed(bool rightHand)
     {
         if (rightHand)
@@ -230,6 +234,7 @@ public class PlayerInput : MonoBehaviour
         }
         return gripPressedLeft;
     }
+
     public Transform LaunchPoint(bool rightHand)
     {
         if (rightHand)
@@ -319,6 +324,7 @@ public class PlayerInput : MonoBehaviour
         }
         return 0f;
     }
+
     static int StylePellets(FireStyle style)
     {
         if (style == FireStyle.Scatter)

@@ -32,21 +32,35 @@ public class RushDirector : MonoBehaviour
     public class Phase
     {
         public Kind kind = Kind.Feed;
-        [Min(1)] public float seconds = 35f;
+
+        [Min(1)]
+        public float seconds = 35f;
+
         [Tooltip("Feed and Boss: how many hungry cats to keep about.")]
-        [Min(0)] public int cats = 3;
+        [Min(0)]
+        public int cats = 3;
+
         [Tooltip("Feed and Boss: shortest and longest order (treats per cat).")]
-        [Min(1)] public int shortestOrder = 1;
-        [Min(1)] public int longestOrder = 1;
-        [TextArea] public string banner = "";
+        [Min(1)]
+        public int shortestOrder = 1;
+
+        [Min(1)]
+        public int longestOrder = 1;
+
+        [TextArea]
+        public string banner = "";
+
         [Range(0f, 1f)]
         [Tooltip("Feed: chance, at each stop while wandering, that a hungry cat goes to attack a pile. 0 = they just wander.")]
         public float attackChance = 0f;
+
         [Tooltip("Announcer line called out as this phase starts (its id in Resources/Announcer/lines.txt). Empty = none.")]
         public string line = "";
+
         [Min(0)]
         [Tooltip("Raids: about how often a hungry cat makes a run at the tip jar or a pile, in seconds. 0 = none.")]
         public float raidEvery = 0f;
+
         [Min(0)]
         [Tooltip("Feed: about how often a kitten bolts at the player and leaps onto a launcher, in seconds. 0 = none.")]
         public float latchEvery = 0f;
@@ -58,9 +72,11 @@ public class RushDirector : MonoBehaviour
     [Tooltip("When a phase's time is up the clock waits (up to this many seconds) for what's still going on to finish " +
              "(customers being served, props in the air, kittens running) before the next phase starts. 0 = straight on.")]
     public float wrapUpMax = 12f;
+
     [Min(0f)]
     [Tooltip("Nobody new comes in (customers, launcher kittens, the Mafia cat) for this many seconds at the end of a feeding phase.")]
     public float lastCallSeconds = 3f;
+
     [Min(0f)]
     [Tooltip("The ninja waits (up to this many seconds) for the player to deal with what it last knocked flying before blinking on.")]
     public float ninjaWaitsForCatches = 6f;
@@ -70,9 +86,11 @@ public class RushDirector : MonoBehaviour
     [Range(0f, 1.5f)]
     [Tooltip("How loud the music is, compared with how it's set on the Game Manager (1 = as set).")]
     public float musicLevel = 0.8f;
+
     [Range(0.5f, 2f)]
     [Tooltip("How far the cats' own sounds carry (meows, eating, swipes), compared with how they're set up (1 = as set).")]
     public float catLevel = 1.3f;
+
     [Range(0.5f, 2f)]
     [Tooltip("How far the background sounds carry (footsteps, props knocked, landing and put back) (1 = as set).")]
     public float worldLevel = 1.3f;
@@ -111,26 +129,49 @@ public class RushDirector : MonoBehaviour
 
     [Tooltip("Treat pool positions: 0 = Blue, 1 = Orange.")]
     public int leftFood = 0;
+
     public int rightFood = 1;
+
     public GameObject leftTreatPrefab;
+
     public GameObject rightTreatPrefab;
+
     public Color leftColour = new Color(0.3f, 0.6f, 1f);
+
     public Color rightColour = new Color(1f, 0.6f, 0.15f);
+
     [Tooltip("The tin hung under each launcher, tinted that hand's colour.")]
     public GameObject tinPrefab;
-    [Min(0.01f)] public float tinSize = 0.09f;
+
+    [Min(0.01f)]
+    public float tinSize = 0.09f;
 
     [Header("Ninja")]
 
     public NinjaRushCat ninjaPrefab;
+
     public List<Vector3> ninjaStops = new List<Vector3>();
-    [Min(1)] public int catchKnocksPerStop = 2;
-    [Min(0.2f)] public float catchSitMin = 0.8f;
-    [Min(0.2f)] public float catchSitMax = 1.2f;
-    [Min(1)] public int bossKnocksPerStop = 1;
-    [Min(0.2f)] public float bossSitMin = 2f;
-    [Min(0.2f)] public float bossSitMax = 2.8f;
+
+    [Min(1)]
+    public int catchKnocksPerStop = 2;
+
+    [Min(0.2f)]
+    public float catchSitMin = 0.8f;
+
+    [Min(0.2f)]
+    public float catchSitMax = 1.2f;
+
+    [Min(1)]
+    public int bossKnocksPerStop = 1;
+
+    [Min(0.2f)]
+    public float bossSitMin = 2f;
+
+    [Min(0.2f)]
+    public float bossSitMax = 2.8f;
+
     public string bossFedBanner = "NINJA FED!";
+
     public string bossLeftBanner = "THE NINJA VANISHED!";
 
     [Header("Feel")]
@@ -162,17 +203,28 @@ public class RushDirector : MonoBehaviour
     [Header("Catching")]
 
     [Tooltip("Knocked props burst outward in any direction (not just towards the player), then drift back in front as they fall.")]
-    [Range(0f, 180f)] public float burstSpread = 180f;
+    [Range(0f, 180f)]
+    public float burstSpread = 180f;
+
     [Tooltip("How fast the burst throws a prop sideways, in m/s.")]
-    [Min(0f)] public float burstOutwardSpeed = 3.5f;
+    [Min(0f)]
+    public float burstOutwardSpeed = 3.5f;
+
     [Tooltip("How fast the burst throws a prop upwards, in m/s (less = flatter, more horizontal).")]
-    [Min(0f)] public float burstUpSpeed = 3.2f;
+    [Min(0f)]
+    public float burstUpSpeed = 3.2f;
+
     [Tooltip("Highest a prop can fly, in metres above the floor (it never goes into the ceiling). 0 = leave as is.")]
-    [Min(0f)] public float maxBurstHeight = 0f;
+    [Min(0f)]
+    public float maxBurstHeight = 0f;
+
     [Tooltip("Seconds a prop flies away before it can be caught.")]
-    [Min(0f)] public float catchableAfter = 0.3f;
+    [Min(0f)]
+    public float catchableAfter = 0.3f;
+
     [Tooltip("How slowly props sink once the burst is over, in m/s.")]
-    [Min(0.05f)] public float fallSpeed = 0.55f;
+    [Min(0.05f)]
+    public float fallSpeed = 0.55f;
 
     [Header("Trials")]
 
@@ -188,7 +240,9 @@ public class RushDirector : MonoBehaviour
     [Header("Player's space")]
 
     [Tooltip("The ninja never appears closer than this to the player, in metres.")]
-    [Min(0f)] public float ninjaMinDistance = 2.5f;
+    [Min(0f)]
+    public float ninjaMinDistance = 2.5f;
+
     [Tooltip("Floor area around the player that cats can't walk into (e.g. inside the counter). Width, height, depth in metres; " +
              "kept low so cats can still jump up onto the counter top. Zero width = off.")]
     public Vector3 playerSpace = new Vector3(2.2f, 0.6f, 2.2f);
@@ -203,10 +257,15 @@ public class RushDirector : MonoBehaviour
 
     [Tooltip("The cafe manager calls out each phase on the speaker (each phase's Line), with subtitles.")]
     public bool announcer = false;
+
     public string welcomeLine = "welcome";
+
     public string closingLine = "closing";
+
     public string bossFedLine = "boss_fed";
+
     public string bossLeftLine = "boss_left";
+
     [Tooltip("Played before the ninja's catch and boss lines (from Resources/CafeSounds).")]
     public string ninjaSting = "ninja_sting";
 
@@ -222,40 +281,56 @@ public class RushDirector : MonoBehaviour
     [Min(0)]
     [Tooltip("Coins that fly from a fed cat into a tip jar on the counter, for each treat in its order. 0 = no tip jar.")]
     public int coinsPerTreat = 0;
-    [Min(0)] public int bossCoins = 8;
+
+    [Min(0)]
+    public int bossCoins = 8;
+
     [Tooltip("Optional: where the tip jar stands. Empty = on the counter beside the cat clock.")]
     public Transform tipJarSpot;
+
     [Tooltip("Optional: the name of an object the tip jar takes the place of (it's hidden), e.g. a bottle on the counter.")]
     public string tipJarReplaces = "";
-    [Min(0.5f)] public float tipJarScale = 1f;
+
+    [Min(0.5f)]
+    public float tipJarScale = 1f;
 
     [Header("Ninja and the piles (Cat Cafe Waves)")]
 
     [Tooltip("The ninja only goes to the prop piles, and sends a whole pile flying at once. Each pile's bar stays hidden " +
              "until the ninja first blows it up, then fills as its props are caught and put back.")]
     public bool ninjaExplodesPiles = false;
+
     [Tooltip("Props that hit the floor stay broken for the rest of the round; the piles' bars show what's left.")]
     public bool missedPropsStayDown = false;
+
     [Tooltip("The finale ninja doesn't want feeding: it just makes a mess (the hungry cats clear out for it).")]
     public bool bossMakesMess = false;
+
     [Tooltip("In the ninja phases a caught prop has to be dragged back over its pile and let go there (a ring marks the " +
              "spot); let go anywhere else and it drops. Off: letting go sends it home by itself.")]
     public bool dragPropsHome = true;
+
     [Min(0f)]
     [Tooltip("How far past a pile's table edge (metres) a carried prop still counts as over it when let go.")]
     public float propDropMargin = 0.35f;
+
     [Min(0f)]
     [Tooltip("The same in the Dinner Rush finale (more forgiving: there's a lot going on).")]
     public float remixPropDropMargin = 0.6f;
+
     [Tooltip("Each ninja phase after the first starts with the piles restocked (props lost on the floor come back).")]
     public bool restockPiles = true;
+
     [Min(0)]
     [Tooltip("At the end of the round each pile pays this many coins into the tip jar if it's whole (fewer if not).")]
     public int tidyBonusCoins = 0;
+
     [Min(0)]
     [Tooltip("Points for each whole pile at the end of the round (fewer if not).")]
     public int tidyBonusScore = 0;
+
     public string tidyBonusBanner = "TIDY CAFE BONUS!";
+
     [Range(0f, 45f)]
     [Tooltip("How far off (in degrees) a grip can be pointed and still catch a prop. 0 = leave the gravity beam's own.")]
     public float catchAimAngle = 0f;
@@ -268,29 +343,41 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Cats wander in without an order, then settle, turn to the player and order (a ding and the bubble pops " +
              "up) a few seconds later. Their patience ring then drains.")]
     public bool orderMoments = false;
-    [Min(0f)] public float orderDelayMin = 2f;
-    [Min(0f)] public float orderDelayMax = 4.5f;
+
+    [Min(0f)]
+    public float orderDelayMin = 2f;
+
+    [Min(0f)]
+    public float orderDelayMax = 4.5f;
+
     [Min(0f)]
     [Tooltip("Seconds a cat waits for a one-treat order once it's ordered (0 = forever)...")]
     public float patience = 10f;
+
     [Min(0f)]
     [Tooltip("...plus this many for each extra treat in its order.")]
     public float patiencePerExtraTreat = 3f;
+
     [Tooltip("A cat whose patience runs out raids the tip jar (the right treat during its wind-up calms it down); " +
              "without a tip jar it storms off with no tip.")]
     public bool impatientCatsRaid = true;
+
     [Min(0)]
     [Tooltip("Extra coins for each treat when a cat is served in the first half of its patience.")]
     public int quickServiceCoins = 1;
+
     public string quickServiceText = "Quick!";
 
     [Tooltip("Hungry cats make runs at the tip jar and the piles (in phases with a Raid Every time): a \"!\" and a wind-up, " +
              "then a sprint and a swat. The right treat before it leaps stops it.")]
     public bool raids = false;
+
     public CatRaid.Settings raid = new CatRaid.Settings();
+
     [Min(0)]
     [Tooltip("Coins a raiding cat knocks out of the tip jar.")]
     public int raidSpillCoins = 3;
+
     [Range(0.5f, 2f)]
     [Tooltip("How fast cats walk compared with their own speed (1 = as made).")]
     public float catSpeedMultiplier = 1f;
@@ -303,29 +390,54 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Herds of little kittens gallop across the room in front of the player; any treat feeds one. " +
              "Both launchers fire Scatter for the phase.")]
     public bool stampedeScatter = true;
-    [Range(0.3f, 1f)] public float kittenScale = 0.55f;
-    [Min(1)] public int kittensPerHerdMin = 5;
-    [Min(1)] public int kittensPerHerdMax = 7;
-    [Min(0.5f)] public float herdGapMin = 2.2f;
-    [Min(0.5f)] public float herdGapMax = 3.2f;
-    [Min(0.5f)] public float kittenSpeedMin = 3.2f;
-    [Min(0.5f)] public float kittenSpeedMax = 4.2f;
+
+    [Range(0.3f, 1f)]
+    public float kittenScale = 0.55f;
+
+    [Min(1)]
+    public int kittensPerHerdMin = 5;
+
+    [Min(1)]
+    public int kittensPerHerdMax = 7;
+
+    [Min(0.5f)]
+    public float herdGapMin = 2.2f;
+
+    [Min(0.5f)]
+    public float herdGapMax = 3.2f;
+
+    [Min(0.5f)]
+    public float kittenSpeedMin = 3.2f;
+
+    [Min(0.5f)]
+    public float kittenSpeedMax = 4.2f;
+
     [Min(0f)]
     [Tooltip("Seconds each herd runs around in front of the player (zig-zagging) before it heads off. 0 = straight across.")]
     public float herdRoamMin = 5f;
-    [Min(0f)] public float herdRoamMax = 10f;
+
+    [Min(0f)]
+    public float herdRoamMax = 10f;
+
     [Min(1)]
     [Tooltip("Most kittens out at once (the Quest's limit: a new herd sends fewer if it would go over).")]
     public int maxKittens = 24;
+
     [Min(0.1f)]
     [Tooltip("Radius of each kitten's invisible hit area, in metres.")]
     public float kittenHitRadius = 0.35f;
-    [Min(0)] public int kittenScore = 2;
-    [Min(0)] public int kittenCoins = 1;
+
+    [Min(0)]
+    public int kittenScore = 2;
+
+    [Min(0)]
+    public int kittenCoins = 1;
+
     [Range(0f, 1f)]
     [Tooltip("The chance a herd floods in through a vent up high (its lid clanks open and the kittens pour out one after " +
              "another, then tear off across the floor) instead of running in from the side.")]
     public float floodChance = 0.3f;
+
     [Tooltip("The stampede opens with a flood through a vent, if there's one high up that the player can see.")]
     public bool firstHerdFloods = true;
 
@@ -334,6 +446,7 @@ public class RushDirector : MonoBehaviour
     [Tooltip("A kitten runs in from a door in front of the player and leaps onto a launcher: that hand can't fire until " +
              "it's shaken off. There's no stopping it: treats go straight through.")]
     public LauncherKitten.Settings launcherKitten = new LauncherKitten.Settings();
+
     [Tooltip("Announcer line the first time a kitten gets on a launcher. Empty = none.")]
     public string latchLine = "latch";
 
@@ -347,14 +460,22 @@ public class RushDirector : MonoBehaviour
 
     [Tooltip("The cat clock shows the time of day through the shift (Waves) instead of seconds left.")]
     public bool shiftClock = true;
-    [Range(0f, 24f)] public float shiftStartHour = 9f;
-    [Range(0f, 24f)] public float shiftEndHour = 17f;
+
+    [Range(0f, 24f)]
+    public float shiftStartHour = 9f;
+
+    [Range(0f, 24f)]
+    public float shiftEndHour = 17f;
+
     [Tooltip("The light goes from morning to evening over the shift (Waves).")]
     public ShiftLight.Settings shiftLight = new ShiftLight.Settings();
+
     [Tooltip("In the lobby, a little each frame, build every letter into the fonts and decode the sounds, so none of it stutters mid-round (Quest). With a Shader Variants collection below, compile the shaders too.")]
     public bool warmUpAtStart = true;
+
     [Tooltip("Optional: the shaders the game draws with, compiled in the lobby so the first boss cat (or anything new) doesn't stutter on the Quest. Make it with Catastrophe Cafe > Save Shader Variants From The Last Play, after a whole round in Play.")]
     public ShaderVariantCollection shaderVariants;
+
     [Tooltip("The sky outside goes from morning to night over the shift (Waves; Farland Skies - Low Poly).")]
     public ShiftSky.Settings shiftSky = new ShiftSky.Settings();
 
@@ -364,20 +485,28 @@ public class RushDirector : MonoBehaviour
              "treat and he starts it over) or he scoops out a big handful of coins. Needs a tip jar, and a Boss Cat Spawner " +
              "in the scene that has the Mafia cat.")]
     public bool mafiaHeists = true;
+
     [Min(0)]
     [Tooltip("How many times he comes in each feeding phase (after the first).")]
     public int heistsPerPhase = 2;
+
     [Min(0)]
     [Tooltip("Kittens he brings with him that charge the player's launchers (one each) while he goes for the jar.")]
     public int heistGang = 2;
+
     public MafiaHeist.Settings heist = new MafiaHeist.Settings();
+
     [Tooltip("Announcer line the first time he comes in. Empty = none.")]
     public string heistLine = "mafia";
+
     [Tooltip("Announcer lines, each said the first time: busting the Mafia cat, him getting away with the coins, the first " +
              "catch that has to be carried home, and the tidy bonus starting. Empty = none.")]
     public string bustedLine = "busted";
+
     public string stoleLine = "heist";
+
     public string carryLine = "carry";
+
     public string tidyLine = "tidy";
 
     [Header("Spy cats (Spy phases)")]
@@ -385,11 +514,17 @@ public class RushDirector : MonoBehaviour
     [Tooltip("Spy cats (phat cats) lower down on ropes from the ceiling vents (vents high up that the player can see) after a " +
              "secret recipe; looking at one and waving your arms scares it off. With no ceiling vent in view, a Spy phase is ordinary feeding instead.")]
     public SpyCat.Settings spy = new SpyCat.Settings();
-    [Min(0.5f)] public float spyGapStart = 4f;
-    [Min(0.5f)] public float spyGapEnd = 2.5f;
+
+    [Min(0.5f)]
+    public float spyGapStart = 4f;
+
+    [Min(0.5f)]
+    public float spyGapEnd = 2.5f;
+
     [Range(0f, 1f)]
     [Tooltip("The spy music (Resources/CafeSounds/spy_music_intro, then spy_music_loop) all through a Spy phase. 0 = none.")]
     public float spyMusicVolume = 0.5f;
+
     [Range(0f, 1f)]
     [Tooltip("The cafe music's volume under the spy music (1 = no dip).")]
     public float musicUnderSpyMusic = 0.15f;
@@ -399,34 +534,51 @@ public class RushDirector : MonoBehaviour
     [Tooltip("The finale mixes every wave: the ninja making a slower mess, customers ordering (the phase's Cats), launcher " +
              "kittens (its Latch Every), spy cats, the Mafia cat and a kitten flood. Never more than this many big things " +
              "at once (a heist, a kitten on a launcher, a spy, the flood); the rest wait their turn.")]
-    [Min(1)] public int remixMaxBusy = 1;
+    [Min(1)]
+    public int remixMaxBusy = 1;
+
     [Min(0)]
     [Tooltip("Seconds of breather in the finale after a big thing finishes before the next may start (so they come one after another, not in a pile).")]
     public float remixBreather = 6f;
+
     [Tooltip("Seconds between spy cats in the finale (0 = none).")]
-    [Min(0)] public float remixSpyGapMin = 14f;
-    [Min(0)] public float remixSpyGapMax = 20f;
-    [Min(0)] public int remixHeists = 2;
-    [Min(0)] public int remixHeistGang = 1;
+    [Min(0)]
+    public float remixSpyGapMin = 14f;
+
+    [Min(0)]
+    public float remixSpyGapMax = 20f;
+
+    [Min(0)]
+    public int remixHeists = 2;
+
+    [Min(0)]
+    public int remixHeistGang = 1;
+
     [Range(0f, 1f)]
     [Tooltip("How far through the finale a kitten flood pours out of a vent (0 = none).")]
     public float remixFloodAt = 0.45f;
+
     [Min(0.2f)]
     [Tooltip("Seconds the ninja sits between piles in the finale (slower than the catch phase: there's a lot else going on).")]
     public float remixNinjaSitMin = 7f;
-    [Min(0.2f)] public float remixNinjaSitMax = 10f;
+
+    [Min(0.2f)]
+    public float remixNinjaSitMax = 10f;
 
     [Header("Vents")]
 
     [Tooltip("Cats can come in through the cafe's vents (objects named Vent... with a ...Lid inside): the lid swings open " +
              "with a clank and out they jump.")]
     public bool catsUseVents = true;
+
     [Range(0f, 1f)]
     [Tooltip("Feed phases: the chance each new cat comes out of a vent instead of a door.")]
     public float ventChance = 0.35f;
+
     [Range(0f, 1f)]
     [Tooltip("The chance a launcher kitten comes out of a vent.")]
     public float kittenVentChance = 0.5f;
+
     [Range(0f, 180f)]
     [Tooltip("Only vents within this many degrees of where the player faces are used.")]
     public float ventArc = 120f;
@@ -434,9 +586,13 @@ public class RushDirector : MonoBehaviour
     [Tooltip("The first catch phase starts by knocking up one prop that hangs in the air, with a hint, and the clock " +
              "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
     public bool catchIntro = false;
+
     public string catchIntroHint = "Alternative trigger!";
+
     public string catchIntroPraise = "Nice catch!";
-    [Min(1f)] public float catchIntroTimeout = 12f;
+
+    [Min(1f)]
+    public float catchIntroTimeout = 12f;
 
     readonly List<CatOrder> orders = new List<CatOrder>();
     PlayerInput player;
@@ -470,6 +626,7 @@ public class RushDirector : MonoBehaviour
     bool wrapUpPaused;
     bool introPaused;   // the first catch's intro stops the clock
     bool waveHeld;      // the wave waits (e.g. for the first spy to be dealt with while it's explained)
+
     bool holding
     {
         get
@@ -509,6 +666,7 @@ public class RushDirector : MonoBehaviour
             yield return null;
         }
     }
+
     BossCat mafiaPrefab;
     int feedPhasesSeen;
     int ninjaPhasesSeen;

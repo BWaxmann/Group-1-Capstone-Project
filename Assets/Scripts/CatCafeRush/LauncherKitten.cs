@@ -14,40 +14,57 @@ public class LauncherKitten : MonoBehaviour
     [Serializable]
     public class Settings
     {
-        [Min(0.5f)] public float runSpeed = 2.6f;
+        [Min(0.5f)]
+        public float runSpeed = 2.6f;
+
         [Range(0.2f, 1f)]
         [Tooltip("Its size while it runs in, compared with a normal cat.")]
         public float runScale = 0.5f;
+
         [Range(0.1f, 1f)]
         [Tooltip("Its size once it's on the launcher, compared with a normal cat (it shrinks as it leaps).")]
         public float latchScale = 0.3f;
+
         [Min(0.5f)]
         [Tooltip("How close it gets to a launcher (along the floor, in metres) before it leaps.")]
         public float leapDistance = 1.6f;
-        [Min(0.1f)] public float leapSeconds = 0.45f;
+
+        [Min(0.1f)]
+        public float leapSeconds = 0.45f;
+
         [Tooltip("Where it clings, from the launcher's muzzle (x right, y up, z forward), in metres. Can be tuned in Play mode.")]
         public Vector3 latchOffset = new Vector3(0, 0.03f, 0.02f);
+
         [Min(1)]
         [Tooltip("Quick shakes (changes of direction) of that hand it takes to throw it off.")]
         public int shakesToFree = 3;
+
         [Min(0.2f)]
         [Tooltip("How fast the hand has to be moving (m/s) for a change of direction to count as a shake.")]
         public float shakeSpeed = 1.1f;
+
         [Range(0f, 1f)]
         [Tooltip("How much each pull of the blocked trigger loosens its grip (1 = all of it).")]
         public float triggerLoosens = 0.12f;
+
         [Min(1f)]
         [Tooltip("Seconds on the launcher before it gets bored and hops off by itself.")]
         public float boredAfter = 8f;
+
         [Range(0f, 1f)]
         [Tooltip("The chance a kitten goes for a launcher that already has a kitten on it, and climbs on top of that one.")]
         public float stackChance = 0.35f;
+
         [Min(0f)]
         [Tooltip("How far up a stacked kitten sits on the one below, in metres.")]
         public float stackHeight = 0.08f;
+
         public string hint = "SHAKE!";
+
         public Color hintColour = new Color(1f, 0.85f, 0.2f);
+
         public Color warningColour = new Color(1f, 0.55f, 0.1f);
+
         public string shooText = "Shoo!";
     }
 
@@ -99,6 +116,7 @@ public class LauncherKitten : MonoBehaviour
             return latched;
         }
     }
+
     public bool onRightHand
     {
         get

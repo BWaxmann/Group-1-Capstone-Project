@@ -197,6 +197,7 @@ public class CatMovement : MonoBehaviour
             return agent != null && agent.isActiveAndEnabled && agent.velocity.magnitude > 0;
         }
     }
+
     public bool isFullyFed
     {
         get
@@ -204,6 +205,7 @@ public class CatMovement : MonoBehaviour
             return currentState == AIState.Full || currentState == AIState.ReturningHome;
         }
     }
+
     public virtual bool isBoss
     {
         get
@@ -576,6 +578,7 @@ public class CatMovement : MonoBehaviour
     // Whether it'll take a treat at all right now (null = always). A cat that isn't after food (hasn't ordered, is leaving,
     // is a spy...) lets treats fly straight past it, to the hungry cats behind
     public System.Func<bool> wantsTreats;
+
     public bool takesTreats
     {
         get
@@ -596,6 +599,7 @@ public class CatMovement : MonoBehaviour
             return null;
         }
     }
+
     public Sprite grumpiestFace
     {
         get
@@ -607,6 +611,7 @@ public class CatMovement : MonoBehaviour
             return null;
         }
     }
+
     public GameObject moodDisplay
     {
         get

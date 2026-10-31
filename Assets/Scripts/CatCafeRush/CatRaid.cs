@@ -13,6 +13,7 @@ public class CatRaid : MonoBehaviour
     public class Target
     {
         public Vector3 position;            // what gets swatted (its base)
+
         public Action<Vector3> swat;        // called with where the cat swats from
     }
 
@@ -22,13 +23,17 @@ public class CatRaid : MonoBehaviour
         [Min(0.2f)]
         [Tooltip("Seconds the cat winds up (with a \"!\") before it runs: the first part of the window to stop it.")]
         public float windUp = 1.2f;
+
         [Min(1f)]
         [Tooltip("How much faster than its walk the cat sprints at the target.")]
         public float sprintMultiplier = 2.5f;
+
         [Min(0)]
         [Tooltip("Points for stopping a raid with the right treat.")]
         public int saveBonus = 5;
+
         public string savedText = "Saved!";
+
         public Color warningColour = new Color(1f, 0.35f, 0.1f);
     }
 
@@ -62,6 +67,7 @@ public class CatRaid : MonoBehaviour
             return order;
         }
     }
+
     public bool isRunning
     {
         get

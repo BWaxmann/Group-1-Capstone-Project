@@ -46,6 +46,7 @@ public class FlyingProp : MonoBehaviour
             return state == State.Flying && CatChaosSettings.instance != null && flightTime >= CatChaosSettings.instance.catchableAfter;
         }
     }
+
     public Vector3 centre
     {
         get
@@ -146,6 +147,7 @@ public class FlyingProp : MonoBehaviour
     float zoneRadius;
     public static string dragHintText = "Bring it home!";
     static int dragHintsShown;
+
     internal static void ResetStatics()   // (a new run: see RunReset)
     {
         all.Clear();
@@ -154,10 +156,12 @@ public class FlyingProp : MonoBehaviour
         dropMargin = DefaultDropMargin;
         dragHintsShown = 0;
     }
+
     const int DragHints = 2;
 
     // Where to carry it back to: the middle of its pile's table top
     public Vector3 dropCentre { get { MeasureZone(); return zoneCentre; } }
+
     // Held anywhere over its pile's table (from just above the top to well up in the air)
     public bool nearHome
     {
@@ -204,6 +208,7 @@ public class FlyingProp : MonoBehaviour
             zoneRadius = Mathf.Clamp(Mathf.Min(b.extents.x, b.extents.z), 0.45f, 1.2f);
         }
     }
+
     float driftTimer;
     Vector3 driftVelocity;
     Vector3 viewer;
@@ -1023,6 +1028,7 @@ public class FlyingProp : MonoBehaviour
         }
         return homeLocalPosition;
     }
+
     Quaternion HomeRotation()
     {
         if (homeParent != null)

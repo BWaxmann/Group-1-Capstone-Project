@@ -8,6 +8,7 @@ public class PropPile : MonoBehaviour
 {
     static readonly List<CatMovement> noCats = new List<CatMovement>();
     static readonly List<PropPile> all = new List<PropPile>();
+
     internal static void ResetStatics()
     {
         all.Clear();
@@ -27,6 +28,7 @@ public class PropPile : MonoBehaviour
     public float warningDistance = 6f;
 
     public Color warningColour = new Color(1f, 0.55f, 0.1f);
+
     public Color dangerColour = new Color(1f, 0.15f, 0.1f);
 
     DefendPoint defendPoint;

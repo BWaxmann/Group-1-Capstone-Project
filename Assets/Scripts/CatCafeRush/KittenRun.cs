@@ -19,11 +19,13 @@ public class KittenRun : MonoBehaviour
     // herd doesn't turn into noise.
     const float MeowGap = 0.12f;
     static float lastMeow = -10f;
+
     internal static void ResetStatics()   // (a new run: see RunReset)
     {
         running.Clear();
         lastMeow = -10f;
     }
+
     float nextMeow;
 
     CatMovement cat;
@@ -77,6 +79,7 @@ public class KittenRun : MonoBehaviour
             return transform.position + Vector3.up * 0.15f;
         }
     }
+
     public bool isFed
     {
         get
@@ -84,6 +87,7 @@ public class KittenRun : MonoBehaviour
             return fed;
         }
     }
+
     // False for a kitten launched with no hit area (a launcher kitten): treats go straight through it
     public bool feedable { get; private set; }
     // Stopped running (another script has it now, e.g. a launcher kitten leaping), or waiting at the end of its path

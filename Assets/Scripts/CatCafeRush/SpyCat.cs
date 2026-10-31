@@ -18,46 +18,68 @@ public class SpyCat : MonoBehaviour
         [Min(0.3f)]
         [Tooltip("Seconds it takes to lower itself to just under the player's head height.")]
         public float lowerSeconds = 2f;
+
         [Min(0f)]
         [Tooltip("How far below the player's eyes it hangs at the bottom of its swing, in metres.")]
         public float hangBelowEyes = 0.3f;
+
         [Min(1f)]
         [Tooltip("Seconds of swinging, closer each time, before a swing reaches the player (the time to scare it off).")]
         public float approachSeconds = 8f;
+
         [Min(0.5f)]
         [Tooltip("Seconds for one swing there and back.")]
         public float swingPeriod = 2.2f;
+
         [Range(10f, 75f)]
         [Tooltip("How far out it swings at most, in degrees from straight down.")]
         public float swingMaxAngle = 50f;
+
         [Min(0.3f)]
         [Tooltip("How close it has to get to the player's head to snatch the recipe, in metres.")]
         public float reachDistance = 0.9f;
-        [Range(0.3f, 1.5f)] public float scale = 0.85f;
+
+        [Range(0.3f, 1.5f)]
+        public float scale = 0.85f;
+
         [Range(5f, 60f)]
         [Tooltip("How directly the player has to be looking at it for waving to count, in degrees.")]
         public float lookAngle = 25f;
+
         [Min(0.2f)]
         [Tooltip("How fast the hands have to be moving (m/s, the two averaged) for waving at full strength.")]
         public float waveSpeed = 1.6f;
+
         [Min(0.2f)]
         [Tooltip("Seconds of full-strength waving it takes to scare it off.")]
         public float scareSeconds = 2.2f;
+
         [Min(0f)]
         [Tooltip("How fast its nerve comes back when the player stops waving (ring per second).")]
         public float calmDown = 0.5f;
+
         [Min(1)]
         [Tooltip("Back-and-forth swings of the hands in the last second for it to count as waving (so swinging round to aim doesn't).")]
         public int swingsNeeded = 3;
-        [Min(0)] public int scareScore = 10;
-        [Min(0)] public int scareCoins = 2;
+
+        [Min(0)]
+        public int scareScore = 10;
+
+        [Min(0)]
+        public int scareCoins = 2;
+
         [Min(0)]
         [Tooltip("Coins knocked out of the tip jar when it gets away with the recipe.")]
         public int stealCoins = 6;
+
         public string scaredText = "Shoo!";
+
         public string stolenText = "Recipe stolen!";
+
         public string hint = "WAVE YOUR ARMS!";
+
         public Color ringColour = new Color(1f, 0.85f, 0.2f);
+
         public Color ropeColour = new Color(0.08f, 0.08f, 0.1f);
     }
 
@@ -68,6 +90,7 @@ public class SpyCat : MonoBehaviour
     // While this says so, it hangs there swinging gently instead of coming in (it can still be scared off): e.g. the first
     // spy of the wave, while the announcer explains what to do
     public Func<bool> holdBack;
+
     public bool isFinished
     {
         get
@@ -75,12 +98,15 @@ public class SpyCat : MonoBehaviour
             return finished;
         }
     }
+
     static int hintsShown;
+
     internal static void ResetStatics()   // (a new run: see RunReset)
     {
         active.Clear();
         hintsShown = 0;
     }
+
     const int Hints = 2;
     static readonly int Spying = Animator.StringToHash("Spying");
 
@@ -716,6 +742,7 @@ public class SpyCat : MonoBehaviour
     }
 
     static AudioClip sting;
+
     void Sting()
     {
         if (sting == null)

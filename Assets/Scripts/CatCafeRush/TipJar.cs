@@ -14,8 +14,11 @@ public class TipJar : MonoBehaviour
     const float FullAfter = 60;   // coins until the jar looks full
 
     public Color glassColour = new Color(0.75f, 0.9f, 1f, 0.3f);
+
     public Color coinColour = new Color(1f, 0.8f, 0.15f);
-    [Min(0.1f)] public float coinFlightTime = 0.7f;
+
+    [Min(0.1f)]
+    public float coinFlightTime = 0.7f;
 
     [Header("Prefab parts (optional: built in code when empty)")]
 
@@ -42,6 +45,7 @@ public class TipJar : MonoBehaviour
     public int coins { get; private set; }
     // Coins in the full jars set aside
     public int banked { get; private set; }
+
     // Every coin earned and kept: the full jars and this one
     public int total
     {
@@ -50,6 +54,7 @@ public class TipJar : MonoBehaviour
             return banked + coins;
         }
     }
+
     public string fullText = "Jar full!";
 
     const int MaxFullJars = 2;

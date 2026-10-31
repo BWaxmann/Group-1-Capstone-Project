@@ -106,9 +106,13 @@ public class CatChaosSettings : MonoBehaviour
     [Header("Sounds")]
 
     public SoundData knockSound = new SoundData(0.6f, 1f);
+
     public SoundData landedSound = new SoundData(0.7f, 1f);
+
     public SoundData respawnSound = new SoundData(0.4f, 1f);
+
     public SoundData homeSound = new SoundData(0.5f, 1f);
+
     public SoundData catchSound = new SoundData(0.7f, 1f);
 
     void Awake()
@@ -141,18 +145,22 @@ public class CatChaosSettings : MonoBehaviour
     {
         Play(knockSound, position, Random.Range(0.9f, 1.15f));
     }
+
     public void PlayLanded(Vector3 position)
     {
         Play(landedSound, position, Random.Range(0.85f, 1.1f));
     }
+
     public void PlayRespawn(Vector3 position)
     {
         Play(respawnSound, position, Random.Range(0.95f, 1.1f));
     }
+
     public void PlayHome(Vector3 position)
     {
         Play(homeSound, position, Random.Range(1f, 1.2f));
     }
+
     public void PlayCatch(Vector3 position)
     {
         Play(catchSound, position, Random.Range(0.95f, 1.1f));

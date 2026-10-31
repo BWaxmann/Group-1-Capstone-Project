@@ -17,31 +17,44 @@ public class MafiaHeist : MonoBehaviour
         [Min(0.2f)]
         [Tooltip("His strolling speed, in metres a second (he's impatient: he wants that money now).")]
         public float walkSpeed = 1.6f;
+
         [Min(1)]
         [Tooltip("Treats in his order.")]
         public int treats = 3;
+
         [Min(0)]
         [Tooltip("Coins he gets out of the jar if he's left to pillage it the whole time.")]
         public int steal = 10;
+
         [Min(0.5f)]
         [Tooltip("Seconds he pillages the jar once he gets to it (he can still be busted all the while).")]
         public float pillageSeconds = 5f;
+
         [Min(0.2f)]
         [Tooltip("Seconds between his swats at the jar (a few coins spill each time).")]
         public float swatEvery = 0.8f;
-        [Min(0)] public int bustedScore = 15;
+
+        [Min(0)]
+        public int bustedScore = 15;
+
         [Min(0)]
         [Tooltip("Coins into the jar for busting him.")]
         public int bustedCoins = 3;
+
         [Range(0f, 15f)]
         [Tooltip("How much he rocks side to side as he walks, in degrees.")]
         public float swagger = 7f;
+
         public string bustedText = "Busted!";
+
         public string heistText = "Heist!";
+
         public Color ringColour = new Color(1f, 0.15f, 0.1f);
+
         [Range(0f, 1f)]
         [Tooltip("How loud his theme (Resources/CafeSounds/mafia_theme) plays as he walks in. The music dips under it.")]
         public float themeVolume = 0.8f;
+
         [Range(0f, 1f)]
         [Tooltip("How far the music dips under his theme (1 = not at all).")]
         public float musicUnderTheme = 0.25f;

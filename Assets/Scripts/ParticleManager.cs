@@ -2,7 +2,8 @@
 
 public class ParticleManager : MonoBehaviour
 {
-    [SerializeField] ObjectSpawner particleSpawner;
+    [SerializeField]
+    ObjectSpawner particleSpawner;
 
     public static ParticleManager instance;
 
