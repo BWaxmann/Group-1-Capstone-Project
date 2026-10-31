@@ -630,7 +630,14 @@ public class PlayerInput : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
     // On the Quest, input is read straight from OVRInput (the same buttons Liminal maps), because
     // Liminal's Quest controller builds a new button dictionary on every query, which causes stutters.
-    static OVRInput.Controller OvrHand(bool rightHand) => rightHand ? OVRInput.Controller.RTouch : OVRInput.Controller.LTouch;
+    static OVRInput.Controller OvrHand(bool rightHand)
+    {
+        if (rightHand)
+        {
+            return OVRInput.Controller.RTouch;
+        }
+        return OVRInput.Controller.LTouch;
+    }
 #endif
 
     bool TriggerDown(bool rightHand)
@@ -740,7 +747,14 @@ public class PlayerInput : MonoBehaviour
             }
             if (held && !wasHeld)
             {
-                direction = x > 0 ? 1 : -1;
+                if (x > 0)
+                {
+                    direction = 1;
+                }
+                else
+                {
+                    direction = -1;
+                }
             }
             if (rightHand)
             {
