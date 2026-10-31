@@ -69,7 +69,10 @@ public class CatJuice : MonoBehaviour
     {
         squash = squashVelocity = headAngle = headVelocity = pendingHeadKick = 0;
         settled = true;
-        if (model != null) model.localScale = modelBaseScale;
+        if (model != null)
+        {
+            model.localScale = modelBaseScale;
+        }
     }
 
     void OnDisable()
@@ -80,7 +83,10 @@ public class CatJuice : MonoBehaviour
     // LateUpdate runs after the animator, so these reactions add on top of the animation
     void LateUpdate()
     {
-        if (settled) return;
+        if (settled)
+        {
+            return;
+        }
 
         float dt = Mathf.Min(Time.deltaTime, 0.033f);
 

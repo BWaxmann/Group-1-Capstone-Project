@@ -43,7 +43,10 @@ public abstract class Launchable : MonoBehaviour
     // Straight shots fly without gravity until they hit something, then drop normally
     public void MakeStraightShot()
     {
-        if (rb == null) return;
+        if (rb == null)
+        {
+            return;
+        }
 
         rb.useGravity = false;
         Invoke(nameof(Despawn), straightShotLifetime);

@@ -74,15 +74,24 @@ public class Treat : Launchable
         {
             ownColliders = GetComponentsInChildren<Collider>(true);
             ownTriggerSettings = new bool[ownColliders.Length];
-            for (int i = 0; i < ownColliders.Length; i++) ownTriggerSettings[i] = ownColliders[i].isTrigger;
+            for (int i = 0; i < ownColliders.Length; i++)
+            {
+                ownTriggerSettings[i] = ownColliders[i].isTrigger;
+            }
         }
-        for (int i = 0; i < ownColliders.Length; i++) ownColliders[i].isTrigger = cleanShots || ownTriggerSettings[i];
+        for (int i = 0; i < ownColliders.Length; i++)
+        {
+            ownColliders[i].isTrigger = cleanShots || ownTriggerSettings[i];
+        }
         lastPosition = transform.position;
     }
 
     void FixedUpdate()
     {
-        if (!cleanShots || !isActive || rb == null) return;
+        if (!cleanShots || !isActive || rb == null)
+        {
+            return;
+        }
 
         // The transform, not rb.position: this project doesn't auto-sync transforms, so right after a launch the
         // rigidbody still holds the treat's old spot until the next physics step
@@ -111,8 +120,14 @@ public class Treat : Launchable
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (RaycastHit hit in hits)
             {
-                if (hit.collider.transform.IsChildOf(transform)) continue;
-                if (CleanHit(hit)) return;
+                if (hit.collider.transform.IsChildOf(transform))
+                {
+                    continue;
+                }
+                if (CleanHit(hit))
+                {
+                    return;
+                }
             }
         }
         lastPosition = now;
@@ -124,7 +139,10 @@ public class Treat : Launchable
         CatMovement cat = other.GetComponentInParent<CatMovement>();
         if (cat != null)
         {
-            if (cat.isFullyFed || !cat.takesTreats) return false;   // flies on past
+            if (cat.isFullyFed || !cat.takesTreats)
+            {
+                return false;   // flies on past
+            }
             isActive = false;
             cat.HitByTreat(this);
             Despawn();
@@ -142,12 +160,24 @@ public class Treat : Launchable
 
         // Clean shots fly through the things that move (kittens, flying props, the vents' lids) but splat on the cafe
         // itself: walls, floor, furniture, props sitting on a pile, and anything squishable
-        if (other.isTrigger || other.GetComponentInParent<TreatsPassThrough>() != null) return false;
-        if (other.GetComponentInParent<PlayerInput>() != null || other.GetComponentInParent<Launchable>() != null) return false;
+        if (other.isTrigger || other.GetComponentInParent<TreatsPassThrough>() != null)
+        {
+            return false;
+        }
+        if (other.GetComponentInParent<PlayerInput>() != null || other.GetComponentInParent<Launchable>() != null)
+        {
+            return false;
+        }
         FlyingProp prop = other.GetComponentInParent<FlyingProp>();
-        if (prop != null && prop.state != FlyingProp.State.Home) return false;
+        if (prop != null && prop.state != FlyingProp.State.Home)
+        {
+            return false;
+        }
         Squishable squishable = other.GetComponentInParent<Squishable>();
-        if (prop == null && squishable == null && other.attachedRigidbody != null) return false;
+        if (prop == null && squishable == null && other.attachedRigidbody != null)
+        {
+            return false;
+        }
         Splat(hit, squishable, prop);
         return true;
     }
@@ -156,11 +186,17 @@ public class Treat : Launchable
     void Splat(RaycastHit hit, Squishable squishable, FlyingProp prop)
     {
         isActive = false;
-        if (squishable != null) squishable.Squish();
+        if (squishable != null)
+        {
+            squishable.Squish();
+        }
         if (prop != null)
         {
             PropPile pile = prop.GetComponentInParent<PropPile>();
-            if (pile != null) pile.Rattle(0.6f);
+            if (pile != null)
+            {
+                pile.Rattle(0.6f);
+            }
         }
 
         ParticleSystem splat = CafePrefabs.SplatPrefab;

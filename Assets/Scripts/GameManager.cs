@@ -374,7 +374,10 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        if (instance == null) RunReset.ForNewRun();   // a new run (Liminal can run it again without a restart)
+        if (instance == null)
+        {
+            RunReset.ForNewRun();   // a new run (Liminal can run it again without a restart)
+        }
         if (instance == null)
         {
             instance = this;
@@ -413,7 +416,10 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        if (state != GameState.DuringGame || comboCount == 0) return;
+        if (state != GameState.DuringGame || comboCount == 0)
+        {
+            return;
+        }
 
         comboTimer -= Time.deltaTime;
         if (comboTimer <= 0)
@@ -453,7 +459,10 @@ public class GameManager : MonoBehaviour
         Invoke(nameof(InitiatePregame), pregameDelay);
         StartCountdown?.Invoke();
 
-        if (particleManagerPrefab != null && ParticleManager.instance == null) Instantiate(particleManagerPrefab);
+        if (particleManagerPrefab != null && ParticleManager.instance == null)
+        {
+            Instantiate(particleManagerPrefab);
+        }
     }
 
     IEnumerator PreGameRoutine()
@@ -463,7 +472,10 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < pregameCountdownTime; i++)
         {
             countdownText.text = (pregameCountdownTime - i).ToString();
-            if (!countdownSoundIsCombined) PlaySoundEffect(countdownSound);
+            if (!countdownSoundIsCombined)
+            {
+                PlaySoundEffect(countdownSound);
+            }
 
             yield return wait;
         }
@@ -488,7 +500,10 @@ public class GameManager : MonoBehaviour
                 currentRound++;
                 roundStartSound.PlayOneShot(soundEffectSource);
             }
-            if (roundText != null) roundText.text = currentRound.ToString();
+            if (roundText != null)
+            {
+                roundText.text = currentRound.ToString();
+            }
             StartNewRound?.Invoke(currentRound);
 
             float roundTime = roundMaxTimes[i];
@@ -501,7 +516,10 @@ public class GameManager : MonoBehaviour
             int steps = Mathf.FloorToInt(roundTime);
             for (int j = 0; j < steps; j++)
             {
-                while (clockPaused) yield return null;
+                while (clockPaused)
+                {
+                    yield return null;
+                }
                 timerText.text = ClockText(steps - j, roundTime);
 
                 // The finale is the end of the last round
@@ -571,7 +589,10 @@ public class GameManager : MonoBehaviour
         string[] parts = startupMessage.Replace("\r", "").Split(new[] { "\n\n" }, System.StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < startupBoxes.Length; i++)
         {
-            if (startupBoxes[i] == null) continue;
+            if (startupBoxes[i] == null)
+            {
+                continue;
+            }
             if (i < parts.Length)
             {
                 startupBoxes[i].text = parts[i].Trim();
@@ -587,10 +608,16 @@ public class GameManager : MonoBehaviour
 
     void HideStartupBoxes()
     {
-        if (startupBoxes == null) return;
+        if (startupBoxes == null)
+        {
+            return;
+        }
         foreach (TMP_Text box in startupBoxes)
         {
-            if (box != null) box.gameObject.SetActive(false);
+            if (box != null)
+            {
+                box.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -599,16 +626,25 @@ public class GameManager : MonoBehaviour
         state = GameState.PreGame;
         pregameCanvas.SetActive(true);
         HideStartupBoxes();
-        if (countdownSoundIsCombined) PlaySoundEffect(countdownSound);
+        if (countdownSoundIsCombined)
+        {
+            PlaySoundEffect(countdownSound);
+        }
 
         StartCoroutine(PreGameRoutine());
 
-        if (scoreParticlePool == null && scoreParticlePoolPrefab != null) scoreParticlePool = Instantiate(scoreParticlePoolPrefab);
+        if (scoreParticlePool == null && scoreParticlePoolPrefab != null)
+        {
+            scoreParticlePool = Instantiate(scoreParticlePoolPrefab);
+        }
     }
 
     void InitiateGame()
     {
-        if (separateGameStartSound) PlaySoundEffect(gameStartSound);
+        if (separateGameStartSound)
+        {
+            PlaySoundEffect(gameStartSound);
+        }
         PlayMusic(gameMusicIntroAndOutro);
         Invoke(nameof(BeginLoop), introLength);
         
@@ -633,7 +669,10 @@ public class GameManager : MonoBehaviour
     void HidePregameCanvas()
     {
         pregameCanvas.SetActive(false);
-        if (bannerReplacesGameUI && state == GameState.DuringGame) ShowGameCanvases(true);
+        if (bannerReplacesGameUI && state == GameState.DuringGame)
+        {
+            ShowGameCanvases(true);
+        }
     }
 
     void ShowGameCanvases(bool show)
@@ -654,7 +693,10 @@ public class GameManager : MonoBehaviour
         postgameCanvas.SetActive(true);
         timeUpText.SetActive(true);
         finalScorePanel.SetActive(false);
-        if (comboText != null) comboText.gameObject.SetActive(false);
+        if (comboText != null)
+        {
+            comboText.gameObject.SetActive(false);
+        }
 
         Haptics.PulseBoth(Haptics.Strength.Huge);
         StartCoroutine(PostGameRoutine());
@@ -670,7 +712,10 @@ public class GameManager : MonoBehaviour
             CancelInvoke(nameof(HidePregameCanvas));
             countdownText.text = text;
             pregameCanvas.SetActive(true);
-            if (bannerReplacesGameUI && state == GameState.DuringGame) ShowGameCanvases(false);
+            if (bannerReplacesGameUI && state == GameState.DuringGame)
+            {
+                ShowGameCanvases(false);
+            }
             Invoke(nameof(HidePregameCanvas), duration);
         }
     }
@@ -679,7 +724,10 @@ public class GameManager : MonoBehaviour
     {
         finaleStarted = true;
         // An empty banner text means another script announces the finale itself
-        if (!string.IsNullOrEmpty(finaleBannerText)) ShowBanner(finaleBannerText, finaleBannerDuration);
+        if (!string.IsNullOrEmpty(finaleBannerText))
+        {
+            ShowBanner(finaleBannerText, finaleBannerDuration);
+        }
 
         PlaySoundEffect(finaleSound);
         Haptics.PulseBoth(Haptics.Strength.Strong);
@@ -692,15 +740,27 @@ public class GameManager : MonoBehaviour
     // seconds, then back up. EndDuck brings it back up sooner.
     public void DuckMusic(float level, float hold)
     {
-        if (musicSource == null) return;
-        if (duckRoutine != null) StopCoroutine(duckRoutine);
-        else unduckedVolume = musicSource.volume;
+        if (musicSource == null)
+        {
+            return;
+        }
+        if (duckRoutine != null)
+        {
+            StopCoroutine(duckRoutine);
+        }
+        else
+        {
+            unduckedVolume = musicSource.volume;
+        }
         duckRoutine = StartCoroutine(DuckRoutine(level, hold));
     }
 
     public void EndDuck()
     {
-        if (duckRoutine == null) return;
+        if (duckRoutine == null)
+        {
+            return;
+        }
         StopCoroutine(duckRoutine);
         duckRoutine = StartCoroutine(DuckRoutine(1f, 0f));
     }
@@ -712,7 +772,10 @@ public class GameManager : MonoBehaviour
         shiftClock = true;
         shiftStartHour = startHour;
         shiftEndHour = endHour;
-        if (timerText == null) return;
+        if (timerText == null)
+        {
+            return;
+        }
         // The clock's other labels (its canvas can still be switched off here, so it's found by the parent, not .canvas)
         Transform face;
         if (timerText.transform.parent != null)
@@ -725,7 +788,10 @@ public class GameManager : MonoBehaviour
         }
         foreach (TMP_Text other in face.GetComponentsInChildren<TMP_Text>(true))
         {
-            if (other != timerText) other.gameObject.SetActive(false);
+            if (other != timerText)
+            {
+                other.gameObject.SetActive(false);
+            }
         }
         RectTransform box = timerText.rectTransform;
         box.anchorMin = Vector2.zero;
@@ -743,7 +809,10 @@ public class GameManager : MonoBehaviour
 
     string ClockText(float secondsLeft, float roundLength)
     {
-        if (!shiftClock) return Mathf.CeilToInt(secondsLeft).ToString();
+        if (!shiftClock)
+        {
+            return Mathf.CeilToInt(secondsLeft).ToString();
+        }
         float through;
         if (roundLength > 0)
         {
@@ -779,7 +848,10 @@ public class GameManager : MonoBehaviour
     // Sets how long a single-round game lasts, in seconds (before it starts: e.g. Cat Cafe Waves, to fit its waves)
     public void SetRoundLength(float seconds)
     {
-        if (roundMaxTimes != null && roundMaxTimes.Length == 1 && seconds > 0) roundMaxTimes[0] = seconds;
+        if (roundMaxTimes != null && roundMaxTimes.Length == 1 && seconds > 0)
+        {
+            roundMaxTimes[0] = seconds;
+        }
     }
 
     Coroutine duckRoutine;
@@ -811,7 +883,10 @@ public class GameManager : MonoBehaviour
 
     IEnumerator RampMusicPitch(float targetPitch, float duration)
     {
-        if (musicSource == null) yield break;
+        if (musicSource == null)
+        {
+            yield break;
+        }
 
         float startPitch = musicSource.pitch;
         float timer = 0;
@@ -842,7 +917,10 @@ public class GameManager : MonoBehaviour
 
     void ShowCombo(bool levelledUp)
     {
-        if (comboText == null) return;
+        if (comboText == null)
+        {
+            return;
+        }
 
         if (comboLevel <= 1)
         {
@@ -855,7 +933,10 @@ public class GameManager : MonoBehaviour
 
         if (levelledUp)
         {
-            if (comboPunchRoutine != null) StopCoroutine(comboPunchRoutine);
+            if (comboPunchRoutine != null)
+            {
+                StopCoroutine(comboPunchRoutine);
+            }
             comboPunchRoutine = StartCoroutine(PunchScale(comboText.transform, 1.6f, 0.35f));
         }
     }
@@ -904,12 +985,18 @@ public class GameManager : MonoBehaviour
         }
 
         // No best score: Liminal keeps nothing between sessions (and doesn't allow saving), so there's nothing to beat
-        if (bestScoreText != null) bestScoreText.gameObject.SetActive(false);
+        if (bestScoreText != null)
+        {
+            bestScoreText.gameObject.SetActive(false);
+        }
     }
 
     string GetRankTitle(int finalScore)
     {
-        if (ranks == null || ranks.Length == 0) return "";
+        if (ranks == null || ranks.Length == 0)
+        {
+            return "";
+        }
 
         string title = ranks[0].title;
         foreach (Rank rank in ranks)
@@ -986,7 +1073,10 @@ public class GameManager : MonoBehaviour
 
     void UpdateScore(int change, Vector3 position, bool playSoundFX = true)
     {
-        if (state != GameState.DuringGame) return;
+        if (state != GameState.DuringGame)
+        {
+            return;
+        }
 
         if (change > 0)
         {
@@ -1025,7 +1115,10 @@ public class GameManager : MonoBehaviour
 
     public void PlayCatHitSound(AudioSource source, float pitchMultiplier)
     {
-        if (catHitSounds == null || catHitSounds.Length == 0 || source == null) return;
+        if (catHitSounds == null || catHitSounds.Length == 0 || source == null)
+        {
+            return;
+        }
         catHitSounds[Random.Range(0, catHitSounds.Length)].PlayOneShot(source, pitchMultiplier * Random.Range(0.95f, 1.05f));
     }
 
@@ -1139,13 +1232,19 @@ public class GameManager : MonoBehaviour
 
     public DefendPoint GetRandomDefendPoint()
     {
-        if (defendPoints == null || defendPoints.Count == 0) return null;
+        if (defendPoints == null || defendPoints.Count == 0)
+        {
+            return null;
+        }
         return defendPoints[Random.Range(0, defendPoints.Count)];
     }
 
     public DefendPoint GetClosestDefendPoint(Vector3 position)
     {
-        if (defendPoints == null || defendPoints.Count == 0) return null;
+        if (defendPoints == null || defendPoints.Count == 0)
+        {
+            return null;
+        }
 
         DefendPoint output = null;
         float closestDistance = Mathf.Infinity;

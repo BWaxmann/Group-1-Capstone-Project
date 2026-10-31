@@ -50,7 +50,10 @@ public class CatFootsteps : MonoBehaviour
     // This function should be called by an animation event on the cat's walking animation clip
     public void AE_PlayFootstepAudio()
     {
-        if (footstepSource == null || footstepClips == null || footstepClips.Length == 0) return;
+        if (footstepSource == null || footstepClips == null || footstepClips.Length == 0)
+        {
+            return;
+        }
 
         PlayFootstepSound();
     }

@@ -48,7 +48,10 @@ public class KittenRun : MonoBehaviour
     {
         foreach (Animator legs in GetComponentsInChildren<Animator>())
         {
-            if (legs.runtimeAnimatorController == null) continue;
+            if (legs.runtimeAnimatorController == null)
+            {
+                continue;
+            }
             foreach (AnimatorControllerParameter parameter in legs.parameters)
             {
                 if (parameter.nameHash == RunSpeed)
@@ -94,9 +97,15 @@ public class KittenRun : MonoBehaviour
     {
         // Take it over before it wakes up: no navmesh agent (this moves it), no roaming
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
-        if (agent != null) agent.enabled = false;
+        if (agent != null)
+        {
+            agent.enabled = false;
+        }
         KittenRun run = cat.GetComponent<KittenRun>();
-        if (run == null) run = cat.gameObject.AddComponent<KittenRun>();
+        if (run == null)
+        {
+            run = cat.gameObject.AddComponent<KittenRun>();
+        }
         run.cat = cat;
         run.path = path;
         run.offset = offset;
@@ -108,7 +117,10 @@ public class KittenRun : MonoBehaviour
         run.holdAtEnd = false;
         run.homeParent = cat.transform.parent;
         run.pathLength = 0;
-        for (int i = 1; i < path.Count; i++) run.pathLength += Vector3.Distance(path[i - 1], path[i]);
+        for (int i = 1; i < path.Count; i++)
+        {
+            run.pathLength += Vector3.Distance(path[i - 1], path[i]);
+        }
 
         run.normalScale = cat.transform.localScale;
         cat.transform.localScale = run.normalScale * scale;
@@ -125,11 +137,20 @@ public class KittenRun : MonoBehaviour
         // doesn't use), so that's switched off and the speed set here: faster when it runs faster, and faster
         // again for being small (shorter strides)
         run.runAnimation = cat.GetComponent<CatRunAnimation>();
-        if (run.runAnimation != null) run.runAnimation.enabled = false;
+        if (run.runAnimation != null)
+        {
+            run.runAnimation.enabled = false;
+        }
         run.SetLegs(speed / Mathf.Max(0.1f, scale));
         run.feedable = hitRadius > 0;
-        if (run.feedable) run.SetHitbox(hitRadius);
-        else if (run.hitbox != null) run.hitbox.enabled = false;
+        if (run.feedable)
+        {
+            run.SetHitbox(hitRadius);
+        }
+        else if (run.hitbox != null)
+        {
+            run.hitbox.enabled = false;
+        }
         run.SetDust(true);
         // Most squeak as they burst in; the rest a little later
         run.nextMeow = Time.time + (Random.value < 0.7f ? Random.Range(0f, 0.6f) : Random.Range(1f, 2f));
@@ -138,14 +159,20 @@ public class KittenRun : MonoBehaviour
 
     public void TryMeow(float pitchMin, float pitchMax)
     {
-        if (Time.time - lastMeow < MeowGap) return;
+        if (Time.time - lastMeow < MeowGap)
+        {
+            return;
+        }
         lastMeow = Time.time;
         cat.Meow(Random.Range(pitchMin, pitchMax));
     }
 
     void OnEnable()
     {
-        if (!running.Contains(this)) running.Add(this);
+        if (!running.Contains(this))
+        {
+            running.Add(this);
+        }
     }
 
     void OnDisable()
@@ -156,7 +183,10 @@ public class KittenRun : MonoBehaviour
     // Any treat feeds a kitten (no colours in a stampede)
     bool Eat(Treat treat)
     {
-        if (fed || !feedable) return false;
+        if (fed || !feedable)
+        {
+            return false;
+        }
         fed = true;
         TryMeow(1.75f, 2.05f);   // a happy squeak
         onFed?.Invoke(this);
@@ -166,7 +196,10 @@ public class KittenRun : MonoBehaviour
 
     void Update()
     {
-        if (fed || held) return;
+        if (fed || held)
+        {
+            return;
+        }
         if (Time.time >= nextMeow)
         {
             TryMeow(1.45f, 1.85f);
@@ -190,8 +223,14 @@ public class KittenRun : MonoBehaviour
         side = Vector3.Lerp(side, Vector3.Cross(Vector3.up, heading).normalized * offset, Mathf.Clamp01(Time.deltaTime * 8f));
         Vector3 position = along + side;
         // Keep to the floor (the offset could push it into furniture: then it runs on the path itself)
-        if (NavMesh.SamplePosition(position, out NavMeshHit floor, 0.3f, NavMesh.AllAreas)) position = floor.position;
-        else position = along;
+        if (NavMesh.SamplePosition(position, out NavMeshHit floor, 0.3f, NavMesh.AllAreas))
+        {
+            position = floor.position;
+        }
+        else
+        {
+            position = along;
+        }
         position += Vector3.up * (Mathf.Abs(Mathf.Sin(travelled * 5f)) * 0.06f);   // a little gallop
         transform.position = position;
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(heading), Time.deltaTime * 12f);
@@ -207,7 +246,10 @@ public class KittenRun : MonoBehaviour
     // Off it goes in a puff of dust, back to the pool
     public void Dismiss()
     {
-        if (!enabled) return;
+        if (!enabled)
+        {
+            return;
+        }
         cat.DustPuff(DustSize);
         Finish();
     }
@@ -215,7 +257,10 @@ public class KittenRun : MonoBehaviour
     IEnumerator HappyPop()
     {
         // Off whatever it was clinging to first (a launcher kitten), so it pops where it is
-        if (transform.parent != homeParent) transform.SetParent(homeParent, true);
+        if (transform.parent != homeParent)
+        {
+            transform.SetParent(homeParent, true);
+        }
         Vector3 start = transform.position;
         Vector3 small = transform.localScale;
         float t = 0;
@@ -235,12 +280,21 @@ public class KittenRun : MonoBehaviour
     {
         StopAllCoroutines();
         SetDust(false);
-        if (hitbox != null) hitbox.enabled = false;
+        if (hitbox != null)
+        {
+            hitbox.enabled = false;
+        }
         SetLegs(0f);
-        if (runAnimation != null) runAnimation.enabled = true;   // back to following the navigation agent
+        if (runAnimation != null)
+        {
+            runAnimation.enabled = true;   // back to following the navigation agent
+        }
         cat.wantsTreats = null;
         cat.treatGate = null;
-        if (transform.parent != homeParent) transform.SetParent(homeParent, true);
+        if (transform.parent != homeParent)
+        {
+            transform.SetParent(homeParent, true);
+        }
         transform.localScale = normalScale;
         enabled = false;
         cat.gameObject.SetActive(false);
@@ -251,7 +305,10 @@ public class KittenRun : MonoBehaviour
     {
         foreach (KittenRun run in running.ToArray())
         {
-            if (!run.fed) run.Dismiss();
+            if (!run.fed)
+            {
+                run.Dismiss();
+            }
         }
     }
 
@@ -265,7 +322,10 @@ public class KittenRun : MonoBehaviour
             Vector3 to = path[i];
             float length = Vector3.Distance(from, to);
             Vector3 flat = Vector3.ProjectOnPlane(to - from, Vector3.up);
-            if (flat.sqrMagnitude > 0.0001f) heading = flat.normalized;
+            if (flat.sqrMagnitude > 0.0001f)
+            {
+                heading = flat.normalized;
+            }
             if (distance <= length || i == path.Count - 1)
             {
                 return Vector3.Lerp(from, to, length > 0.0001f ? Mathf.Clamp01(distance / length) : 1f);
@@ -303,7 +363,10 @@ public class KittenRun : MonoBehaviour
         }
         else if (on && dust == null)
         {
-            if (dustMaterial == null) dustMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
+            if (dustMaterial == null)
+            {
+                dustMaterial = SpaceCafeVisuals.UnlitMaterial(Color.white);
+            }
             dust = gameObject.AddComponent<TrailRenderer>();
             dust.sharedMaterial = dustMaterial;
             dust.time = 0.35f;
@@ -316,9 +379,15 @@ public class KittenRun : MonoBehaviour
                          new[] { new GradientAlphaKey(0.55f, 0), new GradientAlphaKey(0, 1) });
             dust.colorGradient = fade;
         }
-        if (dust == null) return;
+        if (dust == null)
+        {
+            return;
+        }
         // The trail is sized in the world, whatever size the cat is
-        if (!dustFromTemplate) dust.widthMultiplier = 0.19f;
+        if (!dustFromTemplate)
+        {
+            dust.widthMultiplier = 0.19f;
+        }
         dust.Clear();
         dust.emitting = on;
     }

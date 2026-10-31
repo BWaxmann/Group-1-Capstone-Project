@@ -57,7 +57,10 @@ public class CatWaddle : MonoBehaviour
 
     void OnDisable()
     {
-        if (body == null) return;
+        if (body == null)
+        {
+            return;
+        }
         body.localPosition = restLocalPosition;
         body.localRotation = restLocalRotation;
     }
@@ -65,13 +68,19 @@ public class CatWaddle : MonoBehaviour
     void LateUpdate()
     {
         float dt = Time.deltaTime;
-        if (dt <= 0 || body == null) return;
+        if (dt <= 0 || body == null)
+        {
+            return;
+        }
 
         Vector3 moved = transform.position - lastPosition;
         moved.y = 0;
         lastPosition = transform.position;
         float speed = moved.magnitude / dt;
-        if (speed > 15f) speed = 0;   // teleported (into a hole, out of the pool), not walking
+        if (speed > 15f)
+        {
+            speed = 0;   // teleported (into a hole, out of the pool), not walking
+        }
 
         amount = Mathf.MoveTowards(amount, Mathf.Clamp01(speed / fullSpeed), dt * 4f);
         phase += speed * waddlesPerMetre * dt;

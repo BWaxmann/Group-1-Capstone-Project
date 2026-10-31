@@ -19,7 +19,10 @@ public class OpenVRHeightFix : MonoBehaviour
     static void AttachToAvatarHead()
     {
         VRAvatarHead head = FindObjectOfType<VRAvatarHead>();
-        if (head == null) return;
+        if (head == null)
+        {
+            return;
+        }
 
         // Runs before any Start, so this is still the head position set up in the prefab
         OpenVRHeightFix fix = head.gameObject.AddComponent<OpenVRHeightFix>();

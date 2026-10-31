@@ -24,7 +24,10 @@ public class SoundBite : MonoBehaviour
     public static SoundBite Play(string name, AudioClip clip, float volume, float musicLevel, AudioClip introClip,
                                  bool loop = false, float fadeIn = 0.15f, float fadeOut = 1f)
     {
-        if (clip == null || volume <= 0) return null;
+        if (clip == null || volume <= 0)
+        {
+            return null;
+        }
         SoundBite bite = new GameObject(name).AddComponent<SoundBite>();
         bite.volume = volume;
         bite.musicLevel = musicLevel;
@@ -58,7 +61,10 @@ public class SoundBite : MonoBehaviour
     // Every bite eases out (the round's over)
     public static void StopAll(float fadeOut = 1f)
     {
-        foreach (SoundBite bite in playing.ToArray()) bite.Stop(fadeOut);
+        foreach (SoundBite bite in playing.ToArray())
+        {
+            bite.Stop(fadeOut);
+        }
     }
 
     AudioSource Source(AudioClip clip, bool loop)
@@ -81,7 +87,10 @@ public class SoundBite : MonoBehaviour
             SetVolume(volume * Mathf.SmoothStep(0f, 1f, t));
             yield return null;
         }
-        if (length < 0) yield break;   // loops until stopped
+        if (length < 0)
+        {
+            yield break;   // loops until stopped
+        }
         yield return new WaitForSeconds(Mathf.Max(0, length - fadeIn - fadeOut));
         Stop(fadeOut);
     }
@@ -89,7 +98,10 @@ public class SoundBite : MonoBehaviour
     // Eases out over `seconds` (the music comes back up as it goes), then it's gone
     public void Stop(float seconds = 1f)
     {
-        if (stopping) return;
+        if (stopping)
+        {
+            return;
+        }
         stopping = true;
         playing.Remove(this);
         Duck();
@@ -120,13 +132,22 @@ public class SoundBite : MonoBehaviour
 
     void SetVolume(float level)
     {
-        if (main != null) main.volume = level;
-        if (intro != null) intro.volume = level;
+        if (main != null)
+        {
+            main.volume = level;
+        }
+        if (intro != null)
+        {
+            intro.volume = level;
+        }
     }
 
     void OnDestroy()
     {
-        if (stopping) return;
+        if (stopping)
+        {
+            return;
+        }
         playing.Remove(this);
         Duck();
     }
@@ -135,10 +156,22 @@ public class SoundBite : MonoBehaviour
     static void Duck()
     {
         GameManager game = GameManager.instance;
-        if (game == null) return;
+        if (game == null)
+        {
+            return;
+        }
         float level = 1f;
-        foreach (SoundBite bite in playing) level = Mathf.Min(level, bite.musicLevel);
-        if (playing.Count > 0 && level < 1f) game.DuckMusic(level, float.MaxValue);
-        else game.EndDuck();
+        foreach (SoundBite bite in playing)
+        {
+            level = Mathf.Min(level, bite.musicLevel);
+        }
+        if (playing.Count > 0 && level < 1f)
+        {
+            game.DuckMusic(level, float.MaxValue);
+        }
+        else
+        {
+            game.EndDuck();
+        }
     }
 }

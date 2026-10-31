@@ -73,7 +73,10 @@ public static class CatastropheCafeTools
         GameObject made = new GameObject("Pop-Up Word");
         TextMeshPro text = made.AddComponent<TextMeshPro>();
         TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(CafeFontPath);
-        if (font != null) text.font = font;
+        if (font != null)
+        {
+            text.font = font;
+        }
         text.text = "Pop-Up!";
         text.fontSize = 3;
         text.fontStyle = FontStyles.Bold;
@@ -243,7 +246,10 @@ public static class CatastropheCafeTools
     static ESDKType GetEmulatorType(string propertyName)
     {
         VREmulator emulator = GetEmulator();
-        if (emulator == null) return ESDKType.Emulator;
+        if (emulator == null)
+        {
+            return ESDKType.Emulator;
+        }
         if (propertyName == "BuildType")
         {
             return emulator.BuildType;
@@ -254,7 +260,10 @@ public static class CatastropheCafeTools
     static void SetEmulatorType(string propertyName, ESDKType type)
     {
         VREmulator emulator = GetEmulator();
-        if (emulator == null) return;
+        if (emulator == null)
+        {
+            return;
+        }
 
         SerializedObject serialized = new SerializedObject(emulator);
         serialized.FindProperty(propertyName).intValue = (int)type;

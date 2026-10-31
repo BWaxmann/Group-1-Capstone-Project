@@ -20,17 +20,26 @@ public class FlutterPiece : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             GameObject model = models[Random.Range(0, models.Length)];
-            if (model == null) continue;
+            if (model == null)
+            {
+                continue;
+            }
 
             GameObject piece = Instantiate(model, from, Random.rotation);
-            foreach (Collider col in piece.GetComponentsInChildren<Collider>()) col.enabled = false;
+            foreach (Collider col in piece.GetComponentsInChildren<Collider>())
+            {
+                col.enabled = false;
+            }
             Bounds bounds = new Bounds(from, Vector3.zero);
             bool any = false;
             foreach (Renderer rend in piece.GetComponentsInChildren<Renderer>())
             {
                 rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 if (!any) { bounds = rend.bounds; any = true; }
-                else bounds.Encapsulate(rend.bounds);
+                else
+                {
+                    bounds.Encapsulate(rend.bounds);
+                }
             }
             float largest;
             if (any)
@@ -83,6 +92,9 @@ public class FlutterPiece : MonoBehaviour
         // Shrinks away at the end
         float fade = Mathf.Clamp01((lifetime - age) / 0.5f);
         transform.localScale = startScale * fade;
-        if (age >= lifetime) Destroy(gameObject);
+        if (age >= lifetime)
+        {
+            Destroy(gameObject);
+        }
     }
 }

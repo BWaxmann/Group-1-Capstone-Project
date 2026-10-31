@@ -64,10 +64,16 @@ public class SpawnManager : MonoBehaviour
     public void StartSpawningWaves(int round)
     {
         // Switched off (e.g. by a prototype scene that spawns its own cats)
-        if (!enabled || !gameObject.activeInHierarchy) return;
+        if (!enabled || !gameObject.activeInHierarchy)
+        {
+            return;
+        }
         SpawnData[] waves = WavesForRound(round);
         // No waves set up for this round
-        if (waves == null) return;
+        if (waves == null)
+        {
+            return;
+        }
 
         wavesStarted = true;
         foreach (SpawnData data in waves)
@@ -101,7 +107,10 @@ public class SpawnManager : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(data.delayBetweenSpawns);
         for (int i = 0; i < data.numberOfTimesToSpawn; i++)
         {
-            while (holdSpawns) yield return null;
+            while (holdSpawns)
+            {
+                yield return null;
+            }
             // Older waves were saved before this setting existed (it loads as 0): they send one at a time
             for (int j = 0; j < Mathf.Max(1, data.numberToSpawnAtATime); j++)
             {
@@ -134,7 +143,10 @@ public class SpawnManager : MonoBehaviour
         WaitForSeconds wait = new WaitForSeconds(finaleDelayBetweenSpawns);
         for (int i = 0; i < finaleSpawnCount; i++)
         {
-            while (holdSpawns) yield return null;
+            while (holdSpawns)
+            {
+                yield return null;
+            }
             SpawnCat(catSpawner.GetRandomObjectFromPool<CatMovement>());
             yield return wait;
         }

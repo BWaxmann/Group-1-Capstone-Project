@@ -38,7 +38,10 @@ public class Haptics : MonoBehaviour
     public static void Pulse(bool rightHand, float amplitude, float duration)
     {
         IVRDevice device = VRDevice.Device;
-        if (device == null || amplitude <= 0 || duration <= 0) return;
+        if (device == null || amplitude <= 0 || duration <= 0)
+        {
+            return;
+        }
 
         if (instance == null)
         {
@@ -83,7 +86,10 @@ public class Haptics : MonoBehaviour
         if (steamVibration == null)
         {
             steamVibration = SteamVR_Input.GetAction<SteamVR_Action_Vibration>("default", "Haptic");
-            if (steamVibration == null) return;
+            if (steamVibration == null)
+            {
+                return;
+            }
         }
 
         SteamVR_Input_Sources source;
@@ -114,12 +120,18 @@ public class Haptics : MonoBehaviour
         // Quest keeps vibrating until told to stop, so stop it after the duration
         if (rightHand)
         {
-            if (stopRight != null) StopCoroutine(stopRight);
+            if (stopRight != null)
+            {
+                StopCoroutine(stopRight);
+            }
             stopRight = StartCoroutine(StopOculusAfter(controller, duration));
         }
         else
         {
-            if (stopLeft != null) StopCoroutine(stopLeft);
+            if (stopLeft != null)
+            {
+                StopCoroutine(stopLeft);
+            }
             stopLeft = StartCoroutine(StopOculusAfter(controller, duration));
         }
     }

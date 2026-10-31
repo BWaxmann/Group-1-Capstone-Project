@@ -149,8 +149,14 @@ public class Announcer : MonoBehaviour
 
     void OnDestroy()
     {
-        if (instance == this) instance = null;
-        if (subtitleCanvas != null) Destroy(subtitleCanvas.gameObject);
+        if (instance == this)
+        {
+            instance = null;
+        }
+        if (subtitleCanvas != null)
+        {
+            Destroy(subtitleCanvas.gameObject);
+        }
     }
 
     void LoadLines()
@@ -164,9 +170,15 @@ public class Announcer : MonoBehaviour
         foreach (string raw in file.text.Split('\n'))
         {
             string row = raw.Trim();
-            if (row.Length == 0 || row.StartsWith("#")) continue;
+            if (row.Length == 0 || row.StartsWith("#"))
+            {
+                continue;
+            }
             string[] parts = row.Split('|');
-            if (parts.Length < 2) continue;
+            if (parts.Length < 2)
+            {
+                continue;
+            }
             string id = parts[0].Trim();
             string said = parts[1].Trim();
             string shown;
@@ -192,7 +204,10 @@ public class Announcer : MonoBehaviour
         if (!string.IsNullOrEmpty(id))
         {
             line = PickTake(id);
-            if (line == null) Debug.LogWarning($"[Announcer] No line called \"{id}\" in lines.txt.");
+            if (line == null)
+            {
+                Debug.LogWarning($"[Announcer] No line called \"{id}\" in lines.txt.");
+            }
         }
         AudioClip stingClip = Sting(sting);
         if (line == null && stingClip == null)
@@ -201,11 +216,17 @@ public class Announcer : MonoBehaviour
             return;
         }
         Queued queued = new Queued { line = line, sting = stingClip, queuedAt = Time.time, urgent = urgent, hold = hold, id = id, done = done };
-        if (!urgent) queue.Add(queued);
+        if (!urgent)
+        {
+            queue.Add(queued);
+        }
         else
         {
             int at = 0;
-            while (at < queue.Count && queue[at].urgent) at++;
+            while (at < queue.Count && queue[at].urgent)
+            {
+                at++;
+            }
             queue.Insert(at, queued);
         }
     }
@@ -215,15 +236,30 @@ public class Announcer : MonoBehaviour
     Line PickTake(string id)
     {
         List<string> takes = new List<string>();
-        if (lines.ContainsKey(id)) takes.Add(id);
+        if (lines.ContainsKey(id))
+        {
+            takes.Add(id);
+        }
         for (int n = 2; n <= 9; n++)
         {
-            if (lines.ContainsKey(id + "_" + n)) takes.Add(id + "_" + n);
+            if (lines.ContainsKey(id + "_" + n))
+            {
+                takes.Add(id + "_" + n);
+            }
         }
-        if (takes.Count == 0) return null;
+        if (takes.Count == 0)
+        {
+            return null;
+        }
         // Takes with a recording win over ones that would only show a subtitle
-        if (takes.Exists(take => lines[take].clip != null)) takes.RemoveAll(take => lines[take].clip == null);
-        if (takes.Count > 1 && lastTake.TryGetValue(id, out string last)) takes.Remove(last);
+        if (takes.Exists(take => lines[take].clip != null))
+        {
+            takes.RemoveAll(take => lines[take].clip == null);
+        }
+        if (takes.Count > 1 && lastTake.TryGetValue(id, out string last))
+        {
+            takes.Remove(last);
+        }
         string chosen = takes[Random.Range(0, takes.Count)];
         lastTake[id] = chosen;
         return lines[chosen];
@@ -231,7 +267,10 @@ public class Announcer : MonoBehaviour
 
     AudioClip Sting(string name)
     {
-        if (string.IsNullOrEmpty(name)) return null;
+        if (string.IsNullOrEmpty(name))
+        {
+            return null;
+        }
         if (!stings.TryGetValue(name, out AudioClip clip))
         {
             clip = Resources.Load<AudioClip>("CafeSounds/" + name);
@@ -244,7 +283,10 @@ public class Announcer : MonoBehaviour
     {
         while (true)
         {
-            while (queue.Count == 0) yield return null;
+            while (queue.Count == 0)
+            {
+                yield return null;
+            }
             Queued next = queue[0];
             queue.RemoveAt(0);
             if (Time.time - next.queuedAt > maxWait)
@@ -283,7 +325,10 @@ public class Announcer : MonoBehaviour
             }
             yield return new WaitForSeconds(length + 0.4f);
             isSpeaking = false;
-            if (queue.Count == 0) subtitleShowing = false;
+            if (queue.Count == 0)
+            {
+                subtitleShowing = false;
+            }
         }
     }
 
@@ -363,7 +408,10 @@ public class Announcer : MonoBehaviour
         {
             name = $"<color=#{ColorUtility.ToHtmlStringRGB(speakerColour)}>{speakerName}:</color> ";
         }
-        if (!subtitleShowing && subtitleGroup.alpha <= 0.01f) subtitlePlaced = false;   // appear where the player is looking
+        if (!subtitleShowing && subtitleGroup.alpha <= 0.01f)
+        {
+            subtitlePlaced = false;   // appear where the player is looking
+        }
         subtitleShowing = true;
         subtitleCanvas.gameObject.SetActive(true);
 
@@ -377,17 +425,26 @@ public class Announcer : MonoBehaviour
 
     void LateUpdate()
     {
-        if (subtitleCanvas == null) return;
+        if (subtitleCanvas == null)
+        {
+            return;
+        }
 
         subtitleGroup.alpha = Mathf.MoveTowards(subtitleGroup.alpha, subtitleShowing ? 1f : 0f, Time.deltaTime / 0.2f);
         if (!subtitleShowing && subtitleGroup.alpha <= 0f)
         {
-            if (subtitleCanvas.gameObject.activeSelf) subtitleCanvas.gameObject.SetActive(false);
+            if (subtitleCanvas.gameObject.activeSelf)
+            {
+                subtitleCanvas.gameObject.SetActive(false);
+            }
             return;
         }
 
         Transform head = Head();
-        if (head == null) return;
+        if (head == null)
+        {
+            return;
+        }
 
         // Follows the head's turn lazily: only once it has turned away a little, then it catches up
         float headYaw = head.eulerAngles.y;
@@ -397,11 +454,17 @@ public class Announcer : MonoBehaviour
             following = false;
         }
         float behind = Mathf.Abs(Mathf.DeltaAngle(yaw, headYaw));
-        if (behind > subtitleFollowAngle) following = true;
+        if (behind > subtitleFollowAngle)
+        {
+            following = true;
+        }
         if (following)
         {
             yaw = Mathf.LerpAngle(yaw, headYaw, Time.deltaTime * subtitleFollowSpeed);
-            if (behind < 2f) following = false;
+            if (behind < 2f)
+            {
+                following = false;
+            }
         }
 
         Vector3 forward = Quaternion.Euler(0, yaw, 0) * Vector3.forward;
@@ -423,8 +486,14 @@ public class Announcer : MonoBehaviour
     // The player's eye once the rig is about (Liminal switches it on a little after the scene starts)
     Transform Head()
     {
-        if (player == null) player = FindObjectOfType<PlayerInput>();
-        if (player != null && player.eyePoint != null && player.eyePoint.gameObject.activeInHierarchy) return player.eyePoint;
+        if (player == null)
+        {
+            player = FindObjectOfType<PlayerInput>();
+        }
+        if (player != null && player.eyePoint != null && player.eyePoint.gameObject.activeInHierarchy)
+        {
+            return player.eyePoint;
+        }
         if (Camera.main != null)
         {
             return Camera.main.transform;

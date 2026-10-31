@@ -102,16 +102,25 @@ public class OrderBubble : MonoBehaviour
             patienceRing = SpaceCafeVisuals.Ring(bubble, "Patience", ringRadius, 0.012f, Color.green);
             patienceRing.transform.localPosition = new Vector3(0, 0, -0.02f);
         }
-        if (chipTemplate != null) chipTemplate.SetActive(false);   // only its copies show
+        if (chipTemplate != null)
+        {
+            chipTemplate.SetActive(false);   // only its copies show
+        }
     }
 
     // Shows a whole order: the first treat big, the rest queued after it
     public void Show(List<Item> order, Vector3 localPosition)
     {
         transform.localPosition = localPosition;
-        if (faceRoutine != null) StopCoroutine(faceRoutine);
+        if (faceRoutine != null)
+        {
+            StopCoroutine(faceRoutine);
+        }
         faceRoutine = null;
-        if (faceRenderer != null) faceRenderer.gameObject.SetActive(false);
+        if (faceRenderer != null)
+        {
+            faceRenderer.gameObject.SetActive(false);
+        }
 
         items.Clear();
         items.AddRange(order);
@@ -125,7 +134,10 @@ public class OrderBubble : MonoBehaviour
     // The current treat was served: the next one in the queue moves into the big bubble
     public void Advance()
     {
-        if (items.Count > 0) items.RemoveAt(0);
+        if (items.Count > 0)
+        {
+            items.RemoveAt(0);
+        }
         Rebuild();
         PopBubble();
     }
@@ -137,16 +149,31 @@ public class OrderBubble : MonoBehaviour
 
     void Rebuild()
     {
-        if (current != null) Destroy(current.gameObject);
-        if (queue != null) Destroy(queue.gameObject);
+        if (current != null)
+        {
+            Destroy(current.gameObject);
+        }
+        if (queue != null)
+        {
+            Destroy(queue.gameObject);
+        }
         spinners.Clear();
-        if (items.Count == 0) return;
+        if (items.Count == 0)
+        {
+            return;
+        }
 
         current = MakeFoodIcon(iconAnchor != null ? iconAnchor : bubble, items[0], 1f, "Current");
         AddSpinner(current);
-        if (iconAnchor == null) current.localPosition = new Vector3(0, 0, -0.04f);
+        if (iconAnchor == null)
+        {
+            current.localPosition = new Vector3(0, 0, -0.04f);
+        }
         // If a face is flashing, the treat reappears when it finishes
-        if (faceRenderer != null && faceRenderer.gameObject.activeSelf) current.gameObject.SetActive(false);
+        if (faceRenderer != null && faceRenderer.gameObject.activeSelf)
+        {
+            current.gameObject.SetActive(false);
+        }
 
         // The rest of the order, smaller and dimmer, lined up to the right
         queue = new GameObject("Queue").transform;
@@ -241,8 +268,14 @@ public class OrderBubble : MonoBehaviour
     // "That's not what I ordered!"
     public void Shake()
     {
-        if (!gameObject.activeInHierarchy) return;
-        if (shakeRoutine != null) StopCoroutine(shakeRoutine);
+        if (!gameObject.activeInHierarchy)
+        {
+            return;
+        }
+        if (shakeRoutine != null)
+        {
+            StopCoroutine(shakeRoutine);
+        }
         shakeRoutine = StartCoroutine(ShakeRoutine());
     }
 
@@ -250,8 +283,14 @@ public class OrderBubble : MonoBehaviour
     // A duration of 0 keeps the face showing.
     public void FlashFace(Sprite face, float duration)
     {
-        if (face == null || !gameObject.activeInHierarchy) return;
-        if (faceRoutine != null) StopCoroutine(faceRoutine);
+        if (face == null || !gameObject.activeInHierarchy)
+        {
+            return;
+        }
+        if (faceRoutine != null)
+        {
+            StopCoroutine(faceRoutine);
+        }
         faceRoutine = StartCoroutine(FaceRoutine(face, duration));
     }
 
@@ -271,21 +310,36 @@ public class OrderBubble : MonoBehaviour
         float largest = Mathf.Max(face.bounds.size.x, face.bounds.size.y, 0.0001f);
         faceRenderer.transform.localScale = Vector3.one * (BubbleSize * 0.85f / largest);
         faceRenderer.gameObject.SetActive(true);
-        if (current != null) current.gameObject.SetActive(false);
+        if (current != null)
+        {
+            current.gameObject.SetActive(false);
+        }
         PopBubble();
 
-        if (duration <= 0) yield break;
+        if (duration <= 0)
+        {
+            yield break;
+        }
         yield return new WaitForSeconds(duration);
 
         faceRenderer.gameObject.SetActive(false);
-        if (current != null) current.gameObject.SetActive(true);
+        if (current != null)
+        {
+            current.gameObject.SetActive(true);
+        }
         faceRoutine = null;
     }
 
     void PopBubble()
     {
-        if (!gameObject.activeInHierarchy) return;
-        if (popRoutine != null) StopCoroutine(popRoutine);
+        if (!gameObject.activeInHierarchy)
+        {
+            return;
+        }
+        if (popRoutine != null)
+        {
+            StopCoroutine(popRoutine);
+        }
         popRoutine = StartCoroutine(PopIn());
     }
 
@@ -326,13 +380,19 @@ public class OrderBubble : MonoBehaviour
         float step = 90f * Time.deltaTime;
         for (int i = 0; i < spinners.Count; i++)
         {
-            if (spinners[i] != null) spinners[i].Rotate(0, step, 0, Space.Self);
+            if (spinners[i] != null)
+            {
+                spinners[i].Rotate(0, step, 0, Space.Self);
+            }
         }
     }
 
     void AddSpinner(Transform icon)
     {
         Transform spin = icon.Find("Spin");
-        if (spin != null) spinners.Add(spin);
+        if (spin != null)
+        {
+            spinners.Add(spin);
+        }
     }
 }

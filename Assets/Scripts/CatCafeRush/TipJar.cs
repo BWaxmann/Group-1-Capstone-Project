@@ -92,9 +92,15 @@ public class TipJar : MonoBehaviour
         root.transform.localScale = Vector3.one * scale;
         Vector3 away = position - viewer;
         away.y = 0;
-        if (away.sqrMagnitude > 0.0001f) root.transform.rotation = Quaternion.LookRotation(away);
+        if (away.sqrMagnitude > 0.0001f)
+        {
+            root.transform.rotation = Quaternion.LookRotation(away);
+        }
         TipJar jar = root.GetComponent<TipJar>();
-        if (jar == null) jar = root.AddComponent<TipJar>();
+        if (jar == null)
+        {
+            jar = root.AddComponent<TipJar>();
+        }
         jar.viewer = viewer;
         jar.size = scale;
         jar.Build();
@@ -105,9 +111,18 @@ public class TipJar : MonoBehaviour
     void Build()
     {
         fillFromPrefab = fill != null;
-        if (fillFromPrefab) fillScale = fill.localScale;
-        if (lid != null) lid.SetActive(false);
-        if (clinkSource == null) clinkSource = GetComponent<AudioSource>();
+        if (fillFromPrefab)
+        {
+            fillScale = fill.localScale;
+        }
+        if (lid != null)
+        {
+            lid.SetActive(false);
+        }
+        if (clinkSource == null)
+        {
+            clinkSource = GetComponent<AudioSource>();
+        }
         if (clinkSource == null)
         {
             clinkSource = gameObject.AddComponent<AudioSource>();
@@ -153,12 +168,18 @@ public class TipJar : MonoBehaviour
         text.color = new Color(1f, 0.95f, 0.8f);
         text.enableWordWrapping = false;
         text.rectTransform.sizeDelta = new Vector2(0.2f, 0.08f);
-        if (text.fontSharedMaterial != null) text.fontMaterial.renderQueue = 3003;   // drawn over the glass
+        if (text.fontSharedMaterial != null)
+        {
+            text.fontMaterial.renderQueue = 3003;   // drawn over the glass
+        }
     }
 
     void SetFill(float amount)
     {
-        if (fill == null) return;
+        if (fill == null)
+        {
+            return;
+        }
         if (fillFromPrefab)
         {
             fill.localScale = new Vector3(fillScale.x, fillScale.y * Mathf.Max(0.02f, Mathf.Clamp01(amount)), fillScale.z);
@@ -186,14 +207,20 @@ public class TipJar : MonoBehaviour
 
     void DestroyCoin(GameObject coin)
     {
-        if (coinPrefab == null) Destroy(coin.GetComponent<Renderer>().sharedMaterial);   // (a material made for it)
+        if (coinPrefab == null)
+        {
+            Destroy(coin.GetComponent<Renderer>().sharedMaterial);   // (a material made for it)
+        }
         Destroy(coin);
     }
 
     // Coins pop out at `from` and arc into the jar one after another
     public void AddCoins(Vector3 from, int count)
     {
-        if (count > 0 && isActiveAndEnabled) StartCoroutine(CoinShower(from, count));
+        if (count > 0 && isActiveAndEnabled)
+        {
+            StartCoroutine(CoinShower(from, count));
+        }
     }
 
     IEnumerator CoinShower(Vector3 from, int count)
@@ -228,9 +255,15 @@ public class TipJar : MonoBehaviour
         coins++;
         SetFill(coins / FullAfter);
         Clink(Random.Range(0.78f, 0.84f) + Mathf.Min(index, 4) * 0.03f, CoinVolume);
-        if (punch != null) StopCoroutine(punch);
+        if (punch != null)
+        {
+            StopCoroutine(punch);
+        }
         punch = StartCoroutine(Punch());
-        if (!sealedFull && coins >= FullAfter) JarFull();
+        if (!sealedFull && coins >= FullAfter)
+        {
+            JarFull();
+        }
     }
 
     // Full! It's banked (safe from raids from now on): a sealed full jar appears beside it on the counter, and this one
@@ -242,11 +275,20 @@ public class TipJar : MonoBehaviour
         SetFill(coins / FullAfter);
         FloatingWord.Show(fullText, top + Vector3.up * 0.25f, coinColour, 3f, 1.6f);
         AudioClip ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
-        if (ding != null) clinkSource.PlayOneShot(ding, 0.9f);
-        if (fullJars.Count >= MaxFullJars) return;
+        if (ding != null)
+        {
+            clinkSource.PlayOneShot(ding, 0.9f);
+        }
+        if (fullJars.Count >= MaxFullJars)
+        {
+            return;
+        }
 
         Vector3? spot = FreeSpot();
-        if (spot == null) return;
+        if (spot == null)
+        {
+            return;
+        }
         TipJar full = Create(spot.Value, viewer, size);
         full.sealedFull = true;
         full.coins = (int)FullAfter;
@@ -265,11 +307,23 @@ public class TipJar : MonoBehaviour
             foreach (float side in new[] { 1f, -1f })
             {
                 Vector3 spot = transform.position + transform.right * step * side * k;
-                if (fullJars.Exists(jar => jar != null && (jar.transform.position - spot).magnitude < step * 0.9f)) continue;
-                if (!Physics.Raycast(spot + Vector3.up * 0.3f, Vector3.down, out RaycastHit surface, 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
-                if (Mathf.Abs(surface.point.y - transform.position.y) > 0.04f) continue;
+                if (fullJars.Exists(jar => jar != null && (jar.transform.position - spot).magnitude < step * 0.9f))
+                {
+                    continue;
+                }
+                if (!Physics.Raycast(spot + Vector3.up * 0.3f, Vector3.down, out RaycastHit surface, 0.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                {
+                    continue;
+                }
+                if (Mathf.Abs(surface.point.y - transform.position.y) > 0.04f)
+                {
+                    continue;
+                }
                 if (Physics.CheckSphere(surface.point + Vector3.up * height * 0.55f * size, JarRadius * 1.2f * size,
-                                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
+                                        Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+                {
+                    continue;
+                }
                 return surface.point;
             }
         }
@@ -310,7 +364,10 @@ public class TipJar : MonoBehaviour
 
     void Clink(float pitch, float volume)
     {
-        if (clink == null || Time.time - lastClink < ClinkGap) return;
+        if (clink == null || Time.time - lastClink < ClinkGap)
+        {
+            return;
+        }
         lastClink = Time.time;
         clinkSource.pitch = pitch;
         clinkSource.PlayOneShot(clink, volume);
@@ -333,7 +390,10 @@ public class TipJar : MonoBehaviour
             away = transform.forward;
         }
         StartCoroutine(Rock(away));
-        for (int i = 0; i < lost; i++) StartCoroutine(SpillCoin(away, i));
+        for (int i = 0; i < lost; i++)
+        {
+            StartCoroutine(SpillCoin(away, i));
+        }
         return lost;
     }
 

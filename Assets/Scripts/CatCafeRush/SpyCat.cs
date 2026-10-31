@@ -116,10 +116,16 @@ public class SpyCat : MonoBehaviour
     public static SpyCat Begin(CatMovement cat, CafeVent vent, PlayerInput player, TipJar jar, Settings settings,
                                Action<SpyCat, Result> done)
     {
-        if (cat == null || vent == null || player == null) return null;
+        if (cat == null || vent == null || player == null)
+        {
+            return null;
+        }
 
         SpyCat spy = cat.GetComponent<SpyCat>();
-        if (spy == null) spy = cat.gameObject.AddComponent<SpyCat>();
+        if (spy == null)
+        {
+            spy = cat.gameObject.AddComponent<SpyCat>();
+        }
         spy.cat = cat;
         spy.vent = vent;
         spy.player = player;
@@ -133,7 +139,10 @@ public class SpyCat : MonoBehaviour
         // Switched on (tucked up inside the vent, out of sight) before anything runs: a pooled cat starts off switched off,
         // and nothing can run on a switched-off cat
         NavMeshAgent walker = cat.GetComponent<NavMeshAgent>();
-        if (walker != null) walker.enabled = false;
+        if (walker != null)
+        {
+            walker.enabled = false;
+        }
         cat.transform.position = vent.opening + Vector3.up * 0.6f;
         cat.gameObject.SetActive(true);
         spy.StartCoroutine(spy.Run());
@@ -142,7 +151,10 @@ public class SpyCat : MonoBehaviour
 
     void OnEnable()
     {
-        if (!active.Contains(this)) active.Add(this);
+        if (!active.Contains(this))
+        {
+            active.Add(this);
+        }
     }
 
     void OnDisable()
@@ -160,7 +172,10 @@ public class SpyCat : MonoBehaviour
     {
         // Out of the pool, hidden in the vent until the lid's open
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
-        if (agent != null) agent.enabled = false;
+        if (agent != null)
+        {
+            agent.enabled = false;
+        }
         ownScale = cat.transform.localScale;
         cat.transform.localScale = ownScale * settings.scale;
         cat.treatGate = treat => false;   // it's not here to eat
@@ -190,7 +205,10 @@ public class SpyCat : MonoBehaviour
         cat.gameObject.SetActive(true);
         cat.TakeOver();
         CatWaddle waddle = cat.GetComponent<CatWaddle>();
-        if (waddle != null) waddle.enabled = false;   // hanging, not walking
+        if (waddle != null)
+        {
+            waddle.enabled = false;   // hanging, not walking
+        }
         SetSpying(true);
         ropePoint = FindRopePoint(cat.transform);
         if (ropePoint != null)
@@ -256,7 +274,10 @@ public class SpyCat : MonoBehaviour
             Hang(anchor, rope, swing, toward);
 
             // A whoosh past: a buzz each time it swings in close
-            if (swing > amplitude * 0.9f && lastSwing <= amplitude * 0.9f && progress > 0.5f) Haptics.PulseBoth(Haptics.Strength.Light);
+            if (swing > amplitude * 0.9f && lastSwing <= amplitude * 0.9f && progress > 0.5f)
+            {
+                Haptics.PulseBoth(Haptics.Strength.Light);
+            }
             lastSwing = swing;
 
             if (Scare())
@@ -266,7 +287,10 @@ public class SpyCat : MonoBehaviour
             }
             Vector3 middle = cat.transform.position + Vector3.up * backHeight * 0.5f;
             bool reached = (middle - head).magnitude <= settings.reachDistance;
-            if (reached || (progress >= 1f && swing >= swingMax * 0.97f)) break;
+            if (reached || (progress >= 1f && swing >= swingMax * 0.97f))
+            {
+                break;
+            }
             yield return null;
         }
 
@@ -275,7 +299,10 @@ public class SpyCat : MonoBehaviour
         cat.Meow(0.9f);
         MakeRecipeInPaws();
         FloatingWord.Show(settings.stolenText, cat.transform.position + Vector3.up * 0.6f, new Color(1f, 0.35f, 0.25f), 3.5f, 1.6f);
-        if (jar != null && settings.stealCoins > 0) jar.Spill(jar.transform.position + (cat.transform.position - jar.transform.position).normalized * 0.3f, settings.stealCoins);
+        if (jar != null && settings.stealCoins > 0)
+        {
+            jar.Spill(jar.transform.position + (cat.transform.position - jar.transform.position).normalized * 0.3f, settings.stealCoins);
+        }
         HideRing();
         yield return ZipUp(0.6f);
         Finish(Result.Stole);
@@ -288,7 +315,10 @@ public class SpyCat : MonoBehaviour
         Transform eye = player.eyePoint;
         Vector3 middle = cat.transform.position + cat.transform.up * backHeight * 0.5f;
         float waving = HandSpeed();
-        if (!can || SwingsLately() < settings.swingsNeeded) waving = 0;   // a real wave goes back and forth
+        if (!can || SwingsLately() < settings.swingsNeeded)
+        {
+            waving = 0;   // a real wave goes back and forth
+        }
         bool looking = eye != null && Vector3.Angle(eye.forward, middle - eye.position) <= settings.lookAngle;
         if (looking && waving > settings.waveSpeed * 0.35f)
         {
@@ -316,13 +346,25 @@ public class SpyCat : MonoBehaviour
     IEnumerator Scared()
     {
         HideRing();
-        if (hintWord != null) Destroy(hintWord);
+        if (hintWord != null)
+        {
+            Destroy(hintWord);
+        }
         cat.Meow(1.7f);
         Haptics.PulseBoth(Haptics.Strength.Medium);
         FloatingWord.Show(settings.scaredText, cat.transform.position + Vector3.up * 0.6f, new Color(0.4f, 1f, 0.5f), 3.5f, 1.2f);
-        if (settings.scareScore > 0) GameManager.instance.AddBonus(settings.scareScore, cat.transform.position);
-        if (jar != null && settings.scareCoins > 0) jar.AddCoins(cat.transform.position, settings.scareCoins);
-        if (recipe != null) Destroy(recipe);
+        if (settings.scareScore > 0)
+        {
+            GameManager.instance.AddBonus(settings.scareScore, cat.transform.position);
+        }
+        if (jar != null && settings.scareCoins > 0)
+        {
+            jar.AddCoins(cat.transform.position, settings.scareCoins);
+        }
+        if (recipe != null)
+        {
+            Destroy(recipe);
+        }
         yield return ZipUp(0.45f);
         Finish(Result.Scared);
     }
@@ -346,10 +388,16 @@ public class SpyCat : MonoBehaviour
 
     void Finish(Result result)
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         finished = true;
         CleanUp();
-        if (vent != null) vent.StartCoroutine(vent.Close());
+        if (vent != null)
+        {
+            vent.StartCoroutine(vent.Close());
+        }
         done?.Invoke(this, result);
         // Back to the pool as it came
         cat.transform.localScale = ownScale;
@@ -362,7 +410,10 @@ public class SpyCat : MonoBehaviour
     // The phase or round is over: it zips off (where it is)
     public void Cancel()
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         StopAllCoroutines();
         StartCoroutine(CancelRoutine());
     }
@@ -376,7 +427,10 @@ public class SpyCat : MonoBehaviour
 
     public static void EndAll()
     {
-        foreach (SpyCat spy in active.ToArray()) spy.Cancel();
+        foreach (SpyCat spy in active.ToArray())
+        {
+            spy.Cancel();
+        }
     }
 
     void CleanUp()
@@ -391,11 +445,26 @@ public class SpyCat : MonoBehaviour
         {
             waddle = null;
         }
-        if (waddle != null) waddle.enabled = true;
-        if (rope != null) Destroy(rope.gameObject);
-        if (ring != null) Destroy(ring.transform.parent.gameObject);
-        if (hintWord != null) Destroy(hintWord);
-        if (recipe != null) Destroy(recipe);
+        if (waddle != null)
+        {
+            waddle.enabled = true;
+        }
+        if (rope != null)
+        {
+            Destroy(rope.gameObject);
+        }
+        if (ring != null)
+        {
+            Destroy(ring.transform.parent.gameObject);
+        }
+        if (hintWord != null)
+        {
+            Destroy(hintWord);
+        }
+        if (recipe != null)
+        {
+            Destroy(recipe);
+        }
     }
 
     // ---------- The hands ----------
@@ -442,9 +511,15 @@ public class SpyCat : MonoBehaviour
     void CountSwing(ref Vector3 swing, ref Vector3 velocity, Vector3 now, float dt)
     {
         velocity = Vector3.Lerp(velocity, Vector3.ClampMagnitude(now, 8f), Mathf.Clamp01(dt * 15f));
-        if (velocity.magnitude < settings.waveSpeed * 0.5f) return;
+        if (velocity.magnitude < settings.waveSpeed * 0.5f)
+        {
+            return;
+        }
         Vector3 way = velocity.normalized;
-        if (swing != Vector3.zero && Vector3.Dot(way, swing) < -0.3f) swings.Add(Time.time);
+        if (swing != Vector3.zero && Vector3.Dot(way, swing) < -0.3f)
+        {
+            swings.Add(Time.time);
+        }
         swing = way;
     }
 
@@ -461,10 +536,16 @@ public class SpyCat : MonoBehaviour
     {
         foreach (Animator animator in cat.GetComponentsInChildren<Animator>())
         {
-            if (animator.runtimeAnimatorController == null) continue;
+            if (animator.runtimeAnimatorController == null)
+            {
+                continue;
+            }
             foreach (AnimatorControllerParameter parameter in animator.parameters)
             {
-                if (parameter.nameHash == Spying) animator.SetBool(Spying, on);
+                if (parameter.nameHash == Spying)
+                {
+                    animator.SetBool(Spying, on);
+                }
             }
         }
     }
@@ -473,7 +554,10 @@ public class SpyCat : MonoBehaviour
     {
         foreach (Transform child in under.GetComponentsInChildren<Transform>(true))
         {
-            if (child.name == "Rope Point") return child;
+            if (child.name == "Rope Point")
+            {
+                return child;
+            }
         }
         return null;
     }
@@ -484,8 +568,14 @@ public class SpyCat : MonoBehaviour
         float top = 0.3f;
         foreach (Renderer rend in cat.GetComponentsInChildren<Renderer>())
         {
-            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer || !rend.enabled) continue;
-            if (rend.GetComponentInParent<Canvas>() != null) continue;
+            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer || !rend.enabled)
+            {
+                continue;
+            }
+            if (rend.GetComponentInParent<Canvas>() != null)
+            {
+                continue;
+            }
             top = Mathf.Max(top, rend.bounds.max.y - cat.transform.position.y);
         }
         return Mathf.Clamp(top * 0.8f, 0.2f, 1f);
@@ -519,7 +609,10 @@ public class SpyCat : MonoBehaviour
 
     void UpdateRope()
     {
-        if (rope == null) return;
+        if (rope == null)
+        {
+            return;
+        }
         rope.SetPosition(0, anchor + Vector3.up * 0.2f);
         rope.SetPosition(1, ropePoint != null ? ropePoint.position : cat.transform.position + Vector3.up * backHeight);
     }
@@ -533,10 +626,19 @@ public class SpyCat : MonoBehaviour
         }
         Transform h = ring.transform.parent;
         h.position = at;
-        if (eye != null) h.rotation = Quaternion.LookRotation(at - eye.position);
+        if (eye != null)
+        {
+            h.rotation = Quaternion.LookRotation(at - eye.position);
+        }
         bool show = fill > 0.01f;
-        if (h.gameObject.activeSelf != show) h.gameObject.SetActive(show);
-        if (!show) return;
+        if (h.gameObject.activeSelf != show)
+        {
+            h.gameObject.SetActive(show);
+        }
+        if (!show)
+        {
+            return;
+        }
         SpaceCafeVisuals.SetRing(ring, 0.5f, fill);
         Color colour = Color.Lerp(settings.ringColour, new Color(0.4f, 1f, 0.5f), fill);
         ring.startColor = ring.endColor = colour;
@@ -544,7 +646,10 @@ public class SpyCat : MonoBehaviour
 
     void HideRing()
     {
-        if (ring != null) ring.transform.parent.gameObject.SetActive(false);
+        if (ring != null)
+        {
+            ring.transform.parent.gameObject.SetActive(false);
+        }
     }
 
     // Hangs the cat on the rope, `swing` radians out from straight down, swinging in the plane towards the player
@@ -613,8 +718,14 @@ public class SpyCat : MonoBehaviour
     static AudioClip sting;
     void Sting()
     {
-        if (sting == null) sting = Resources.Load<AudioClip>("CafeSounds/spy_sting");
-        if (sting == null) return;
+        if (sting == null)
+        {
+            sting = Resources.Load<AudioClip>("CafeSounds/spy_sting");
+        }
+        if (sting == null)
+        {
+            return;
+        }
         AudioSource.PlayClipAtPoint(sting, vent.opening, 0.8f);
     }
 }

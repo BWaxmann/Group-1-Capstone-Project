@@ -15,7 +15,10 @@ public static class PcHeadsetPicker
     {
         string runtime = XRSettings.loadedDeviceName;
 #if UNITY_EDITOR
-        if (runtime != "Oculus" && runtime != "OpenVR") return;   // no headset running: as set
+        if (runtime != "Oculus" && runtime != "OpenVR")
+        {
+            return;   // no headset running: as set
+        }
 #endif
         ESDKType type;
         if (runtime == "Oculus")
@@ -38,7 +41,10 @@ public static class PcHeadsetPicker
         foreach (VREmulator emulator in Object.FindObjectsOfType<VREmulator>())
         {
 #if UNITY_EDITOR
-            if (emulator.EditorType == ESDKType.Emulator) continue;   // the mouse, chosen on purpose (anything else: the headset that's running)
+            if (emulator.EditorType == ESDKType.Emulator)
+            {
+                continue;   // the mouse, chosen on purpose (anything else: the headset that's running)
+            }
             emulator.EditorType = type;
 #else
             emulator.BuildType = type;

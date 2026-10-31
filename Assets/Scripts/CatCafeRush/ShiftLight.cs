@@ -49,9 +49,15 @@ public class ShiftLight : MonoBehaviour
     // Starts the light following `progress` (0 = start of the shift, 1 = the end)
     public static ShiftLight Begin(GameObject on, Settings settings, Func<float> progress)
     {
-        if (settings == null || !settings.enabled || progress == null) return null;
+        if (settings == null || !settings.enabled || progress == null)
+        {
+            return null;
+        }
         ShiftLight light = on.GetComponent<ShiftLight>();
-        if (light == null) light = on.AddComponent<ShiftLight>();
+        if (light == null)
+        {
+            light = on.AddComponent<ShiftLight>();
+        }
         light.settings = settings;
         light.progress = progress;
         light.Capture();
@@ -74,14 +80,23 @@ public class ShiftLight : MonoBehaviour
             RenderSettings.skybox = sky;
             skyHasTint = sky.HasProperty(Tint);
             skyHasExposure = sky.HasProperty(Exposure);
-            if (skyHasTint) skyTint = sky.GetColor(Tint);
-            if (skyHasExposure) skyExposure = sky.GetFloat(Exposure);
+            if (skyHasTint)
+            {
+                skyTint = sky.GetColor(Tint);
+            }
+            if (skyHasExposure)
+            {
+                skyExposure = sky.GetFloat(Exposure);
+            }
         }
         lights.Clear();
         lightColours.Clear();
         foreach (Light light in FindObjectsOfType<Light>())
         {
-            if (light.bakingOutput.lightmapBakeType == LightmapBakeType.Baked) continue;   // can't change once baked
+            if (light.bakingOutput.lightmapBakeType == LightmapBakeType.Baked)
+            {
+                continue;   // can't change once baked
+            }
             lights.Add(light);
             lightColours.Add(light.color);
         }
@@ -89,7 +104,10 @@ public class ShiftLight : MonoBehaviour
 
     void Update()
     {
-        if (settings == null || progress == null) return;
+        if (settings == null || progress == null)
+        {
+            return;
+        }
         float through = Mathf.Clamp01(progress());
         Color tint = settings.tint.Evaluate(through);
 
@@ -106,11 +124,17 @@ public class ShiftLight : MonoBehaviour
                 tinted.a = skyTint.a;
                 sky.SetColor(Tint, tinted);
             }
-            if (skyHasExposure) sky.SetFloat(Exposure, skyExposure * Mathf.Lerp(1f, settings.eveningSkyExposure, through));
+            if (skyHasExposure)
+            {
+                sky.SetFloat(Exposure, skyExposure * Mathf.Lerp(1f, settings.eveningSkyExposure, through));
+            }
         }
         for (int i = 0; i < lights.Count; i++)
         {
-            if (lights[i] != null) lights[i].color = lightColours[i] * tint;
+            if (lights[i] != null)
+            {
+                lights[i].color = lightColours[i] * tint;
+            }
         }
     }
 }

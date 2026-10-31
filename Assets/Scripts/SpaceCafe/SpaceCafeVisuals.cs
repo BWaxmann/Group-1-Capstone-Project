@@ -12,7 +12,10 @@ public static class SpaceCafeVisuals
         if (unlitShader == null)
         {
             unlitShader = Shader.Find("Sprites/Default");
-            if (unlitShader == null) unlitShader = Shader.Find("UI/Default");
+            if (unlitShader == null)
+            {
+                unlitShader = Shader.Find("UI/Default");
+            }
         }
         return new Material(unlitShader) { color = colour };
     }
@@ -96,8 +99,14 @@ public static class SpaceCafeVisuals
         {
             foreach (Material material in rend.materials)
             {
-                if (material.HasProperty("_Color")) material.color = colour;
-                if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", colour);
+                if (material.HasProperty("_Color"))
+                {
+                    material.color = colour;
+                }
+                if (material.HasProperty("_BaseColor"))
+                {
+                    material.SetColor("_BaseColor", colour);
+                }
             }
         }
     }
@@ -116,8 +125,14 @@ public static class SpaceCafeVisuals
         if (tinPrefab != null)
         {
             tin = Object.Instantiate(tinPrefab, mount.transform);
-            foreach (Collider col in tin.GetComponentsInChildren<Collider>()) Object.Destroy(col);
-            foreach (Rigidbody body in tin.GetComponentsInChildren<Rigidbody>()) Object.Destroy(body);
+            foreach (Collider col in tin.GetComponentsInChildren<Collider>())
+            {
+                Object.Destroy(col);
+            }
+            foreach (Rigidbody body in tin.GetComponentsInChildren<Rigidbody>())
+            {
+                Object.Destroy(body);
+            }
             FitToSize(tin, size);
             Tint(tin, colour);
         }
@@ -143,9 +158,15 @@ public static class SpaceCafeVisuals
         model.transform.localScale = Vector3.one;
 
         Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
-        if (renderers.Length == 0) return;
+        if (renderers.Length == 0)
+        {
+            return;
+        }
         Bounds bounds = renderers[0].bounds;
-        foreach (Renderer rend in renderers) bounds.Encapsulate(rend.bounds);
+        foreach (Renderer rend in renderers)
+        {
+            bounds.Encapsulate(rend.bounds);
+        }
 
         float largest = Mathf.Max(bounds.size.x, bounds.size.y, bounds.size.z, 0.0001f);
         float scale = size / largest;
@@ -162,13 +183,22 @@ public static class SpaceCafeVisuals
         Bounds local = new Bounds();
         foreach (MeshFilter mesh in root.GetComponentsInChildren<MeshFilter>())
         {
-            if (mesh.sharedMesh == null) continue;
+            if (mesh.sharedMesh == null)
+            {
+                continue;
+            }
             bool partOfTin = false;
             for (Transform t = mesh.transform; t != null && t != root; t = t.parent)
             {
-                if (t.name == "Food Tin") partOfTin = true;
+                if (t.name == "Food Tin")
+                {
+                    partOfTin = true;
+                }
             }
-            if (partOfTin) continue;
+            if (partOfTin)
+            {
+                continue;
+            }
             Bounds b = mesh.sharedMesh.bounds;
             for (int corner = 0; corner < 8; corner++)
             {
@@ -178,7 +208,10 @@ public static class SpaceCafeVisuals
                     (corner & 4) == 0 ? b.min.z : b.max.z);
                 Vector3 inRoot = root.InverseTransformPoint(mesh.transform.TransformPoint(point));
                 if (!any) { local = new Bounds(inRoot, Vector3.zero); any = true; }
-                else local.Encapsulate(inRoot);
+                else
+                {
+                    local.Encapsulate(inRoot);
+                }
             }
         }
         if (any)

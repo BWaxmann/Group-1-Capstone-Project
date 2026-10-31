@@ -19,10 +19,16 @@ public static class SceneSnapshot
         // Optionally hide some objects for the pictures (e.g. canvases that only show at certain times)
         foreach (string hideName in Argument("-hide", "").Split(','))
         {
-            if (string.IsNullOrWhiteSpace(hideName)) continue;
+            if (string.IsNullOrWhiteSpace(hideName))
+            {
+                continue;
+            }
             foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
             {
-                if (t.gameObject.scene.path == scenePath && t.name == hideName.Trim()) t.gameObject.SetActive(false);
+                if (t.gameObject.scene.path == scenePath && t.name == hideName.Trim())
+                {
+                    t.gameObject.SetActive(false);
+                }
             }
         }
 
@@ -58,10 +64,19 @@ public static class SceneSnapshot
         float best = float.MinValue;
         foreach (RaycastHit hit in Physics.RaycastAll(centre + Vector3.up * 2f, Vector3.down, 10f))
         {
-            if (player != null && hit.collider.transform.IsChildOf(player.transform.root)) continue;
-            if (hit.point.y <= centre.y + 0.05f && hit.point.y > best) best = hit.point.y;
+            if (player != null && hit.collider.transform.IsChildOf(player.transform.root))
+            {
+                continue;
+            }
+            if (hit.point.y <= centre.y + 0.05f && hit.point.y > best)
+            {
+                best = hit.point.y;
+            }
         }
-        if (best > float.MinValue) floorY = best;
+        if (best > float.MinValue)
+        {
+            floorY = best;
+        }
         Vector3 eye = new Vector3(centre.x, floorY + 1.6f, centre.z);
         string[] names = { "1_front", "2_right", "3_back", "4_left" };
         for (int i = 0; i < 4; i++)
@@ -86,13 +101,19 @@ public static class SceneSnapshot
         {
             foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
             {
-                if (t.gameObject.scene.path != scenePath || t.name != lookAt) continue;
+                if (t.gameObject.scene.path != scenePath || t.name != lookAt)
+                {
+                    continue;
+                }
                 Renderer[] renderers = t.GetComponentsInChildren<Renderer>();
                 Vector3 target = t.position;
                 if (renderers.Length > 0)
                 {
                     Bounds b = renderers[0].bounds;
-                    foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+                    foreach (Renderer r in renderers)
+                    {
+                        b.Encapsulate(r.bounds);
+                    }
                     target = b.center;
                 }
                 cam.fieldOfView = 45f;
@@ -132,7 +153,10 @@ public static class SceneSnapshot
 
         foreach (Transform t in Resources.FindObjectsOfTypeAll<Transform>())
         {
-            if (t.gameObject.scene.path != scenePath) continue;
+            if (t.gameObject.scene.path != scenePath)
+            {
+                continue;
+            }
             foreach (string name in names)
             {
                 if (t.name.Trim() == name.Trim())
@@ -144,7 +168,10 @@ public static class SceneSnapshot
 
         foreach (Canvas canvas in Resources.FindObjectsOfTypeAll<Canvas>())
         {
-            if (canvas.gameObject.scene.path != scenePath || canvas.renderMode != RenderMode.WorldSpace) continue;
+            if (canvas.gameObject.scene.path != scenePath || canvas.renderMode != RenderMode.WorldSpace)
+            {
+                continue;
+            }
             RectTransform rect = canvas.GetComponent<RectTransform>();
             Vector2 size = Vector2.Scale(rect.rect.size, new Vector2(rect.lossyScale.x, rect.lossyScale.y));
             string texts = "";
@@ -173,9 +200,15 @@ public static class SceneSnapshot
     static string BoundsText(GameObject go, Vector3 centre)
     {
         Renderer[] renderers = go.GetComponentsInChildren<Renderer>(true);
-        if (renderers.Length == 0) return "no renderers";
+        if (renderers.Length == 0)
+        {
+            return "no renderers";
+        }
         Bounds b = renderers[0].bounds;
-        foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+        foreach (Renderer r in renderers)
+        {
+            b.Encapsulate(r.bounds);
+        }
         float distance = Vector3.Distance(new Vector3(centre.x, 0, centre.z), new Vector3(b.center.x, 0, b.center.z));
         return $"bounds centre={b.center} size={b.size} dist={distance:F2}m";
     }
@@ -201,7 +234,10 @@ public static class SceneSnapshot
         string[] args = System.Environment.GetCommandLineArgs();
         for (int i = 0; i < args.Length - 1; i++)
         {
-            if (args[i] == name) return args[i + 1];
+            if (args[i] == name)
+            {
+                return args[i + 1];
+            }
         }
         return fallback;
     }

@@ -55,13 +55,22 @@ public class TipsBoard : MonoBehaviour
     public static TipsBoard Begin(TipJar jar, Settings settings)
     {
         GameManager game = GameManager.instance;
-        if (game == null || jar == null || game.scoreDisplay == null) return null;
+        if (game == null || jar == null || game.scoreDisplay == null)
+        {
+            return null;
+        }
         TipsBoard board = game.gameObject.GetComponent<TipsBoard>();
-        if (board == null) board = game.gameObject.AddComponent<TipsBoard>();
+        if (board == null)
+        {
+            board = game.gameObject.AddComponent<TipsBoard>();
+        }
         board.game = game;
         board.jar = jar;
         board.settings = settings;
-        if (settings.fitToBoard) board.Restyle();
+        if (settings.fitToBoard)
+        {
+            board.Restyle();
+        }
         return board;
     }
 
@@ -84,9 +93,15 @@ public class TipsBoard : MonoBehaviour
             {
                 canvas = null;
             }
-            if (canvas == null) continue;
+            if (canvas == null)
+            {
+                continue;
+            }
             canvas = canvas.rootCanvas;
-            foreach (TMP_Text text in canvas.GetComponentsInChildren<TMP_Text>(true)) Fit(text);
+            foreach (TMP_Text text in canvas.GetComponentsInChildren<TMP_Text>(true))
+            {
+                Fit(text);
+            }
         }
 
         // "Score" becomes "Tips" (the labels are the value's parent on the live board, and its neighbour at the end)
@@ -99,7 +114,10 @@ public class TipsBoard : MonoBehaviour
         {
             live = null;
         }
-        if (live != null) live.text = settings.liveLabel;
+        if (live != null)
+        {
+            live.text = settings.liveLabel;
+        }
         // The tally panel only took the middle of the board: a bit bigger
         Canvas tally;
         if (game.finalScoreDisplay != null)
@@ -119,7 +137,10 @@ public class TipsBoard : MonoBehaviour
         {
             foreach (TMP_Text text in game.finalScorePanelObject.GetComponentsInChildren<TMP_Text>(true))
             {
-                if (text.name == "Final Score") text.text = settings.finalLabel;
+                if (text.name == "Final Score")
+                {
+                    text.text = settings.finalLabel;
+                }
             }
         }
     }
@@ -128,7 +149,10 @@ public class TipsBoard : MonoBehaviour
     // than its board is brought back inside it
     void Fit(TMP_Text text)
     {
-        if (text == null || !fitted.Add(text)) return;
+        if (text == null || !fitted.Add(text))
+        {
+            return;
+        }
         float largest = Mathf.Max(text.fontSize, text.fontSizeMax);
         text.enableAutoSizing = true;
         text.fontSizeMax = largest;
@@ -152,13 +176,25 @@ public class TipsBoard : MonoBehaviour
     // Kept up to date every frame, after the game's own score updates
     void LateUpdate()
     {
-        if (jar == null || game == null) return;
+        if (jar == null || game == null)
+        {
+            return;
+        }
         int coins = jar.total;
-        if (game.scoreDisplay != null) game.scoreDisplay.text = Money(coins);
+        if (game.scoreDisplay != null)
+        {
+            game.scoreDisplay.text = Money(coins);
+        }
 
         GameObject panel = game.finalScorePanelObject;
-        if (panel == null || !panel.activeInHierarchy) return;
-        if (game.finalScoreDisplay != null) game.finalScoreDisplay.text = Money(coins);
+        if (panel == null || !panel.activeInHierarchy)
+        {
+            return;
+        }
+        if (game.finalScoreDisplay != null)
+        {
+            game.finalScoreDisplay.text = Money(coins);
+        }
         if (settings.fitToBoard && !roomMade && game.rankDisplay != null)
         {
             roomMade = true;
@@ -170,7 +206,10 @@ public class TipsBoard : MonoBehaviour
             game.rankDisplay.text = Quip(coins * settings.coinValue);
         }
         // No best tips: Liminal keeps nothing between sessions (and doesn't allow saving)
-        if (game.bestScoreDisplay != null) game.bestScoreDisplay.gameObject.SetActive(false);
+        if (game.bestScoreDisplay != null)
+        {
+            game.bestScoreDisplay.gameObject.SetActive(false);
+        }
     }
 
     // The tally: Cats Fed at the top, the tips in the middle (where the penalty goes, when it's switched off), and the
@@ -200,12 +239,18 @@ public class TipsBoard : MonoBehaviour
         if (middleFree && game.finalScoreDisplay != null)
         {
             CopyPlace(game.penaltyDisplay.rectTransform, game.finalScoreDisplay.rectTransform);
-            if (penaltyLabel != null && tipsLabel != null) CopyPlace(penaltyLabel.rectTransform, tipsLabel.rectTransform);
+            if (penaltyLabel != null && tipsLabel != null)
+            {
+                CopyPlace(penaltyLabel.rectTransform, tipsLabel.rectTransform);
+            }
         }
 
         float wider = panel.rect.width * 0.8f;
         Place(game.rankDisplay, middleFree ? -14f : -20f, middleFree ? 134f : 90f, wider, 46f);
-        if (game.bestScoreDisplay != null) Place(game.bestScoreDisplay, middleFree ? -74f : -116f, 52f, wider, 34f);
+        if (game.bestScoreDisplay != null)
+        {
+            Place(game.bestScoreDisplay, middleFree ? -74f : -116f, 52f, wider, 34f);
+        }
     }
 
     // `bottom` up from the panel's bottom edge (negative = under it)
@@ -237,13 +282,19 @@ public class TipsBoard : MonoBehaviour
     // The label beside a value on the tally (same panel, name containing `part`)
     static TMP_Text Sibling(TMP_Text value, string part)
     {
-        if (value.transform.parent == null) return null;
+        if (value.transform.parent == null)
+        {
+            return null;
+        }
         foreach (Transform child in value.transform.parent)
         {
             if (child != value.transform && child.name.Contains(part) && !child.name.Contains("Value"))
             {
                 TMP_Text label = child.GetComponent<TMP_Text>();
-                if (label != null) return label;
+                if (label != null)
+                {
+                    return label;
+                }
             }
         }
         return null;
@@ -252,7 +303,10 @@ public class TipsBoard : MonoBehaviour
     // The funny line for this much money: the highest one it's reached
     string Quip(float money)
     {
-        if (!string.IsNullOrEmpty(settings.alwaysLine)) return settings.alwaysLine;
+        if (!string.IsNullOrEmpty(settings.alwaysLine))
+        {
+            return settings.alwaysLine;
+        }
         string chosen = "";
         float reached = float.MinValue;
         foreach (Line line in settings.lines)

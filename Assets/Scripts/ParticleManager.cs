@@ -65,7 +65,10 @@ public class ParticleManager : MonoBehaviour
         float scale = effectScale * size;
         if (!madeScales.TryGetValue(effect, out Vector3 made))
         {
-            if (Mathf.Approximately(scale, 1f)) return;
+            if (Mathf.Approximately(scale, 1f))
+            {
+                return;
+            }
             made = effect.transform.localScale;
             madeScales[effect] = made;
         }

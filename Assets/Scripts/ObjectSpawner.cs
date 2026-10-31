@@ -83,7 +83,10 @@ public class ObjectSpawner : MonoBehaviour
     public T GetObjectFromPool<T>(int variation) where T : MonoBehaviour
     {
         GameObject obj = GetObjectFromPool(variation);
-        if (obj == null) return null;
+        if (obj == null)
+        {
+            return null;
+        }
         return obj.GetComponent<T>();
     }
 
@@ -100,7 +103,10 @@ public class ObjectSpawner : MonoBehaviour
     public T GetRandomObjectFromPoolFromGivenVariations<T>(int[] variations) where T : MonoBehaviour
     {
         GameObject obj = GetRandomObjectFromPoolFromGivenVariations(variations);
-        if (obj == null) return null;
+        if (obj == null)
+        {
+            return null;
+        }
         return obj.GetComponent<T>();
     }    
 
@@ -117,7 +123,10 @@ public class ObjectSpawner : MonoBehaviour
     public T GetRandomObjectFromPool<T>() where T : MonoBehaviour
     {
         GameObject obj = GetRandomObjectFromPool();
-        if (obj == null) return null;
+        if (obj == null)
+        {
+            return null;
+        }
         return obj.GetComponent<T>();
     }
 
@@ -142,10 +151,16 @@ public class ObjectSpawner : MonoBehaviour
     public int[] VariationsNamed(string part)
     {
         List<int> found = new List<int>();
-        if (objectsInPool == null) return found.ToArray();
+        if (objectsInPool == null)
+        {
+            return found.ToArray();
+        }
         for (int i = 0; i < objectsInPool.Length; i++)
         {
-            if (objectsInPool[i].prefab != null && objectsInPool[i].prefab.name.Contains(part)) found.Add(i);
+            if (objectsInPool[i].prefab != null && objectsInPool[i].prefab.name.Contains(part))
+            {
+                found.Add(i);
+            }
         }
         return found.ToArray();
     }

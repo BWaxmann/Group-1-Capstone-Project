@@ -246,7 +246,10 @@ public class CatMovement : MonoBehaviour
 
     protected virtual void OnEnable()
     {
-        if (!active.Contains(this)) active.Add(this);
+        if (!active.Contains(this))
+        {
+            active.Add(this);
+        }
         ApplyLoudness();
     }
 
@@ -259,7 +262,10 @@ public class CatMovement : MonoBehaviour
         if (setUpMinDistance == null)
         {
             setUpMinDistance = new System.Collections.Generic.Dictionary<AudioSource, float>();
-            foreach (AudioSource source in GetComponentsInChildren<AudioSource>(true)) setUpMinDistance[source] = source.minDistance;
+            foreach (AudioSource source in GetComponentsInChildren<AudioSource>(true))
+            {
+                setUpMinDistance[source] = source.minDistance;
+            }
         }
         CatFootsteps footsteps = GetComponentInChildren<CatFootsteps>(true);
         AudioSource steps;
@@ -273,7 +279,10 @@ public class CatMovement : MonoBehaviour
         }
         foreach (System.Collections.Generic.KeyValuePair<AudioSource, float> source in setUpMinDistance)
         {
-            if (source.Key == null) continue;
+            if (source.Key == null)
+            {
+                continue;
+            }
             source.Key.minDistance = source.Value * (source.Key == steps ? SoundLevels.world : SoundLevels.cats);
         }
     }
@@ -299,7 +308,10 @@ public class CatMovement : MonoBehaviour
         active.Remove(this);
         StopAllCoroutines();
         // In case the cat was switched off during the finisher freeze
-        if (animator != null) animator.speed = 1f;
+        if (animator != null)
+        {
+            animator.speed = 1f;
+        }
     }
 
     public virtual void Initialise(Transform spawnPoint, Vector3 spawnPosition)
@@ -325,7 +337,10 @@ public class CatMovement : MonoBehaviour
         EnsureWaddle();
 
         // The happy launch switches the agent off while the cat flies
-        if (!agent.enabled) agent.enabled = true;
+        if (!agent.enabled)
+        {
+            agent.enabled = true;
+        }
         agent.Warp(spawnPosition);
         transform.rotation = spawnPoint.rotation;
         agent.updatePosition = true;
@@ -479,7 +494,10 @@ public class CatMovement : MonoBehaviour
                     hitDefendPointSound.PlayOneShot(attackSource);
                     targetDefendPoint.GetHit();
 
-                    if (CheckExitAttacking()) break;
+                    if (CheckExitAttacking())
+                    {
+                        break;
+                    }
                 }
             }
             else
@@ -521,7 +539,10 @@ public class CatMovement : MonoBehaviour
             {
                 yield return new WaitForSeconds(Random.Range(roamingSoundMinimumPause, roamingSoundMaximumPause));
 
-                if (isFullyFed) break;
+                if (isFullyFed)
+                {
+                    break;
+                }
                 roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource);
             }
         }
@@ -543,7 +564,10 @@ public class CatMovement : MonoBehaviour
     public virtual void HitByTreat(Treat treat)
     {
         // Something else can decide which treats this cat eats (e.g. a colour order); false = not eaten
-        if (treatGate != null && !treatGate(treat)) return;
+        if (treatGate != null && !treatGate(treat))
+        {
+            return;
+        }
         FeedCat(treat.isInstaKill);
     }
 
@@ -593,7 +617,10 @@ public class CatMovement : MonoBehaviour
 
     public virtual void FeedCat(bool instaKill)
     {
-        if (isFullyFed) return;
+        if (isFullyFed)
+        {
+            return;
+        }
 
         if (instaKill)
         {
@@ -647,7 +674,10 @@ public class CatMovement : MonoBehaviour
     // Used when the round ends: every cat still in the cafe leaves happy, without adding score.
     public virtual void CelebrateAndVanish()
     {
-        if (isFullyFed || !gameObject.activeInHierarchy) return;
+        if (isFullyFed || !gameObject.activeInHierarchy)
+        {
+            return;
+        }
 
         StopAllCoroutines();
         if (moodCanvas != null && moodSprites != null && moodSprites.Length > 0)
@@ -685,22 +715,40 @@ public class CatMovement : MonoBehaviour
         StopAllCoroutines();
         currentState = AIState.Roaming;
         isStunned = false;
-        if (animator == null) animator = GetComponentInChildren<Animator>();
-        if (moodCanvas != null) moodCanvas.SetActive(false);
+        if (animator == null)
+        {
+            animator = GetComponentInChildren<Animator>();
+        }
+        if (moodCanvas != null)
+        {
+            moodCanvas.SetActive(false);
+        }
     }
 
     // Cats with no run animation of their own (the phat cats and the Armoured cat) waddle instead of gliding
     void EnsureWaddle()
     {
-        if (GetComponent<CatRunAnimation>() == null && GetComponent<CatWaddle>() == null) gameObject.AddComponent<CatWaddle>();
+        if (GetComponent<CatRunAnimation>() == null && GetComponent<CatWaddle>() == null)
+        {
+            gameObject.AddComponent<CatWaddle>();
+        }
     }
 
     // One of the cat's own meows (the ones it makes while wandering), pitched (kittens squeak higher)
     public void Meow(float pitch)
     {
-        if (roamingSounds == null || roamingSounds.Length == 0) return;
-        if (voiceSource == null) voiceSource = GetComponentInChildren<AudioSource>();
-        if (voiceSource == null) return;
+        if (roamingSounds == null || roamingSounds.Length == 0)
+        {
+            return;
+        }
+        if (voiceSource == null)
+        {
+            voiceSource = GetComponentInChildren<AudioSource>();
+        }
+        if (voiceSource == null)
+        {
+            return;
+        }
         roamingSounds[Random.Range(0, roamingSounds.Length)].PlayOneShot(voiceSource, pitch);
     }
 
@@ -718,19 +766,31 @@ public class CatMovement : MonoBehaviour
     // The happy pop of confetti (and its sound) where the cat is, without it leaving
     public void PopConfetti()
     {
-        if (launchPopParticleIndex >= 0) ParticleManager.instance.ShowParticleEffect(launchPopParticleIndex, transform.position);
+        if (launchPopParticleIndex >= 0)
+        {
+            ParticleManager.instance.ShowParticleEffect(launchPopParticleIndex, transform.position);
+        }
         GameManager.instance.PlayCatPopSound(transform.position);
     }
 
     // Picks up roaming again after another script took over the cat for a while (Cat Cafe Waves raids)
     public void ResumeRoaming()
     {
-        if (isFullyFed || !isActiveAndEnabled) return;
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = false;
+        if (isFullyFed || !isActiveAndEnabled)
+        {
+            return;
+        }
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
+        }
         isStunned = false;
         StartCoroutine(MoveToTargetRoutine());
         StartCoroutine(RotationRoutine());
-        if (voiceSource != null) StartCoroutine(SoundRoutine());
+        if (voiceSource != null)
+        {
+            StartCoroutine(SoundRoutine());
+        }
     }
 
     // Set by a scene that sends fed cats somewhere before they go (Cat Cafe Waves: they run off to a hole).
@@ -808,12 +868,21 @@ public class CatMovement : MonoBehaviour
         {
             animatorSpeed = 1f;
         }
-        if (animator != null) animator.speed = 0f;
+        if (animator != null)
+        {
+            animator.speed = 0f;
+        }
         yield return new WaitForSeconds(finisherFreeze);
-        if (animator != null) animator.speed = animatorSpeed;
+        if (animator != null)
+        {
+            animator.speed = animatorSpeed;
+        }
 
         // Take the cat off the floor so it can fly
-        if (agent != null) agent.enabled = false;
+        if (agent != null)
+        {
+            agent.enabled = false;
+        }
         juice.ResetPose();
         juice.enabled = false;
         GameManager.instance.PlayCatLaunchSound(bodySource != null ? bodySource : voiceSource);
@@ -847,7 +916,10 @@ public class CatMovement : MonoBehaviour
         DisappearParticleEffect();
         GameManager.instance.PlayCatPopSound(transform.position);
 
-        if (animator != null) animator.SetLayerWeight(jiggleLayerIndex, 0f);
+        if (animator != null)
+        {
+            animator.SetLayerWeight(jiggleLayerIndex, 0f);
+        }
         Vanish();
     }
 
@@ -907,7 +979,10 @@ public class CatMovement : MonoBehaviour
 
     public virtual void GetStunned(float duration)
     {
-        if (isFullyFed) return;
+        if (isFullyFed)
+        {
+            return;
+        }
 
         isStunned = true;
         stunTimer = Mathf.Max(stunTimer, duration * stunDurationMultiplier);

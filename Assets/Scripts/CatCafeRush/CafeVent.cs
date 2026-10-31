@@ -58,7 +58,10 @@ public class CafeVent : MonoBehaviour
     public static CafeVent Make(Transform vent, Transform lid, Vector3 viewer, float floorY, Vector3 room)
     {
         CafeVent made = vent.GetComponent<CafeVent>();
-        if (made != null) return made.landing != null ? made : null;
+        if (made != null)
+        {
+            return made.landing != null ? made : null;
+        }
         made = vent.gameObject.AddComponent<CafeVent>();
         if (!made.Measure(lid, viewer, floorY, room))
         {
@@ -71,7 +74,10 @@ public class CafeVent : MonoBehaviour
     bool Measure(Transform lid, Vector3 viewer, float floorY, Vector3 room)
     {
         Mesh lidMesh = LidMesh(lid);
-        if (lidMesh == null) return false;
+        if (lidMesh == null)
+        {
+            return false;
+        }
         if (lid.parent != null && lid.parent != transform && lid.parent.name.ToLowerInvariant().Contains("pivot"))
         {
             hinge = lid.parent;
@@ -93,11 +99,17 @@ public class CafeVent : MonoBehaviour
         int thinnest = 0;
         for (int i = 1; i < 3; i++)
         {
-            if (axes[i].magnitude < axes[thinnest].magnitude) thinnest = i;
+            if (axes[i].magnitude < axes[thinnest].magnitude)
+            {
+                thinnest = i;
+            }
         }
         // Its face points into the room (the player's side)
         Vector3 normal = axes[thinnest].normalized;
-        if (Vector3.Dot(normal, viewer - centre) < 0) normal = -normal;
+        if (Vector3.Dot(normal, viewer - centre) < 0)
+        {
+            normal = -normal;
+        }
 
         // It swings about the edge its pivot is on, outwards
         Vector3 fromHinge = centre - hinge.position;
@@ -116,7 +128,10 @@ public class CafeVent : MonoBehaviour
         closedRotation = hinge.rotation;
         Quaternion swing = Quaternion.AngleAxis(90f, axis);
         Vector3 swungCentre = hinge.position + swing * (centre - hinge.position);
-        if (Vector3.Dot(swungCentre - centre, normal) < 0) swing = Quaternion.AngleAxis(-90f, axis);
+        if (Vector3.Dot(swungCentre - centre, normal) < 0)
+        {
+            swing = Quaternion.AngleAxis(-90f, axis);
+        }
         openRotation = swing * closedRotation;
 
         outward = normal;
@@ -140,9 +155,18 @@ public class CafeVent : MonoBehaviour
         {
             Vector3 target = mouth + flat * distance;
             target.y = floorY;
-            if (!NavMesh.SamplePosition(target, out floor, 1.5f, NavMesh.AllAreas)) continue;
-            if (Mathf.Abs(floor.position.y - floorY) > 0.3f) continue;
-            if (!ClearJump(mouth, floor.position + Vector3.up * 0.3f)) continue;
+            if (!NavMesh.SamplePosition(target, out floor, 1.5f, NavMesh.AllAreas))
+            {
+                continue;
+            }
+            if (Mathf.Abs(floor.position.y - floorY) > 0.3f)
+            {
+                continue;
+            }
+            if (!ClearJump(mouth, floor.position + Vector3.up * 0.3f))
+            {
+                continue;
+            }
             found = true;
             break;
         }
@@ -151,11 +175,23 @@ public class CafeVent : MonoBehaviour
         {
             // No floor to drop to (e.g. a vent on a platform): it lands on whatever's just below the opening, as long as
             // there's a way from there down into the room (the cats' jump-ways)
-            if (!NavMesh.SamplePosition(mouth + flat * 0.5f + Vector3.down * 0.4f, out floor, 1f, NavMesh.AllAreas)) return false;
-            if (floor.position.y > mouth.y + 0.1f || floor.position.y < floorY + 0.5f) return false;
-            if (!ClearJump(mouth, floor.position + Vector3.up * 0.3f)) return false;
+            if (!NavMesh.SamplePosition(mouth + flat * 0.5f + Vector3.down * 0.4f, out floor, 1f, NavMesh.AllAreas))
+            {
+                return false;
+            }
+            if (floor.position.y > mouth.y + 0.1f || floor.position.y < floorY + 0.5f)
+            {
+                return false;
+            }
+            if (!ClearJump(mouth, floor.position + Vector3.up * 0.3f))
+            {
+                return false;
+            }
             NavMeshPath way = new NavMeshPath();
-            if (!NavMesh.CalculatePath(floor.position, room, NavMesh.AllAreas, way) || way.status != NavMeshPathStatus.PathComplete) return false;
+            if (!NavMesh.CalculatePath(floor.position, room, NavMesh.AllAreas, way) || way.status != NavMeshPathStatus.PathComplete)
+            {
+                return false;
+            }
         }
 
         landing = new GameObject("Vent Landing").transform;
@@ -186,12 +222,21 @@ public class CafeVent : MonoBehaviour
         {
             shape = null;
         }
-        if (shape == null || shape.sharedMesh == null) return null;
-        if (!shape.sharedMesh.name.StartsWith("Combined Mesh")) return shape.sharedMesh;
+        if (shape == null || shape.sharedMesh == null)
+        {
+            return null;
+        }
+        if (!shape.sharedMesh.name.StartsWith("Combined Mesh"))
+        {
+            return shape.sharedMesh;
+        }
 
         MeshCollider solid = lid.GetComponent<MeshCollider>();
         MeshRenderer drawn = lid.GetComponent<MeshRenderer>();
-        if (solid == null || solid.sharedMesh == null || drawn == null) return null;
+        if (solid == null || solid.sharedMesh == null || drawn == null)
+        {
+            return null;
+        }
         GameObject copy = new GameObject("Lid (moves)");
         copy.transform.SetParent(lid, false);
         copy.AddComponent<MeshFilter>().sharedMesh = solid.sharedMesh;
@@ -207,7 +252,10 @@ public class CafeVent : MonoBehaviour
         foreach (RaycastHit hit in Physics.RaycastAll(from, between.normalized, between.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             Transform other = hit.collider.transform;
-            if (other.IsChildOf(transform) || other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null) continue;
+            if (other.IsChildOf(transform) || other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null)
+            {
+                continue;
+            }
             return false;
         }
         return true;
@@ -230,7 +278,10 @@ public class CafeVent : MonoBehaviour
     {
         busy = true;
         CatChaosSettings sounds = CatChaosSettings.instance;
-        if (sounds != null) sounds.PlayKnock(mouth);
+        if (sounds != null)
+        {
+            sounds.PlayKnock(mouth);
+        }
         yield return Swing(closedRotation, openRotation, 0.2f);
     }
 
@@ -238,7 +289,10 @@ public class CafeVent : MonoBehaviour
     {
         yield return Swing(openRotation, closedRotation, 0.25f);
         CatChaosSettings sounds = CatChaosSettings.instance;
-        if (sounds != null) sounds.PlayKnock(mouth);
+        if (sounds != null)
+        {
+            sounds.PlayKnock(mouth);
+        }
         busy = false;
     }
 
@@ -246,9 +300,15 @@ public class CafeVent : MonoBehaviour
     // takes it. Drop does this itself if it hasn't been done
     public void Hide(CatMovement cat, float scale)
     {
-        if (waiting.ContainsKey(cat)) return;
+        if (waiting.ContainsKey(cat))
+        {
+            return;
+        }
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
-        if (agent != null) agent.enabled = false;
+        if (agent != null)
+        {
+            agent.enabled = false;
+        }
         waiting[cat] = cat.transform.localScale;
         Vector3 look = landing.position - mouth;
         look.y = 0;
@@ -312,14 +372,20 @@ public class CafeVent : MonoBehaviour
         float landing01 = Mathf.Clamp01(drop / 4f);
         cat.DustPuff(kitten ? 0.5f : Mathf.Lerp(0.7f, 1.1f, landing01));
         CatChaosSettings sounds = CatChaosSettings.instance;
-        if (sounds != null && !kitten) sounds.PlayLanded(to);
+        if (sounds != null && !kitten)
+        {
+            sounds.PlayLanded(to);
+        }
         cat.treatGate = null;
         cat.wantsTreats = null;
         cat.transform.localScale = ownSize;
         waiting.Remove(cat);
         landed?.Invoke(cat, this);
         CatJuice juice = cat.GetComponent<CatJuice>();
-        if (juice != null && !kitten) juice.Hit(Mathf.Lerp(0.5f, 1f, landing01));
+        if (juice != null && !kitten)
+        {
+            juice.Hit(Mathf.Lerp(0.5f, 1f, landing01));
+        }
     }
 
     static bool NoTreats(Treat treat)
@@ -349,23 +415,41 @@ public class CafeVent : MonoBehaviour
     {
         foreach (Animator animator in cat.GetComponentsInChildren<Animator>())
         {
-            if (animator.runtimeAnimatorController == null) continue;
+            if (animator.runtimeAnimatorController == null)
+            {
+                continue;
+            }
             bool hasJump = false, hasSpeed = false;
             foreach (AnimatorControllerParameter parameter in animator.parameters)
             {
-                if (parameter.nameHash == JumpingDown) hasJump = true;
-                if (parameter.nameHash == JumpSpeed) hasSpeed = true;
+                if (parameter.nameHash == JumpingDown)
+                {
+                    hasJump = true;
+                }
+                if (parameter.nameHash == JumpSpeed)
+                {
+                    hasSpeed = true;
+                }
             }
-            if (!hasJump) continue;
+            if (!hasJump)
+            {
+                continue;
+            }
             animator.SetBool(JumpingDown, on);
-            if (on && hasSpeed) animator.SetFloat(JumpSpeed, 1.2f / seconds);
+            if (on && hasSpeed)
+            {
+                animator.SetFloat(JumpSpeed, 1.2f / seconds);
+            }
         }
     }
 
     // When the round ends mid-drop
     void OnDisable()
     {
-        if (hinge != null) hinge.rotation = closedRotation;
+        if (hinge != null)
+        {
+            hinge.rotation = closedRotation;
+        }
         busy = false;
     }
 }

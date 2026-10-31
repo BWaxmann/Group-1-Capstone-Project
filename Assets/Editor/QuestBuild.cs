@@ -44,7 +44,10 @@ public static class QuestBuild
 
     static void BuildFromMenu(string scene, string name)
     {
-        if (!CheckAndroidTools(interactive: true)) return;
+        if (!CheckAndroidTools(interactive: true))
+        {
+            return;
+        }
 
         if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
         {
@@ -52,7 +55,10 @@ public static class QuestBuild
                 "The project needs to switch to Android first. Unity will re-import everything, which can take 5-15 minutes " +
                 "(and the same again when you switch back to Windows for the Index).\n\nSwitch to Android now?",
                 "Switch to Android", "Cancel");
-            if (!switchNow) return;
+            if (!switchNow)
+            {
+                return;
+            }
             if (!EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android))
             {
                 Debug.LogError("[Quest Build] Couldn't switch the project to Android.");
@@ -72,7 +78,10 @@ public static class QuestBuild
         }
 
         string apk = Build(scene, name);
-        if (apk != null) EditorUtility.RevealInFinder(apk);
+        if (apk != null)
+        {
+            EditorUtility.RevealInFinder(apk);
+        }
     }
 
     // For command-line builds (e.g. from a separate Quest-only copy of the project)
@@ -117,7 +126,10 @@ public static class QuestBuild
             Debug.LogError($"[Quest Build] {scene} is missing.");
             return null;
         }
-        if (!EnsureKeystore(out string password)) return null;
+        if (!EnsureKeystore(out string password))
+        {
+            return null;
+        }
 
         // Remember everything we change, so it can all be put back
         ScriptingImplementation backend = PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android);
@@ -180,7 +192,10 @@ public static class QuestBuild
             PlayerSettings.Android.keyaliasPass = password;
 
             // Quest controls (Liminal's OVR device); it should already be set, but make sure
-            if (emulator != null) SetBuildType(emulator, (int)ESDKType.OVR);
+            if (emulator != null)
+            {
+                SetBuildType(emulator, (int)ESDKType.OVR);
+            }
 
             Directory.CreateDirectory(OutputFolder);
             string apk = $"{OutputFolder}/CatCafe-{name}-{DateTime.Now:yyyyMMdd-HHmm}.apk";
@@ -230,7 +245,10 @@ public static class QuestBuild
             PlayerSettings.Android.keystorePass = keystorePass;
             PlayerSettings.Android.keyaliasName = aliasName;
             PlayerSettings.Android.keyaliasPass = aliasPass;
-            if (emulator != null && buildType >= 0) SetBuildType(emulator, buildType);
+            if (emulator != null && buildType >= 0)
+            {
+                SetBuildType(emulator, buildType);
+            }
             AssetDatabase.SaveAssets();
         }
     }
@@ -241,7 +259,10 @@ public static class QuestBuild
     {
         // Unity 2019.1 treats a setting that was never saved as "use the bundled tools", so default to true here too
         bool embedded = EditorPrefs.GetBool("SdkUseEmbedded", true) && EditorPrefs.GetBool("NdkUseEmbedded", true) && EditorPrefs.GetBool("JdkUseEmbedded", true);
-        if (embedded) return true;
+        if (embedded)
+        {
+            return true;
+        }
 
         const string message = "Unity 2019.1 needs to use its own bundled Android tools (JDK, Android SDK and NDK). " +
                                "Turn on 'Installed with Unity' for all three in Edit > Preferences > External Tools.";
@@ -315,11 +336,17 @@ public static class QuestBuild
     static int FindAndroidBackendEntry(SerializedObject projectSettings)
     {
         SerializedProperty map = projectSettings.FindProperty("scriptingBackend");
-        if (map == null) return -1;
+        if (map == null)
+        {
+            return -1;
+        }
         for (int i = 0; i < map.arraySize; i++)
         {
             SerializedProperty first = map.GetArrayElementAtIndex(i).FindPropertyRelative("first");
-            if (first != null && first.stringValue == "Android") return i;
+            if (first != null && first.stringValue == "Android")
+            {
+                return i;
+            }
         }
         return -1;
     }
@@ -328,9 +355,15 @@ public static class QuestBuild
     {
         const string letters = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         byte[] bytes = new byte[24];
-        using (var random = RandomNumberGenerator.Create()) random.GetBytes(bytes);
+        using (var random = RandomNumberGenerator.Create())
+        {
+            random.GetBytes(bytes);
+        }
         char[] chars = new char[bytes.Length];
-        for (int i = 0; i < bytes.Length; i++) chars[i] = letters[bytes[i] % letters.Length];
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            chars[i] = letters[bytes[i] % letters.Length];
+        }
         return new string(chars);
     }
 
@@ -367,14 +400,23 @@ class QuestManifestTweak : IPostGenerateGradleAndroidProject
 
     public void OnPostGenerateGradleAndroidProject(string path)
     {
-        if (!QuestBuild.building) return;
+        if (!QuestBuild.building)
+        {
+            return;
+        }
 
         string manifestPath = Path.Combine(path, "src/main/AndroidManifest.xml");
-        if (!File.Exists(manifestPath)) return;
+        if (!File.Exists(manifestPath))
+        {
+            return;
+        }
 
         string manifest = File.ReadAllText(manifestPath);
         const string vrCategory = "<category android:name=\"com.oculus.intent.category.VR\" />";
-        if (manifest.Contains("com.oculus.intent.category.VR")) return;
+        if (manifest.Contains("com.oculus.intent.category.VR"))
+        {
+            return;
+        }
 
         // Add it right after the main activity's <action ... MAIN ... /> tag (whatever its spacing)
         int main = manifest.IndexOf("android.intent.action.MAIN", StringComparison.Ordinal);

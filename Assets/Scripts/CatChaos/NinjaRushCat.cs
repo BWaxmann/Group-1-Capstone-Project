@@ -60,7 +60,10 @@ public class NinjaRushCat : BossCat
     // A paw swipe with its sound (the director decides what it sends flying)
     public void Swipe()
     {
-        if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger(attackTriggerHash);
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger(attackTriggerHash);
+        }
         hitDefendPointSound.PlayOneShot(attackSource);
     }
 
@@ -80,15 +83,24 @@ public class NinjaRushCat : BossCat
         List<int> choices = new List<int>();
         for (int i = 0; i < stops.Count; i++)
         {
-            if (i == lastStop && stops.Count > 1) continue;
-            if (explodePiles && i < piles.Count && piles[i] != null && piles[i].propsHome == 0) continue;
+            if (i == lastStop && stops.Count > 1)
+            {
+                continue;
+            }
+            if (explodePiles && i < piles.Count && piles[i] != null && piles[i].propsHome == 0)
+            {
+                continue;
+            }
             choices.Add(i);
         }
         if (choices.Count == 0)
         {
             for (int i = 0; i < stops.Count; i++)
             {
-                if (i != lastStop || stops.Count == 1) choices.Add(i);
+                if (i != lastStop || stops.Count == 1)
+                {
+                    choices.Add(i);
+                }
             }
         }
         return choices[Random.Range(0, choices.Count)];
@@ -98,11 +110,17 @@ public class NinjaRushCat : BossCat
 
     public override void HitByTreat(Treat treat)
     {
-        if (!feedable) return;
+        if (!feedable)
+        {
+            return;
+        }
         // A scatter or buckshot volley counts once
         if (treat.shotId != 0)
         {
-            if (treat.shotId == lastShotEaten) return;
+            if (treat.shotId == lastShotEaten)
+            {
+                return;
+            }
             lastShotEaten = treat.shotId;
         }
         base.HitByTreat(treat);
@@ -111,7 +129,10 @@ public class NinjaRushCat : BossCat
     // Disappears in a puff (no score, no pickup), e.g. when its phase ends
     public void Leave()
     {
-        if (!gameObject.activeInHierarchy) return;
+        if (!gameObject.activeInHierarchy)
+        {
+            return;
+        }
         DisappearParticleEffect();
         gameObject.SetActive(false);
     }
@@ -126,12 +147,18 @@ public class NinjaRushCat : BossCat
 
         while (true)
         {
-            if (currentState == AIState.Full) yield break;
+            if (currentState == AIState.Full)
+            {
+                yield break;
+            }
 
             if (isStunned)
             {
                 stunTimer -= targetUpdateFrequency;
-                if (stunTimer <= 0) EndStun();
+                if (stunTimer <= 0)
+                {
+                    EndStun();
+                }
                 yield return updateWait;
                 continue;
             }
@@ -150,22 +177,40 @@ public class NinjaRushCat : BossCat
                     waited += targetUpdateFrequency;
                     yield return updateWait;
                 }
-                if (currentState == AIState.Full) yield break;
+                if (currentState == AIState.Full)
+                {
+                    yield break;
+                }
                 int next = NextStop(lastStop);
                 lastStop = next;
                 Blink(stops[next]);
 
                 yield return swipeWait;
-                if (currentState == AIState.Full) yield break;
+                if (currentState == AIState.Full)
+                {
+                    yield break;
+                }
 
                 if (!isStunned)
                 {
-                    if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger(attackTriggerHash);
+                    if (animator != null && animator.runtimeAnimatorController != null)
+                    {
+                        animator.SetTrigger(attackTriggerHash);
+                    }
                     yield return pawWait;
-                    if (currentState == AIState.Full) yield break;
+                    if (currentState == AIState.Full)
+                    {
+                        yield break;
+                    }
                     hitDefendPointSound.PlayOneShot(attackSource);
-                    if (explodePiles && next < piles.Count && piles[next] != null) piles[next].Explode(ViewerPosition());
-                    else FlyingProp.KnockNear(transform.position, reach, knocksPerStop, ViewerPosition());
+                    if (explodePiles && next < piles.Count && piles[next] != null)
+                    {
+                        piles[next].Explode(ViewerPosition());
+                    }
+                    else
+                    {
+                        FlyingProp.KnockNear(transform.position, reach, knocksPerStop, ViewerPosition());
+                    }
                 }
             }
 
@@ -177,7 +222,10 @@ public class NinjaRushCat : BossCat
     {
         foreach (FlyingProp prop in FlyingProp.airborne)
         {
-            if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held)) return true;
+            if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held))
+            {
+                return true;
+            }
         }
         return false;
     }
@@ -201,16 +249,25 @@ public class NinjaRushCat : BossCat
     {
         DisappearParticleEffect();
         agent.Warp(position);
-        if (agent.isOnNavMesh) agent.isStopped = true;
+        if (agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
         Vector3 face = ViewerPosition() - position;
         face.y = 0;
-        if (face.sqrMagnitude > 0.001f) transform.rotation = Quaternion.LookRotation(face);
+        if (face.sqrMagnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(face);
+        }
         DisappearParticleEffect();
     }
 
     Vector3 ViewerPosition()
     {
-        if (Camera.main != null) return Camera.main.transform.position;
+        if (Camera.main != null)
+        {
+            return Camera.main.transform.position;
+        }
         if (player != null)
         {
             return player.transform.position;

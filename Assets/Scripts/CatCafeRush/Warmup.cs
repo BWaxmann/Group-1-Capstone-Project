@@ -30,7 +30,10 @@ public static class Warmup
         int fonts = 0;
         foreach (TMP_FontAsset font in FontsInUse())
         {
-            if (WarmFont(font)) fonts++;
+            if (WarmFont(font))
+            {
+                fonts++;
+            }
             if (frame.ElapsedMilliseconds >= FrameBudgetMs)
             {
                 yield return null;
@@ -41,7 +44,10 @@ public static class Warmup
         int clips = 0;
         foreach (AudioClip clip in Resources.FindObjectsOfTypeAll<AudioClip>())
         {
-            if (LoadClip(clip)) clips++;
+            if (LoadClip(clip))
+            {
+                clips++;
+            }
             if (frame.ElapsedMilliseconds >= FrameBudgetMs)
             {
                 yield return null;
@@ -75,8 +81,14 @@ public static class Warmup
         {
             foreach (TMP_Text text in Resources.FindObjectsOfTypeAll<TMP_Text>())
             {
-                if (text == null || text.font == null || !text.gameObject.scene.IsValid()) continue;
-                if (!fonts.Contains(text.font)) fonts.Add(text.font);
+                if (text == null || text.font == null || !text.gameObject.scene.IsValid())
+                {
+                    continue;
+                }
+                if (!fonts.Contains(text.font))
+                {
+                    fonts.Add(text.font);
+                }
             }
             if (TMP_Settings.defaultFontAsset != null && !fonts.Contains(TMP_Settings.defaultFontAsset))
             {
@@ -112,7 +124,10 @@ public static class Warmup
         }
         finally
         {
-            if (holder != null) Object.Destroy(holder);
+            if (holder != null)
+            {
+                Object.Destroy(holder);
+            }
         }
     }
 

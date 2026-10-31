@@ -66,13 +66,19 @@ public class PropPile : MonoBehaviour
     void OnEnable()
     {
         all.Add(this);
-        if (defendPoint != null) defendPoint.Hit += OnHit;
+        if (defendPoint != null)
+        {
+            defendPoint.Hit += OnHit;
+        }
     }
 
     void OnDisable()
     {
         all.Remove(this);
-        if (defendPoint != null) defendPoint.Hit -= OnHit;
+        if (defendPoint != null)
+        {
+            defendPoint.Hit -= OnHit;
+        }
     }
 
     // Cat Cafe Rush trial: a paw swipe tips the top prop over instead of sending it flying
@@ -115,8 +121,14 @@ public class PropPile : MonoBehaviour
         FlyingProp top = null;
         foreach (FlyingProp prop in props)
         {
-            if (prop == null || prop.state != FlyingProp.State.Home) continue;
-            if (top == null || prop.transform.position.y > top.transform.position.y) top = prop;
+            if (prop == null || prop.state != FlyingProp.State.Home)
+            {
+                continue;
+            }
+            if (top == null || prop.transform.position.y > top.transform.position.y)
+            {
+                top = prop;
+            }
         }
         return top != null && top.Topple();
     }
@@ -129,9 +141,15 @@ public class PropPile : MonoBehaviour
             int home = 0, total = 0;
             foreach (FlyingProp prop in props)
             {
-                if (prop == null) continue;
+                if (prop == null)
+                {
+                    continue;
+                }
                 total++;
-                if (prop.state == FlyingProp.State.Home) home++;
+                if (prop.state == FlyingProp.State.Home)
+                {
+                    home++;
+                }
             }
             if (total > 0)
             {
@@ -147,8 +165,14 @@ public class PropPile : MonoBehaviour
         FlyingProp top = null;
         foreach (FlyingProp prop in props)
         {
-            if (prop == null || prop.state != FlyingProp.State.Home || prop.timeAtHome < restTime) continue;
-            if (top == null || prop.transform.position.y > top.transform.position.y) top = prop;
+            if (prop == null || prop.state != FlyingProp.State.Home || prop.timeAtHome < restTime)
+            {
+                continue;
+            }
+            if (top == null || prop.transform.position.y > top.transform.position.y)
+            {
+                top = prop;
+            }
         }
         if (top != null && top.Knock(playerPosition))
         {
@@ -164,10 +188,16 @@ public class PropPile : MonoBehaviour
         int sent = 0;
         foreach (FlyingProp prop in props)
         {
-            if (prop != null && prop.state == FlyingProp.State.Home && prop.Knock(playerPosition, false, true)) sent++;
+            if (prop != null && prop.state == FlyingProp.State.Home && prop.Knock(playerPosition, false, true))
+            {
+                sent++;
+            }
         }
         shake = 1f;
-        if (sent > 0 && barsWaitForNinja && !barShown) ShowBar();
+        if (sent > 0 && barsWaitForNinja && !barShown)
+        {
+            ShowBar();
+        }
         return sent;
     }
 
@@ -179,14 +209,20 @@ public class PropPile : MonoBehaviour
     // bar pops back up
     public static void HideBars()
     {
-        foreach (PropPile pile in all) pile.barShown = false;
+        foreach (PropPile pile in all)
+        {
+            pile.barShown = false;
+        }
     }
 
     void ShowBar()
     {
         barShown = true;
         FindBar();
-        if (barHolder == null) return;
+        if (barHolder == null)
+        {
+            return;
+        }
         barHolder.SetActive(true);
         healthBar.value = 0;
         barPop = 0;
@@ -195,14 +231,23 @@ public class PropPile : MonoBehaviour
 
     void FindBar()
     {
-        if (healthBar != null || defendPoint == null) return;
+        if (healthBar != null || defendPoint == null)
+        {
+            return;
+        }
         healthBar = defendPoint.GetComponentInChildren<UnityEngine.UI.Slider>(true);
-        if (healthBar == null) return;
+        if (healthBar == null)
+        {
+            return;
+        }
         // The topmost canvas between the bar and the defend point (GetComponent finds it even while it's hidden)
         barHolder = healthBar.gameObject;
         for (Transform up = healthBar.transform; up != null && up != defendPoint.transform; up = up.parent)
         {
-            if (up.GetComponent<Canvas>() != null) barHolder = up.gameObject;
+            if (up.GetComponent<Canvas>() != null)
+            {
+                barHolder = up.gameObject;
+            }
         }
         barHolderScale = barHolder.transform.localScale;
     }
@@ -215,7 +260,10 @@ public class PropPile : MonoBehaviour
             int home = 0;
             foreach (FlyingProp prop in props)
             {
-                if (prop != null && prop.state == FlyingProp.State.Home) home++;
+                if (prop != null && prop.state == FlyingProp.State.Home)
+                {
+                    home++;
+                }
             }
             return home;
         }
@@ -229,7 +277,10 @@ public class PropPile : MonoBehaviour
 
     void Update()
     {
-        if (pile == null) return;
+        if (pile == null)
+        {
+            return;
+        }
 
         // If the defend point's health bar is showing, it shows how much of the pile is standing
         FindBar();
@@ -237,7 +288,10 @@ public class PropPile : MonoBehaviour
         {
             if (!barShown)
             {
-                if (barHolder.activeSelf) barHolder.SetActive(false);
+                if (barHolder.activeSelf)
+                {
+                    barHolder.SetActive(false);
+                }
             }
             else if (barPop < 1f)
             {
@@ -271,7 +325,10 @@ public class PropPile : MonoBehaviour
             // Only a pile on a defend point can be marched on (a pile without one just gets knocked in passing)
             foreach (CatMovement cat in defendPoint != null ? CatMovement.active : noCats)
             {
-                if (cat == null || cat.headingFor != defendPoint) continue;
+                if (cat == null || cat.headingFor != defendPoint)
+                {
+                    continue;
+                }
                 float distance = Vector3.Distance(cat.transform.position, transform.position);
                 warning = Mathf.Max(warning, 1f - Mathf.Clamp01((distance - 0.8f) / warningDistance));
             }
@@ -295,7 +352,10 @@ public class PropPile : MonoBehaviour
         if (warningRing != null)
         {
             bool show = warning > 0.01f;
-            if (warningRing.gameObject.activeSelf != show) warningRing.gameObject.SetActive(show);
+            if (warningRing.gameObject.activeSelf != show)
+            {
+                warningRing.gameObject.SetActive(show);
+            }
             if (show)
             {
                 // Pulses faster and redder as the cat gets closer
@@ -311,7 +371,10 @@ public class PropPile : MonoBehaviour
 
     Transform Viewer()
     {
-        if (viewer == null && Camera.main != null) viewer = Camera.main.transform;
+        if (viewer == null && Camera.main != null)
+        {
+            viewer = Camera.main.transform;
+        }
         return viewer;
     }
 }

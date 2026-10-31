@@ -281,16 +281,28 @@ public class PlayerInput : MonoBehaviour
     public void UnlockFireStyles(bool unlocked)
     {
         fireStylesUnlocked = unlocked;
-        if (!unlocked) styleLeft = styleRight = FireStyle.Single;
+        if (!unlocked)
+        {
+            styleLeft = styleRight = FireStyle.Single;
+        }
     }
 
     void SwapStyle(bool rightHand, int direction)
     {
-        if (forcedStyle.HasValue) return;
+        if (forcedStyle.HasValue)
+        {
+            return;
+        }
         int count = System.Enum.GetValues(typeof(FireStyle)).Length;
         FireStyle next = (FireStyle)(((int)Style(rightHand) + direction + count) % count);
-        if (rightHand) styleRight = next;
-        else styleLeft = next;
+        if (rightHand)
+        {
+            styleRight = next;
+        }
+        else
+        {
+            styleLeft = next;
+        }
         Haptics.Pulse(rightHand, Haptics.Strength.Medium);
     }
 
@@ -333,8 +345,14 @@ public class PlayerInput : MonoBehaviour
 
     void ApplyReticleColours()
     {
-        if (reticleLeft != null && reticleColourLeft.HasValue) reticleLeft.SetColours(Faded(reticleColourLeft.Value), reticleColourLeft.Value);
-        if (reticleRight != null && reticleColourRight.HasValue) reticleRight.SetColours(Faded(reticleColourRight.Value), reticleColourRight.Value);
+        if (reticleLeft != null && reticleColourLeft.HasValue)
+        {
+            reticleLeft.SetColours(Faded(reticleColourLeft.Value), reticleColourLeft.Value);
+        }
+        if (reticleRight != null && reticleColourRight.HasValue)
+        {
+            reticleRight.SetColours(Faded(reticleColourRight.Value), reticleColourRight.Value);
+        }
     }
 
     static Color Faded(Color colour)
@@ -369,7 +387,10 @@ public class PlayerInput : MonoBehaviour
             held = gripHeldLeft;
         }
 #if UNITY_EDITOR
-        if (rightHand) held |= Input.GetMouseButton(1);
+        if (rightHand)
+        {
+            held |= Input.GetMouseButton(1);
+        }
 #endif
         return held;
     }
@@ -386,8 +407,14 @@ public class PlayerInput : MonoBehaviour
 
     public void LoadFood(bool rightHand, int treatPoolVariation)
     {
-        if (rightHand) loadedTreatVariationRight = treatPoolVariation;
-        else loadedTreatVariationLeft = treatPoolVariation;
+        if (rightHand)
+        {
+            loadedTreatVariationRight = treatPoolVariation;
+        }
+        else
+        {
+            loadedTreatVariationLeft = treatPoolVariation;
+        }
     }
 
     void Start()
@@ -457,13 +484,22 @@ public class PlayerInput : MonoBehaviour
         flickRight = ReadThumbFlick(true);
         if (fireStylesUnlocked && launchersActive && !baristaMode)
         {
-            if (flickLeft != 0) SwapStyle(false, flickLeft);
-            if (flickRight != 0) SwapStyle(true, flickRight);
+            if (flickLeft != 0)
+            {
+                SwapStyle(false, flickLeft);
+            }
+            if (flickRight != 0)
+            {
+                SwapStyle(true, flickRight);
+            }
         }
 
         UpdateReticles();
 
-        if (!GameManager.instance.enablePlayerInput) return;
+        if (!GameManager.instance.enablePlayerInput)
+        {
+            return;
+        }
 
         // Input goes through Liminal's VRDevice so the same code works on Quest (OVR) and Valve Index (OpenVR).
         // In the editor the mouse also works: left click = right trigger, right click = right grip.
@@ -574,7 +610,10 @@ public class PlayerInput : MonoBehaviour
     IVRInputDevice GetHandInput(bool rightHand)
     {
         IVRDevice device = VRDevice.Device;
-        if (device == null) return null;
+        if (device == null)
+        {
+            return null;
+        }
         if (rightHand)
         {
             return device.PrimaryInputDevice;
@@ -596,7 +635,10 @@ public class PlayerInput : MonoBehaviour
         IVRInputDevice input = GetHandInput(rightHand);
         bool pressed = input != null && input.GetButtonDown(VRButton.Trigger);
 #if UNITY_EDITOR
-        if (rightHand) pressed |= Input.GetMouseButtonDown(0);
+        if (rightHand)
+        {
+            pressed |= Input.GetMouseButtonDown(0);
+        }
 #endif
         return pressed;
 #endif
@@ -610,7 +652,10 @@ public class PlayerInput : MonoBehaviour
         IVRInputDevice input = GetHandInput(rightHand);
         bool released = input != null && input.GetButtonUp(VRButton.Trigger);
 #if UNITY_EDITOR
-        if (rightHand) released |= Input.GetMouseButtonUp(0);
+        if (rightHand)
+        {
+            released |= Input.GetMouseButtonUp(0);
+        }
 #endif
         return released;
 #endif
@@ -652,8 +697,14 @@ public class PlayerInput : MonoBehaviour
             }
             SteamVR_Action_Boolean flickRightAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "SnapTurnRight");
             SteamVR_Action_Boolean flickLeftAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("default", "SnapTurnLeft");
-            if (flickRightAction != null && flickRightAction.GetStateDown(source)) direction = 1;
-            else if (flickLeftAction != null && flickLeftAction.GetStateDown(source)) direction = -1;
+            if (flickRightAction != null && flickRightAction.GetStateDown(source))
+            {
+                direction = 1;
+            }
+            else if (flickLeftAction != null && flickLeftAction.GetStateDown(source))
+            {
+                direction = -1;
+            }
         }
         else
         {
@@ -681,17 +732,32 @@ public class PlayerInput : MonoBehaviour
             {
                 wasHeld = stickHeldLeft;
             }
-            if (held && !wasHeld) direction = x > 0 ? 1 : -1;
-            if (rightHand) stickHeldRight = held;
-            else stickHeldLeft = held;
+            if (held && !wasHeld)
+            {
+                direction = x > 0 ? 1 : -1;
+            }
+            if (rightHand)
+            {
+                stickHeldRight = held;
+            }
+            else
+            {
+                stickHeldLeft = held;
+            }
         }
 
 #if UNITY_EDITOR
         if (rightHand && direction == 0)
         {
             float scroll = Input.mouseScrollDelta.y;
-            if (scroll > 0.1f) direction = 1;
-            else if (scroll < -0.1f) direction = -1;
+            if (scroll > 0.1f)
+            {
+                direction = 1;
+            }
+            else if (scroll < -0.1f)
+            {
+                direction = -1;
+            }
         }
 #endif
         return direction;
@@ -727,12 +793,21 @@ public class PlayerInput : MonoBehaviour
         {
             wasHeld = gripHeldLeft;
         }
-        if (rightHand) gripHeldRight = held;
-        else gripHeldLeft = held;
+        if (rightHand)
+        {
+            gripHeldRight = held;
+        }
+        else
+        {
+            gripHeldLeft = held;
+        }
 
         bool pressed = held && !wasHeld;
 #if UNITY_EDITOR
-        if (rightHand) pressed |= Input.GetMouseButtonDown(1);
+        if (rightHand)
+        {
+            pressed |= Input.GetMouseButtonDown(1);
+        }
 #endif
         return pressed;
     }
@@ -793,7 +868,10 @@ public class PlayerInput : MonoBehaviour
 
     void LaunchTreat(bool rightHand)
     {
-        if (blockFire != null && blockFire(rightHand)) return;
+        if (blockFire != null && blockFire(rightHand))
+        {
+            return;
+        }
 
         if (spreadActive)
         {
@@ -825,9 +903,15 @@ public class PlayerInput : MonoBehaviour
                 aim.localRotation = Quaternion.Euler(-offset.y, offset.x, 0);
             }
             Treat treat = LaunchOneTreat(rightHand, aim, i == 0);
-            if (treat == null) return;
+            if (treat == null)
+            {
+                return;
+            }
             treat.shotId = shotId;
-            if (style == FireStyle.Buckshot) treat.ShortenLife(0.4f);
+            if (style == FireStyle.Buckshot)
+            {
+                treat.ShortenLife(0.4f);
+            }
         }
     }
 
@@ -848,7 +932,10 @@ public class PlayerInput : MonoBehaviour
         {
             float angle = (1f - 2f * i / (numberOfShotsInSpread - 1)) * maxSpreadAngle;
             Treat treat = LaunchOneTreat(rightHand, muzzle, i == 0, angle);
-            if (treat == null) return;
+            if (treat == null)
+            {
+                return;
+            }
             treat.shotId = shotId;
         }
     }
@@ -872,8 +959,14 @@ public class PlayerInput : MonoBehaviour
         {
             aim = new GameObject("Spread Aim").transform;
             aim.SetParent(muzzle, false);
-            if (rightHand) spreadAimRight = aim;
-            else spreadAimLeft = aim;
+            if (rightHand)
+            {
+                spreadAimRight = aim;
+            }
+            else
+            {
+                spreadAimLeft = aim;
+            }
         }
         return aim;
     }
@@ -904,7 +997,10 @@ public class PlayerInput : MonoBehaviour
         treat.shotId = 0;
         treat.gameObject.SetActive(true);
         treat.Launch(from, shotSpeed, angle, instaKillActive);
-        if (straightShots) treat.MakeStraightShot();
+        if (straightShots)
+        {
+            treat.MakeStraightShot();
+        }
         // One sound and buzz per trigger pull, not per pellet
         if (withFeedback)
         {

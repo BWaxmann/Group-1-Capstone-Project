@@ -119,12 +119,18 @@ public class CatChaosSettings : MonoBehaviour
 
     void OnValidate()
     {
-        if (instance == this) CatMovement.targetingChanceOverride = pileTargetingChance;
+        if (instance == this)
+        {
+            CatMovement.targetingChanceOverride = pileTargetingChance;
+        }
     }
 
     void OnDestroy()
     {
-        if (instance != this) return;
+        if (instance != this)
+        {
+            return;
+        }
         instance = null;
         // These are shared by every scene, so put them back for CC_LEVEL and the rest
         CatMovement.targetingChanceOverride = -1f;
@@ -154,7 +160,10 @@ public class CatChaosSettings : MonoBehaviour
 
     static void Play(SoundData sound, Vector3 position, float pitch)
     {
-        if (sound.soundClip == null) return;
+        if (sound.soundClip == null)
+        {
+            return;
+        }
         // A short-lived positional source, so the sound comes from where the prop is
         GameObject go = new GameObject("Cat Chaos Sound");
         go.transform.position = position;

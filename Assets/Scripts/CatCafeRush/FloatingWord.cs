@@ -60,14 +60,23 @@ public class FloatingWord : MonoBehaviour
     // A word that floats up from `at` and fades away
     public static void Show(string words, Vector3 at, Color colour, float size = 3f, float lifetime = 1f)
     {
-        if (string.IsNullOrEmpty(words)) return;
+        if (string.IsNullOrEmpty(words))
+        {
+            return;
+        }
         FloatingWord word = null;
-        while (word == null && spare.Count > 0) word = spare.Pop();   // (one left over from an earlier scene is gone)
+        while (word == null && spare.Count > 0)
+        {
+            word = spare.Pop();   // (one left over from an earlier scene is gone)
+        }
         if (word == null)
         {
             GameObject holder = Make(words, colour, size);
             word = holder.GetComponent<FloatingWord>();
-            if (word == null) word = holder.AddComponent<FloatingWord>();
+            if (word == null)
+            {
+                word = holder.AddComponent<FloatingWord>();
+            }
             word.text = holder.GetComponentInChildren<TextMeshPro>();
         }
         else
@@ -86,7 +95,10 @@ public class FloatingWord : MonoBehaviour
 
     public static void FacePlayer(Transform word)
     {
-        if (player == null) player = FindObjectOfType<PlayerInput>();
+        if (player == null)
+        {
+            player = FindObjectOfType<PlayerInput>();
+        }
         Transform eye;
         if (player != null)
         {
@@ -100,7 +112,10 @@ public class FloatingWord : MonoBehaviour
         {
             eye = null;
         }
-        if (eye != null) word.rotation = Quaternion.LookRotation(word.position - eye.position);
+        if (eye != null)
+        {
+            word.rotation = Quaternion.LookRotation(word.position - eye.position);
+        }
     }
 
     void Update()
@@ -108,8 +123,14 @@ public class FloatingWord : MonoBehaviour
         timer += Time.deltaTime;
         transform.position += Vector3.up * 0.5f * Time.deltaTime;
         FacePlayer(transform);
-        if (text != null) text.alpha = Mathf.Clamp01(1.5f * (1f - timer / lifetime));
-        if (timer <= lifetime) return;
+        if (text != null)
+        {
+            text.alpha = Mathf.Clamp01(1.5f * (1f - timer / lifetime));
+        }
+        if (timer <= lifetime)
+        {
+            return;
+        }
         // Done: put away for next time (or gone, if there are plenty spare)
         if (spare.Count < MaxSpare)
         {

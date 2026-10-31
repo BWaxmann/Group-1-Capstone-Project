@@ -7,7 +7,10 @@ public class ChangePointerMaterial : MonoBehaviour
 
     void Start()
     {
-        if (material == null) return;
+        if (material == null)
+        {
+            return;
+        }
         // The pointer line: the second child of the first child (its layout changed once; find it rather than assume)
         LineRenderer line;
         if (transform.childCount > 0 && transform.GetChild(0).childCount > 1)
@@ -18,6 +21,9 @@ public class ChangePointerMaterial : MonoBehaviour
         {
             line = GetComponentInChildren<LineRenderer>(true);
         }
-        if (line != null) line.material = material;
+        if (line != null)
+        {
+            line.material = material;
+        }
     }
 }

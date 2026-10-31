@@ -87,12 +87,18 @@ public class GravityBeam : MonoBehaviour
         GameManager.instance.GameEnd += ReleaseAll;
         catchStreak = 0;
         FlyingProp.Landed += EndStreak;
-        if (flickToReturn) FlyingProp.dragHintText = "Flick it home!";
+        if (flickToReturn)
+        {
+            FlyingProp.dragHintText = "Flick it home!";
+        }
     }
 
     void OnDestroy()
     {
-        if (GameManager.instance != null) GameManager.instance.GameEnd -= ReleaseAll;
+        if (GameManager.instance != null)
+        {
+            GameManager.instance.GameEnd -= ReleaseAll;
+        }
         FlyingProp.Landed -= EndStreak;
     }
 
@@ -137,7 +143,10 @@ public class GravityBeam : MonoBehaviour
         SetVisible(hand, true);
 
         // Lost it some other way (e.g. the round ended)? Then look for something new
-        if (hand.held != null && hand.held.state != FlyingProp.State.Held) hand.held = null;
+        if (hand.held != null && hand.held.state != FlyingProp.State.Held)
+        {
+            hand.held = null;
+        }
 
         Vector3 start = muzzle.position;
         if (hand.held != null && flickToReturn && Time.time - hand.heldSince > FlickAfter && hand.velocity.magnitude >= flickSpeed)
@@ -161,7 +170,10 @@ public class GravityBeam : MonoBehaviour
             }
             hand.holdDistance = Mathf.MoveTowards(hand.holdDistance, want, Time.deltaTime * 6f);
             bool over = FlyingProp.dragHome && hand.held.nearHome;
-            if (over && !hand.overHome) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
+            if (over && !hand.overHome)
+            {
+                Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
+            }
             hand.overHome = over;
             hand.held.SetHoldTarget(muzzle.position + muzzle.forward * hand.holdDistance);
             DrawBeam(hand, start, hand.held.centre, 0.03f, 1f);
@@ -175,7 +187,10 @@ public class GravityBeam : MonoBehaviour
             {
                 hand.locking = target;
                 hand.lockProgress = 0;
-                if (target != null) Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
+                if (target != null)
+                {
+                    Haptics.Pulse(hand.isRight, Haptics.Strength.Light);
+                }
             }
 
             if (target != null)
@@ -224,7 +239,10 @@ public class GravityBeam : MonoBehaviour
     // while it's still in reach, so the lock doesn't jump between props.
     FlyingProp FindTarget(Transform muzzle, FlyingProp current)
     {
-        if (current != null && Score(muzzle, current) < float.MaxValue) return current;
+        if (current != null && Score(muzzle, current) < float.MaxValue)
+        {
+            return current;
+        }
 
         FlyingProp best = null;
         float bestScore = float.MaxValue;
@@ -243,12 +261,21 @@ public class GravityBeam : MonoBehaviour
     // Mostly "closest to where you're pointing", nudged towards nearer props. MaxValue = out of reach.
     float Score(Transform muzzle, FlyingProp prop)
     {
-        if (prop == null || !prop.isCatchable) return float.MaxValue;
+        if (prop == null || !prop.isCatchable)
+        {
+            return float.MaxValue;
+        }
         Vector3 toProp = prop.centre - muzzle.position;
         float distance = toProp.magnitude;
-        if (distance > range || distance < 0.05f) return float.MaxValue;
+        if (distance > range || distance < 0.05f)
+        {
+            return float.MaxValue;
+        }
         float angle = Vector3.Angle(muzzle.forward, toProp);
-        if (angle > aimAngle) return float.MaxValue;
+        if (angle > aimAngle)
+        {
+            return float.MaxValue;
+        }
         return angle + distance * 0.5f;
     }
 
@@ -256,7 +283,10 @@ public class GravityBeam : MonoBehaviour
     {
         Transform ring = hand.lockRing.transform;
         ring.position = at;
-        if (Camera.main != null) ring.rotation = Quaternion.LookRotation(at - Camera.main.transform.position);
+        if (Camera.main != null)
+        {
+            ring.rotation = Quaternion.LookRotation(at - Camera.main.transform.position);
+        }
         SpaceCafeVisuals.SetRing(hand.lockRing, LockRingRadius, fraction);
         hand.lockRing.startColor = hand.lockRing.endColor = beamColour;
         hand.lockRing.enabled = true;
@@ -265,7 +295,10 @@ public class GravityBeam : MonoBehaviour
     void Grab(Hand hand, FlyingProp prop, Transform muzzle)
     {
         // The other hand may have just got it
-        if (!prop.isCatchable) return;
+        if (!prop.isCatchable)
+        {
+            return;
+        }
         hand.held = prop;
         hand.holdDistance = Vector3.Distance(muzzle.position, prop.centre);
         hand.heldSince = Time.time;
@@ -278,13 +311,19 @@ public class GravityBeam : MonoBehaviour
             GameManager.instance.AddBonus(catchScore * Mathf.Min(catchStreak, maxStreakMultiplier), prop.centre);
         }
         Haptics.Pulse(hand.isRight, Haptics.Strength.Medium);
-        if (CatChaosSettings.instance != null) CatChaosSettings.instance.PlayCatch(prop.centre);
+        if (CatChaosSettings.instance != null)
+        {
+            CatChaosSettings.instance.PlayCatch(prop.centre);
+        }
     }
 
     // Letting go: a flick as you let go still sends it home
     void Let(Hand hand)
     {
-        if (hand.held == null) return;
+        if (hand.held == null)
+        {
+            return;
+        }
         if (flickToReturn && hand.velocity.magnitude >= flickSpeed)
         {
             Fling(hand);
@@ -313,7 +352,10 @@ public class GravityBeam : MonoBehaviour
         LineRenderer line = hand.beam;
         Vector3 direction = end - start;
         Vector3 side = Vector3.Cross(direction, Vector3.up);
-        if (side.sqrMagnitude < 0.0001f) side = Vector3.right;
+        if (side.sqrMagnitude < 0.0001f)
+        {
+            side = Vector3.right;
+        }
         side.Normalize();
         Vector3 up = Vector3.Cross(side, direction).normalized;
 
@@ -400,7 +442,13 @@ public class GravityBeam : MonoBehaviour
 
     static void SetVisible(Hand hand, bool visible)
     {
-        if (hand.beam.enabled != visible) hand.beam.enabled = visible;
-        if (hand.glow.enabled != visible) hand.glow.enabled = visible;
+        if (hand.beam.enabled != visible)
+        {
+            hand.beam.enabled = visible;
+        }
+        if (hand.glow.enabled != visible)
+        {
+            hand.glow.enabled = visible;
+        }
     }
 }

@@ -74,11 +74,20 @@ public class CatRaid : MonoBehaviour
     public static CatRaid Begin(CatOrder order, Target target, Settings settings, Action<CatRaid, Result> done)
     {
         NavMeshAgent agent = order.GetComponent<NavMeshAgent>();
-        if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh) return null;
-        if (!FloorSpotNear(target.position, agent, out Vector3 spot)) return null;
+        if (agent == null || !agent.isActiveAndEnabled || !agent.isOnNavMesh)
+        {
+            return null;
+        }
+        if (!FloorSpotNear(target.position, agent, out Vector3 spot))
+        {
+            return null;
+        }
 
         CatRaid raid = order.GetComponent<CatRaid>();
-        if (raid == null) raid = order.gameObject.AddComponent<CatRaid>();
+        if (raid == null)
+        {
+            raid = order.gameObject.AddComponent<CatRaid>();
+        }
         raid.Setup(order, agent, target, settings, done, spot);
         return raid;
     }
@@ -96,16 +105,31 @@ public class CatRaid : MonoBehaviour
             {
                 Vector3 probe = target + Quaternion.Euler(0, angle, 0) * Vector3.forward * radius;
                 probe.y = floorY;
-                if (!NavMesh.SamplePosition(probe, out NavMeshHit hit, 0.4f, NavMesh.AllAreas)) continue;
-                if (Mathf.Abs(hit.position.y - floorY) > 0.3f) continue;
+                if (!NavMesh.SamplePosition(probe, out NavMeshHit hit, 0.4f, NavMesh.AllAreas))
+                {
+                    continue;
+                }
+                if (Mathf.Abs(hit.position.y - floorY) > 0.3f)
+                {
+                    continue;
+                }
                 float off = new Vector2(hit.position.x - target.x, hit.position.z - target.z).magnitude;
-                if (off >= best) continue;
+                if (off >= best)
+                {
+                    continue;
+                }
                 if (!NavMesh.CalculatePath(agent.transform.position, hit.position, NavMesh.AllAreas, path) ||
-                    path.status != NavMeshPathStatus.PathComplete) continue;
+                    path.status != NavMeshPathStatus.PathComplete)
+                {
+                    continue;
+                }
                 best = off;
                 spot = hit.position;
             }
-            if (best < float.MaxValue) return true;   // the nearest ring that works
+            if (best < float.MaxValue)
+            {
+                return true;   // the nearest ring that works
+            }
         }
         return false;
     }
@@ -122,7 +146,10 @@ public class CatRaid : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
         committed = false;
         running = true;
-        if (!active.Contains(this)) active.Add(this);
+        if (!active.Contains(this))
+        {
+            active.Add(this);
+        }
         order.rightTreat -= OnRightTreat;
         order.rightTreat += OnRightTreat;
         routine = StartCoroutine(Run());
@@ -180,7 +207,10 @@ public class CatRaid : MonoBehaviour
             Vector3 gap = floorSpot - transform.position;
             gap.y = 0;
             left = gap.magnitude;
-            if (!agent.pathPending && left < 0.35f) break;
+            if (!agent.pathPending && left < 0.35f)
+            {
+                break;
+            }
             yield return null;
         }
         if (left > 1.5f)
@@ -223,12 +253,18 @@ public class CatRaid : MonoBehaviour
         }
         yield return Hop(from, landing, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
-        if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger("AngryCat");
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger("AngryCat");
+        }
         yield return new WaitForSeconds(0.15f);
         target.swat?.Invoke(transform.position);
         yield return new WaitForSeconds(0.45f);
 
-        if (upOnTop) yield return Hop(transform.position, floorSpot, 0.4f, 0.3f);
+        if (upOnTop)
+        {
+            yield return Hop(transform.position, floorSpot, 0.4f, 0.3f);
+        }
         Finish(Result.Swatted, true);
     }
 
@@ -248,9 +284,15 @@ public class CatRaid : MonoBehaviour
     // The right treat while it's winding up or sprinting stops the raid
     void OnRightTreat(CatOrder fed)
     {
-        if (!running || committed) return;
+        if (!running || committed)
+        {
+            return;
+        }
         bool stillHungry = fed.isHungry;
-        if (settings.saveBonus > 0) GameManager.instance.AddBonus(settings.saveBonus, fed.aboveBubble);
+        if (settings.saveBonus > 0)
+        {
+            GameManager.instance.AddBonus(settings.saveBonus, fed.aboveBubble);
+        }
         FloatingWord.Show(settings.savedText, fed.aboveBubble, new Color(0.4f, 1f, 0.5f));
         // A finished order goes off happy on its own; otherwise it forgets the raid and wanders off again
         Finish(stillHungry ? Result.Saved : Result.Served, stillHungry);
@@ -259,17 +301,29 @@ public class CatRaid : MonoBehaviour
     // Stops the raid where it is (e.g. the cats are being sent away), putting the cat back on the floor
     public void Cancel()
     {
-        if (running) Finish(Result.Cancelled, false);
+        if (running)
+        {
+            Finish(Result.Cancelled, false);
+        }
     }
 
     void Finish(Result result, bool resumeRoaming)
     {
-        if (!running) return;
+        if (!running)
+        {
+            return;
+        }
         running = false;
-        if (routine != null) StopCoroutine(routine);
+        if (routine != null)
+        {
+            StopCoroutine(routine);
+        }
         routine = null;
         ShowWarning(false);
-        if (voice != null) voice.Stop();
+        if (voice != null)
+        {
+            voice.Stop();
+        }
         order.busy = false;
         order.rightTreat -= OnRightTreat;
         active.Remove(this);
@@ -281,10 +335,16 @@ public class CatRaid : MonoBehaviour
                 agent.enabled = true;
                 agent.Warp(committed ? floorSpot : transform.position);
             }
-            if (!committed) RestoreAgentSettings();
+            if (!committed)
+            {
+                RestoreAgentSettings();
+            }
         }
         committed = false;
-        if (resumeRoaming && cat != null) cat.ResumeRoaming();
+        if (resumeRoaming && cat != null)
+        {
+            cat.ResumeRoaming();
+        }
         done?.Invoke(this, result);
     }
 
@@ -298,7 +358,10 @@ public class CatRaid : MonoBehaviour
 
     void OnDestroy()
     {
-        if (warning != null) Destroy(warning);
+        if (warning != null)
+        {
+            Destroy(warning);
+        }
     }
 
     void OnDisable()
@@ -314,14 +377,20 @@ public class CatRaid : MonoBehaviour
                 order.rightTreat -= OnRightTreat;
             }
             active.Remove(this);
-            if (agent != null && agent.speed != savedSpeed && savedSpeed > 0) RestoreAgentSettings();
+            if (agent != null && agent.speed != savedSpeed && savedSpeed > 0)
+            {
+                RestoreAgentSettings();
+            }
             done?.Invoke(this, Result.Cancelled);
         }
     }
 
     public static void CancelAll()
     {
-        foreach (CatRaid raid in active.ToArray()) raid.Cancel();
+        foreach (CatRaid raid in active.ToArray())
+        {
+            raid.Cancel();
+        }
     }
 
     // ---------- Tells ----------
@@ -330,7 +399,10 @@ public class CatRaid : MonoBehaviour
     {
         if (show)
         {
-            if (warning == null) warning = FloatingWord.Make("!", settings.warningColour, 5f);
+            if (warning == null)
+            {
+                warning = FloatingWord.Make("!", settings.warningColour, 5f);
+            }
             warning.SetActive(true);
             StartCoroutine(BounceWarning());
         }
@@ -355,8 +427,14 @@ public class CatRaid : MonoBehaviour
 
     void PlayWindUp()
     {
-        if (windUpClip == null) windUpClip = Resources.Load<AudioClip>("CafeSounds/windup");
-        if (windUpClip == null) return;
+        if (windUpClip == null)
+        {
+            windUpClip = Resources.Load<AudioClip>("CafeSounds/windup");
+        }
+        if (windUpClip == null)
+        {
+            return;
+        }
         if (voice == null)
         {
             voice = gameObject.AddComponent<AudioSource>();

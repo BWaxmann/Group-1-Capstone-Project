@@ -34,7 +34,10 @@ public class PickupManager : MonoBehaviour
 
     public void SpawnPickup(int pickupIndex, Vector3 position)
     {
-        if (allowed != null && !allowed(pickupIndex)) return;
+        if (allowed != null && !allowed(pickupIndex))
+        {
+            return;
+        }
         GameObject obj = pickupSpawner.GetObjectFromPool(pickupIndex);
         if (obj != null)
         {

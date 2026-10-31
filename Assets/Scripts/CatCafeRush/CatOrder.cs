@@ -158,16 +158,28 @@ public class CatOrder : MonoBehaviour
     public static SphereCollider AddHitbox(GameObject catObject, float generosity)
     {
         Transform existing = catObject.transform.Find("Rush Hitbox");
-        if (existing != null) return existing.GetComponent<SphereCollider>();
+        if (existing != null)
+        {
+            return existing.GetComponent<SphereCollider>();
+        }
 
         Bounds body = new Bounds(catObject.transform.position + Vector3.up * 0.2f, Vector3.one * 0.3f);
         bool any = false;
         foreach (Renderer rend in catObject.GetComponentsInChildren<Renderer>())
         {
-            if (!(rend is SkinnedMeshRenderer) && !(rend is MeshRenderer)) continue;
-            if (rend.GetComponentInParent<Canvas>() != null || rend.GetComponentInParent<OrderBubble>() != null) continue;
+            if (!(rend is SkinnedMeshRenderer) && !(rend is MeshRenderer))
+            {
+                continue;
+            }
+            if (rend.GetComponentInParent<Canvas>() != null || rend.GetComponentInParent<OrderBubble>() != null)
+            {
+                continue;
+            }
             if (!any) { body = rend.bounds; any = true; }
-            else body.Encapsulate(rend.bounds);
+            else
+            {
+                body.Encapsulate(rend.bounds);
+            }
         }
 
         // A body measured somewhere odd (e.g. before the cat was placed) gets a sensible default instead
@@ -192,13 +204,19 @@ public class CatOrder : MonoBehaviour
     public static Vector3? AssistTarget(Treat treat, float maxAngle)
     {
         Vector3 heading = treat.velocity;
-        if (heading.sqrMagnitude < 0.01f) return null;
+        if (heading.sqrMagnitude < 0.01f)
+        {
+            return null;
+        }
         Vector3 from = treat.transform.position;
         Vector3? best = null;
         float bestAngle = maxAngle;
         foreach (CatOrder catOrder in all)
         {
-            if (catOrder == null || catOrder.wantedFood != treat.foodVariation) continue;
+            if (catOrder == null || catOrder.wantedFood != treat.foodVariation)
+            {
+                continue;
+            }
             Vector3 point = catOrder.aimPoint;
             float angle = Vector3.Angle(heading, point - from);
             if (angle <= bestAngle)
@@ -214,8 +232,14 @@ public class CatOrder : MonoBehaviour
     public static CatOrder Give(CatMovement cat, List<Food> foods, float bubbleScale, float hitboxGenerosity = 0f, float speedMultiplier = 1f)
     {
         CatOrder catOrder = cat.GetComponent<CatOrder>();
-        if (catOrder == null) catOrder = cat.gameObject.AddComponent<CatOrder>();
-        if (hitboxGenerosity > 0 && catOrder.hitbox == null) catOrder.hitbox = AddHitbox(cat.gameObject, hitboxGenerosity);
+        if (catOrder == null)
+        {
+            catOrder = cat.gameObject.AddComponent<CatOrder>();
+        }
+        if (hitboxGenerosity > 0 && catOrder.hitbox == null)
+        {
+            catOrder.hitbox = AddHitbox(cat.gameObject, hitboxGenerosity);
+        }
         catOrder.Begin(foods, bubbleScale);
         catOrder.SetSpeed(speedMultiplier);
         return catOrder;
@@ -224,14 +248,23 @@ public class CatOrder : MonoBehaviour
     // Walking speed compared with the cat's own (it starts from the cat's own speed each time, so pooled cats don't speed up)
     void SetSpeed(float multiplier)
     {
-        if (agent == null) return;
-        if (baseSpeed < 0) baseSpeed = agent.speed;
+        if (agent == null)
+        {
+            return;
+        }
+        if (baseSpeed < 0)
+        {
+            baseSpeed = agent.speed;
+        }
         agent.speed = baseSpeed * multiplier;
     }
 
     void OnEnable()
     {
-        if (!all.Contains(this)) all.Add(this);
+        if (!all.Contains(this))
+        {
+            all.Add(this);
+        }
     }
 
     void Begin(List<Food> foods, float bubbleScale)
@@ -245,10 +278,16 @@ public class CatOrder : MonoBehaviour
         cat.treatGate = Eat;
         cat.wantsTreats = () => ordered && isHungry;   // not before it's ordered, nor once it's full or leaving
 
-        if (bubble == null) bubble = OrderBubble.Create(transform);
+        if (bubble == null)
+        {
+            bubble = OrderBubble.Create(transform);
+        }
         bubble.transform.localScale = Vector3.one * bubbleScale;
         icons = new List<OrderBubble.Item>();
-        foreach (Food food in order) icons.Add(food.icon);
+        foreach (Food food in order)
+        {
+            icons.Add(food.icon);
+        }
         bubbleHeight = BubbleHeight(bubbleScale);
         bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
         ordered = true;
@@ -261,7 +300,10 @@ public class CatOrder : MonoBehaviour
     public void OrderLater(float delay, float patience)
     {
         ordered = false;
-        if (bubble != null) bubble.Hide();
+        if (bubble != null)
+        {
+            bubble.Hide();
+        }
         patienceTotal = patience;
         patienceLeft = patience;
         patienceSpent = false;
@@ -271,7 +313,10 @@ public class CatOrder : MonoBehaviour
     IEnumerator OrderRoutine(float delay)
     {
         yield return new WaitForSeconds(delay);
-        if (!isHungry) yield break;
+        if (!isHungry)
+        {
+            yield break;
+        }
 
         // Somewhere the player can see it first (not tucked away behind the furniture or off to one side)
         Vector3? spot = orderSpotFor?.Invoke(this);
@@ -281,13 +326,22 @@ public class CatOrder : MonoBehaviour
             agent.isStopped = false;
             agent.SetDestination(spot.Value);
             float giveUp = Time.time + 6f;
-            while (isHungry && Time.time < giveUp && (agent.pathPending || agent.remainingDistance > 0.3f)) yield return null;
-            if (!isHungry) yield break;
+            while (isHungry && Time.time < giveUp && (agent.pathPending || agent.remainingDistance > 0.3f))
+            {
+                yield return null;
+            }
+            if (!isHungry)
+            {
+                yield break;
+            }
         }
 
         // It stops where it is, turns to the player, the counter bell dings, and up pops its order
         cat.StopAllCoroutines();   // stops its roaming
-        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = true;
+        if (agent != null && agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
         ordered = true;
         bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
         PlayDing();
@@ -302,10 +356,16 @@ public class CatOrder : MonoBehaviour
         {
             eye = null;
         }
-        if (eye == null) yield break;
+        if (eye == null)
+        {
+            yield break;
+        }
         Vector3 look = eye.position - transform.position;
         look.y = 0;
-        if (look.sqrMagnitude < 0.001f) yield break;
+        if (look.sqrMagnitude < 0.001f)
+        {
+            yield break;
+        }
         Quaternion from = transform.rotation;
         Quaternion to = Quaternion.LookRotation(look);
         float t = 0;
@@ -320,25 +380,43 @@ public class CatOrder : MonoBehaviour
     // Back to the start of its order (the Mafia cat won't take a wrong treat lying down)
     public void Restart()
     {
-        if (step >= order.Count || runningOff) return;
+        if (step >= order.Count || runningOff)
+        {
+            return;
+        }
         step = 0;
-        if (bubble != null) bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
+        if (bubble != null)
+        {
+            bubble.Show(icons, new Vector3(0, bubbleHeight, 0));
+        }
     }
 
     // A good while of patience back (e.g. it was fed the right colour just as it set off to raid)
     public void RefillPatience(float fraction)
     {
-        if (patienceTotal <= 0) return;
+        if (patienceTotal <= 0)
+        {
+            return;
+        }
         patienceLeft = patienceTotal * Mathf.Clamp01(fraction);
         patienceSpent = false;
     }
 
     void Update()
     {
-        if (!ordered || patienceTotal <= 0 || patienceSpent || busy || !isHungry) return;
+        if (!ordered || patienceTotal <= 0 || patienceSpent || busy || !isHungry)
+        {
+            return;
+        }
         patienceLeft -= Time.deltaTime;
-        if (bubble != null) bubble.SetPatience(patienceFraction);
-        if (patienceLeft > 0) return;
+        if (bubble != null)
+        {
+            bubble.SetPatience(patienceFraction);
+        }
+        if (patienceLeft > 0)
+        {
+            return;
+        }
 
         // Had enough of waiting
         patienceSpent = true;
@@ -352,8 +430,14 @@ public class CatOrder : MonoBehaviour
 
     void PlayDing()
     {
-        if (ding == null) ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
-        if (ding == null) return;
+        if (ding == null)
+        {
+            ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
+        }
+        if (ding == null)
+        {
+            return;
+        }
         if (dingSource == null)
         {
             dingSource = gameObject.AddComponent<AudioSource>();
@@ -373,8 +457,14 @@ public class CatOrder : MonoBehaviour
         bool any = false;
         foreach (Renderer rend in GetComponentsInChildren<Renderer>())
         {
-            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer || rend.GetComponentInParent<OrderBubble>() != null) continue;
-            if (rend.GetComponentInParent<Canvas>() != null) continue;
+            if (rend is ParticleSystemRenderer || rend is LineRenderer || rend is TrailRenderer || rend.GetComponentInParent<OrderBubble>() != null)
+            {
+                continue;
+            }
+            if (rend.GetComponentInParent<Canvas>() != null)
+            {
+                continue;
+            }
             float height = rend.bounds.max.y - transform.position.y;
             if (any)
             {
@@ -392,7 +482,10 @@ public class CatOrder : MonoBehaviour
     // Decides what a treat does to this cat. True = eat it as normal (one bite).
     bool Eat(Treat treat)
     {
-        if (runningOff || step >= order.Count) return false;
+        if (runningOff || step >= order.Count)
+        {
+            return false;
+        }
         if (!ordered)
         {
             // Hasn't ordered yet: "hm?"
@@ -413,7 +506,10 @@ public class CatOrder : MonoBehaviour
         // A scatter or buckshot volley counts once per cat (the other pellets just vanish)
         if (treat.shotId != 0)
         {
-            if (treat.shotId == lastShotEaten) return false;
+            if (treat.shotId == lastShotEaten)
+            {
+                return false;
+            }
             lastShotEaten = treat.shotId;
         }
 
@@ -455,16 +551,25 @@ public class CatOrder : MonoBehaviour
     IEnumerator HideBubbleSoon()
     {
         yield return new WaitForSeconds(0.35f);
-        if (bubble != null) bubble.Hide();
+        if (bubble != null)
+        {
+            bubble.Hide();
+        }
     }
 
     // Leaves the room through `exit` without being fed (no score), then goes back to the pool
     public void RunOff(Vector3 exit)
     {
-        if (!isActiveAndEnabled || cat == null || cat.isFullyFed || runningOff) return;
+        if (!isActiveAndEnabled || cat == null || cat.isFullyFed || runningOff)
+        {
+            return;
+        }
         runningOff = true;
         cat.treatGate = t => false;
-        if (bubble != null) bubble.Hide();
+        if (bubble != null)
+        {
+            bubble.Hide();
+        }
         cat.StopAllCoroutines();   // stops its roaming
         StartCoroutine(RunRoutine(exit, null));
     }
@@ -488,7 +593,10 @@ public class CatOrder : MonoBehaviour
             agent.isStopped = false;
 
             // Up on the furniture with no way down from there (e.g. the couch): it hops down to the floor first
-            if (!CanWalkTo(exit) && FloorSpotTowards(exit, out Vector3 floor)) yield return HopDown(floor);
+            if (!CanWalkTo(exit) && FloorSpotTowards(exit, out Vector3 floor))
+            {
+                yield return HopDown(floor);
+            }
             agent.SetDestination(exit);
 
             float timer = 0;
@@ -577,9 +685,18 @@ public class CatOrder : MonoBehaviour
             {
                 Vector3 probe = transform.position + Quaternion.Euler(0, angle, 0) * Vector3.forward * radius;
                 probe.y = exit.y;
-                if (!NavMesh.SamplePosition(probe, out NavMeshHit hit, 0.4f, NavMesh.AllAreas)) continue;
-                if (Mathf.Abs(hit.position.y - exit.y) > 0.3f) continue;
-                if (!NavMesh.CalculatePath(hit.position, exit, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
+                if (!NavMesh.SamplePosition(probe, out NavMeshHit hit, 0.4f, NavMesh.AllAreas))
+                {
+                    continue;
+                }
+                if (Mathf.Abs(hit.position.y - exit.y) > 0.3f)
+                {
+                    continue;
+                }
+                if (!NavMesh.CalculatePath(hit.position, exit, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete)
+                {
+                    continue;
+                }
                 // Of the spots this far out, the one most on the way to the exit
                 float score = Vector3.Distance(hit.position, exit);
                 if (score < best)
@@ -588,7 +705,10 @@ public class CatOrder : MonoBehaviour
                     spot = hit.position;
                 }
             }
-            if (best < float.MaxValue) return true;
+            if (best < float.MaxValue)
+            {
+                return true;
+            }
         }
         return false;
     }
@@ -600,7 +720,10 @@ public class CatOrder : MonoBehaviour
         Vector3 from = transform.position;
         Vector3 look = floor - from;
         look.y = 0;
-        if (look.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(look);
+        if (look.sqrMagnitude > 0.0001f)
+        {
+            transform.rotation = Quaternion.LookRotation(look);
+        }
         float t = 0;
         while (t < 1f)
         {
@@ -643,7 +766,10 @@ public class CatOrder : MonoBehaviour
             cat.treatGate = null;
             cat.leaveOverride = null;
         }
-        if (bubble != null) bubble.Hide();
+        if (bubble != null)
+        {
+            bubble.Hide();
+        }
         order.Clear();
     }
 }

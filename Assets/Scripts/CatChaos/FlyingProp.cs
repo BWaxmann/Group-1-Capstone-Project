@@ -82,13 +82,25 @@ public class FlyingProp : MonoBehaviour
             FlyingProp best = null;
             foreach (FlyingProp prop in all)
             {
-                if (prop == null || prop.state != State.Home) continue;
+                if (prop == null || prop.state != State.Home)
+                {
+                    continue;
+                }
                 Vector3 offset = prop.transform.position - point;
                 offset.y *= 0.5f;   // reaching up or down a little is fine
-                if (offset.magnitude > reach) continue;
-                if (best == null || prop.transform.position.y > best.transform.position.y) best = prop;
+                if (offset.magnitude > reach)
+                {
+                    continue;
+                }
+                if (best == null || prop.transform.position.y > best.transform.position.y)
+                {
+                    best = prop;
+                }
             }
-            if (best == null || !best.Knock(playerPosition)) break;
+            if (best == null || !best.Knock(playerPosition))
+            {
+                break;
+            }
             knocked++;
         }
         return knocked;
@@ -151,7 +163,10 @@ public class FlyingProp : MonoBehaviour
     {
         get
         {
-            if (state != State.Held) return false;
+            if (state != State.Held)
+            {
+                return false;
+            }
             MeasureZone();
             Vector3 c = centre;
             float across = new Vector2(c.x - zoneCentre.x, c.z - zoneCentre.z).magnitude;
@@ -162,7 +177,10 @@ public class FlyingProp : MonoBehaviour
     // Finds the table top under its home spot (the widest solid thing just below it)
     void MeasureZone()
     {
-        if (zoneMeasured) return;
+        if (zoneMeasured)
+        {
+            return;
+        }
         zoneMeasured = true;
         Vector3 home = HomePosition();
         zoneCentre = home;
@@ -171,10 +189,16 @@ public class FlyingProp : MonoBehaviour
         foreach (RaycastHit hit in Physics.RaycastAll(home + Vector3.up * 0.05f, Vector3.down, 1.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             Collider below = hit.collider;
-            if (below.GetComponentInParent<FlyingProp>() != null || below.GetComponentInParent<CatMovement>() != null) continue;
+            if (below.GetComponentInParent<FlyingProp>() != null || below.GetComponentInParent<CatMovement>() != null)
+            {
+                continue;
+            }
             Bounds b = below.bounds;
             float half = Mathf.Max(b.extents.x, b.extents.z);
-            if (half < 0.3f || half > 1.6f || half <= widest) continue;
+            if (half < 0.3f || half > 1.6f || half <= widest)
+            {
+                continue;
+            }
             widest = half;
             zoneCentre = new Vector3(b.center.x, Mathf.Max(hit.point.y, b.max.y), b.center.z);
             zoneRadius = Mathf.Clamp(Mathf.Min(b.extents.x, b.extents.z), 0.45f, 1.2f);
@@ -224,17 +248,26 @@ public class FlyingProp : MonoBehaviour
         {
             homeBounds = new Bounds(transform.position, Vector3.zero);
         }
-        foreach (Renderer rend in renderers) homeBounds.Encapsulate(rend.bounds);
+        foreach (Renderer rend in renderers)
+        {
+            homeBounds.Encapsulate(rend.bounds);
+        }
     }
 
     void Awake()
     {
-        if (homeParent == null) Setup();
+        if (homeParent == null)
+        {
+            Setup();
+        }
     }
 
     void OnEnable()
     {
-        if (!all.Contains(this)) all.Add(this);
+        if (!all.Contains(this))
+        {
+            all.Add(this);
+        }
     }
 
     void OnDisable()
@@ -248,11 +281,17 @@ public class FlyingProp : MonoBehaviour
     public bool Knock(Vector3 playerPosition, bool slowFall = false, bool ignoreLimit = false)
     {
         CatChaosSettings settings = CatChaosSettings.instance;
-        if (state != State.Home || settings == null || (!ignoreLimit && airborne.Count >= settings.maxAirborne)) return false;
+        if (state != State.Home || settings == null || (!ignoreLimit && airborne.Count >= settings.maxAirborne))
+        {
+            return false;
+        }
 
         Vector3 toPlayer = playerPosition - transform.position;
         toPlayer.y = 0;
-        if (toPlayer.sqrMagnitude < 0.01f) toPlayer = -transform.forward;
+        if (toPlayer.sqrMagnitude < 0.01f)
+        {
+            toPlayer = -transform.forward;
+        }
         toPlayer.Normalize();
 
         // A random direction within the spread, but not into a wall: try a few, else head towards the player.
@@ -310,7 +349,10 @@ public class FlyingProp : MonoBehaviour
     public bool Topple()
     {
         CatChaosSettings settings = CatChaosSettings.instance;
-        if (state != State.Home || settings == null) return false;
+        if (state != State.Home || settings == null)
+        {
+            return false;
+        }
 
         Vector2 random = Random.insideUnitCircle.normalized;
         Vector3 side = new Vector3(random.x, 0, random.y);
@@ -320,8 +362,14 @@ public class FlyingProp : MonoBehaviour
         float landY = settings.floorHeight;
         foreach (RaycastHit hit in Physics.RaycastAll(over + Vector3.up * 0.3f, Vector3.down, 4f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
-            if (hit.collider.GetComponentInParent<CatMovement>() != null) continue;
-            if (hit.point.y > landY && hit.point.y <= start.y + 0.05f) landY = hit.point.y;
+            if (hit.collider.GetComponentInParent<CatMovement>() != null)
+            {
+                continue;
+            }
+            if (hit.point.y > landY && hit.point.y <= start.y + 0.05f)
+            {
+                landY = hit.point.y;
+            }
         }
         Vector3 land = new Vector3(over.x, landY, over.z);
 
@@ -364,7 +412,10 @@ public class FlyingProp : MonoBehaviour
     // The gravity beam has grabbed it
     public void Hold(Vector3 target)
     {
-        if (state != State.Flying) return;
+        if (state != State.Flying)
+        {
+            return;
+        }
         state = State.Held;
         Grabbed?.Invoke(this);
         holdTarget = target;
@@ -385,7 +436,10 @@ public class FlyingProp : MonoBehaviour
     // True the first time it's caught since it was knocked flying (a dropped prop grabbed again doesn't score again)
     public bool FirstCatch()
     {
-        if (caughtThisFlight) return false;
+        if (caughtThisFlight)
+        {
+            return false;
+        }
         caughtThisFlight = true;
         return true;
     }
@@ -394,14 +448,20 @@ public class FlyingProp : MonoBehaviour
     // its pile: otherwise it drops)
     public void Release()
     {
-        if (state != State.Held) return;
+        if (state != State.Held)
+        {
+            return;
+        }
         if (!dragHome || nearHome)
         {
             ReturnHome();
             return;
         }
         ShowHomeRing(false);
-        if (dragHint != null) Destroy(dragHint);
+        if (dragHint != null)
+        {
+            Destroy(dragHint);
+        }
         state = State.Flying;
         falling = true;
         velocity = Vector3.zero;
@@ -418,9 +478,15 @@ public class FlyingProp : MonoBehaviour
     // Sent home (flicked back, or let go over its pile): it flies back to its spot
     public void ReturnHome()
     {
-        if (state != State.Held) return;
+        if (state != State.Held)
+        {
+            return;
+        }
         ShowHomeRing(false);
-        if (dragHint != null) Destroy(dragHint);
+        if (dragHint != null)
+        {
+            Destroy(dragHint);
+        }
         state = State.Returning;
         timer = 0;
         returnStart = transform.position;
@@ -430,7 +496,10 @@ public class FlyingProp : MonoBehaviour
     void Update()
     {
         CatChaosSettings settings = CatChaosSettings.instance;
-        if (settings == null) return;
+        if (settings == null)
+        {
+            return;
+        }
         float dt = Time.deltaTime;
         UpdateGlow(settings);
 
@@ -503,7 +572,10 @@ public class FlyingProp : MonoBehaviour
                 Vector3 bob = Vector3.up * Mathf.Sin(Time.time * 4f) * 0.03f;
                 transform.position = Vector3.Lerp(transform.position, holdTarget + bob, 1f - Mathf.Exp(-12f * dt));
                 transform.Rotate(Vector3.up, 90f * dt, Space.World);
-                if (dragHome) UpdateHomeRing();
+                if (dragHome)
+                {
+                    UpdateHomeRing();
+                }
                 break;
 
             case State.Returning:
@@ -524,7 +596,10 @@ public class FlyingProp : MonoBehaviour
 
             case State.Landed:
                 // Missed props can stay broken for the rest of the round (the pile shows what's left)
-                if (settings.missedStayDown) break;
+                if (settings.missedStayDown)
+                {
+                    break;
+                }
                 timer += dt;
                 if (timer >= settings.respawnDelay)
                 {
@@ -550,10 +625,16 @@ public class FlyingProp : MonoBehaviour
 
         Vector3 fromViewer = transform.position - viewer;
         fromViewer.y = 0;
-        if (fromViewer.magnitude < 1.4f) direction += fromViewer.normalized * 2f;
+        if (fromViewer.magnitude < 1.4f)
+        {
+            direction += fromViewer.normalized * 2f;
+        }
 
         direction.y = 0;
-        if (direction.sqrMagnitude < 0.0001f) return Vector3.zero;
+        if (direction.sqrMagnitude < 0.0001f)
+        {
+            return Vector3.zero;
+        }
         direction.Normalize();
 
         // Not into a wall: if one's close that way, head back towards the action instead
@@ -585,9 +666,15 @@ public class FlyingProp : MonoBehaviour
             {
                 normal.Normalize();
                 float into = Vector3.Dot(velocity, normal);
-                if (into < 0) velocity -= normal * into * 1.4f;
+                if (into < 0)
+                {
+                    velocity -= normal * into * 1.4f;
+                }
                 float driftInto = Vector3.Dot(driftVelocity, normal);
-                if (driftInto < 0) driftVelocity -= normal * driftInto * 2f;
+                if (driftInto < 0)
+                {
+                    driftVelocity -= normal * driftInto * 2f;
+                }
                 step = velocity * dt;
             }
         }
@@ -601,7 +688,10 @@ public class FlyingProp : MonoBehaviour
             Vector3 outward = away / distance;
             next -= outward * (distance - maxReach);
             float outSpeed = Vector3.Dot(velocity, outward);
-            if (outSpeed > 0) velocity -= outward * outSpeed;
+            if (outSpeed > 0)
+            {
+                velocity -= outward * outSpeed;
+            }
             step = next - transform.position;
         }
         return step;
@@ -615,7 +705,10 @@ public class FlyingProp : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             Collider other = wallHits[i].collider;
-            if (other.GetComponentInParent<FlyingProp>() != null || other.GetComponentInParent<CatMovement>() != null) continue;
+            if (other.GetComponentInParent<FlyingProp>() != null || other.GetComponentInParent<CatMovement>() != null)
+            {
+                continue;
+            }
             lowest = Mathf.Min(lowest, wallHits[i].point.y);
         }
         return lowest;
@@ -633,11 +726,20 @@ public class FlyingProp : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             RaycastHit hit = wallHits[i];
-            if (hit.distance <= 0f || hit.distance >= nearest) continue;
-            if (Vector3.Dot(hit.normal, Vector3.up) > 0.6f) continue;
+            if (hit.distance <= 0f || hit.distance >= nearest)
+            {
+                continue;
+            }
+            if (Vector3.Dot(hit.normal, Vector3.up) > 0.6f)
+            {
+                continue;
+            }
             Collider other = hit.collider;
             if (other.GetComponentInParent<FlyingProp>() != null || other.GetComponentInParent<CatMovement>() != null ||
-                other.GetComponentInParent<PlayerInput>() != null) continue;
+                other.GetComponentInParent<PlayerInput>() != null)
+            {
+                continue;
+            }
             nearest = hit.distance;
             normal = hit.normal;
         }
@@ -653,9 +755,18 @@ public class FlyingProp : MonoBehaviour
             glow = gameObject.AddComponent<Outline>();
             glow.OutlineMode = Outline.Mode.OutlineAll;
         }
-        if (glow == null) return;
-        if (glow.enabled != on) glow.enabled = on;
-        if (!on) return;
+        if (glow == null)
+        {
+            return;
+        }
+        if (glow.enabled != on)
+        {
+            glow.enabled = on;
+        }
+        if (!on)
+        {
+            return;
+        }
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * 10f);
         glow.OutlineWidth = Mathf.Lerp(3f, 8f, pulse);
         glow.OutlineColor = Color.Lerp(settings.glowColour, Color.white, pulse * 0.6f);
@@ -669,11 +780,17 @@ public class FlyingProp : MonoBehaviour
         CatChaosSettings settings = CatChaosSettings.instance;
         foreach (FlyingProp prop in all)
         {
-            if (prop == null || prop.state != State.Landed) continue;
+            if (prop == null || prop.state != State.Landed)
+            {
+                continue;
+            }
             prop.SettleHome();
             prop.SetVisible(true);
             prop.StartCoroutine(prop.PopIn());
-            if (settings != null && back % 3 == 0) settings.PlayRespawn(prop.transform.position);   // not a wall of sound
+            if (settings != null && back % 3 == 0)
+            {
+                settings.PlayRespawn(prop.transform.position);   // not a wall of sound
+            }
             back++;
         }
         return back;
@@ -721,7 +838,10 @@ public class FlyingProp : MonoBehaviour
             MeasureZone();
             homeRing = SpaceCafeVisuals.Ring(holder, "Ring", zoneRadius, 0.03f, Color.white);
         }
-        if (homeRing != null && homeRing.transform.parent.gameObject.activeSelf != show) homeRing.transform.parent.gameObject.SetActive(show);
+        if (homeRing != null && homeRing.transform.parent.gameObject.activeSelf != show)
+        {
+            homeRing.transform.parent.gameObject.SetActive(show);
+        }
     }
 
     void Land(CatChaosSettings settings)
@@ -759,8 +879,14 @@ public class FlyingProp : MonoBehaviour
             trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             trail.receiveShadows = false;
         }
-        if (trail == null) return;
-        if (on) trail.Clear();
+        if (trail == null)
+        {
+            return;
+        }
+        if (on)
+        {
+            trail.Clear();
+        }
         trail.emitting = on;
     }
 
@@ -780,24 +906,36 @@ public class FlyingProp : MonoBehaviour
         }
         // Down onto what's actually there, and anything that was resting lower for want of this goes back up
         sunk = RestingDrop();
-        if (sunk > 0) transform.position += Vector3.down * sunk;
+        if (sunk > 0)
+        {
+            transform.position += Vector3.down * sunk;
+        }
         ResettleThoseOnTop();
     }
 
     // The props it sits on at home (worked out once, from where everything started)
     List<FlyingProp> Supports()
     {
-        if (supports != null) return supports;
+        if (supports != null)
+        {
+            return supports;
+        }
         supports = new List<FlyingProp>();
         Vector3 middle = homeBounds.center;
         foreach (FlyingProp other in all)
         {
-            if (other == null || other == this) continue;
+            if (other == null || other == this)
+            {
+                continue;
+            }
             Bounds below = other.homeBounds;
             bool underneath = below.max.y <= middle.y && below.max.y >= homeBounds.min.y - 0.05f;
             bool across = middle.x >= below.min.x - 0.03f && middle.x <= below.max.x + 0.03f &&
                           middle.z >= below.min.z - 0.03f && middle.z <= below.max.z + 0.03f;
-            if (underneath && across) supports.Add(other);
+            if (underneath && across)
+            {
+                supports.Add(other);
+            }
         }
         return supports;
     }
@@ -807,11 +945,17 @@ public class FlyingProp : MonoBehaviour
     float RestingDrop()
     {
         List<FlyingProp> under = Supports();
-        if (under.Count == 0) return 0f;
+        if (under.Count == 0)
+        {
+            return 0f;
+        }
         float top = float.MinValue;
         foreach (FlyingProp support in under)
         {
-            if (support != null && support.state == State.Home) top = Mathf.Max(top, support.homeBounds.max.y - support.sunk);
+            if (support != null && support.state == State.Home)
+            {
+                top = Mathf.Max(top, support.homeBounds.max.y - support.sunk);
+            }
         }
         if (top == float.MinValue)
         {
@@ -820,14 +964,20 @@ public class FlyingProp : MonoBehaviour
             float nearest = float.MaxValue;
             foreach (RaycastHit hit in hits)
             {
-                if (hit.collider.GetComponentInParent<FlyingProp>() != null || hit.collider.GetComponentInParent<CatMovement>() != null) continue;
+                if (hit.collider.GetComponentInParent<FlyingProp>() != null || hit.collider.GetComponentInParent<CatMovement>() != null)
+                {
+                    continue;
+                }
                 if (hit.distance < nearest)
                 {
                     nearest = hit.distance;
                     top = hit.point.y;
                 }
             }
-            if (top == float.MinValue) return 0f;
+            if (top == float.MinValue)
+            {
+                return 0f;
+            }
         }
         return Mathf.Clamp(homeBounds.min.y - top, 0f, 1f);
     }
@@ -837,9 +987,15 @@ public class FlyingProp : MonoBehaviour
     {
         foreach (FlyingProp other in all)
         {
-            if (other == null || other == this || other.state != State.Home || !other.Supports().Contains(this)) continue;
+            if (other == null || other == this || other.state != State.Home || !other.Supports().Contains(this))
+            {
+                continue;
+            }
             float drop = other.RestingDrop();
-            if (Mathf.Abs(drop - other.sunk) < 0.005f) continue;
+            if (Mathf.Abs(drop - other.sunk) < 0.005f)
+            {
+                continue;
+            }
             other.StartCoroutine(other.SinkTo(drop));
         }
     }
@@ -880,7 +1036,10 @@ public class FlyingProp : MonoBehaviour
     {
         foreach (Renderer rend in renderers)
         {
-            if (rend != null) rend.enabled = visible;
+            if (rend != null)
+            {
+                rend.enabled = visible;
+            }
         }
     }
 
@@ -893,6 +1052,9 @@ public class FlyingProp : MonoBehaviour
             transform.localScale = homeLocalScale * Mathf.Max(0.01f, SpaceCafeVisuals.EaseOutBack(t / 0.35f));
             yield return null;
         }
-        if (state == State.Home) transform.localScale = homeLocalScale;
+        if (state == State.Home)
+        {
+            transform.localScale = homeLocalScale;
+        }
     }
 }

@@ -47,7 +47,10 @@ public class ShiftSky : MonoBehaviour
     // Puts the sky up, following `progress` (0 = start of the shift, 1 = the end). Null if it's off or missing.
     public static ShiftSky Begin(Settings settings, Func<float> progress)
     {
-        if (settings == null || !settings.enabled || progress == null) return null;
+        if (settings == null || !settings.enabled || progress == null)
+        {
+            return null;
+        }
         GameObject controllerPrefab = Resources.Load<GameObject>(ControllerPath);
         GameObject cyclePrefab = Resources.Load<GameObject>(CyclePath);
         if (controllerPrefab == null || cyclePrefab == null)
@@ -61,10 +64,16 @@ public class ShiftSky : MonoBehaviour
         holder.SetActive(false);
         GameObject controllerObject = Instantiate(controllerPrefab, holder.transform);
         SkyboxController controller = controllerObject.GetComponent<SkyboxController>();
-        if (controller != null && controller.SkyboxMaterial != null) controller.SkyboxMaterial = new Material(controller.SkyboxMaterial);
+        if (controller != null && controller.SkyboxMaterial != null)
+        {
+            controller.SkyboxMaterial = new Material(controller.SkyboxMaterial);
+        }
         if (!settings.sunAndMoonLights)
         {
-            foreach (Light light in controllerObject.GetComponentsInChildren<Light>(true)) light.enabled = false;
+            foreach (Light light in controllerObject.GetComponentsInChildren<Light>(true))
+            {
+                light.enabled = false;
+            }
         }
         GameObject cycleObject = Instantiate(cyclePrefab, holder.transform);
 
@@ -76,7 +85,10 @@ public class ShiftSky : MonoBehaviour
         {
             foreach (Renderer layer in FindObjectsOfType<Renderer>())
             {
-                if (layer.sharedMaterial == null || layer.sharedMaterial.name != settings.skyLayer || !layer.sharedMaterial.HasProperty("_Color")) continue;
+                if (layer.sharedMaterial == null || layer.sharedMaterial.name != settings.skyLayer || !layer.sharedMaterial.HasProperty("_Color"))
+                {
+                    continue;
+                }
                 Material own = layer.material;   // its own copy (the asset is never changed)
                 sky.skyLayer.Add(own);
                 sky.skyLayerColour.Add(own.color);
@@ -96,14 +108,20 @@ public class ShiftSky : MonoBehaviour
             sky.moon = moon.GetComponentsInChildren<Renderer>();
             sky.ShowMoon(false);
         }
-        if (sky.cycle != null) sky.cycle.TimeOfDay = settings.startTimeOfDay;
+        if (sky.cycle != null)
+        {
+            sky.cycle.TimeOfDay = settings.startTimeOfDay;
+        }
         holder.SetActive(true);
         return sky;
     }
 
     void Update()
     {
-        if (cycle == null || progress == null) return;
+        if (cycle == null || progress == null)
+        {
+            return;
+        }
         float time = Mathf.Lerp(settings.startTimeOfDay, settings.endTimeOfDay, Mathf.Clamp01(progress()));
         cycle.TimeOfDay = time;
 
@@ -113,7 +131,10 @@ public class ShiftSky : MonoBehaviour
         SetSkyLayer(1f - day);
 
         // The moon comes out once it's getting dark, when nobody's looking (so it never pops in)
-        if (moon != null && !moonOut && day < 0.5f && !LookingUp()) ShowMoon(true);
+        if (moon != null && !moonOut && day < 0.5f && !LookingUp())
+        {
+            ShowMoon(true);
+        }
     }
 
     static bool LookingUp()
@@ -127,7 +148,10 @@ public class ShiftSky : MonoBehaviour
         moonOut = show;
         foreach (Renderer part in moon)
         {
-            if (part != null) part.enabled = show;
+            if (part != null)
+            {
+                part.enabled = show;
+            }
         }
     }
 
@@ -135,7 +159,10 @@ public class ShiftSky : MonoBehaviour
     {
         for (int i = 0; i < skyLayer.Count; i++)
         {
-            if (skyLayer[i] == null) continue;
+            if (skyLayer[i] == null)
+            {
+                continue;
+            }
             Color colour = skyLayerColour[i];
             colour.a *= shown;
             skyLayer[i].color = colour;
@@ -146,6 +173,9 @@ public class ShiftSky : MonoBehaviour
     void OnDestroy()
     {
         SetSkyLayer(1f);
-        if (moon != null) ShowMoon(true);
+        if (moon != null)
+        {
+            ShowMoon(true);
+        }
     }
 }

@@ -482,8 +482,14 @@ public class RushDirector : MonoBehaviour
     // she's talking (or saying that very line), so the player hears what's new before it turns up
     bool MayIntroduce(string line)
     {
-        if (voice == null || string.IsNullOrEmpty(line)) return true;
-        if (heardLines.Contains(line) && voice.saying != line) return true;
+        if (voice == null || string.IsNullOrEmpty(line))
+        {
+            return true;
+        }
+        if (heardLines.Contains(line) && voice.saying != line)
+        {
+            return true;
+        }
         return !voice.talking;
     }
 
@@ -498,7 +504,10 @@ public class RushDirector : MonoBehaviour
     IEnumerator WaitClock(float seconds)
     {
         float until = clock + seconds;
-        while (clock < until) yield return null;
+        while (clock < until)
+        {
+            yield return null;
+        }
     }
     BossCat mafiaPrefab;
     int feedPhasesSeen;
@@ -538,7 +547,10 @@ public class RushDirector : MonoBehaviour
             float best = aimAssistAngle;
             foreach (KittenRun kitten in KittenRun.running)
             {
-                if (!kitten.isFed && kitten.feedable) Consider(kitten.aimPoint);
+                if (!kitten.isFed && kitten.feedable)
+                {
+                    Consider(kitten.aimPoint);
+                }
             }
 
             void Consider(Vector3 point)
@@ -562,7 +574,10 @@ public class RushDirector : MonoBehaviour
             {
                 point = ninja.transform.position + Vector3.up * 0.3f;
             }
-            if (Vector3.Angle(treat.velocity, point - treat.transform.position) <= aimAssistAngle) target = point;
+            if (Vector3.Angle(treat.velocity, point - treat.transform.position) <= aimAssistAngle)
+            {
+                target = point;
+            }
         }
         return target;
     }
@@ -572,7 +587,10 @@ public class RushDirector : MonoBehaviour
         // The Mafia cat for heists, borrowed from the boss spawner (which may have switched itself off)
         foreach (BossCatSpawner spawner in Resources.FindObjectsOfTypeAll<BossCatSpawner>())
         {
-            if (spawner.gameObject.scene.IsValid() && mafiaPrefab == null) mafiaPrefab = spawner.Prefab<MafiaBossCat>();
+            if (spawner.gameObject.scene.IsValid() && mafiaPrefab == null)
+            {
+                mafiaPrefab = spawner.Prefab<MafiaBossCat>();
+            }
         }
 
         // How knocked props fly in this mode
@@ -582,7 +600,10 @@ public class RushDirector : MonoBehaviour
             flight.launchSpread = burstSpread;
             flight.launchTowardPlayerSpeed = burstOutwardSpeed;
             flight.launchUpSpeed = burstUpSpeed;
-            if (maxBurstHeight > 0) flight.maxHeightAboveFloor = maxBurstHeight;
+            if (maxBurstHeight > 0)
+            {
+                flight.maxHeightAboveFloor = maxBurstHeight;
+            }
             flight.catchableAfter = catchableAfter;
             flight.driftFallSpeed = fallSpeed;
             flight.catchableGlow = catchGlow;
@@ -593,7 +614,10 @@ public class RushDirector : MonoBehaviour
         // Cat Cafe Waves (a remix finale at the end): the round is as long as its phases, so a longer phase makes a longer
         // round rather than squeezing the others
         float roundLength = 0;
-        foreach (Phase phase in phases) roundLength += phase.seconds;
+        foreach (Phase phase in phases)
+        {
+            roundLength += phase.seconds;
+        }
         waves = roundLength > 0 && phases.Exists(phase => phase.kind == Kind.Remix);
         if (waves)
         {
@@ -648,20 +672,35 @@ public class RushDirector : MonoBehaviour
     IEnumerator Welcome()
     {
         yield return new WaitForSeconds(1.5f);
-        if (!playing) Say(welcomeLine);
+        if (!playing)
+        {
+            Say(welcomeLine);
+        }
     }
 
     // Queues a line. What's actually been heard is kept track of (a line crowded out by others isn't)
     // `hold`: the waves' clock stands still until it's been said (a wave's callout: the wave gets all its time after it)
     void Say(string line, string sting = null, bool urgent = false, bool hold = false)
     {
-        if (voice == null) return;
-        if (!string.IsNullOrEmpty(line)) pendingLines.Add(line);
+        if (voice == null)
+        {
+            return;
+        }
+        if (!string.IsNullOrEmpty(line))
+        {
+            pendingLines.Add(line);
+        }
         voice.Say(line, sting, said =>
         {
-            if (string.IsNullOrEmpty(line)) return;
+            if (string.IsNullOrEmpty(line))
+            {
+                return;
+            }
             pendingLines.Remove(line);
-            if (said) heardLines.Add(line);
+            if (said)
+            {
+                heardLines.Add(line);
+            }
         }, urgent, hold);
     }
 
@@ -669,13 +708,19 @@ public class RushDirector : MonoBehaviour
     // crowded out (it waited too long), it's said the next time its moment comes round instead
     void SayOnce(string line)
     {
-        if (string.IsNullOrEmpty(line) || heardLines.Contains(line) || pendingLines.Contains(line)) return;
+        if (string.IsNullOrEmpty(line) || heardLines.Contains(line) || pendingLines.Contains(line))
+        {
+            return;
+        }
         Say(line, null, true);
     }
 
     void PropGrabbed(FlyingProp prop)
     {
-        if (!FlyingProp.dragHome || !playing) return;
+        if (!FlyingProp.dragHome || !playing)
+        {
+            return;
+        }
         // The catch phase's own line already says to carry things back: no need for both
         Phase catchPhase = phases.Find(p => p.kind == Kind.Catch);
         string taught;
@@ -687,15 +732,27 @@ public class RushDirector : MonoBehaviour
         {
             taught = null;
         }
-        if (!string.IsNullOrEmpty(taught) && (heardLines.Contains(taught) || pendingLines.Contains(taught))) return;
+        if (!string.IsNullOrEmpty(taught) && (heardLines.Contains(taught) || pendingLines.Contains(taught)))
+        {
+            return;
+        }
         SayOnce(carryLine);
     }
 
     void HeistOver(MafiaHeist heist, MafiaHeist.Result result)
     {
-        if (!playing) return;
-        if (result == MafiaHeist.Result.Busted) SayOnce(bustedLine);
-        else if (result == MafiaHeist.Result.Stole) SayOnce(stoleLine);
+        if (!playing)
+        {
+            return;
+        }
+        if (result == MafiaHeist.Result.Busted)
+        {
+            SayOnce(bustedLine);
+        }
+        else if (result == MafiaHeist.Result.Stole)
+        {
+            SayOnce(stoleLine);
+        }
     }
 
     void OnDestroy()
@@ -723,7 +780,10 @@ public class RushDirector : MonoBehaviour
         playing = true;
 
         // Liminal switches the player rig on after the scene starts, so it isn't always there at Start
-        if (player == null) player = FindObjectOfType<PlayerInput>();
+        if (player == null)
+        {
+            player = FindObjectOfType<PlayerInput>();
+        }
         if (player == null)
         {
             Debug.LogError("[Cat Cafe Rush] No player rig (PlayerInput) found when the round started.");
@@ -736,9 +796,18 @@ public class RushDirector : MonoBehaviour
         KeepCatsOutOfPlayerSpace();
         PickEntryDoors();
         FindVents();
-        if (fedCatsUseHoles) MakeHoles();
-        if (coinsPerTreat > 0) PlaceTipJar();
-        if (tipJar != null) TipsBoard.Begin(tipJar, tipsBoard);
+        if (fedCatsUseHoles)
+        {
+            MakeHoles();
+        }
+        if (coinsPerTreat > 0)
+        {
+            PlaceTipJar();
+        }
+        if (tipJar != null)
+        {
+            TipsBoard.Begin(tipJar, tipsBoard);
+        }
         piles.Clear();
         piles.AddRange(FindObjectsOfType<DefendPoint>());
         propPiles.Clear();
@@ -746,7 +815,10 @@ public class RushDirector : MonoBehaviour
 
         // Catching can be made a little harder (the grip has to point closer to the prop)
         GravityBeam beam = player.GetComponent<GravityBeam>();
-        if (beam != null && catchAimAngle > 0) beam.aimAngle = catchAimAngle;
+        if (beam != null && catchAimAngle > 0)
+        {
+            beam.aimAngle = catchAimAngle;
+        }
 
         // Each hand fires its own food, with a tin of that colour hanging under the launcher
         player.LoadFood(false, leftFood);
@@ -769,10 +841,19 @@ public class RushDirector : MonoBehaviour
         SpyCat.EndAll();
         SoundBite.StopAll(1.5f);
         spyMusic = null;
-        if (MafiaHeist.current != null) MafiaHeist.current.Cancel();
+        if (MafiaHeist.current != null)
+        {
+            MafiaHeist.current.Cancel();
+        }
         KittenRun.EndAll();
-        if (player != null) player.ForceFireStyle(null);
-        if (ninja != null) ninja.Leave();
+        if (player != null)
+        {
+            player.ForceFireStyle(null);
+        }
+        if (ninja != null)
+        {
+            ninja.Leave();
+        }
         Say(closingLine);
     }
 
@@ -781,12 +862,21 @@ public class RushDirector : MonoBehaviour
         for (int index = 0; index < phases.Count; index++)
         {
             Phase phase = phases[index];
-            if (!playing) yield break;
+            if (!playing)
+            {
+                yield break;
+            }
             current = phase;
             nextRaid = clock + phase.raidEvery * 0.6f;
             nextLatch = clock + phase.latchEvery * 0.5f;
-            if (!Feeding(phase.kind) || phase.latchEvery <= 0) LauncherKitten.EndAll();
-            if (!Feeding(phase.kind) && MafiaHeist.current != null) MafiaHeist.current.Cancel();
+            if (!Feeding(phase.kind) || phase.latchEvery <= 0)
+            {
+                LauncherKitten.EndAll();
+            }
+            if (!Feeding(phase.kind) && MafiaHeist.current != null)
+            {
+                MafiaHeist.current.Cancel();
+            }
 
             // Hungry cats only go for the piles in feeding phases (and only if this phase says so)
             if (phase.kind == Kind.Feed)
@@ -803,12 +893,21 @@ public class RushDirector : MonoBehaviour
             if (phase.kind == Kind.Boss && finaleFireStyles)
             {
                 player.UnlockFireStyles(true);
-                if (!string.IsNullOrEmpty(fireStylesBanner)) banner = fireStylesBanner;
+                if (!string.IsNullOrEmpty(fireStylesBanner))
+                {
+                    banner = fireStylesBanner;
+                }
             }
-            if (!string.IsNullOrEmpty(banner)) GameManager.instance.ShowBanner(banner, bannerSeconds);
+            if (!string.IsNullOrEmpty(banner))
+            {
+                GameManager.instance.ShowBanner(banner, bannerSeconds);
+            }
             bool ninjaPhase = phase.kind == Kind.Catch || phase.kind == Kind.Boss || phase.kind == Kind.Remix;
             // The piles' bars are only up while the ninja's about (each pops up again when it blows that pile up)
-            if (!ninjaPhase) PropPile.HideBars();
+            if (!ninjaPhase)
+            {
+                PropPile.HideBars();
+            }
             FlyingProp.dragHome = dragPropsHome && ninjaPhase;
             if (phase.kind == Kind.Remix)
             {
@@ -828,7 +927,10 @@ public class RushDirector : MonoBehaviour
             {
                 case Kind.Feed:
                     // After the first feeding phase, the Mafia cat makes his move partway through
-                    if (++feedPhasesSeen > 1) StartCoroutine(Heists(phase, heistsPerPhase, heistGang));
+                    if (++feedPhasesSeen > 1)
+                    {
+                        StartCoroutine(Heists(phase, heistsPerPhase, heistGang));
+                    }
                     // Last orders: nobody new comes in for the last few seconds
                     yield return WaitClock(Mathf.Max(0, phase.seconds - lastCallSeconds));
                     windingDown = true;
@@ -839,7 +941,10 @@ public class RushDirector : MonoBehaviour
                     Haptics.PulseBoth(Haptics.Strength.Strong);
                     CatRaid.CancelAll();
                     SendCatsAway();
-                    if (catchIntro && !catchIntroDone) yield return CatchIntro();
+                    if (catchIntro && !catchIntroDone)
+                    {
+                        yield return CatchIntro();
+                    }
                     if (ninja != null && ninja.gameObject.activeInHierarchy && ninja.holdStill)
                     {
                         // The ninja that opened the catch intro gets going
@@ -851,7 +956,10 @@ public class RushDirector : MonoBehaviour
                         SummonNinja(false);
                     }
                     yield return WaitClock(Mathf.Max(0, phase.seconds - 1f));
-                    if (ninja != null) ninja.Leave();
+                    if (ninja != null)
+                    {
+                        ninja.Leave();
+                    }
                     break;
 
                 case Kind.Boss when bossMakesMess:
@@ -863,10 +971,22 @@ public class RushDirector : MonoBehaviour
                     yield return WaitClock(1f);
                     SummonNinja(true);
                     float messUntil = clock + Mathf.Max(0, phase.seconds - 1f - TidyBonusSeconds);
-                    while (playing && clock < messUntil) yield return null;
-                    if (ninja != null) ninja.Leave();
-                    if (playing) yield return TidyBonus();
-                    while (playing) yield return null;
+                    while (playing && clock < messUntil)
+                    {
+                        yield return null;
+                    }
+                    if (ninja != null)
+                    {
+                        ninja.Leave();
+                    }
+                    if (playing)
+                    {
+                        yield return TidyBonus();
+                    }
+                    while (playing)
+                    {
+                        yield return null;
+                    }
                     break;
 
                 case Kind.Remix:
@@ -876,20 +996,41 @@ public class RushDirector : MonoBehaviour
                     Haptics.PulseBoth(Haptics.Strength.Huge);
                     yield return WaitClock(1f);
                     SummonNinja(true);
-                    if (ninja != null) ninja.Configure(false, bossKnocksPerStop, remixNinjaSitMin, remixNinjaSitMax, ninjaExplodesPiles && ninja.piles.Count > 0);
+                    if (ninja != null)
+                    {
+                        ninja.Configure(false, bossKnocksPerStop, remixNinjaSitMin, remixNinjaSitMax, ninjaExplodesPiles && ninja.piles.Count > 0);
+                    }
                     StartCoroutine(Heists(phase, remixHeists, remixHeistGang));
-                    if (remixFloodAt > 0) StartCoroutine(RemixFlood(phase));
+                    if (remixFloodAt > 0)
+                    {
+                        StartCoroutine(RemixFlood(phase));
+                    }
                     StartCoroutine(RemixSpies(phase));
                     float remixUntil = clock + Mathf.Max(0, phase.seconds - 1f - TidyBonusSeconds);
-                    while (playing && clock < remixUntil) yield return null;
+                    while (playing && clock < remixUntil)
+                    {
+                        yield return null;
+                    }
 
                     // Closing up: everyone heads off, then the piles pay out
                     windingDown = true;
-                    if (ninja != null) ninja.Leave();
-                    if (MafiaHeist.current != null) MafiaHeist.current.Cancel();
+                    if (ninja != null)
+                    {
+                        ninja.Leave();
+                    }
+                    if (MafiaHeist.current != null)
+                    {
+                        MafiaHeist.current.Cancel();
+                    }
                     SpyCat.EndAll();
-                    if (playing) yield return TidyBonus();
-                    while (playing) yield return null;
+                    if (playing)
+                    {
+                        yield return TidyBonus();
+                    }
+                    while (playing)
+                    {
+                        yield return null;
+                    }
                     break;
 
                 case Kind.Boss:
@@ -906,11 +1047,17 @@ public class RushDirector : MonoBehaviour
                     {
                         GameManager.instance.ShowBanner(ninja.isFullyFed ? bossFedBanner : bossLeftBanner, bannerSeconds);
                         Say(ninja.isFullyFed ? bossFedLine : bossLeftLine);
-                        if (ninja.isFullyFed && tipJar != null) tipJar.AddCoins(ninja.transform.position + Vector3.up * 0.3f, bossCoins);
+                        if (ninja.isFullyFed && tipJar != null)
+                        {
+                            tipJar.AddCoins(ninja.transform.position + Vector3.up * 0.3f, bossCoins);
+                        }
                     }
                     // If time is left after the boss, the round finishes with ordinary feeding
                     current = new Phase { kind = Kind.Feed, cats = phase.cats + 2, shortestOrder = phase.shortestOrder, longestOrder = phase.longestOrder };
-                    while (playing) yield return null;
+                    while (playing)
+                    {
+                        yield return null;
+                    }
                     break;
 
                 case Kind.Stampede:
@@ -943,17 +1090,26 @@ public class RushDirector : MonoBehaviour
             }
 
             // Time's up: what's still going on gets a moment to finish before the next phase starts
-            if (index < phases.Count - 1) yield return WrapUp(phase, phases[index + 1]);
+            if (index < phases.Count - 1)
+            {
+                yield return WrapUp(phase, phases[index + 1]);
+            }
             windingDown = false;
             if (phase.kind == Kind.Stampede)
             {
                 KittenRun.EndAll();
-                if (player != null) player.ForceFireStyle(null);
+                if (player != null)
+                {
+                    player.ForceFireStyle(null);
+                }
             }
             if (phase.kind == Kind.Spy)
             {
                 SpyCat.EndAll();
-                if (spyMusic != null) spyMusic.Stop(2f);
+                if (spyMusic != null)
+                {
+                    spyMusic.Stop(2f);
+                }
                 spyMusic = null;
             }
         }
@@ -963,7 +1119,10 @@ public class RushDirector : MonoBehaviour
     // wave gets to end before the next one starts
     IEnumerator WrapUp(Phase phase, Phase next)
     {
-        if (wrapUpMax <= 0) yield break;
+        if (wrapUpMax <= 0)
+        {
+            yield break;
+        }
         windingDown = true;
         bool paused = false;
         float waited = 0;
@@ -977,7 +1136,10 @@ public class RushDirector : MonoBehaviour
             waited += Time.deltaTime;
             yield return null;
         }
-        if (paused) wrapUpPaused = false;
+        if (paused)
+        {
+            wrapUpPaused = false;
+        }
     }
 
     bool StillGoing(Phase phase, Phase next)
@@ -986,14 +1148,23 @@ public class RushDirector : MonoBehaviour
         {
             case Kind.Feed:
                 // Into another feeding phase it all just carries on
-                if (next.kind == Kind.Feed) return false;
-                if (MafiaHeist.current != null || LauncherKitten.active.Count > 0) return true;
+                if (next.kind == Kind.Feed)
+                {
+                    return false;
+                }
+                if (MafiaHeist.current != null || LauncherKitten.active.Count > 0)
+                {
+                    return true;
+                }
                 return orders.Exists(o => o != null && o.isHungry && o.hasOrdered);
             case Kind.Catch:
             case Kind.Boss:
                 foreach (FlyingProp prop in FlyingProp.airborne)
                 {
-                    if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held)) return true;
+                    if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held))
+                    {
+                        return true;
+                    }
                 }
                 return false;
             case Kind.Stampede:
@@ -1020,9 +1191,18 @@ public class RushDirector : MonoBehaviour
     int BusyEvents()
     {
         int busy = 0;
-        if (MafiaHeist.current != null) busy++;
-        if (LauncherKitten.active.Count > 0) busy++;
-        if (flooding) busy++;
+        if (MafiaHeist.current != null)
+        {
+            busy++;
+        }
+        if (LauncherKitten.active.Count > 0)
+        {
+            busy++;
+        }
+        if (flooding)
+        {
+            busy++;
+        }
         busy += SpyCat.active.Count;
         return busy;
     }
@@ -1039,16 +1219,25 @@ public class RushDirector : MonoBehaviour
     // In the finale the breather runs from when the last big thing finishes (each one plays out, then a pause, then the next)
     void UpdateBreather()
     {
-        if (current.kind != Kind.Remix) return;
+        if (current.kind != Kind.Remix)
+        {
+            return;
+        }
         int busy = BusyEvents();
-        if (busy == 0 && lastBusy > 0) nextBigAt = Mathf.Max(nextBigAt, clock + remixBreather);
+        if (busy == 0 && lastBusy > 0)
+        {
+            nextBigAt = Mathf.Max(nextBigAt, clock + remixBreather);
+        }
         lastBusy = busy;
     }
 
     // A big thing just started: in the finale, the next waits a breather
     void BigStarted()
     {
-        if (current != null && current.kind == Kind.Remix) nextBigAt = clock + remixBreather;
+        if (current != null && current.kind == Kind.Remix)
+        {
+            nextBigAt = clock + remixBreather;
+        }
     }
 
     // Nothing solid between the player's eye and `point` (cats, props and the player's own rig don't count)
@@ -1059,7 +1248,10 @@ public class RushDirector : MonoBehaviour
         {
             Collider other = hit.collider;
             if (other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null ||
-                other.GetComponentInParent<PlayerInput>() != null) continue;
+                other.GetComponentInParent<PlayerInput>() != null)
+            {
+                continue;
+            }
             return false;
         }
         return true;
@@ -1071,7 +1263,10 @@ public class RushDirector : MonoBehaviour
     IEnumerator Stampede(Phase phase)
     {
         float end = clock + phase.seconds;
-        if (stampedeScatter && player != null) player.ForceFireStyle(PlayerInput.FireStyle.Scatter);
+        if (stampedeScatter && player != null)
+        {
+            player.ForceFireStyle(PlayerInput.FireStyle.Scatter);
+        }
         yield return WaitClock(1.5f);   // the callout lands first
 
         bool fromLeft = Random.value < 0.5f;
@@ -1105,12 +1300,18 @@ public class RushDirector : MonoBehaviour
             else
             {
                 path = RoamPath(fromLeft, Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
-                if (path != null) StartCoroutine(SendHerd(path));
+                if (path != null)
+                {
+                    StartCoroutine(SendHerd(path));
+                }
             }
             fromLeft = !fromLeft;
             yield return WaitClock(Random.Range(herdGapMin, Mathf.Max(herdGapMin, herdGapMax)));
         }
-        while (playing && clock < end) yield return null;
+        while (playing && clock < end)
+        {
+            yield return null;
+        }
         // (kittens still running get to finish: see WrapUp)
     }
 
@@ -1134,7 +1335,10 @@ public class RushDirector : MonoBehaviour
             {
                 KittenRun.Launch(cat, path, Random.Range(-0.6f, 0.6f), speed * Random.Range(0.92f, 1.08f),
                                  kittenScale, kittenHitRadius, KittenFed);
-                if (i == 0) cat.DustPuff(KittenRun.DustSize);   // a puff of dust as the herd bursts in
+                if (i == 0)
+                {
+                    cat.DustPuff(KittenRun.DustSize);   // a puff of dust as the herd bursts in
+                }
             }
             yield return new WaitForSeconds(Random.Range(0.12f, 0.3f));
         }
@@ -1159,7 +1363,10 @@ public class RushDirector : MonoBehaviour
             {
                 cat = null;
             }
-            if (cat == null) break;
+            if (cat == null)
+            {
+                break;
+            }
             float offset = Random.Range(-spread, spread);
             float kittenSpeed = speed * Random.Range(0.92f, 1.08f);
             vent.StartCoroutine(vent.Drop(cat, kittenScale, (kitten, from) =>
@@ -1201,7 +1408,10 @@ public class RushDirector : MonoBehaviour
         {
             first.holdBack = () => voice != null && voice.talking;
             waveHeld = true;
-            while (playing && (!first.isFinished || (voice != null && voice.talking))) yield return null;
+            while (playing && (!first.isFinished || (voice != null && voice.talking)))
+            {
+                yield return null;
+            }
             waveHeld = false;
             yield return WaitClock(Mathf.Lerp(spyGapStart, spyGapEnd, 0f));
         }
@@ -1213,21 +1423,36 @@ public class RushDirector : MonoBehaviour
             float gap = Mathf.Lerp(spyGapStart, spyGapEnd, progress);
             yield return WaitClock(gap * Random.Range(0.8f, 1.2f));
         }
-        while (playing && clock < end) yield return null;
+        while (playing && clock < end)
+        {
+            yield return null;
+        }
         // (any still dangling get to finish: see WrapUp)
     }
 
     // The finale's spies, now and then (when there's room for one)
     IEnumerator RemixSpies(Phase phase)
     {
-        if (remixSpyGapMax <= 0 || CeilingVents().Count == 0) yield break;
+        if (remixSpyGapMax <= 0 || CeilingVents().Count == 0)
+        {
+            yield break;
+        }
         float end = clock + phase.seconds;
         while (playing && current == phase && !windingDown && clock < end - (spy.lowerSeconds + spy.approachSeconds))
         {
             yield return WaitClock(Random.Range(remixSpyGapMin, Mathf.Max(remixSpyGapMin, remixSpyGapMax)));
-            while (playing && current == phase && !windingDown && (!RoomForMore || !MayIntroduce(SpyLine))) yield return null;
-            if (!playing || current != phase || windingDown) yield break;
-            if (SendSpy() != null) BigStarted();
+            while (playing && current == phase && !windingDown && (!RoomForMore || !MayIntroduce(SpyLine)))
+            {
+                yield return null;
+            }
+            if (!playing || current != phase || windingDown)
+            {
+                yield break;
+            }
+            if (SendSpy() != null)
+            {
+                BigStarted();
+            }
         }
     }
 
@@ -1235,10 +1460,16 @@ public class RushDirector : MonoBehaviour
     SpyCat SendSpy()
     {
         List<CafeVent> free = CeilingVents().FindAll(ceiling => !ceiling.busy);
-        if (free.Count == 0) return null;
+        if (free.Count == 0)
+        {
+            return null;
+        }
         CafeVent vent = free[Random.Range(0, free.Count)];
         CatMovement cat = SpyToSend();
-        if (cat == null) return null;
+        if (cat == null)
+        {
+            return null;
+        }
         return SpyCat.Begin(cat, vent, player, tipJar, spy, null);
     }
 
@@ -1259,7 +1490,10 @@ public class RushDirector : MonoBehaviour
         {
             foreach (CatMovement ready in spies)
             {
-                if (ready != null && !ready.gameObject.activeSelf) return ready;
+                if (ready != null && !ready.gameObject.activeSelf)
+                {
+                    return ready;
+                }
             }
             GameObject made = Instantiate(spyPrefab, transform);
             made.SetActive(false);
@@ -1270,7 +1504,10 @@ public class RushDirector : MonoBehaviour
                 return spyCat;
             }
         }
-        if (catPool == null) return null;
+        if (catPool == null)
+        {
+            return null;
+        }
         int[] phats = catPool.VariationsNamed("Phat");
         CatMovement cat;
         if (phats.Length > 0)
@@ -1292,8 +1529,14 @@ public class RushDirector : MonoBehaviour
     IEnumerator RemixFlood(Phase phase)
     {
         float at = clock + phase.seconds * remixFloodAt;
-        while (playing && current == phase && (clock < at || !RoomForMore)) yield return null;
-        if (!playing || current != phase || windingDown) yield break;
+        while (playing && current == phase && (clock < at || !RoomForMore))
+        {
+            yield return null;
+        }
+        if (!playing || current != phase || windingDown)
+        {
+            yield break;
+        }
         CafeVent vent = FloodVent();
         List<Vector3> path;
         if (vent != null)
@@ -1304,7 +1547,10 @@ public class RushDirector : MonoBehaviour
         {
             path = null;
         }
-        if (path == null) yield break;
+        if (path == null)
+        {
+            yield break;
+        }
         BigStarted();
         flooding = true;
         yield return Flood(vent, path);
@@ -1318,8 +1564,14 @@ public class RushDirector : MonoBehaviour
         CafeVent best = null;
         foreach (CafeVent vent in vents)
         {
-            if (vent == null || vent.busy || !vent.landsOnFloor) continue;
-            if (best == null || vent.dropHeight > best.dropHeight) best = vent;
+            if (vent == null || vent.busy || !vent.landsOnFloor)
+            {
+                continue;
+            }
+            if (best == null || vent.dropHeight > best.dropHeight)
+            {
+                best = vent;
+            }
         }
         return best;
     }
@@ -1327,7 +1579,10 @@ public class RushDirector : MonoBehaviour
     // Where a flood goes from the spot under its vent: off across the floor in front of the player to one side
     List<Vector3> FloodPath(Vector3 from)
     {
-        if (player == null) return null;
+        if (player == null)
+        {
+            return null;
+        }
         NavMeshPath navPath = new NavMeshPath();
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
@@ -1343,13 +1598,28 @@ public class RushDirector : MonoBehaviour
         for (int attempt = 0; attempt < 8; attempt++)
         {
             Vector3 away = at + forward * Random.Range(2.5f, 5f) + right * Random.Range(3.5f, 5.5f) * (Random.value < 0.5f ? 1f : -1f);
-            if (!NavMesh.SamplePosition(away, out NavMeshHit finish, 2f, NavMesh.AllAreas)) continue;
-            if (Mathf.Abs(finish.position.y - from.y) > 0.3f) continue;
+            if (!NavMesh.SamplePosition(away, out NavMeshHit finish, 2f, NavMesh.AllAreas))
+            {
+                continue;
+            }
+            if (Mathf.Abs(finish.position.y - from.y) > 0.3f)
+            {
+                continue;
+            }
             if (!NavMesh.CalculatePath(from, finish.position, NavMesh.AllAreas, navPath) ||
-                navPath.status != NavMeshPathStatus.PathComplete) continue;
+                navPath.status != NavMeshPathStatus.PathComplete)
+            {
+                continue;
+            }
             float length = 0;
-            for (int i = 1; i < navPath.corners.Length; i++) length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
-            if (length > Vector3.Distance(from, finish.position) * 2f + 2f) continue;   // no big detours round the room
+            for (int i = 1; i < navPath.corners.Length; i++)
+            {
+                length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
+            }
+            if (length > Vector3.Distance(from, finish.position) * 2f + 2f)
+            {
+                continue;   // no big detours round the room
+            }
             return new List<Vector3>(navPath.corners);
         }
         return null;
@@ -1359,14 +1629,20 @@ public class RushDirector : MonoBehaviour
     {
         Vector3 at = kitten.aimPoint;
         GameManager.instance.FeedCat(kittenScore, at);
-        if (tipJar != null && kittenCoins > 0) tipJar.AddCoins(at, kittenCoins);
+        if (tipJar != null && kittenCoins > 0)
+        {
+            tipJar.AddCoins(at, kittenCoins);
+        }
     }
 
     // A walkable run across the floor in front of the player, from one side to the other (around furniture, never
     // through the player's space), or null if none could be found
     List<Vector3> HerdPath(bool fromLeft)
     {
-        if (player == null) return null;
+        if (player == null)
+        {
+            return null;
+        }
         Transform eye = player.eyePoint;
         Vector3 head;
         if (eye != null)
@@ -1397,18 +1673,36 @@ public class RushDirector : MonoBehaviour
             Vector3 centre = head + forward * depth;
             centre.y = floorY;
             Vector3 side = right * width * (fromLeft ? 1f : -1f);
-            if (!NavMesh.SamplePosition(centre - side, out NavMeshHit start, 2f, NavMesh.AllAreas)) continue;
-            if (!NavMesh.SamplePosition(centre + side, out NavMeshHit finish, 2f, NavMesh.AllAreas)) continue;
+            if (!NavMesh.SamplePosition(centre - side, out NavMeshHit start, 2f, NavMesh.AllAreas))
+            {
+                continue;
+            }
+            if (!NavMesh.SamplePosition(centre + side, out NavMeshHit finish, 2f, NavMesh.AllAreas))
+            {
+                continue;
+            }
             // On the floor, not up on a table
-            if (Mathf.Abs(start.position.y - floorY) > 0.3f || Mathf.Abs(finish.position.y - floorY) > 0.3f) continue;
+            if (Mathf.Abs(start.position.y - floorY) > 0.3f || Mathf.Abs(finish.position.y - floorY) > 0.3f)
+            {
+                continue;
+            }
             if (!NavMesh.CalculatePath(start.position, finish.position, NavMesh.AllAreas, navPath) ||
-                navPath.status != NavMeshPathStatus.PathComplete) continue;
+                navPath.status != NavMeshPathStatus.PathComplete)
+            {
+                continue;
+            }
 
             float length = 0;
-            for (int i = 1; i < navPath.corners.Length; i++) length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
+            for (int i = 1; i < navPath.corners.Length; i++)
+            {
+                length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
+            }
             float straight = Vector3.Distance(start.position, finish.position);
             // Long enough to see, and not a big detour round the room
-            if (straight < 4f || length > straight * 1.8f) continue;
+            if (straight < 4f || length > straight * 1.8f)
+            {
+                continue;
+            }
             return new List<Vector3>(navPath.corners);
         }
         return null;
@@ -1420,7 +1714,10 @@ public class RushDirector : MonoBehaviour
     List<Vector3> RoamPath(bool fromLeft, float seconds)
     {
         List<Vector3> across = HerdPath(fromLeft);
-        if (across == null || seconds <= 0 || player == null) return across;
+        if (across == null || seconds <= 0 || player == null)
+        {
+            return across;
+        }
         Transform eye = player.eyePoint;
         Vector3 head;
         if (eye != null)
@@ -1452,22 +1749,49 @@ public class RushDirector : MonoBehaviour
         {
             Vector3 spot = head + forward * Random.Range(2.2f, 6f) + right * Random.Range(-3.5f, 3.5f);
             spot.y = floorY;
-            if (!NavMesh.SamplePosition(spot, out NavMeshHit floor, 1f, NavMesh.AllAreas) || Mathf.Abs(floor.position.y - floorY) > 0.3f) continue;
+            if (!NavMesh.SamplePosition(spot, out NavMeshHit floor, 1f, NavMesh.AllAreas) || Mathf.Abs(floor.position.y - floorY) > 0.3f)
+            {
+                continue;
+            }
             float straight = Flat(floor.position - at).magnitude;
-            if (straight < 1.8f) continue;   // a proper dash, not a shuffle
-            if (!NavMesh.CalculatePath(at, floor.position, NavMesh.AllAreas, leg) || leg.status != NavMeshPathStatus.PathComplete) continue;
+            if (straight < 1.8f)
+            {
+                continue;   // a proper dash, not a shuffle
+            }
+            if (!NavMesh.CalculatePath(at, floor.position, NavMesh.AllAreas, leg) || leg.status != NavMeshPathStatus.PathComplete)
+            {
+                continue;
+            }
             float legLength = 0;
-            for (int i = 1; i < leg.corners.Length; i++) legLength += Vector3.Distance(leg.corners[i - 1], leg.corners[i]);
-            if (legLength > straight * 1.6f + 0.5f) continue;   // not the long way round the furniture
-            for (int i = 1; i < leg.corners.Length; i++) route.Add(leg.corners[i]);
+            for (int i = 1; i < leg.corners.Length; i++)
+            {
+                legLength += Vector3.Distance(leg.corners[i - 1], leg.corners[i]);
+            }
+            if (legLength > straight * 1.6f + 0.5f)
+            {
+                continue;   // not the long way round the furniture
+            }
+            for (int i = 1; i < leg.corners.Length; i++)
+            {
+                route.Add(leg.corners[i]);
+            }
             length += legLength;
             at = floor.position;
         }
-        if (route.Count < 2) return across;
+        if (route.Count < 2)
+        {
+            return across;
+        }
         // ...then away out the far side
         Vector3 exit = across[across.Count - 1];
-        if (!NavMesh.CalculatePath(at, exit, NavMesh.AllAreas, leg) || leg.status != NavMeshPathStatus.PathComplete) return across;
-        for (int i = 1; i < leg.corners.Length; i++) route.Add(leg.corners[i]);
+        if (!NavMesh.CalculatePath(at, exit, NavMesh.AllAreas, leg) || leg.status != NavMeshPathStatus.PathComplete)
+        {
+            return across;
+        }
+        for (int i = 1; i < leg.corners.Length; i++)
+        {
+            route.Add(leg.corners[i]);
+        }
         return route;
     }
 
@@ -1475,24 +1799,51 @@ public class RushDirector : MonoBehaviour
     {
         if (playing)
         {
-            if (!holding && !introPaused && !waveHeld) clock += Time.deltaTime;   // in step with the round clock
+            if (!holding && !introPaused && !waveHeld)
+            {
+                clock += Time.deltaTime;   // in step with the round clock
+            }
             GameManager.instance.clockPaused = wrapUpPaused || introPaused || holding || waveHeld;
         }
-        if (!playing || current == null) return;
-        if (raids) UpdateRaids();
+        if (!playing || current == null)
+        {
+            return;
+        }
+        if (raids)
+        {
+            UpdateRaids();
+        }
         UpdateBreather();
-        if (windingDown) return;
-        if (Feeding(current.kind) && current.latchEvery > 0) UpdateLatches();
-        if (!HasOrders(current.kind)) return;
-        if (Time.time - lastArrival < arrivalGap) return;
+        if (windingDown)
+        {
+            return;
+        }
+        if (Feeding(current.kind) && current.latchEvery > 0)
+        {
+            UpdateLatches();
+        }
+        if (!HasOrders(current.kind))
+        {
+            return;
+        }
+        if (Time.time - lastArrival < arrivalGap)
+        {
+            return;
+        }
 
         orders.RemoveAll(o => o == null || !o.isHungry);
-        if (orders.Count + droppingIn < current.cats) SendInCat();
+        if (orders.Count + droppingIn < current.cats)
+        {
+            SendInCat();
+        }
     }
 
     void SendInCat()
     {
-        if (catPool == null) return;
+        if (catPool == null)
+        {
+            return;
+        }
         // Now and then through a vent
         CafeVent vent;
         if (Random.value < ventChance)
@@ -1512,9 +1863,15 @@ public class RushDirector : MonoBehaviour
         {
             ways = doors;
         }
-        if (vent == null && ways.Count == 0) return;
+        if (vent == null && ways.Count == 0)
+        {
+            return;
+        }
         CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
-        if (cat == null) return;
+        if (cat == null)
+        {
+            return;
+        }
         lastArrival = Time.time;
 
         if (vent != null)
@@ -1525,7 +1882,10 @@ public class RushDirector : MonoBehaviour
         }
         Transform door = ways[Random.Range(0, ways.Count)];
         Vector3 position = door.position;
-        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) position = hit.position;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+        {
+            position = hit.position;
+        }
         Arrive(cat, door, position);
     }
 
@@ -1590,14 +1950,23 @@ public class RushDirector : MonoBehaviour
     // The Mafia cat's heists in a feeding phase, spread through its middle stretch, one at a time
     IEnumerator Heists(Phase phase, int count, int gang)
     {
-        if (!mafiaHeists || count <= 0 || mafiaPrefab == null) yield break;
+        if (!mafiaHeists || count <= 0 || mafiaPrefab == null)
+        {
+            yield break;
+        }
         float start = clock;
         for (int i = 0; i < count; i++)
         {
             float slot = phase.seconds / count;
             float at = start + slot * i + slot * Random.Range(0.2f, 0.45f);
-            while (playing && current == phase && (clock < at || MafiaHeist.current != null || !RoomForMore || !MayIntroduce(heistLine))) yield return null;
-            if (!playing || current != phase || tipJar == null || windingDown) yield break;
+            while (playing && current == phase && (clock < at || MafiaHeist.current != null || !RoomForMore || !MayIntroduce(heistLine)))
+            {
+                yield return null;
+            }
+            if (!playing || current != phase || tipJar == null || windingDown)
+            {
+                yield break;
+            }
             StartHeist(gang);
         }
     }
@@ -1613,10 +1982,16 @@ public class RushDirector : MonoBehaviour
         {
             ways = doors;
         }
-        if (ways.Count == 0) return;
+        if (ways.Count == 0)
+        {
+            return;
+        }
         Transform door = ways[Random.Range(0, ways.Count)];
         Vector3 position = door.position;
-        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas)) position = hit.position;
+        if (NavMesh.SamplePosition(position, out NavMeshHit hit, 1.5f, NavMesh.AllAreas))
+        {
+            position = hit.position;
+        }
 
         List<CatOrder.Food> foods = new List<CatOrder.Food>();
         for (int i = 0; i < heist.treats; i++)
@@ -1630,7 +2005,10 @@ public class RushDirector : MonoBehaviour
         }
         MafiaHeist started = MafiaHeist.Begin(mafiaPrefab, transform, door, position, tipJar, foods, bubbleScale,
                                               cleanShots ? hitboxGenerosity : 0f, heist, HeistOver);
-        if (started != null && gang > 0) StartCoroutine(MafiaGang(position, gang));
+        if (started != null && gang > 0)
+        {
+            StartCoroutine(MafiaGang(position, gang));
+        }
         if (started != null)
         {
             SayOnce(heistLine);
@@ -1672,7 +2050,10 @@ public class RushDirector : MonoBehaviour
     void FindVents()
     {
         vents.Clear();
-        if (player == null) return;
+        if (player == null)
+        {
+            return;
+        }
         Transform eye = player.eyePoint;
         Vector3 viewer;
         if (eye != null)
@@ -1684,7 +2065,10 @@ public class RushDirector : MonoBehaviour
             viewer = player.transform.position + Vector3.up * 1.5f;
         }
         float floorY = player.transform.position.y;
-        if (NavMesh.SamplePosition(player.transform.position, out NavMeshHit floor, 2f, NavMesh.AllAreas)) floorY = floor.position.y;
+        if (NavMesh.SamplePosition(player.transform.position, out NavMeshHit floor, 2f, NavMesh.AllAreas))
+        {
+            floorY = floor.position.y;
+        }
         // A spot on the floor in front of the player that cats coming out of a vent must be able to reach
         Vector3 forward = Flat(player.transform.forward);
         if (forward.sqrMagnitude > 0.001f)
@@ -1696,20 +2080,38 @@ public class RushDirector : MonoBehaviour
             forward = Vector3.forward;
         }
         Vector3 room = player.transform.position + forward * 2.5f;
-        if (NavMesh.SamplePosition(room, out NavMeshHit roomFloor, 2f, NavMesh.AllAreas)) room = roomFloor.position;
+        if (NavMesh.SamplePosition(room, out NavMeshHit roomFloor, 2f, NavMesh.AllAreas))
+        {
+            room = roomFloor.position;
+        }
         foreach (MeshFilter lid in FindObjectsOfType<MeshFilter>())
         {
-            if (!lid.name.ToLowerInvariant().Contains("lid")) continue;
+            if (!lid.name.ToLowerInvariant().Contains("lid"))
+            {
+                continue;
+            }
             // The vent it belongs to: the nearest thing above it called Vent...
             Transform vent = lid.transform.parent;
-            while (vent != null && !(vent.name.ToLowerInvariant().StartsWith("vent") && !vent.name.ToLowerInvariant().Contains("lid"))) vent = vent.parent;
-            if (vent == null) continue;
+            while (vent != null && !(vent.name.ToLowerInvariant().StartsWith("vent") && !vent.name.ToLowerInvariant().Contains("lid")))
+            {
+                vent = vent.parent;
+            }
+            if (vent == null)
+            {
+                continue;
+            }
             CafeVent made = CafeVent.Make(vent, lid.transform, viewer, floorY, room);
-            if (made == null || vents.Contains(made)) continue;
+            if (made == null || vents.Contains(made))
+            {
+                continue;
+            }
             // Only vents the player can see (a cat out of one hidden behind the bar would seem to come from nowhere). A vent
             // set into the ceiling counts if the space just below it can be seen (its opening is up in the ceiling itself)
             Vector3 below = Vector3.Lerp(made.opening, made.floorSpot + Vector3.up * 0.5f, 0.3f);
-            if (CanSee(viewer, made.opening) || CanSee(viewer, below)) vents.Add(made);
+            if (CanSee(viewer, made.opening) || CanSee(viewer, below))
+            {
+                vents.Add(made);
+            }
         }
         Debug.Log($"[Cat Cafe Waves] Cats can come out of {vents.Count} vent(s).");
     }
@@ -1718,7 +2120,10 @@ public class RushDirector : MonoBehaviour
     // cats land up on something
     CafeVent FreeVent(bool floorOnly = false)
     {
-        if (!catsUseVents || vents.Count == 0 || player == null) return null;
+        if (!catsUseVents || vents.Count == 0 || player == null)
+        {
+            return null;
+        }
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
         List<CafeVent> free = vents.FindAll(vent =>
@@ -1751,8 +2156,14 @@ public class RushDirector : MonoBehaviour
         {
             eye = null;
         }
-        if (eye == null) return null;
-        if (InGoodView(eye, order.transform.position)) return null;
+        if (eye == null)
+        {
+            return null;
+        }
+        if (InGoodView(eye, order.transform.position))
+        {
+            return null;
+        }
         if (!lookedForOrderSpots)
         {
             lookedForOrderSpots = true;
@@ -1763,9 +2174,15 @@ public class RushDirector : MonoBehaviour
         List<CatOrder> gone = new List<CatOrder>();
         foreach (KeyValuePair<CatOrder, Vector3> taken in spotTaken)
         {
-            if (taken.Key == null || !taken.Key.isHungry) gone.Add(taken.Key);
+            if (taken.Key == null || !taken.Key.isHungry)
+            {
+                gone.Add(taken.Key);
+            }
         }
-        foreach (CatOrder done in gone) spotTaken.Remove(done);
+        foreach (CatOrder done in gone)
+        {
+            spotTaken.Remove(done);
+        }
 
         Vector3? best = null;
         float bestDistance = float.MaxValue;
@@ -1774,11 +2191,17 @@ public class RushDirector : MonoBehaviour
             bool free = true;
             foreach (KeyValuePair<CatOrder, Vector3> taken in spotTaken)
             {
-                if (taken.Key != order && Flat(taken.Value - spot).magnitude < 0.9f) free = false;
+                if (taken.Key != order && Flat(taken.Value - spot).magnitude < 0.9f)
+                {
+                    free = false;
+                }
             }
             foreach (CatOrder other in orders)
             {
-                if (other != null && other != order && other.isHungry && Flat(other.transform.position - spot).magnitude < 0.9f) free = false;
+                if (other != null && other != order && other.isHungry && Flat(other.transform.position - spot).magnitude < 0.9f)
+                {
+                    free = false;
+                }
             }
             float distance = Flat(spot - order.transform.position).magnitude;
             if (free && distance < bestDistance)
@@ -1787,7 +2210,10 @@ public class RushDirector : MonoBehaviour
                 best = spot;
             }
         }
-        if (best != null) spotTaken[order] = best.Value;
+        if (best != null)
+        {
+            spotTaken[order] = best.Value;
+        }
         return best;
     }
 
@@ -1796,9 +2222,15 @@ public class RushDirector : MonoBehaviour
     {
         Vector3 to = Flat(at - eye.position);
         float distance = to.magnitude;
-        if (distance < 1.8f || distance > 8f) return false;
+        if (distance < 1.8f || distance > 8f)
+        {
+            return false;
+        }
         Vector3 forward = Flat(player.transform.forward);
-        if (forward.sqrMagnitude > 0.001f && Vector3.Angle(forward, to) > 60f) return false;
+        if (forward.sqrMagnitude > 0.001f && Vector3.Angle(forward, to) > 60f)
+        {
+            return false;
+        }
         return CanSee(eye.position, at + Vector3.up * 0.25f);
     }
 
@@ -1819,17 +2251,32 @@ public class RushDirector : MonoBehaviour
             for (float angle = -50f; angle <= 50f; angle += 10f)
             {
                 Vector3 point = at + Quaternion.Euler(0, angle, 0) * forward * distance;
-                if (!NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas)) continue;
-                if (Mathf.Abs(hit.position.y - at.y) > 0.3f) continue;   // on the floor, not up on the furniture
-                if (orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f)) continue;
-                if (InGoodView(eye, hit.position)) orderSpots.Add(hit.position);
+                if (!NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas))
+                {
+                    continue;
+                }
+                if (Mathf.Abs(hit.position.y - at.y) > 0.3f)
+                {
+                    continue;   // on the floor, not up on the furniture
+                }
+                if (orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f))
+                {
+                    continue;
+                }
+                if (InGoodView(eye, hit.position))
+                {
+                    orderSpots.Add(hit.position);
+                }
             }
         }
     }
 
     void Served(CatOrder order)
     {
-        if (tipJar == null || coinsPerTreat <= 0) return;
+        if (tipJar == null || coinsPerTreat <= 0)
+        {
+            return;
+        }
         int coins = coinsPerTreat * order.orderLength;
         // Quick service (in the first half of its patience) tips better
         if (orderMoments && quickServiceCoins > 0 && order.patienceFraction > 0.5f)
@@ -1845,9 +2292,15 @@ public class RushDirector : MonoBehaviour
     // Every so often (one at a time) a kitten bolts in from a door the player can see and leaps onto a launcher
     void UpdateLatches()
     {
-        if (LauncherKitten.active.Count > 0 || clock < nextLatch || !RoomForMore || !MayIntroduce(latchLine)) return;
+        if (LauncherKitten.active.Count > 0 || clock < nextLatch || !RoomForMore || !MayIntroduce(latchLine))
+        {
+            return;
+        }
         nextLatch = clock + 1f;   // couldn't send one: try again in a moment
-        if (catPool == null) return;
+        if (catPool == null)
+        {
+            return;
+        }
 
         // Out of a vent sometimes: it drops down, then makes its run
         CafeVent vent;
@@ -1871,7 +2324,10 @@ public class RushDirector : MonoBehaviour
         if (path != null)
         {
             CatMovement fromVent = catPool.GetRandomObjectFromPool<CatMovement>();
-            if (fromVent == null) return;
+            if (fromVent == null)
+            {
+                return;
+            }
             nextLatch = float.MaxValue;   // set again when it's over
             BigStarted();
             vent.StartCoroutine(vent.Release(fromVent, launcherKitten.runScale, (cat, landedFrom) =>
@@ -1891,9 +2347,15 @@ public class RushDirector : MonoBehaviour
         }
 
         path = LatchPath(null);
-        if (path == null) return;
+        if (path == null)
+        {
+            return;
+        }
         CatMovement kitten = catPool.GetRandomObjectFromPool<CatMovement>();
-        if (kitten == null) return;
+        if (kitten == null)
+        {
+            return;
+        }
         LauncherKitten.Send(kitten, path, player, launcherKitten, KittenLatched, LatchOver);
         kitten.DustPuff(KittenRun.DustSize);
         nextLatch = float.MaxValue;   // set again when it's over
@@ -1907,7 +2369,10 @@ public class RushDirector : MonoBehaviour
 
     void LatchOver(LauncherKitten kitten, LauncherKitten.Result result)
     {
-        if (current != null) nextLatch = clock + current.latchEvery * Random.Range(0.8f, 1.2f);
+        if (current != null)
+        {
+            nextLatch = clock + current.latchEvery * Random.Range(0.8f, 1.2f);
+        }
     }
 
     // From `from` (or a door in front of the player) to the floor just outside the player's space
@@ -1922,7 +2387,10 @@ public class RushDirector : MonoBehaviour
         {
             ways = doors;
         }
-        if (player == null || (from == null && ways.Count == 0)) return null;
+        if (player == null || (from == null && ways.Count == 0))
+        {
+            return null;
+        }
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
         if (forward.sqrMagnitude > 0.001f)
@@ -1947,13 +2415,28 @@ public class RushDirector : MonoBehaviour
             {
                 door = null;
             }
-            if (from == null && door == null) continue;
+            if (from == null && door == null)
+            {
+                continue;
+            }
             Vector3 spot = at + forward * front + right * Random.Range(-0.5f, 0.5f);
-            if (!NavMesh.SamplePosition(spot, out NavMeshHit end, 1.2f, NavMesh.AllAreas)) continue;
-            if (Mathf.Abs(end.position.y - at.y) > 0.3f) continue;   // on the floor, not up on something
-            if (!NavMesh.SamplePosition(from ?? door.position, out NavMeshHit start, 1.5f, NavMesh.AllAreas)) continue;
+            if (!NavMesh.SamplePosition(spot, out NavMeshHit end, 1.2f, NavMesh.AllAreas))
+            {
+                continue;
+            }
+            if (Mathf.Abs(end.position.y - at.y) > 0.3f)
+            {
+                continue;   // on the floor, not up on something
+            }
+            if (!NavMesh.SamplePosition(from ?? door.position, out NavMeshHit start, 1.5f, NavMesh.AllAreas))
+            {
+                continue;
+            }
             if (!NavMesh.CalculatePath(start.position, end.position, NavMesh.AllAreas, navPath) ||
-                navPath.status != NavMeshPathStatus.PathComplete) continue;
+                navPath.status != NavMeshPathStatus.PathComplete)
+            {
+                continue;
+            }
             return new List<Vector3>(navPath.corners);
         }
         return null;
@@ -2009,7 +2492,10 @@ public class RushDirector : MonoBehaviour
             {
                 SummonNinja(false, beside.position);
                 yield return new WaitForSeconds(0.6f);
-                if (ninja.gameObject.activeInHierarchy) ninja.Swipe();
+                if (ninja.gameObject.activeInHierarchy)
+                {
+                    ninja.Swipe();
+                }
                 yield return new WaitForSeconds(0.15f);
             }
         }
@@ -2045,7 +2531,10 @@ public class RushDirector : MonoBehaviour
     // A prop at home that's in front of the player and not too far: the one nearest the middle of their view
     FlyingProp PropInView(Transform eye)
     {
-        if (eye == null) return null;
+        if (eye == null)
+        {
+            return null;
+        }
         // In front of where the player stands to play (the rig's forward, not wherever they happen to be looking), and
         // off a pile on a table: never a loose prop like a plant on the floor beside them
         Vector3 ahead;
@@ -2057,15 +2546,24 @@ public class RushDirector : MonoBehaviour
         {
             ahead = Flat(eye.forward);
         }
-        if (ahead.sqrMagnitude < 0.001f) ahead = Flat(eye.forward);
+        if (ahead.sqrMagnitude < 0.001f)
+        {
+            ahead = Flat(eye.forward);
+        }
         FlyingProp best = null;
         float bestAngle = 50f;
         foreach (FlyingProp prop in FlyingProp.all)
         {
-            if (prop == null || prop.state != FlyingProp.State.Home || prop.isLoose) continue;
+            if (prop == null || prop.state != FlyingProp.State.Home || prop.isLoose)
+            {
+                continue;
+            }
             Vector3 to = prop.centre - eye.position;
             float distance = Flat(to).magnitude;
-            if (distance < 1.2f || distance > 5f) continue;
+            if (distance < 1.2f || distance > 5f)
+            {
+                continue;
+            }
             float angle = Vector3.Angle(ahead, Flat(to));
             if (angle < bestAngle)
             {
@@ -2081,7 +2579,10 @@ public class RushDirector : MonoBehaviour
     // Every so often (one at a time) a hungry cat the player can see makes a run at the tip jar or a pile
     void UpdateRaids()
     {
-        if (current.raidEvery <= 0 || CatRaid.active.Count > 0 || clock < nextRaid) return;
+        if (current.raidEvery <= 0 || CatRaid.active.Count > 0 || clock < nextRaid)
+        {
+            return;
+        }
         nextRaid = clock + 1f;   // nobody could go: try again in a moment
 
         // With a tip jar, raids are all about the jar (the piles are the ninja's); otherwise they take turns
@@ -2106,7 +2607,10 @@ public class RushDirector : MonoBehaviour
             {
                 target = PileTarget();
             }
-            if (target == null) continue;
+            if (target == null)
+            {
+                continue;
+            }
             foreach (CatOrder raider in Raiders(target.position))
             {
                 if (CatRaid.Begin(raider, target, raid, RaidOver) != null)
@@ -2121,12 +2625,18 @@ public class RushDirector : MonoBehaviour
 
     void RaidOver(CatRaid finished, CatRaid.Result result)
     {
-        if (current != null) nextRaid = clock + current.raidEvery * Random.Range(0.8f, 1.2f);
+        if (current != null)
+        {
+            nextRaid = clock + current.raidEvery * Random.Range(0.8f, 1.2f);
+        }
     }
 
     CatRaid.Target JarTarget()
     {
-        if (tipJar == null) return null;
+        if (tipJar == null)
+        {
+            return null;
+        }
         TipJar jar = tipJar;
         return new CatRaid.Target { position = jar.transform.position, swat = from => jar.Spill(from, raidSpillCoins) };
     }
@@ -2134,7 +2644,10 @@ public class RushDirector : MonoBehaviour
     CatRaid.Target PileTarget()
     {
         List<DefendPoint> standing = piles.FindAll(p => p != null && p.isActiveAndEnabled);
-        if (standing.Count == 0) return null;
+        if (standing.Count == 0)
+        {
+            return null;
+        }
         DefendPoint pile = standing[Random.Range(0, standing.Count)];
         return new CatRaid.Target { position = pile.position, swat = from => pile.GetHit() };
     }
@@ -2155,10 +2668,16 @@ public class RushDirector : MonoBehaviour
         List<CatOrder> others = new List<CatOrder>();
         foreach (CatOrder order in orders)
         {
-            if (order == null || !order.isHungry || order.busy || !order.hasOrdered) continue;
+            if (order == null || !order.isHungry || order.busy || !order.hasOrdered)
+            {
+                continue;
+            }
             Vector3 gap = target - order.transform.position;
             gap.y = 0;
-            if (gap.magnitude < 2.5f) continue;
+            if (gap.magnitude < 2.5f)
+            {
+                continue;
+            }
             bool seen = eye == null || Vector3.Angle(Flat(eye.forward), Flat(order.transform.position - eye.position)) < 60f;
             (seen ? inView : others).Add(order);
         }
@@ -2215,7 +2734,10 @@ public class RushDirector : MonoBehaviour
         }
         foreach (Transform door in doors)
         {
-            if (door == null) continue;
+            if (door == null)
+            {
+                continue;
+            }
             Vector3 to;
             if (player != null)
             {
@@ -2225,9 +2747,15 @@ public class RushDirector : MonoBehaviour
             {
                 to = Vector3.zero;
             }
-            if (entryArc >= 180f || facing.sqrMagnitude < 0.001f || Vector3.Angle(facing, to) <= entryArc) entryDoors.Add(door);
+            if (entryArc >= 180f || facing.sqrMagnitude < 0.001f || Vector3.Angle(facing, to) <= entryArc)
+            {
+                entryDoors.Add(door);
+            }
         }
-        if (entryDoors.Count == 0) entryDoors.AddRange(doors.FindAll(door => door != null));
+        if (entryDoors.Count == 0)
+        {
+            entryDoors.AddRange(doors.FindAll(door => door != null));
+        }
     }
 
     // The holes at the doors cats come in by. They are modelled into the cafe (the couches), with a door marker in the
@@ -2296,7 +2824,10 @@ public class RushDirector : MonoBehaviour
             float nearest = float.MaxValue;
             foreach (Transform thing in FindObjectsOfType<Transform>())
             {
-                if (thing.name != tipJarReplaces) continue;
+                if (thing.name != tipJarReplaces)
+                {
+                    continue;
+                }
                 float distance = Flat(thing.position - head).magnitude;
                 if (distance < nearest)
                 {
@@ -2311,15 +2842,24 @@ public class RushDirector : MonoBehaviour
             bool any = false;
             foreach (Renderer rend in replaced.GetComponentsInChildren<Renderer>())
             {
-                if (!any) bounds = rend.bounds;
-                else bounds.Encapsulate(rend.bounds);
+                if (!any)
+                {
+                    bounds = rend.bounds;
+                }
+                else
+                {
+                    bounds.Encapsulate(rend.bounds);
+                }
                 any = true;
             }
             replaced.SetActive(false);
             tipJar = TipJar.Create(new Vector3(bounds.center.x, bounds.min.y, bounds.center.z), head, tipJarScale);
             return;
         }
-        if (!string.IsNullOrEmpty(tipJarReplaces)) Debug.LogWarning($"[Cat Cafe Waves] No \"{tipJarReplaces}\" in the scene for the tip jar to replace.");
+        if (!string.IsNullOrEmpty(tipJarReplaces))
+        {
+            Debug.LogWarning($"[Cat Cafe Waves] No \"{tipJarReplaces}\" in the scene for the tip jar to replace.");
+        }
 
         Vector3 forward = player.transform.forward;
         forward.y = 0;
@@ -2346,14 +2886,20 @@ public class RushDirector : MonoBehaviour
     Vector3? BesideTheClock(Vector3 wanted)
     {
         GameObject catClock = GameObject.Find("Cat_clock");
-        if (catClock == null) return null;
+        if (catClock == null)
+        {
+            return null;
+        }
 
         // The counter top is where the clock's base sits
         float top = catClock.transform.position.y;
         bool any = false;
         foreach (Renderer rend in catClock.GetComponentsInChildren<Renderer>())
         {
-            if (rend.GetComponentInParent<Canvas>() != null) continue;
+            if (rend.GetComponentInParent<Canvas>() != null)
+            {
+                continue;
+            }
             if (any)
             {
                 top = Mathf.Min(top, rend.bounds.min.y);
@@ -2376,7 +2922,10 @@ public class RushDirector : MonoBehaviour
             for (int angle = 0; angle < 360; angle += 30)
             {
                 Vector3 spot = centre + Quaternion.Euler(0, angle, 0) * Vector3.forward * distance;
-                if (!ClearCounterAt(spot, top, catClock.transform)) continue;
+                if (!ClearCounterAt(spot, top, catClock.transform))
+                {
+                    continue;
+                }
                 float off = new Vector2(spot.x - wanted.x, spot.z - wanted.z).magnitude;
                 if (off < bestDistance)
                 {
@@ -2402,7 +2951,10 @@ public class RushDirector : MonoBehaviour
         float highest = float.MinValue;
         foreach (RaycastHit hit in hits)
         {
-            if (hit.collider.transform.IsChildOf(clock) || hit.collider.GetComponentInParent<CatMovement>() != null) continue;
+            if (hit.collider.transform.IsChildOf(clock) || hit.collider.GetComponentInParent<CatMovement>() != null)
+            {
+                continue;
+            }
             highest = Mathf.Max(highest, hit.point.y);
         }
         // The highest thing there is the counter top itself (not the floor below it, and nothing standing on it)
@@ -2414,9 +2966,15 @@ public class RushDirector : MonoBehaviour
     {
         foreach (CatOrder order in orders)
         {
-            if (order == null || !order.isHungry) continue;
+            if (order == null || !order.isHungry)
+            {
+                continue;
+            }
             Vector3? exit = NearestExit(order.transform.position);
-            if (exit.HasValue) order.RunOff(exit.Value);
+            if (exit.HasValue)
+            {
+                order.RunOff(exit.Value);
+            }
         }
         orders.Clear();
     }
@@ -2427,34 +2985,58 @@ public class RushDirector : MonoBehaviour
         Transform nearest = null;
         foreach (Transform door in doors)
         {
-            if (door == null) continue;
-            if (nearest == null || (door.position - from).sqrMagnitude < (nearest.position - from).sqrMagnitude) nearest = door;
+            if (door == null)
+            {
+                continue;
+            }
+            if (nearest == null || (door.position - from).sqrMagnitude < (nearest.position - from).sqrMagnitude)
+            {
+                nearest = door;
+            }
         }
-        if (nearest == null) return null;
+        if (nearest == null)
+        {
+            return null;
+        }
         Vector3 exit = nearest.position;
-        if (NavMesh.SamplePosition(exit, out NavMeshHit floor, 1.5f, NavMesh.AllAreas)) exit = floor.position;
+        if (NavMesh.SamplePosition(exit, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
+        {
+            exit = floor.position;
+        }
         return exit;
     }
 
     // The wrong colour: an angry face (already shown), a moment to sulk, then it storms off without a tip
     void WrongTreat(CatOrder order)
     {
-        if (wrongColourLeaves) StartCoroutine(StormOff(order));
+        if (wrongColourLeaves)
+        {
+            StartCoroutine(StormOff(order));
+        }
     }
 
     IEnumerator StormOff(CatOrder order)
     {
         yield return new WaitForSeconds(0.6f);
-        if (order == null || !order.isHungry || !playing) yield break;
+        if (order == null || !order.isHungry || !playing)
+        {
+            yield break;
+        }
         CatRaid raid = order.GetComponent<CatRaid>();
-        if (raid != null && raid.isRunning) raid.Cancel();
+        if (raid != null && raid.isRunning)
+        {
+            raid.Cancel();
+        }
         LeaveWithoutTip(order);
     }
 
     void LeaveWithoutTip(CatOrder order)
     {
         Vector3? exit = NearestExit(order.transform.position);
-        if (exit.HasValue) order.RunOff(exit.Value);
+        if (exit.HasValue)
+        {
+            order.RunOff(exit.Value);
+        }
         orders.Remove(order);
     }
 
@@ -2462,11 +3044,17 @@ public class RushDirector : MonoBehaviour
     // with no jar (or two raids already on), storms off without a tip
     void PatienceOut(CatOrder order)
     {
-        if (!playing || order == null || !order.isHungry) return;
+        if (!playing || order == null || !order.isHungry)
+        {
+            return;
+        }
         if (impatientCatsRaid && tipJar != null && CatRaid.active.Count < 2)
         {
             CatRaid.Target jar = JarTarget();
-            if (jar != null && CatRaid.Begin(order, jar, raid, ImpatientRaidOver) != null) return;
+            if (jar != null && CatRaid.Begin(order, jar, raid, ImpatientRaidOver) != null)
+            {
+                return;
+            }
         }
         LeaveWithoutTip(order);
     }
@@ -2474,20 +3062,35 @@ public class RushDirector : MonoBehaviour
     void ImpatientRaidOver(CatRaid finished, CatRaid.Result result)
     {
         CatOrder order = finished.catOrder;
-        if (order == null || !playing) return;
+        if (order == null || !playing)
+        {
+            return;
+        }
         // Calmed down with the right treat in time: it'll wait a while longer
-        if (result == CatRaid.Result.Saved) order.RefillPatience(0.6f);
+        if (result == CatRaid.Result.Saved)
+        {
+            order.RefillPatience(0.6f);
+        }
         // Got to the jar: it grabbed its tip and it's off
-        else if (result == CatRaid.Result.Swatted && order.isHungry) LeaveWithoutTip(order);
+        else if (result == CatRaid.Result.Swatted && order.isHungry)
+        {
+            LeaveWithoutTip(order);
+        }
     }
 
     // A cat-proof patch of floor where the player stands (cut out of the NavMesh while the round runs)
     void KeepCatsOutOfPlayerSpace()
     {
-        if (playerSpace.x <= 0 || playerSpace.z <= 0 || player == null) return;
+        if (playerSpace.x <= 0 || playerSpace.z <= 0 || player == null)
+        {
+            return;
+        }
         GameObject space = new GameObject("Player Space (no cats)");
         Vector3 at = player.transform.position;
-        if (NavMesh.SamplePosition(at, out NavMeshHit floor, 2f, NavMesh.AllAreas)) at.y = floor.position.y;
+        if (NavMesh.SamplePosition(at, out NavMeshHit floor, 2f, NavMesh.AllAreas))
+        {
+            at.y = floor.position.y;
+        }
         space.transform.SetPositionAndRotation(at, Quaternion.Euler(0, player.transform.eulerAngles.y, 0));
         NavMeshObstacle obstacle = space.AddComponent<NavMeshObstacle>();
         obstacle.shape = NavMeshObstacleShape.Box;
@@ -2500,7 +3103,10 @@ public class RushDirector : MonoBehaviour
     // Ninja stops far enough from the player (so nothing springs up right beside them)
     List<Vector3> StopsAwayFromPlayer()
     {
-        if (player == null || ninjaMinDistance <= 0) return ninjaStops;
+        if (player == null || ninjaMinDistance <= 0)
+        {
+            return ninjaStops;
+        }
         Vector3 at = player.transform.position;
         List<Vector3> away = ninjaStops.FindAll(stop => new Vector2(stop.x - at.x, stop.z - at.z).magnitude >= ninjaMinDistance);
         if (away.Count > 0)
@@ -2519,21 +3125,39 @@ public class RushDirector : MonoBehaviour
 
     void SummonNinja(bool boss, Vector3? holdAt)
     {
-        if (ninja == null) return;
+        if (ninja == null)
+        {
+            return;
+        }
         List<Vector3> stops;
         ninja.piles.Clear();
         if (ninjaExplodesPiles && PileStops(out stops, ninja.piles))
         {
             // Only the piles, each blown up whole (the finale's too, if it's making a mess)
-            if (boss) ninja.Configure(!bossMakesMess, bossKnocksPerStop, bossSitMin, bossSitMax, true);
-            else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax, true);
+            if (boss)
+            {
+                ninja.Configure(!bossMakesMess, bossKnocksPerStop, bossSitMin, bossSitMax, true);
+            }
+            else
+            {
+                ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax, true);
+            }
         }
         else
         {
-            if (ninjaStops.Count == 0) return;
+            if (ninjaStops.Count == 0)
+            {
+                return;
+            }
             stops = StopsAwayFromPlayer();
-            if (boss) ninja.Configure(true, bossKnocksPerStop, bossSitMin, bossSitMax);
-            else ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax);
+            if (boss)
+            {
+                ninja.Configure(true, bossKnocksPerStop, bossSitMin, bossSitMax);
+            }
+            else
+            {
+                ninja.Configure(false, catchKnocksPerStop, catchSitMin, catchSitMax);
+            }
         }
         ninja.stops = stops;
         ninja.holdStill = holdAt.HasValue;   // before it starts, or its first move happens straight away
@@ -2551,9 +3175,15 @@ public class RushDirector : MonoBehaviour
         ninja.wantsTreats = () => ninja.feedable;   // a ninja that can't be fed lets treats past
         ninja.gameObject.SetActive(true);
         ninja.Initialise(transform, holdAt ?? stops[Random.Range(0, stops.Count)]);
-        if (holdAt.HasValue) ninja.BlinkTo(holdAt.Value);
+        if (holdAt.HasValue)
+        {
+            ninja.BlinkTo(holdAt.Value);
+        }
         // The boss gets the same generous hit area as the other cats
-        if (cleanShots && ninjaHitbox == null) ninjaHitbox = CatOrder.AddHitbox(ninja.gameObject, hitboxGenerosity);
+        if (cleanShots && ninjaHitbox == null)
+        {
+            ninjaHitbox = CatOrder.AddHitbox(ninja.gameObject, hitboxGenerosity);
+        }
     }
 
     // A spot beside each prop pile (on its table, on the player's side) for the ninja to appear at
@@ -2571,7 +3201,10 @@ public class RushDirector : MonoBehaviour
         }
         foreach (PropPile pile in propPiles)
         {
-            if (pile == null || !pile.isActiveAndEnabled) continue;
+            if (pile == null || !pile.isActiveAndEnabled)
+            {
+                continue;
+            }
             Vector3 at = pile.transform.position;
             Vector3 towards = Flat(viewer - at);
             if (towards.sqrMagnitude > 0.001f)
@@ -2584,7 +3217,10 @@ public class RushDirector : MonoBehaviour
             }
             Vector3 beside = at + towards * 0.35f;
             if (!NavMesh.SamplePosition(beside, out NavMeshHit hit, 0.6f, NavMesh.AllAreas) &&
-                !NavMesh.SamplePosition(at, out hit, 1.5f, NavMesh.AllAreas)) continue;
+                !NavMesh.SamplePosition(at, out hit, 1.5f, NavMesh.AllAreas))
+            {
+                continue;
+            }
             stops.Add(hit.position);
             forPiles.Add(pile);
         }
@@ -2599,7 +3235,10 @@ public class RushDirector : MonoBehaviour
     // Each pile pays into the tip jar (and the score) by how much of it is still standing
     IEnumerator TidyBonus()
     {
-        if ((tidyBonusCoins <= 0 && tidyBonusScore <= 0) || propPiles.Count == 0) yield break;
+        if ((tidyBonusCoins <= 0 && tidyBonusScore <= 0) || propPiles.Count == 0)
+        {
+            yield break;
+        }
         // Everything the ninja last sent flying comes down first (caught and carried home, or landed), so a pile that
         // was just blown up isn't counted while its plates are still in the air. The clock waits too (not forever).
         float waited = 0;
@@ -2610,19 +3249,34 @@ public class RushDirector : MonoBehaviour
             yield return null;
         }
         wrapUpPaused = false;
-        if (!playing) yield break;
+        if (!playing)
+        {
+            yield break;
+        }
         SayOnce(tidyLine);
-        if (!string.IsNullOrEmpty(tidyBonusBanner)) GameManager.instance.ShowBanner(tidyBonusBanner, bannerSeconds);
+        if (!string.IsNullOrEmpty(tidyBonusBanner))
+        {
+            GameManager.instance.ShowBanner(tidyBonusBanner, bannerSeconds);
+        }
         yield return new WaitForSeconds(0.6f);
         foreach (PropPile pile in propPiles)
         {
-            if (pile == null) continue;
+            if (pile == null)
+            {
+                continue;
+            }
             float whole = pile.standing;
             Vector3 at = pile.transform.position + Vector3.up * 0.4f;
             int score = Mathf.RoundToInt(whole * tidyBonusScore);
             int coins = Mathf.RoundToInt(whole * tidyBonusCoins);
-            if (score > 0) GameManager.instance.AddBonus(score, at);
-            if (coins > 0 && tipJar != null) tipJar.AddCoins(at, coins);
+            if (score > 0)
+            {
+                GameManager.instance.AddBonus(score, at);
+            }
+            if (coins > 0 && tipJar != null)
+            {
+                tipJar.AddCoins(at, coins);
+            }
             FloatingWord.Show($"{Mathf.RoundToInt(whole * 100)}%", at + Vector3.up * 0.3f,
                               whole > 0.66f ? new Color(0.4f, 1f, 0.5f) : whole > 0.33f ? new Color(1f, 0.85f, 0.2f) : new Color(1f, 0.4f, 0.3f), 4f, 1.6f);
             yield return new WaitForSeconds(0.5f);

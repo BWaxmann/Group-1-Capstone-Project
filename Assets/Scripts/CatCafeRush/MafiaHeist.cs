@@ -71,7 +71,10 @@ public class MafiaHeist : MonoBehaviour
     public static MafiaHeist Begin(BossCat prefab, Transform parent, Transform door, Vector3 position, TipJar jar, List<CatOrder.Food> foods,
                                    float bubbleScale, float hitboxGenerosity, Settings settings, Action<MafiaHeist, Result> done)
     {
-        if (prefab == null || jar == null) return null;
+        if (prefab == null || jar == null)
+        {
+            return null;
+        }
         BossCat boss = Instantiate(prefab, parent);
         boss.Initialise(door, position);
         boss.TakeOver();   // he isn't doing his usual boss things (bringing in his gang): he's here for the money
@@ -103,7 +106,10 @@ public class MafiaHeist : MonoBehaviour
     {
         // A swagger: a slow walk with a big side-to-side rock
         CatWaddle waddle = GetComponent<CatWaddle>();
-        if (waddle == null) waddle = gameObject.AddComponent<CatWaddle>();
+        if (waddle == null)
+        {
+            waddle = gameObject.AddComponent<CatWaddle>();
+        }
         waddle.rockDegrees = settings.swagger;
         waddle.twistDegrees = settings.swagger * 0.5f;
         waddle.waddlesPerMetre = 1.1f;
@@ -123,7 +129,10 @@ public class MafiaHeist : MonoBehaviour
         {
             timer += Time.deltaTime;
             float left = Flat(jarSpot - transform.position).magnitude;
-            if (!agent.pathPending && left < 0.35f) break;
+            if (!agent.pathPending && left < 0.35f)
+            {
+                break;
+            }
             if (timer > 30f)
             {
                 // Couldn't get there: off he goes
@@ -144,7 +153,10 @@ public class MafiaHeist : MonoBehaviour
             }
             yield return null;
         }
-        if (finished) yield break;
+        if (finished)
+        {
+            yield break;
+        }
 
         // Made it: up to the jar, and he pillages it for a few seconds (still bustable all the while), then off with the coins
         agent.isStopped = true;
@@ -174,7 +186,10 @@ public class MafiaHeist : MonoBehaviour
         yield return Hop(from, perch, upOnTop ? 0.45f : 0.25f, upOnTop ? 0.45f : 0.15f);
 
         // Swat after swat at the jar, a few coins spilling each time (a right treat puts him off his swing for a moment)
-        if (warning != null) warning.SetActive(true);
+        if (warning != null)
+        {
+            warning.SetActive(true);
+        }
         int swats = Mathf.Max(1, Mathf.RoundToInt(settings.pillageSeconds / settings.swatEvery));
         int stolen = 0;
         float pillage = 0;
@@ -198,28 +213,52 @@ public class MafiaHeist : MonoBehaviour
                 }
                 yield return null;
             }
-            if (finished) yield break;
-            if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger("AngryCat");
+            if (finished)
+            {
+                yield break;
+            }
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                animator.SetTrigger("AngryCat");
+            }
             int share = Mathf.CeilToInt((settings.steal - stolen) / (float)(swats - swat));
             stolen += jar.Spill(transform.position, share);
             Haptics.PulseBoth(Haptics.Strength.Light);
-            if (swat % 2 == 0) cat.Meow(Random.Range(0.72f, 0.82f));
+            if (swat % 2 == 0)
+            {
+                cat.Meow(Random.Range(0.72f, 0.82f));
+            }
         }
-        if (finished) yield break;
+        if (finished)
+        {
+            yield break;
+        }
 
         order.busy = true;   // too late now
-        if (warning != null) warning.SetActive(false);
+        if (warning != null)
+        {
+            warning.SetActive(false);
+        }
         FloatingWord.Show(stolen > 0 ? $"{settings.heistText} -{stolen}" : settings.heistText, jar.top + Vector3.up * 0.25f, settings.ringColour, 4f, 1.6f);
         Haptics.PulseBoth(Haptics.Strength.Strong);
         cat.Meow(0.75f);
         ShowRing(false);
         yield return new WaitForSeconds(0.5f);
-        if (upOnTop) yield return Hop(transform.position, from, 0.4f, 0.3f);
+        if (upOnTop)
+        {
+            yield return Hop(transform.position, from, 0.4f, 0.3f);
+        }
 
         // Swaggers off back the way he came, then he's gone
         finished = true;
-        if (current == this) current = null;
-        if (done != null) done(this, Result.Stole);
+        if (current == this)
+        {
+            current = null;
+        }
+        if (done != null)
+        {
+            done(this, Result.Stole);
+        }
         done = null;
         yield return WalkOff();
     }
@@ -227,11 +266,20 @@ public class MafiaHeist : MonoBehaviour
     IEnumerator WalkOff()
     {
         ShowRing(false);
-        if (warning != null) warning.SetActive(false);
-        if (order != null && order.isActiveAndEnabled) order.busy = true;
+        if (warning != null)
+        {
+            warning.SetActive(false);
+        }
+        if (order != null && order.isActiveAndEnabled)
+        {
+            order.busy = true;
+        }
         cat.treatGate = t => false;
         cat.wantsTreats = () => false;
-        if (!agent.enabled) agent.enabled = true;
+        if (!agent.enabled)
+        {
+            agent.enabled = true;
+        }
         if (agent.isOnNavMesh && exitDoor != null && NavMesh.SamplePosition(exitDoor.position, out NavMeshHit door, 1.5f, NavMesh.AllAreas))
         {
             agent.speed = settings.walkSpeed * 1.3f;
@@ -249,15 +297,24 @@ public class MafiaHeist : MonoBehaviour
 
     void RightTreat(CatOrder fed)
     {
-        if (finished || !fed.isHungry) return;
+        if (finished || !fed.isHungry)
+        {
+            return;
+        }
         stagger = 0.5f;
-        if (animator != null && animator.runtimeAnimatorController != null) animator.SetTrigger("AngryCat");
+        if (animator != null && animator.runtimeAnimatorController != null)
+        {
+            animator.SetTrigger("AngryCat");
+        }
     }
 
     // A wrong treat: he shakes it off and starts his order over
     void WrongTreat(CatOrder fed)
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         fed.Restart();
         cat.Meow(0.7f);
     }
@@ -265,32 +322,56 @@ public class MafiaHeist : MonoBehaviour
     // His whole order: busted
     void Busted(CatOrder fed)
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         StopAllCoroutines();
         Vector3 at = fed.aboveBubble;
         FloatingWord.Show(settings.bustedText, at, new Color(0.4f, 1f, 0.5f), 4f, 1.4f);
-        if (settings.bustedScore > 0) GameManager.instance.AddBonus(settings.bustedScore, at);
-        if (settings.bustedCoins > 0) jar.AddCoins(at, settings.bustedCoins);
+        if (settings.bustedScore > 0)
+        {
+            GameManager.instance.AddBonus(settings.bustedScore, at);
+        }
+        if (settings.bustedCoins > 0)
+        {
+            jar.AddCoins(at, settings.bustedCoins);
+        }
         Haptics.PulseBoth(Haptics.Strength.Medium);
         Finish(Result.Busted);
     }
 
     void Finish(Result result)
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         finished = true;
         StopTheme();
         ShowRing(false);
-        if (warning != null) Destroy(warning);
-        if (done != null) done(this, result);
+        if (warning != null)
+        {
+            Destroy(warning);
+        }
+        if (done != null)
+        {
+            done(this, result);
+        }
         done = null;
-        if (current == this) current = null;
+        if (current == this)
+        {
+            current = null;
+        }
         StartCoroutine(result == Result.Busted ? PoofSoon() : WalkOff());
     }
 
     IEnumerator PoofSoon()
     {
-        if (agent.isActiveAndEnabled && agent.isOnNavMesh) agent.isStopped = true;
+        if (agent.isActiveAndEnabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+        }
         cat.treatGate = t => false;
         cat.wantsTreats = () => false;
         yield return new WaitForSeconds(0.6f);
@@ -302,34 +383,55 @@ public class MafiaHeist : MonoBehaviour
     void Vanish()
     {
         cat.DustPuff(1f);
-        if (current == this) current = null;
+        if (current == this)
+        {
+            current = null;
+        }
         Destroy(cat.gameObject);
     }
 
     // The round or phase is over: he leaves
     public void Cancel()
     {
-        if (!finished) Finish(Result.Cancelled);
+        if (!finished)
+        {
+            Finish(Result.Cancelled);
+        }
     }
 
     void OnDestroy()
     {
-        if (ring != null) Destroy(ring.transform.parent.gameObject);
-        if (warning != null) Destroy(warning);
-        if (current == this) current = null;
+        if (ring != null)
+        {
+            Destroy(ring.transform.parent.gameObject);
+        }
+        if (warning != null)
+        {
+            Destroy(warning);
+        }
+        if (current == this)
+        {
+            current = null;
+        }
     }
 
     // His theme, from the speakers (not from him), with the music dipped underneath
     void PlayTheme()
     {
-        if (themeClip == null) themeClip = Resources.Load<AudioClip>("CafeSounds/mafia_theme");
+        if (themeClip == null)
+        {
+            themeClip = Resources.Load<AudioClip>("CafeSounds/mafia_theme");
+        }
         theme = SoundBite.Play("Mafia Theme", themeClip, settings.themeVolume, settings.musicUnderTheme, null, fadeIn: 0.1f, fadeOut: 1.5f);
     }
 
     // Busted (or sent off): his theme eases out and the music comes back
     void StopTheme()
     {
-        if (theme != null) theme.Stop(1.2f);
+        if (theme != null)
+        {
+            theme.Stop(1.2f);
+        }
         theme = null;
     }
 
@@ -356,12 +458,18 @@ public class MafiaHeist : MonoBehaviour
             holder.rotation = Quaternion.Euler(90f, 0, 0);
             ring = SpaceCafeVisuals.Ring(holder, "Ring", 0.18f * Mathf.Max(0.5f, jar.transform.lossyScale.x), 0.03f, settings.ringColour);
         }
-        if (ring != null && ring.transform.parent.gameObject.activeSelf != show) ring.transform.parent.gameObject.SetActive(show);
+        if (ring != null && ring.transform.parent.gameObject.activeSelf != show)
+        {
+            ring.transform.parent.gameObject.SetActive(show);
+        }
     }
 
     void UpdateRing(float closeness)
     {
-        if (ring == null) return;
+        if (ring == null)
+        {
+            return;
+        }
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * Mathf.Lerp(4f, 16f, closeness));
         Color colour = settings.ringColour;
         colour.a = Mathf.Lerp(0.4f, 1f, pulse);

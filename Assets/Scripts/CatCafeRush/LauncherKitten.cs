@@ -114,7 +114,10 @@ public class LauncherKitten : MonoBehaviour
         KittenRun run = KittenRun.Launch(cat, path, 0, settings.runSpeed, settings.runScale, 0f, null);
         run.holdAtEnd = true;
         LauncherKitten kitten = cat.GetComponent<LauncherKitten>();
-        if (kitten == null) kitten = cat.gameObject.AddComponent<LauncherKitten>();
+        if (kitten == null)
+        {
+            kitten = cat.gameObject.AddComponent<LauncherKitten>();
+        }
         kitten.run = run;
         kitten.cat = cat;
         kitten.player = player;
@@ -129,7 +132,10 @@ public class LauncherKitten : MonoBehaviour
         kitten.switchedOff.Clear();
         foreach (Collider body in cat.GetComponentsInChildren<Collider>())
         {
-            if (!body.enabled) continue;
+            if (!body.enabled)
+            {
+                continue;
+            }
             body.enabled = false;
             kitten.switchedOff.Add(body);
         }
@@ -173,31 +179,49 @@ public class LauncherKitten : MonoBehaviour
     // When the phase or round is over: every launcher kitten still out hops off
     public static void EndAll()
     {
-        foreach (LauncherKitten kitten in active.ToArray()) kitten.Finish(Result.Cancelled, true);
+        foreach (LauncherKitten kitten in active.ToArray())
+        {
+            kitten.Finish(Result.Cancelled, true);
+        }
     }
 
     void OnEnable()
     {
-        if (!active.Contains(this)) active.Add(this);
+        if (!active.Contains(this))
+        {
+            active.Add(this);
+        }
     }
 
     void OnDisable()
     {
         // The cat went back to the pool some other way (e.g. the round ended)
-        if (!finished) Finish(Result.Cancelled, false);
+        if (!finished)
+        {
+            Finish(Result.Cancelled, false);
+        }
         active.Remove(this);
     }
 
     void Update()
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         if (run == null || !run.enabled)
         {
             Finish(Result.Cancelled, false);
             return;
         }
-        if (warning != null) UpdateWarning();
-        if (latched || launcher != null) return;
+        if (warning != null)
+        {
+            UpdateWarning();
+        }
+        if (latched || launcher != null)
+        {
+            return;
+        }
 
         // Running in: leaps at whichever launcher it gets near first (or the nearer one once it's as close as it gets)
         bool armed = player != null && player.hasLaunchers;
@@ -223,7 +247,10 @@ public class LauncherKitten : MonoBehaviour
         {
             // The nearer launcher, unless another kitten has already gone for that one
             bool toRight = right < left;
-            if (Claimed(toRight) && !Claimed(!toRight) && Random.value >= settings.stackChance) toRight = !toRight;
+            if (Claimed(toRight) && !Claimed(!toRight) && Random.value >= settings.stackChance)
+            {
+                toRight = !toRight;
+            }
             StartCoroutine(Leap(toRight));
         }
         else if (Time.time - startedAt > 12f)
@@ -237,7 +264,10 @@ public class LauncherKitten : MonoBehaviour
     {
         foreach (LauncherKitten other in active)
         {
-            if (other != this && !other.finished && other.launcher != null && other.rightHand == hand) return true;
+            if (other != this && !other.finished && other.launcher != null && other.rightHand == hand)
+            {
+                return true;
+            }
         }
         return false;
     }
@@ -268,10 +298,16 @@ public class LauncherKitten : MonoBehaviour
         stack = 0;
         foreach (LauncherKitten other in active)
         {
-            if (other != this && !other.finished && other.launcher != null && other.rightHand == right) stack++;
+            if (other != this && !other.finished && other.launcher != null && other.rightHand == right)
+            {
+                stack++;
+            }
         }
         muzzle = player.LaunchPoint(right);
-        if (muzzle == null) muzzle = launcher;
+        if (muzzle == null)
+        {
+            muzzle = launcher;
+        }
         run.Hold();
         HideWarning();
         run.SetLegs(3f);
@@ -293,7 +329,10 @@ public class LauncherKitten : MonoBehaviour
             transform.rotation = Quaternion.Slerp(startRotation, LatchRotation(), eased);
             transform.localScale = Vector3.Lerp(startScale, endScale, eased);
             yield return null;
-            if (finished) yield break;
+            if (finished)
+            {
+                yield break;
+            }
         }
 
         // On! That launcher's out of action until it's shaken off
@@ -318,15 +357,24 @@ public class LauncherKitten : MonoBehaviour
 
     void LateUpdate()
     {
-        if (!latched || finished) return;
+        if (!latched || finished)
+        {
+            return;
+        }
         float dt = Time.deltaTime;
-        if (dt <= 0) return;
+        if (dt <= 0)
+        {
+            return;
+        }
 
         // How the hand's moving
         Vector3 hand = launcher.position;
         Vector3 velocity = (hand - lastHandPosition) / dt;
         lastHandPosition = hand;
-        if (velocity.magnitude > 20f) velocity = Vector3.zero;   // tracking jump, not a shake
+        if (velocity.magnitude > 20f)
+        {
+            velocity = Vector3.zero;   // tracking jump, not a shake
+        }
         handVelocity = Vector3.Lerp(handVelocity, velocity, Mathf.Clamp01(dt * 25f));
 
         // A shake is the hand changing direction while it's moving fast
@@ -350,7 +398,10 @@ public class LauncherKitten : MonoBehaviour
             lastShakeDirection = Vector3.zero;   // the hand's been still a moment: the next fast move starts afresh
         }
         // Settles back in when the shaking stops
-        if (Time.time - lastShake > 0.6f) grip = Mathf.MoveTowards(grip, 1f, dt * 0.2f);
+        if (Time.time - lastShake > 0.6f)
+        {
+            grip = Mathf.MoveTowards(grip, 1f, dt * 0.2f);
+        }
 
         if (grip <= 0f)
         {
@@ -398,7 +449,10 @@ public class LauncherKitten : MonoBehaviour
             float beat = Mathf.Lerp(7f, 11f, Mathf.Clamp01((Time.time - latchedAt) / 4f));
             float pulse = Mathf.Abs(Mathf.Sin((Time.time - latchedAt) * beat));
             hint.transform.localScale = Vector3.one * (1f + 0.35f * pulse);
-            if (hintText != null) hintText.color = Color.Lerp(settings.hintColour, new Color(1f, 0.2f, 0.15f), pulse);
+            if (hintText != null)
+            {
+                hintText.color = Color.Lerp(settings.hintColour, new Color(1f, 0.2f, 0.15f), pulse);
+            }
         }
     }
 
@@ -408,7 +462,10 @@ public class LauncherKitten : MonoBehaviour
         lastShake = Time.time;
         scrabbleUntil = Time.time + 0.35f;
         Haptics.Pulse(rightHand, Haptics.Strength.Light);
-        if (grip > 0) run.TryMeow(1.6f, 2f);
+        if (grip > 0)
+        {
+            run.TryMeow(1.6f, 2f);
+        }
     }
 
     void BlockedShot()
@@ -437,7 +494,10 @@ public class LauncherKitten : MonoBehaviour
         }
         Vector3 velocity = direction * Mathf.Clamp(throwVelocity.magnitude * 1.5f, 2.5f, 6f) + Vector3.up * 1.5f;
         Vector3 spinAxis = Vector3.Cross(Vector3.up, velocity.sqrMagnitude > 0.01f ? velocity : transform.forward);
-        if (spinAxis.sqrMagnitude < 0.001f) spinAxis = transform.right;
+        if (spinAxis.sqrMagnitude < 0.001f)
+        {
+            spinAxis = transform.right;
+        }
         float floorY;
         if (player != null)
         {
@@ -454,7 +514,10 @@ public class LauncherKitten : MonoBehaviour
             velocity += Physics.gravity * Time.deltaTime;
             transform.position += velocity * Time.deltaTime;
             transform.Rotate(spinAxis, 720f * Time.deltaTime, Space.World);
-            if (transform.position.y <= floorY && velocity.y < 0) break;
+            if (transform.position.y <= floorY && velocity.y < 0)
+            {
+                break;
+            }
             yield return null;
         }
         Finish(Result.ShakenOff, true);
@@ -484,25 +547,40 @@ public class LauncherKitten : MonoBehaviour
     {
         player.ChangeFaceExpression(Expression.Happy, rightHand);
         latched = false;
-        if (hint != null) Destroy(hint);
+        if (hint != null)
+        {
+            Destroy(hint);
+        }
         transform.SetParent(null, true);
     }
 
     void Finish(Result result, bool dismiss)
     {
-        if (finished) return;
+        if (finished)
+        {
+            return;
+        }
         player.ChangeFaceExpression(Expression.Default, rightHand);
         finished = true;
         latched = false;
         StopAllCoroutines();
         HideWarning();
-        if (hint != null) Destroy(hint);
+        if (hint != null)
+        {
+            Destroy(hint);
+        }
         foreach (Collider body in switchedOff)
         {
-            if (body != null) body.enabled = true;
+            if (body != null)
+            {
+                body.enabled = true;
+            }
         }
         switchedOff.Clear();
-        if (dismiss && run != null && run.enabled) run.Dismiss();
+        if (dismiss && run != null && run.enabled)
+        {
+            run.Dismiss();
+        }
         enabled = false;
         done?.Invoke(this, result);
     }
@@ -511,7 +589,10 @@ public class LauncherKitten : MonoBehaviour
 
     void ShowWarning()
     {
-        if (warning == null) warning = FloatingWord.Make("!", settings.warningColour, 4f);
+        if (warning == null)
+        {
+            warning = FloatingWord.Make("!", settings.warningColour, 4f);
+        }
         warning.SetActive(true);
     }
 
@@ -529,12 +610,21 @@ public class LauncherKitten : MonoBehaviour
 
     void HideWarning()
     {
-        if (warning != null) warning.SetActive(false);
+        if (warning != null)
+        {
+            warning.SetActive(false);
+        }
     }
 
     void OnDestroy()
     {
-        if (warning != null) Destroy(warning);
-        if (hint != null) Destroy(hint);
+        if (warning != null)
+        {
+            Destroy(warning);
+        }
+        if (hint != null)
+        {
+            Destroy(hint);
+        }
     }
 }

@@ -103,14 +103,26 @@ public class AimReticle : MonoBehaviour
     {
         outerFromPrefab = outerRing != null;
         innerFromPrefab = innerDot != null;
-        if (outerFromPrefab && innerFromPrefab) return;
+        if (outerFromPrefab && innerFromPrefab)
+        {
+            return;
+        }
 
         Shader shader = Shader.Find("Sprites/Default");
-        if (shader == null) shader = Shader.Find("UI/Default");
+        if (shader == null)
+        {
+            shader = Shader.Find("UI/Default");
+        }
         Material material = new Material(shader);
 
-        if (!outerFromPrefab) outerRing = CreateRing("Ring", material, 1f, RingSegments);
-        if (!innerFromPrefab) innerDot = CreateRing("Dot", material, 0.2f, 12);
+        if (!outerFromPrefab)
+        {
+            outerRing = CreateRing("Ring", material, 1f, RingSegments);
+        }
+        if (!innerFromPrefab)
+        {
+            innerDot = CreateRing("Dot", material, 0.2f, 12);
+        }
     }
 
     LineRenderer CreateRing(string ringName, Material material, float radius, int segments)
@@ -198,8 +210,14 @@ public class AimReticle : MonoBehaviour
 
     void ShowRings(bool show)
     {
-        if (outerRing != null && outerRing.enabled != show) outerRing.enabled = show;
-        if (innerDot != null && innerDot.enabled != show) innerDot.enabled = show;
+        if (outerRing != null && outerRing.enabled != show)
+        {
+            outerRing.enabled = show;
+        }
+        if (innerDot != null && innerDot.enabled != show)
+        {
+            innerDot.enabled = show;
+        }
     }
 
     // Follows the same path the treat will take and returns the first thing it would hit
@@ -243,13 +261,28 @@ public class AimReticle : MonoBehaviour
         float closestDistance = float.MaxValue;
         foreach (RaycastHit hit in hits)
         {
-            if (ignoreRoot != null && hit.collider.transform.IsChildOf(ignoreRoot)) continue;
-            if (hit.collider.GetComponentInParent<Launchable>() != null) continue;
+            if (ignoreRoot != null && hit.collider.transform.IsChildOf(ignoreRoot))
+            {
+                continue;
+            }
+            if (hit.collider.GetComponentInParent<Launchable>() != null)
+            {
+                continue;
+            }
             bool isCat = cleanShots && hit.collider.GetComponentInParent<CatMovement>() != null;
-            if (!isCat && hit.collider.isTrigger) continue;
+            if (!isCat && hit.collider.isTrigger)
+            {
+                continue;
+            }
             // A cat anywhere along the shot beats anything else; otherwise the nearest thing
-            if (foundCat && !isCat) continue;
-            if (hit.distance >= closestDistance && !(isCat && !foundCat)) continue;
+            if (foundCat && !isCat)
+            {
+                continue;
+            }
+            if (hit.distance >= closestDistance && !(isCat && !foundCat))
+            {
+                continue;
+            }
 
             closest = hit;
             closestDistance = hit.distance;

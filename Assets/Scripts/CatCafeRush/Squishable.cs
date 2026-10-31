@@ -61,7 +61,10 @@ public class Squishable : MonoBehaviour
             Debug.LogWarning($"[Squishable] {name} is Batching Static, so it can't squish: untick Batching Static on it (Lightmap Static is fine).", this);
             return;
         }
-        if (squishing != null) StopCoroutine(squishing);
+        if (squishing != null)
+        {
+            StopCoroutine(squishing);
+        }
         squishing = StartCoroutine(SquishRoutine());
     }
 
@@ -89,22 +92,37 @@ public class Squishable : MonoBehaviour
 
     void Update()
     {
-        if (!smackable || rend == null) return;
+        if (!smackable || rend == null)
+        {
+            return;
+        }
         if (player == null)
         {
-            if (Time.time < nextLook) return;
+            if (Time.time < nextLook)
+            {
+                return;
+            }
             nextLook = Time.time + 1f;
             player = FindObjectOfType<PlayerInput>();
-            if (player == null) return;
+            if (player == null)
+            {
+                return;
+            }
         }
-        if (!player.hasLaunchers) return;
+        if (!player.hasLaunchers)
+        {
+            return;
+        }
         CheckHand(player.Launcher(false), false, ref lastLeft, ref trackingLeft);
         CheckHand(player.Launcher(true), true, ref lastRight, ref trackingRight);
     }
 
     void CheckHand(Transform hand, bool isRight, ref Vector3 last, ref bool tracking)
     {
-        if (hand == null) return;
+        if (hand == null)
+        {
+            return;
+        }
         Vector3 now = hand.position;
         if (tracking && Time.time >= nextSmackAt)
         {
