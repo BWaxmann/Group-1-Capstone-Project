@@ -24,15 +24,39 @@ public class CatOrder : MonoBehaviour
     float normalSpeed;
     bool normalUpdateRotation;
 
-    public bool isHungry => cat != null && cat.isActiveAndEnabled && !cat.isFullyFed && !runningOff && step < order.Count;
+    public bool isHungry
+    {
+        get
+        {
+            return cat != null && cat.isActiveAndEnabled && !cat.isFullyFed && !runningOff && step < order.Count;
+        }
+    }
 
     // The treat this cat wants right now (its position in the treat pool), or -1
-    public int wantedFood => isHungry && ordered ? order[step].variation : -1;
+    public int wantedFood
+    {
+        get
+        {
+            return isHungry && ordered ? order[step].variation : -1;
+        }
+    }
 
     // Cat Cafe Waves' order moments: a cat can wander in first and order a little later (with a ding), then waits
     // with a draining patience ring
-    public bool hasOrdered => ordered;
-    public float patienceFraction => patienceTotal > 0 ? Mathf.Clamp01(patienceLeft / patienceTotal) : 1f;
+    public bool hasOrdered
+    {
+        get
+        {
+            return ordered;
+        }
+    }
+    public float patienceFraction
+    {
+        get
+        {
+            return patienceTotal > 0 ? Mathf.Clamp01(patienceLeft / patienceTotal) : 1f;
+        }
+    }
 
     // Called once when its patience runs out (e.g. so it can raid the tip jar or storm off)
     public System.Action<CatOrder> patienceOut;
@@ -48,7 +72,13 @@ public class CatOrder : MonoBehaviour
     static AudioClip ding;
 
     // The middle of the cat's body, for the aim assist to steer towards
-    public Vector3 aimPoint => hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.2f;
+    public Vector3 aimPoint
+    {
+        get
+        {
+            return hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.2f;
+        }
+    }
 
     // Every cat with an order, for the aim assist to look through
     public static readonly List<CatOrder> all = new List<CatOrder>();
@@ -76,7 +106,13 @@ public class CatOrder : MonoBehaviour
     public System.Func<CatOrder, Vector3?> orderSpotFor;
 
     // How many treats the order was
-    public int orderLength => order.Count;
+    public int orderLength
+    {
+        get
+        {
+            return order.Count;
+        }
+    }
 
     // Called for every right treat the cat eats (including the last), before the cat reacts to it
     public event System.Action<CatOrder> rightTreat;
@@ -88,9 +124,15 @@ public class CatOrder : MonoBehaviour
     public bool busy { get; set; }
 
     // Just above the order bubble
-    public Vector3 aboveBubble => bubble != null
-        ? bubble.transform.position + Vector3.up * (0.15f + 0.26f * bubble.transform.lossyScale.y)
-        : transform.position + Vector3.up * 1f;
+    public Vector3 aboveBubble
+    {
+        get
+        {
+            return bubble != null
+                ? bubble.transform.position + Vector3.up * (0.15f + 0.26f * bubble.transform.lossyScale.y)
+                : transform.position + Vector3.up * 1f;
+        }
+    }
 
     float baseSpeed = -1f;
 

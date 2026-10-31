@@ -68,7 +68,13 @@ public class SpyCat : MonoBehaviour
     // While this says so, it hangs there swinging gently instead of coming in (it can still be scared off): e.g. the first
     // spy of the wave, while the announcer explains what to do
     public Func<bool> holdBack;
-    public bool isFinished => finished;
+    public bool isFinished
+    {
+        get
+        {
+            return finished;
+        }
+    }
     static int hintsShown;
     internal static void ResetStatics()   // (a new run: see RunReset)
     {
@@ -98,7 +104,13 @@ public class SpyCat : MonoBehaviour
     Vector3 anchor;         // the top of the rope (it creeps along the ceiling towards the player as the cat swings)
     Transform ropePoint;    // the clip on its harness (a child called "Rope Point"), if it has one
 
-    public bool isDangling => !finished;
+    public bool isDangling
+    {
+        get
+        {
+            return !finished;
+        }
+    }
 
     // Lowers a pooled cat (switched off) out of a ceiling vent, to swing in at the player
     public static SpyCat Begin(CatMovement cat, CafeVent vent, PlayerInput player, TipJar jar, Settings settings,
@@ -367,7 +379,10 @@ public class SpyCat : MonoBehaviour
         swings.Clear();
     }
 
-    Vector3 Hand(bool right) => player.hasLaunchers ? player.Launcher(right).position : player.transform.position;
+    Vector3 Hand(bool right)
+    {
+        return player.hasLaunchers ? player.Launcher(right).position : player.transform.position;
+    }
 
     // How fast the hands are moving, the two averaged (smoothed)
     float HandSpeed()

@@ -55,8 +55,20 @@ public class CatRaid : MonoBehaviour
     AudioSource voice;
     static AudioClip windUpClip;
 
-    public CatOrder catOrder => order;
-    public bool isRunning => running;
+    public CatOrder catOrder
+    {
+        get
+        {
+            return order;
+        }
+    }
+    public bool isRunning
+    {
+        get
+        {
+            return running;
+        }
+    }
 
     // Sends `order`'s cat after `target`. Returns null if it can't get there.
     public static CatRaid Begin(CatOrder order, Target target, Settings settings, Action<CatRaid, Result> done)

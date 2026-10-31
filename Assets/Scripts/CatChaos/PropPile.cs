@@ -8,7 +8,10 @@ public class PropPile : MonoBehaviour
 {
     static readonly List<CatMovement> noCats = new List<CatMovement>();
     static readonly List<PropPile> all = new List<PropPile>();
-    internal static void ResetStatics() => all.Clear();   // (a new run: see RunReset)
+    internal static void ResetStatics()
+    {
+        all.Clear();
+    }   // (a new run: see RunReset)
 
     [Tooltip("The object holding the props; it's what rattles.")]
     public Transform pile;

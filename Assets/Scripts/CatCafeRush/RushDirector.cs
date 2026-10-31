@@ -470,7 +470,13 @@ public class RushDirector : MonoBehaviour
     bool wrapUpPaused;
     bool introPaused;   // the first catch's intro stops the clock
     bool waveHeld;      // the wave waits (e.g. for the first spy to be dealt with while it's explained)
-    bool holding => playing && voice != null && voice.holding;
+    bool holding
+    {
+        get
+        {
+            return playing && voice != null && voice.holding;
+        }
+    }
 
     // Something the announcer explains (its `line`) may start: once it's been explained, any time; until then, not while
     // she's talking (or saying that very line), so the player hears what's new before it turns up
@@ -481,7 +487,13 @@ public class RushDirector : MonoBehaviour
         return !voice.talking;
     }
 
-    string SpyLine => phases.Find(spyPhase => spyPhase.kind == Kind.Spy)?.line;
+    string SpyLine
+    {
+        get
+        {
+            return phases.Find(spyPhase => spyPhase.kind == Kind.Spy)?.line;
+        }
+    }
 
     IEnumerator WaitClock(float seconds)
     {
@@ -962,7 +974,10 @@ public class RushDirector : MonoBehaviour
     }
 
     // Feeding-like phases: launcher kittens and the Mafia cat carry on through them
-    static bool Feeding(Kind kind) => kind == Kind.Feed || kind == Kind.Remix;
+    static bool Feeding(Kind kind)
+    {
+        return kind == Kind.Feed || kind == Kind.Remix;
+    }
 
     // The remix finale's chaos budget: how many big things are going on right now
     int BusyEvents()
@@ -976,7 +991,13 @@ public class RushDirector : MonoBehaviour
     }
 
     // Whether something new may start (always, outside the remix finale)
-    bool RoomForMore => (current == null || current.kind != Kind.Remix || (BusyEvents() < remixMaxBusy && clock >= nextBigAt));
+    bool RoomForMore
+    {
+        get
+        {
+            return (current == null || current.kind != Kind.Remix || (BusyEvents() < remixMaxBusy && clock >= nextBigAt));
+        }
+    }
 
     // In the finale the breather runs from when the last big thing finishes (each one plays out, then a pause, then the next)
     void UpdateBreather()
@@ -1093,7 +1114,10 @@ public class RushDirector : MonoBehaviour
     // ---------- Cat Cafe Waves: spy cats ----------
 
     // Vents high up (in the ceiling) that the player can see: where spies come down from
-    List<CafeVent> CeilingVents() => vents.FindAll(vent => vent != null && vent.dropHeight > 1.5f);
+    List<CafeVent> CeilingVents()
+    {
+        return vents.FindAll(vent => vent != null && vent.dropHeight > 1.5f);
+    }
 
     // Spies through the phase, a new one every so often (quicker as it goes on), however many are still dangling
     IEnumerator SpyCats(Phase phase)
@@ -2137,7 +2161,10 @@ public class RushDirector : MonoBehaviour
 
     // Brings the ninja in at one of its stops; or at `holdAt`, where it stays put until told to go (holdStill)
     // (no default parameter: Liminal doesn't allow ones that use Unity types)
-    void SummonNinja(bool boss) => SummonNinja(boss, null);
+    void SummonNinja(bool boss)
+    {
+        SummonNinja(boss, null);
+    }
 
     void SummonNinja(bool boss, Vector3? holdAt)
     {

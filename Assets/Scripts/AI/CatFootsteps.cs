@@ -10,7 +10,13 @@ public class CatFootsteps : MonoBehaviour
     [SerializeField]
     SoundData[] footstepClips;
 
-    public AudioSource source => footstepSource;
+    public AudioSource source
+    {
+        get
+        {
+            return footstepSource;
+        }
+    }
 
     [SerializeField]
     [Tooltip("If true, footstep clips will play in a random order; if false, footsteps will play in order provided.")]

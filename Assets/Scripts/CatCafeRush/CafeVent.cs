@@ -19,12 +19,36 @@ public class CafeVent : MonoBehaviour
     Transform landing;  // on the floor below/in front, facing into the room (cats leave from here as if it were a door)
 
     public bool busy { get; private set; }
-    public Transform exit => landing;
-    public Vector3 floorSpot => landing.position;
+    public Transform exit
+    {
+        get
+        {
+            return landing;
+        }
+    }
+    public Vector3 floorSpot
+    {
+        get
+        {
+            return landing.position;
+        }
+    }
     // Just outside the lid, where cats come out
-    public Vector3 opening => mouth;
+    public Vector3 opening
+    {
+        get
+        {
+            return mouth;
+        }
+    }
     // How far a cat drops from the opening to where it lands
-    public float dropHeight => mouth.y - landing.position.y;
+    public float dropHeight
+    {
+        get
+        {
+            return mouth.y - landing.position.y;
+        }
+    }
     // False for a vent whose cats land up on something (a platform, a shelf) and find their own way down
     public bool landsOnFloor { get; private set; }
 
@@ -260,7 +284,10 @@ public class CafeVent : MonoBehaviour
         if (juice != null && !kitten) juice.Hit(Mathf.Lerp(0.5f, 1f, landing01));
     }
 
-    static bool NoTreats(Treat treat) => false;
+    static bool NoTreats(Treat treat)
+    {
+        return false;
+    }
 
     IEnumerator Swing(Quaternion from, Quaternion to, float seconds)
     {

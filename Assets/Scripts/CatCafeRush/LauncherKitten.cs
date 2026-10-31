@@ -92,8 +92,20 @@ public class LauncherKitten : MonoBehaviour
     float startedAt;
     readonly List<Collider> switchedOff = new List<Collider>();
 
-    public bool isLatched => latched;
-    public bool onRightHand => rightHand;
+    public bool isLatched
+    {
+        get
+        {
+            return latched;
+        }
+    }
+    public bool onRightHand
+    {
+        get
+        {
+            return rightHand;
+        }
+    }
 
     // Sends a pooled cat (switched off) running along `path` (a door to just in front of the player) to leap at them
     public static LauncherKitten Send(CatMovement cat, List<Vector3> path, PlayerInput player, Settings settings,

@@ -113,8 +113,26 @@ public class BossCatSpawner : MonoBehaviour
         [SerializeField]
         SoundData _soundOnSpawn;
 
-        public BossCat bossPrefab => _bossPrefab;
-        public Transform spawnPoint => _spawnPoint;
-        public SoundData soundOnSpawn => _soundOnSpawn;
+        public BossCat bossPrefab
+        {
+            get
+            {
+                return _bossPrefab;
+            }
+        }
+        public Transform spawnPoint
+        {
+            get
+            {
+                return _spawnPoint;
+            }
+        }
+        public SoundData soundOnSpawn
+        {
+            get
+            {
+                return _soundOnSpawn;
+            }
+        }
     }
 }

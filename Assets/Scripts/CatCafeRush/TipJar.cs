@@ -43,7 +43,13 @@ public class TipJar : MonoBehaviour
     // Coins in the full jars set aside
     public int banked { get; private set; }
     // Every coin earned and kept: the full jars and this one
-    public int total => banked + coins;
+    public int total
+    {
+        get
+        {
+            return banked + coins;
+        }
+    }
     public string fullText = "Jar full!";
 
     const int MaxFullJars = 2;
@@ -53,7 +59,13 @@ public class TipJar : MonoBehaviour
     bool sealedFull;   // a full jar standing on the counter (just for show)
 
     // The jar's mouth (where coins drop in)
-    public Vector3 top => transform.position + Vector3.up * height * transform.lossyScale.y;
+    public Vector3 top
+    {
+        get
+        {
+            return transform.position + Vector3.up * height * transform.lossyScale.y;
+        }
+    }
 
     Vector3 fillScale;      // a prefab fill's authored (full) scale
     bool fillFromPrefab;

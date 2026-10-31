@@ -152,7 +152,13 @@ public class SpawnManager : MonoBehaviour
         [SerializeField]
         SpawnData[] _spawnWaves;
 
-        public SpawnData[] spawnWaves => _spawnWaves;
+        public SpawnData[] spawnWaves
+        {
+            get
+            {
+                return _spawnWaves;
+            }
+        }
     }
 
     [Serializable]

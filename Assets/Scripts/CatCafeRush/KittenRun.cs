@@ -63,8 +63,20 @@ public class KittenRun : MonoBehaviour
     static Material dustMaterial;
 
     // Where a treat should aim (the middle of its hit area)
-    public Vector3 aimPoint => hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.15f;
-    public bool isFed => fed;
+    public Vector3 aimPoint
+    {
+        get
+        {
+            return hitbox != null ? hitbox.transform.TransformPoint(hitbox.center) : transform.position + Vector3.up * 0.15f;
+        }
+    }
+    public bool isFed
+    {
+        get
+        {
+            return fed;
+        }
+    }
     // False for a kitten launched with no hit area (a launcher kitten): treats go straight through it
     public bool feedable { get; private set; }
     // Stopped running (another script has it now, e.g. a launcher kitten leaping), or waiting at the end of its path

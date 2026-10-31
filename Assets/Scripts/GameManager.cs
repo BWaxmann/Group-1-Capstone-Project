@@ -289,22 +289,88 @@ public class GameManager : MonoBehaviour
     Coroutine comboPunchRoutine;
     bool finaleStarted;
 
-    public bool enablePlayerInput => playerInputsEnabled;
+    public bool enablePlayerInput
+    {
+        get
+        {
+            return playerInputsEnabled;
+        }
+    }
 
     // While true the round clock stands still (e.g. while something new is being explained)
     public bool clockPaused { get; set; }
 
     // The scoreboard's texts, for modes that show their own numbers on it (Cat Cafe Waves shows tips)
-    public TMP_Text scoreDisplay => scoreText;
-    public TMP_Text bonusDisplayText => bonusText;
-    public TMP_Text countdownDisplay => countdownText;
-    public TMP_Text finalScoreDisplay => finalScoreText;
-    public TMP_Text catsFedDisplay => catsFedText;
-    public TMP_Text penaltyDisplay => penaltyText;
-    public GameObject finalScorePanelObject => finalScorePanel;
-    public GameObject timeUpObject => timeUpText;
-    public TMP_Text rankDisplay => rankText;
-    public TMP_Text bestScoreDisplay => bestScoreText;
+    public TMP_Text scoreDisplay
+    {
+        get
+        {
+            return scoreText;
+        }
+    }
+    public TMP_Text bonusDisplayText
+    {
+        get
+        {
+            return bonusText;
+        }
+    }
+    public TMP_Text countdownDisplay
+    {
+        get
+        {
+            return countdownText;
+        }
+    }
+    public TMP_Text finalScoreDisplay
+    {
+        get
+        {
+            return finalScoreText;
+        }
+    }
+    public TMP_Text catsFedDisplay
+    {
+        get
+        {
+            return catsFedText;
+        }
+    }
+    public TMP_Text penaltyDisplay
+    {
+        get
+        {
+            return penaltyText;
+        }
+    }
+    public GameObject finalScorePanelObject
+    {
+        get
+        {
+            return finalScorePanel;
+        }
+    }
+    public GameObject timeUpObject
+    {
+        get
+        {
+            return timeUpText;
+        }
+    }
+    public TMP_Text rankDisplay
+    {
+        get
+        {
+            return rankText;
+        }
+    }
+    public TMP_Text bestScoreDisplay
+    {
+        get
+        {
+            return bestScoreText;
+        }
+    }
 
     void Awake()
     {

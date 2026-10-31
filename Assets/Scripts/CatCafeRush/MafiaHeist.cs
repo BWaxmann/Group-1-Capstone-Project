@@ -354,5 +354,8 @@ public class MafiaHeist : MonoBehaviour
         ring.widthMultiplier = Mathf.Lerp(0.02f, 0.06f, closeness);
     }
 
-    static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0, v.z);
+    static Vector3 Flat(Vector3 v)
+    {
+        return new Vector3(v.x, 0, v.z);
+    }
 }

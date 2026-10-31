@@ -9,7 +9,13 @@ public abstract class BossCat : CatMovement
     [Min(0)]
     float despawnAfter = 60f;
 
-    public override bool isBoss => true;
+    public override bool isBoss
+    {
+        get
+        {
+            return true;
+        }
+    }
 
     // A director that ends the boss's visit itself can make it stay longer than Despawn After (seconds; 0 = as set)
     public float despawnAfterOverride = 0f;

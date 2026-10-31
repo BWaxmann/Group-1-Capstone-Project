@@ -338,7 +338,13 @@ public static class QuestBuild
 // as a flat window. Only applies to builds made by QuestBuild above.
 class QuestManifestTweak : IPostGenerateGradleAndroidProject
 {
-    public int callbackOrder => 10;   // after the Oculus integration's own manifest changes
+    public int callbackOrder
+    {
+        get
+        {
+            return 10;
+        }
+    }   // after the Oculus integration's own manifest changes
 
     public void OnPostGenerateGradleAndroidProject(string path)
     {

@@ -11,7 +11,13 @@ public class Treat : Launchable
 
     bool instaKill;
 
-    public bool isInstaKill => instaKill;
+    public bool isInstaKill
+    {
+        get
+        {
+            return instaKill;
+        }
+    }
 
     // Which food this treat is (its position in the treat pool), or -1 if not set
     public int foodVariation { get; set; } = -1;
@@ -31,7 +37,13 @@ public class Treat : Launchable
     bool[] ownTriggerSettings;
     Vector3 lastPosition;
 
-    public Vector3 velocity => rb != null ? rb.velocity : Vector3.zero;
+    public Vector3 velocity
+    {
+        get
+        {
+            return rb != null ? rb.velocity : Vector3.zero;
+        }
+    }
 
     // Which trigger pull fired it (a scatter or buckshot volley shares one), 0 = not set
     public int shotId { get; set; }

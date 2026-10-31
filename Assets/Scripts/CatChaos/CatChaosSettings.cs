@@ -131,11 +131,26 @@ public class CatChaosSettings : MonoBehaviour
         SpawnManager.holdSpawns = false;
     }
 
-    public void PlayKnock(Vector3 position) => Play(knockSound, position, Random.Range(0.9f, 1.15f));
-    public void PlayLanded(Vector3 position) => Play(landedSound, position, Random.Range(0.85f, 1.1f));
-    public void PlayRespawn(Vector3 position) => Play(respawnSound, position, Random.Range(0.95f, 1.1f));
-    public void PlayHome(Vector3 position) => Play(homeSound, position, Random.Range(1f, 1.2f));
-    public void PlayCatch(Vector3 position) => Play(catchSound, position, Random.Range(0.95f, 1.1f));
+    public void PlayKnock(Vector3 position)
+    {
+        Play(knockSound, position, Random.Range(0.9f, 1.15f));
+    }
+    public void PlayLanded(Vector3 position)
+    {
+        Play(landedSound, position, Random.Range(0.85f, 1.1f));
+    }
+    public void PlayRespawn(Vector3 position)
+    {
+        Play(respawnSound, position, Random.Range(0.95f, 1.1f));
+    }
+    public void PlayHome(Vector3 position)
+    {
+        Play(homeSound, position, Random.Range(1f, 1.2f));
+    }
+    public void PlayCatch(Vector3 position)
+    {
+        Play(catchSound, position, Random.Range(0.95f, 1.1f));
+    }
 
     static void Play(SoundData sound, Vector3 position, float pitch)
     {

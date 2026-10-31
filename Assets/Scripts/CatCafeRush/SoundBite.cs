@@ -8,7 +8,10 @@ using UnityEngine;
 public class SoundBite : MonoBehaviour
 {
     static readonly List<SoundBite> playing = new List<SoundBite>();
-    internal static void ResetStatics() => playing.Clear();   // (a new run: see RunReset)
+    internal static void ResetStatics()
+    {
+        playing.Clear();
+    }   // (a new run: see RunReset)
 
     AudioSource main;
     AudioSource intro;

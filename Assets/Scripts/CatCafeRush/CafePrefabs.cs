@@ -36,7 +36,13 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. The speech bubble over a customer: an OrderBubble prefab with its Bubble (the art that pops and shakes), Patience Ring, icon and queue anchors, chip and face set as wanted. Anything left unset on it is built in code.")]
     OrderBubble orderBubble;
 
-    public static OrderBubble OrderBubblePrefab => instance != null ? instance.orderBubble : null;
+    public static OrderBubble OrderBubblePrefab
+    {
+        get
+        {
+            return instance != null ? instance.orderBubble : null;
+        }
+    }
 
     [Header("Tips")]
 
@@ -44,7 +50,13 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. The tip jar: a TipJar prefab with its Body, Fill, Lid and Coin set as wanted. Anything left unset on it is built from simple shapes.")]
     TipJar tipJar;
 
-    public static TipJar TipJarPrefab => instance != null ? instance.tipJar : null;
+    public static TipJar TipJarPrefab
+    {
+        get
+        {
+            return instance != null ? instance.tipJar : null;
+        }
+    }
 
     [Header("Spies")]
 
@@ -56,8 +68,20 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. The secret recipe a spy makes off with, held out in its paws. Empty = a card with 'SECRET RECIPE' on it.")]
     GameObject recipe;
 
-    public static LineRenderer RopeTemplate => instance != null ? instance.ropeTemplate : null;
-    public static GameObject RecipePrefab => instance != null ? instance.recipe : null;
+    public static LineRenderer RopeTemplate
+    {
+        get
+        {
+            return instance != null ? instance.ropeTemplate : null;
+        }
+    }
+    public static GameObject RecipePrefab
+    {
+        get
+        {
+            return instance != null ? instance.recipe : null;
+        }
+    }
 
     [Header("Aiming")]
 
@@ -69,13 +93,55 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. A LineRenderer that styles the catch beam from the launcher to a prop (material, width, colours). Its points are drawn by code. Empty = a plain glowing line.")]
     LineRenderer beamTemplate;
 
-    public static FloatingWord FloatingWordPrefab => instance != null ? instance.floatingWord : null;
-    public static LineRenderer RingTemplate => instance != null ? instance.ringTemplate : null;
-    public static TrailRenderer KittenTrailTemplate => instance != null ? instance.kittenTrailTemplate : null;
-    public static TrailRenderer PropTrailTemplate => instance != null ? instance.propTrailTemplate : null;
-    public static ParticleSystem SplatPrefab => instance != null ? instance.splat : null;
-    public static AimReticle ReticlePrefab => instance != null ? instance.reticle : null;
-    public static LineRenderer BeamTemplate => instance != null ? instance.beamTemplate : null;
+    public static FloatingWord FloatingWordPrefab
+    {
+        get
+        {
+            return instance != null ? instance.floatingWord : null;
+        }
+    }
+    public static LineRenderer RingTemplate
+    {
+        get
+        {
+            return instance != null ? instance.ringTemplate : null;
+        }
+    }
+    public static TrailRenderer KittenTrailTemplate
+    {
+        get
+        {
+            return instance != null ? instance.kittenTrailTemplate : null;
+        }
+    }
+    public static TrailRenderer PropTrailTemplate
+    {
+        get
+        {
+            return instance != null ? instance.propTrailTemplate : null;
+        }
+    }
+    public static ParticleSystem SplatPrefab
+    {
+        get
+        {
+            return instance != null ? instance.splat : null;
+        }
+    }
+    public static AimReticle ReticlePrefab
+    {
+        get
+        {
+            return instance != null ? instance.reticle : null;
+        }
+    }
+    public static LineRenderer BeamTemplate
+    {
+        get
+        {
+            return instance != null ? instance.beamTemplate : null;
+        }
+    }
 
     void Awake()
     {

@@ -58,11 +58,29 @@ public class Announcer : MonoBehaviour
     bool isSpeaking;
 
     // A line the game is waiting on (one that explains something) is queued or being said
-    public bool holding => (isSpeaking && speaking.hold) || queue.Exists(waiting => waiting.hold);
+    public bool holding
+    {
+        get
+        {
+            return (isSpeaking && speaking.hold) || queue.Exists(waiting => waiting.hold);
+        }
+    }
     // Anything queued or being said
-    public bool talking => isSpeaking || queue.Count > 0;
+    public bool talking
+    {
+        get
+        {
+            return isSpeaking || queue.Count > 0;
+        }
+    }
     // The id of the line being said (null if none)
-    public string saying => isSpeaking ? speaking.id : null;
+    public string saying
+    {
+        get
+        {
+            return isSpeaking ? speaking.id : null;
+        }
+    }
     readonly Dictionary<string, AudioClip> stings = new Dictionary<string, AudioClip>();
     
     [SerializeField]

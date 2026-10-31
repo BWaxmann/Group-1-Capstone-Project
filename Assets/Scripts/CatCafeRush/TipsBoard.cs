@@ -65,7 +65,10 @@ public class TipsBoard : MonoBehaviour
         return board;
     }
 
-    string Money(int coins) => $"{settings.currency}{coins * settings.coinValue:0.00}";
+    string Money(int coins)
+    {
+        return $"{settings.currency}{coins * settings.coinValue:0.00}";
+    }
 
     // Every text on the board fits its box
     void Restyle()

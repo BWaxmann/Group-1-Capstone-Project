@@ -44,8 +44,20 @@ public class DefendPoint : MonoBehaviour
 
     float shieldTimer;
 
-    public Vector3 position => transform.position;
-    public bool shieldActive => shieldTimer > 0;
+    public Vector3 position
+    {
+        get
+        {
+            return transform.position;
+        }
+    }
+    public bool shieldActive
+    {
+        get
+        {
+            return shieldTimer > 0;
+        }
+    }
 
     // Raised each time a cat's paw lands on this point while it's unshielded (Cat Chaos props listen for it)
     public event System.Action Hit;

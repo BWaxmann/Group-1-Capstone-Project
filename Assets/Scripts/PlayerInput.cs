@@ -150,7 +150,13 @@ public class PlayerInput : MonoBehaviour
     AimReticle reticleRight;
     AimReticle reticleLeft;
 
-    float shotSpeed => straightShots ? straightShotSpeed : launchForce;
+    float shotSpeed
+    {
+        get
+        {
+            return straightShots ? straightShotSpeed : launchForce;
+        }
+    }
 
     bool spreadActive;
     float spreadTimer;
@@ -162,7 +168,13 @@ public class PlayerInput : MonoBehaviour
     Expression rightExpression;
 
     float rapidFireTimer;
-    bool rapidFireActive => rapidFireTimer > 0;
+    bool rapidFireActive
+    {
+        get
+        {
+            return rapidFireTimer > 0;
+        }
+    }
 
     // Which treat (by position in the treat pool) each launcher fires. -1 = random, as before.
     int loadedTreatVariationLeft = -1;
@@ -175,16 +187,46 @@ public class PlayerInput : MonoBehaviour
     bool stickHeldRight;
 
     // Barista mode
-    public bool isBaristaMode => baristaMode;
-    public bool hasLaunchers => launchersActive;
+    public bool isBaristaMode
+    {
+        get
+        {
+            return baristaMode;
+        }
+    }
+    public bool hasLaunchers
+    {
+        get
+        {
+            return launchersActive;
+        }
+    }
 
-    public int LoadedFood(bool rightHand) => rightHand ? loadedTreatVariationRight : loadedTreatVariationLeft;
-    public Transform Launcher(bool rightHand) => rightHand ? launcherRight.transform : launcherLeft.transform;
-    public bool GripPressed(bool rightHand) => rightHand ? gripPressedRight : gripPressedLeft;
-    public Transform LaunchPoint(bool rightHand) => rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+    public int LoadedFood(bool rightHand)
+    {
+        return rightHand ? loadedTreatVariationRight : loadedTreatVariationLeft;
+    }
+    public Transform Launcher(bool rightHand)
+    {
+        return rightHand ? launcherRight.transform : launcherLeft.transform;
+    }
+    public bool GripPressed(bool rightHand)
+    {
+        return rightHand ? gripPressedRight : gripPressedLeft;
+    }
+    public Transform LaunchPoint(bool rightHand)
+    {
+        return rightHand ? treatLaunchPositionRight : treatLaunchPositionLeft;
+    }
 
     // The player's head (what billboards turn to face)
-    public Transform eyePoint => eye;
+    public Transform eyePoint
+    {
+        get
+        {
+            return eye;
+        }
+    }
 
     // Something stopping a launcher firing (e.g. a kitten clinging to it in Cat Cafe Waves): asked before every shot,
     // true = nothing comes out of that hand
@@ -205,7 +247,10 @@ public class PlayerInput : MonoBehaviour
     FireStyle? forcedStyle;
     static int lastShotId;
 
-    public FireStyle Style(bool rightHand) => forcedStyle ?? (rightHand ? styleRight : styleLeft);
+    public FireStyle Style(bool rightHand)
+    {
+        return forcedStyle ?? (rightHand ? styleRight : styleLeft);
+    }
 
     // Both launchers fire this style for a while (e.g. Scatter in Cat Cafe Waves' kitten stampede); null = back to normal
     public void ForceFireStyle(FireStyle? style)
@@ -230,8 +275,14 @@ public class PlayerInput : MonoBehaviour
     }
 
     // Spread of each style (degrees either side) and pellets per shot
-    static float StyleSpread(FireStyle style) => style == FireStyle.Scatter ? 14f : style == FireStyle.Buckshot ? 5f : 0f;
-    static int StylePellets(FireStyle style) => style == FireStyle.Scatter ? 3 : style == FireStyle.Buckshot ? 7 : 1;
+    static float StyleSpread(FireStyle style)
+    {
+        return style == FireStyle.Scatter ? 14f : style == FireStyle.Buckshot ? 5f : 0f;
+    }
+    static int StylePellets(FireStyle style)
+    {
+        return style == FireStyle.Scatter ? 3 : style == FireStyle.Buckshot ? 7 : 1;
+    }
 
     // Colours each launcher's aim reticle (e.g. the colour that hand fires); null = the reticle's own colours
     public void SetReticleColours(Color left, Color right)
@@ -259,8 +310,14 @@ public class PlayerInput : MonoBehaviour
     // How fast straight shots fly, in m/s (a scene can speed them up)
     public float treatSpeed
     {
-        get => straightShotSpeed;
-        set => straightShotSpeed = Mathf.Max(1f, value);
+        get
+        {
+            return straightShotSpeed;
+        }
+        set
+        {
+            straightShotSpeed = Mathf.Max(1f, value);
+        }
     }
 
     // True for as long as that hand's grip is squeezed (in the editor, the right mouse button is the right grip)
@@ -274,7 +331,10 @@ public class PlayerInput : MonoBehaviour
     }
 
     // A firm left/right flick of that hand's thumbstick this frame: -1 left, +1 right, 0 none
-    public int ThumbFlick(bool rightHand) => rightHand ? flickRight : flickLeft;
+    public int ThumbFlick(bool rightHand)
+    {
+        return rightHand ? flickRight : flickLeft;
+    }
 
     public void LoadFood(bool rightHand, int treatPoolVariation)
     {

@@ -39,11 +39,29 @@ public class FlyingProp : MonoBehaviour
     public State state { get; private set; } = State.Home;
 
     // Not straight away: it bursts out first, then drifts down slowly (that's the time to catch it)
-    public bool isCatchable => state == State.Flying && CatChaosSettings.instance != null && flightTime >= CatChaosSettings.instance.catchableAfter;
-    public Vector3 centre => propRenderer != null ? propRenderer.bounds.center : transform.position;
+    public bool isCatchable
+    {
+        get
+        {
+            return state == State.Flying && CatChaosSettings.instance != null && flightTime >= CatChaosSettings.instance.catchableAfter;
+        }
+    }
+    public Vector3 centre
+    {
+        get
+        {
+            return propRenderer != null ? propRenderer.bounds.center : transform.position;
+        }
+    }
 
     // How long it's been sitting at home, so a prop that just came back isn't knocked again straight away
-    public float timeAtHome => state == State.Home ? Time.time - homeSince : 0f;
+    public float timeAtHome
+    {
+        get
+        {
+            return state == State.Home ? Time.time - homeSince : 0f;
+        }
+    }
 
     float homeSince = -100f;
 
@@ -775,8 +793,14 @@ public class FlyingProp : MonoBehaviour
         }
     }
 
-    Vector3 HomePosition() => homeParent != null ? homeParent.TransformPoint(homeLocalPosition) : homeLocalPosition;
-    Quaternion HomeRotation() => homeParent != null ? homeParent.rotation * homeLocalRotation : homeLocalRotation;
+    Vector3 HomePosition()
+    {
+        return homeParent != null ? homeParent.TransformPoint(homeLocalPosition) : homeLocalPosition;
+    }
+    Quaternion HomeRotation()
+    {
+        return homeParent != null ? homeParent.rotation * homeLocalRotation : homeLocalRotation;
+    }
 
     void SetVisible(bool visible)
     {

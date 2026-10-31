@@ -190,12 +190,36 @@ public class CatMovement : MonoBehaviour
     protected PlayerInput player;
     protected Coroutine moodDisplayRoutineInstance;
 
-    public bool isMoving => agent != null && agent.isActiveAndEnabled && agent.velocity.magnitude > 0;
-    public bool isFullyFed => currentState == AIState.Full || currentState == AIState.ReturningHome;
-    public virtual bool isBoss => false;
+    public bool isMoving
+    {
+        get
+        {
+            return agent != null && agent.isActiveAndEnabled && agent.velocity.magnitude > 0;
+        }
+    }
+    public bool isFullyFed
+    {
+        get
+        {
+            return currentState == AIState.Full || currentState == AIState.ReturningHome;
+        }
+    }
+    public virtual bool isBoss
+    {
+        get
+        {
+            return false;
+        }
+    }
 
     // The defend point this cat is on its way to (or attacking), if any. Cat Chaos piles use it to warn the player.
-    public DefendPoint headingFor => currentState == AIState.Targeting ? targetDefendPoint : null;
+    public DefendPoint headingFor
+    {
+        get
+        {
+            return currentState == AIState.Targeting ? targetDefendPoint : null;
+        }
+    }
 
     // Every cat currently switched on, so other scripts can check on them without searching the scene
     public static readonly List<CatMovement> active = new List<CatMovement>();
@@ -204,7 +228,13 @@ public class CatMovement : MonoBehaviour
     // Below 0 = use each cat's own value.
     public static float targetingChanceOverride = -1f;
 
-    protected float targetingChance => targetingChanceOverride >= 0 ? targetingChanceOverride : roamingToTargetingChance;
+    protected float targetingChance
+    {
+        get
+        {
+            return targetingChanceOverride >= 0 ? targetingChanceOverride : roamingToTargetingChance;
+        }
+    }
 
     protected virtual void OnEnable()
     {
@@ -506,12 +536,36 @@ public class CatMovement : MonoBehaviour
     // Whether it'll take a treat at all right now (null = always). A cat that isn't after food (hasn't ordered, is leaving,
     // is a spy...) lets treats fly straight past it, to the hungry cats behind
     public System.Func<bool> wantsTreats;
-    public bool takesTreats => wantsTreats == null || wantsTreats();
+    public bool takesTreats
+    {
+        get
+        {
+            return wantsTreats == null || wantsTreats();
+        }
+    }
 
     // The cat's face pictures and its pop-up mood display, for other scripts that show the cat's mood their own way
-    public Sprite happiestFace => moodSprites != null && moodSprites.Length > 0 ? moodSprites[0] : null;
-    public Sprite grumpiestFace => moodSprites != null && moodSprites.Length > 0 ? moodSprites[moodSprites.Length - 1] : null;
-    public GameObject moodDisplay => moodCanvas;
+    public Sprite happiestFace
+    {
+        get
+        {
+            return moodSprites != null && moodSprites.Length > 0 ? moodSprites[0] : null;
+        }
+    }
+    public Sprite grumpiestFace
+    {
+        get
+        {
+            return moodSprites != null && moodSprites.Length > 0 ? moodSprites[moodSprites.Length - 1] : null;
+        }
+    }
+    public GameObject moodDisplay
+    {
+        get
+        {
+            return moodCanvas;
+        }
+    }
 
     public virtual void FeedCat(bool instaKill)
     {
