@@ -31,7 +31,6 @@ public class KittenRun : MonoBehaviour
     bool dustFromTemplate;
     SphereCollider hitbox;
     List<Vector3> path;
-    List<Vector3> ups;      // which way is up on each stretch of the path (null = it's all floor)
     Vector3 side;           // where it is beside the path, eased round corners
     float offset;
     float speed;
@@ -73,11 +72,9 @@ public class KittenRun : MonoBehaviour
     // Waits at the end of its path instead of dashing off
     public bool holdAtEnd;
 
-    // Sends a pooled cat (switched off) galloping along `path`, `offset` metres to the side of it. `ups` (one per stretch
-    // between two path points) says which way is up on each: a stretch with a wall's face as its up is run up the wall,
-    // Bombchu style. Leave it out for a run along the floor.
+    // Sends a pooled cat (switched off) galloping along `path`, `offset` metres to the side of it
     public static KittenRun Launch(CatMovement cat, List<Vector3> path, float offset, float speed, float scale, float hitRadius,
-                                   Action<KittenRun> onFed, List<Vector3> ups)
+                                   Action<KittenRun> onFed)
     {
         // Take it over before it wakes up: no navmesh agent (this moves it), no roaming
         NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
@@ -86,7 +83,6 @@ public class KittenRun : MonoBehaviour
         if (run == null) run = cat.gameObject.AddComponent<KittenRun>();
         run.cat = cat;
         run.path = path;
-        run.ups = ups != null && ups.Count == path.Count - 1 ? ups : null;
         run.offset = offset;
         run.speed = speed;
         run.onFed = onFed;
@@ -100,9 +96,9 @@ public class KittenRun : MonoBehaviour
 
         run.normalScale = cat.transform.localScale;
         cat.transform.localScale = run.normalScale * scale;
-        cat.transform.position = run.PointAlong(0, out Vector3 heading, out Vector3 up);
-        cat.transform.rotation = Quaternion.LookRotation(heading, up);
-        run.side = Vector3.Cross(up, heading).normalized * offset;
+        cat.transform.position = run.PointAlong(0, out Vector3 heading);
+        cat.transform.rotation = Quaternion.LookRotation(heading);
+        run.side = Vector3.Cross(Vector3.up, heading).normalized * offset;
         cat.gameObject.SetActive(true);
         cat.TakeOver();
         cat.treatGate = run.Eat;
@@ -174,18 +170,15 @@ public class KittenRun : MonoBehaviour
             return;
         }
 
-        Vector3 along = PointAlong(travelled, out Vector3 heading, out Vector3 up);
-        side = Vector3.Lerp(side, Vector3.Cross(up, heading).normalized * offset, Mathf.Clamp01(Time.deltaTime * 8f));
+        Vector3 along = PointAlong(travelled, out Vector3 heading);
+        side = Vector3.Lerp(side, Vector3.Cross(Vector3.up, heading).normalized * offset, Mathf.Clamp01(Time.deltaTime * 8f));
         Vector3 position = along + side;
-        if (up.y > 0.9f)
-        {
-            // Keep to the floor (the offset could push it into furniture: then it runs on the path itself)
-            if (NavMesh.SamplePosition(position, out NavMeshHit floor, 0.3f, NavMesh.AllAreas)) position = floor.position;
-            else position = along;
-        }
-        position += up * (Mathf.Abs(Mathf.Sin(travelled * 5f)) * 0.06f);   // a little gallop
+        // Keep to the floor (the offset could push it into furniture: then it runs on the path itself)
+        if (NavMesh.SamplePosition(position, out NavMeshHit floor, 0.3f, NavMesh.AllAreas)) position = floor.position;
+        else position = along;
+        position += Vector3.up * (Mathf.Abs(Mathf.Sin(travelled * 5f)) * 0.06f);   // a little gallop
         transform.position = position;
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(heading, up), Time.deltaTime * 12f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(heading), Time.deltaTime * 12f);
     }
 
     // Stops it running along its path (it stays where it is, legs and all, for whoever has it now)
@@ -246,20 +239,16 @@ public class KittenRun : MonoBehaviour
         }
     }
 
-    // Where `distance` along the path is, which way the kitten's heading there, and which way is up for it (the floor's
-    // up, or a wall's face)
-    Vector3 PointAlong(float distance, out Vector3 heading, out Vector3 up)
+    // Where `distance` along the path is, and which way the kitten's heading there (flat along the floor)
+    Vector3 PointAlong(float distance, out Vector3 heading)
     {
         heading = Vector3.forward;
-        up = Vector3.up;
         for (int i = 1; i < path.Count; i++)
         {
             Vector3 from = path[i - 1];
             Vector3 to = path[i];
             float length = Vector3.Distance(from, to);
-            up = ups != null ? ups[i - 1] : Vector3.up;
-            // Along the surface it's on (flat along the floor; up, down or across a wall)
-            Vector3 flat = Vector3.ProjectOnPlane(to - from, up);
+            Vector3 flat = Vector3.ProjectOnPlane(to - from, Vector3.up);
             if (flat.sqrMagnitude > 0.0001f) heading = flat.normalized;
             if (distance <= length || i == path.Count - 1)
             {

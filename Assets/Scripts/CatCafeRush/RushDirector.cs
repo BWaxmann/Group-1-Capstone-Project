@@ -323,12 +323,8 @@ public class RushDirector : MonoBehaviour
     [Min(0)] public int kittenScore = 2;
     [Min(0)] public int kittenCoins = 1;
     [Range(0f, 1f)]
-    [Tooltip("The chance a herd runs up a wall in front of the player (across, along it and back down, Bombchu style) " +
-             "instead of across the floor, when there's a clear bit of wall to run on.")]
-    public float wallRunChance = 0.4f;
-    [Range(0f, 1f)]
     [Tooltip("The chance a herd floods in through a vent up high (its lid clanks open and the kittens pour out one after " +
-             "another, then tear off across the floor or up a wall) instead of running in from the side.")]
+             "another, then tear off across the floor) instead of running in from the side.")]
     public float floodChance = 0.3f;
     [Tooltip("The stampede opens with a flood through a vent, if there's one high up that the player can see.")]
     public bool firstHerdFloods = true;
@@ -1027,26 +1023,15 @@ public class RushDirector : MonoBehaviour
             // Now and then (and first off) the herd floods in through a vent up high
             CafeVent vent = (first && firstHerdFloods) || Random.value < floodChance ? FloodVent() : null;
             first = false;
-            List<Vector3> ups = null;
-            List<Vector3> path = vent != null ? FloodPath(vent.floorSpot, out ups) : null;
+            List<Vector3> path = vent != null ? FloodPath(vent.floorSpot) : null;
             if (path != null)
             {
-                StartCoroutine(Flood(vent, path, ups));
+                StartCoroutine(Flood(vent, path));
             }
             else
             {
-                // A clear bit of wall isn't always found first time (the cafe is round): a few goes
-                path = null;
-                if (Random.value < wallRunChance)
-                {
-                    for (int tries = 0; tries < 3 && path == null; tries++) path = WallRun(out ups);
-                }
-                if (path == null)
-                {
-                    ups = null;
-                    path = RoamPath(fromLeft, Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
-                }
-                if (path != null) StartCoroutine(SendHerd(path, ups));
+                path = RoamPath(fromLeft, Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
+                if (path != null) StartCoroutine(SendHerd(path));
             }
             fromLeft = !fromLeft;
             yield return WaitClock(Random.Range(herdGapMin, Mathf.Max(herdGapMin, herdGapMax)));
@@ -1055,7 +1040,7 @@ public class RushDirector : MonoBehaviour
         // (kittens still running get to finish: see WrapUp)
     }
 
-    IEnumerator SendHerd(List<Vector3> path, List<Vector3> ups)
+    IEnumerator SendHerd(List<Vector3> path)
     {
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
         count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
@@ -1065,10 +1050,8 @@ public class RushDirector : MonoBehaviour
             CatMovement cat = catPool != null ? catPool.GetRandomObjectFromPool<CatMovement>() : null;
             if (cat != null)
             {
-                // Up a wall they keep closer together (they'd spill off the edges)
-                float spread = ups != null ? 0.3f : 0.6f;
-                KittenRun.Launch(cat, path, Random.Range(-spread, spread), speed * Random.Range(0.92f, 1.08f),
-                                 kittenScale, kittenHitRadius, KittenFed, ups);
+                KittenRun.Launch(cat, path, Random.Range(-0.6f, 0.6f), speed * Random.Range(0.92f, 1.08f),
+                                 kittenScale, kittenHitRadius, KittenFed);
                 if (i == 0) cat.DustPuff(KittenRun.DustSize);   // a puff of dust as the herd bursts in
             }
             yield return new WaitForSeconds(Random.Range(0.12f, 0.3f));
@@ -1076,12 +1059,12 @@ public class RushDirector : MonoBehaviour
     }
 
     // A herd pouring out of a vent: the lid clanks open, the kittens drop out one after another and tear off along `path`
-    IEnumerator Flood(CafeVent vent, List<Vector3> path, List<Vector3> ups)
+    IEnumerator Flood(CafeVent vent, List<Vector3> path)
     {
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
         count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));
-        float spread = ups != null ? 0.3f : 0.6f;
+        float spread = 0.6f;
         yield return vent.Open();
         for (int i = 0; i < count && playing; i++)
         {
@@ -1093,7 +1076,7 @@ public class RushDirector : MonoBehaviour
             {
                 if (playing && current != null && (current.kind == Kind.Stampede || current.kind == Kind.Remix))
                 {
-                    KittenRun.Launch(kitten, path, offset, kittenSpeed, kittenScale, kittenHitRadius, KittenFed, ups);
+                    KittenRun.Launch(kitten, path, offset, kittenSpeed, kittenScale, kittenHitRadius, KittenFed);
                 }
                 else
                 {
@@ -1207,12 +1190,11 @@ public class RushDirector : MonoBehaviour
         while (playing && current == phase && (clock < at || !RoomForMore)) yield return null;
         if (!playing || current != phase || windingDown) yield break;
         CafeVent vent = FloodVent();
-        List<Vector3> ups = null;
-        List<Vector3> path = vent != null ? FloodPath(vent.floorSpot, out ups) : null;
+        List<Vector3> path = vent != null ? FloodPath(vent.floorSpot) : null;
         if (path == null) yield break;
         BigStarted();
         flooding = true;
-        yield return Flood(vent, path, ups);
+        yield return Flood(vent, path);
         flooding = false;
     }
 
@@ -1229,33 +1211,11 @@ public class RushDirector : MonoBehaviour
         return best;
     }
 
-    // Where a flood goes from the spot under its vent: up a wall now and then, otherwise off across the floor in front
-    // of the player to one side (`ups` as for a wall run; null for the floor)
-    List<Vector3> FloodPath(Vector3 from, out List<Vector3> ups)
+    // Where a flood goes from the spot under its vent: off across the floor in front of the player to one side
+    List<Vector3> FloodPath(Vector3 from)
     {
-        ups = null;
         if (player == null) return null;
         NavMeshPath navPath = new NavMeshPath();
-        if (Random.value < wallRunChance)
-        {
-            List<Vector3> wall = WallRun(out List<Vector3> wallUps);
-            if (wall != null && NavMesh.CalculatePath(from, wall[0], NavMesh.AllAreas, navPath) &&
-                navPath.status == NavMeshPathStatus.PathComplete)
-            {
-                // Over to where the wall run starts, then on along it
-                List<Vector3> path = new List<Vector3>(navPath.corners);
-                List<Vector3> surfaces = new List<Vector3>();
-                for (int i = 1; i < path.Count; i++) surfaces.Add(Vector3.up);
-                for (int i = 1; i < wall.Count; i++)
-                {
-                    path.Add(wall[i]);
-                    surfaces.Add(wallUps[i - 1]);
-                }
-                ups = surfaces;
-                return path;
-            }
-        }
-
         Vector3 at = player.transform.position;
         Vector3 forward = Flat(player.transform.forward);
         forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
@@ -1360,136 +1320,6 @@ public class RushDirector : MonoBehaviour
         for (int i = 1; i < leg.corners.Length; i++) route.Add(leg.corners[i]);
         return route;
     }
-
-    // A run up a wall in front of the player, Bombchu style: across the floor, a leap up onto the wall (over whatever's
-    // against it: couches, cushions), a scurry along it, a leap back down and away across the floor (`ups` says which
-    // way is up on each stretch). Null if no clear bit of wall with floor in front of it could be found
-    List<Vector3> WallRun(out List<Vector3> ups)
-    {
-        ups = null;
-        if (player == null) return null;
-        Vector3 at = player.transform.position;
-        float floorY = at.y;
-        if (NavMesh.SamplePosition(at, out NavMeshHit standing, 2f, NavMesh.AllAreas)) floorY = standing.position.y;
-        Vector3 forward = Flat(player.transform.forward);
-        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
-        Vector3 eyeAt = player.eyePoint != null ? player.eyePoint.position : new Vector3(at.x, floorY + 1.5f, at.z);
-        NavMeshPath navPath = new NavMeshPath();
-
-        for (int attempt = 0; attempt < 16; attempt++)
-        {
-            // A wall in front of the player, looking over the furniture (straight ahead-ish first, then further round)
-            float spread = attempt < 10 ? 45f : 75f;
-            Vector3 look = Quaternion.Euler(0, Random.Range(-spread, spread), 0) * forward;
-            Vector3 from = new Vector3(at.x, floorY + 1.6f, at.z);
-            if (!Physics.Raycast(from, look, out RaycastHit wall, 14f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) continue;
-            if (wall.distance < 3f || Mathf.Abs(wall.normal.y) > 0.15f || !Solid(wall.collider)) continue;
-            Vector3 face = Flat(wall.normal).normalized;
-            Vector3 along = Vector3.Cross(Vector3.up, face) * (Random.value < 0.5f ? 1f : -1f);
-            float height = Random.Range(1.4f, 1.8f);
-            Vector3 foot = new Vector3(wall.point.x, floorY, wall.point.z);
-
-            // The run fits inside the clear stretch of wall around where the ray hit
-            float back = FlatReach(foot, -along, face, height - 0.15f, height + 0.3f);
-            float ahead = FlatReach(foot, along, face, height - 0.15f, height + 0.3f);
-            if (back + ahead < 1.6f) continue;
-            float width = Mathf.Min(back + ahead, Random.Range(1.6f, 2.8f));
-            Vector3 footA = foot + along * Random.Range(-back, ahead - width);
-            Vector3 footB = footA + along * width;
-
-            // Somewhere on the floor at each end to leap up from and down to, and a way there and away again
-            if (!TakeOff(footA, face, height, out Vector3 upFrom) || !TakeOff(footB, face, height, out Vector3 downTo)) continue;
-            if (!NavMesh.SamplePosition(upFrom + face * 1.5f - along * 1.2f, out NavMeshHit start, 1f, NavMesh.AllAreas)) continue;
-            if (!NavMesh.SamplePosition(downTo + face * 1.5f + along * 1.2f, out NavMeshHit finish, 1f, NavMesh.AllAreas)) continue;
-            if (Mathf.Abs(start.position.y - floorY) > 0.3f || Mathf.Abs(finish.position.y - floorY) > 0.3f) continue;
-            if (!NavMesh.CalculatePath(start.position, upFrom, NavMesh.AllAreas, navPath) ||
-                navPath.status != NavMeshPathStatus.PathComplete) continue;
-            List<Vector3> path = new List<Vector3>(navPath.corners);
-            if (!NavMesh.CalculatePath(downTo, finish.position, NavMesh.AllAreas, navPath) ||
-                navPath.status != NavMeshPathStatus.PathComplete) continue;
-            List<Vector3> away = new List<Vector3>(navPath.corners);
-
-            Vector3 skin = face * 0.03f;   // a hair off the wall's face
-            Vector3 wallA = footA + skin + Vector3.up * height;
-            Vector3 wallB = footB + skin + Vector3.up * height;
-            // ...and the player can see the stretch they run along (not hidden behind a cat tower or a plant)
-            if (!CanSee(eyeAt, wallA + face * 0.1f) || !CanSee(eyeAt, Vector3.Lerp(wallA, wallB, 0.5f) + face * 0.1f) ||
-                !CanSee(eyeAt, wallB + face * 0.1f)) continue;
-            List<Vector3> surfaces = new List<Vector3>();
-            for (int i = 1; i < path.Count; i++) surfaces.Add(Vector3.up);
-            Add(LeapTop(upFrom, wallA), Vector3.up);        // the leap up...
-            Add(wallA, Vector3.up);                         // ...onto the wall
-            Add(wallB, face);                               // along it
-            Add(LeapTop(downTo, wallB), Vector3.up);        // the leap down...
-            Add(downTo, Vector3.up);                        // ...to the floor
-            for (int i = 1; i < away.Count; i++) Add(away[i], Vector3.up);   // and away
-            ups = surfaces;
-            return path;
-
-            void Add(Vector3 point, Vector3 up)
-            {
-                path.Add(point);
-                surfaces.Add(up);
-            }
-        }
-        return null;
-    }
-
-    // The top of a kitten's leap between the floor and a spot on a wall
-    static Vector3 LeapTop(Vector3 floor, Vector3 onWall) => Vector3.Lerp(floor, onWall, 0.5f) + Vector3.up * 0.35f;
-
-    // How far (up to 3 m) a flat, clear band of wall, from `low` to `high` up, goes from a point at its foot in one
-    // direction: nothing sticking out of it (shelves, lamps, cat towers) and no gaps (doorways, windows)
-    static float FlatReach(Vector3 foot, Vector3 direction, Vector3 face, float low, float high)
-    {
-        float reach = 0;
-        while (reach < 3f && FlatAt(foot + direction * (reach + 0.2f), face, low, high)) reach += 0.2f;
-        return reach;
-    }
-
-    static bool FlatAt(Vector3 foot, Vector3 face, float low, float high)
-    {
-        foreach (float up in new[] { low, (low + high) * 0.5f, high })
-        {
-            Vector3 from = foot + face * 0.6f + Vector3.up * up;
-            if (!Physics.Raycast(from, -face, out RaycastHit hit, 0.9f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return false;
-            if (Mathf.Abs(hit.distance - 0.6f) > 0.1f || Vector3.Dot(hit.normal, face) < 0.9f) return false;
-        }
-        return true;
-    }
-
-    // The floor out from a wall's foot that a kitten can leap from up onto the wall at `height` (clear over anything
-    // against the wall), nearest the wall first
-    static bool TakeOff(Vector3 foot, Vector3 face, float height, out Vector3 spot)
-    {
-        spot = foot;
-        Vector3 onWall = foot + face * 0.1f + Vector3.up * height;
-        foreach (float distance in new[] { 0.5f, 0.9f, 1.3f, 1.7f, 2.1f })
-        {
-            if (!NavMesh.SamplePosition(foot + face * distance, out NavMeshHit floor, 0.25f, NavMesh.AllAreas)) continue;
-            if (Mathf.Abs(floor.position.y - foot.y) > 0.3f) continue;
-            Vector3 top = LeapTop(floor.position, onWall);
-            if (!ClearLine(floor.position + Vector3.up * 0.25f, top) || !ClearLine(top, onWall)) continue;
-            spot = floor.position;
-            return true;
-        }
-        return false;
-    }
-
-    // Nothing solid in the way (cats and props don't count)
-    static bool ClearLine(Vector3 from, Vector3 to)
-    {
-        Vector3 between = to - from;
-        foreach (RaycastHit hit in Physics.RaycastAll(from, between.normalized, between.magnitude, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-        {
-            if (Solid(hit.collider)) return false;
-        }
-        return true;
-    }
-
-    static bool Solid(Collider other) =>
-        other.GetComponentInParent<CatMovement>() == null && other.GetComponentInParent<FlyingProp>() == null &&
-        other.GetComponentInParent<PlayerInput>() == null;
 
     void Update()
     {

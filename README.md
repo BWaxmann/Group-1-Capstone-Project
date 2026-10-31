@@ -55,7 +55,7 @@ from a CafePrefabs slot when one is filled.
 | Launchers | [ExperienceApp] > **Player Input** | Straight Shots, Straight Shot Speed, Show Aim Reticle, Autofire, Grip Press Threshold |
 | Orders and patience | Rush Director > **Order moments** | Patience (10 s + 3 per extra treat), Impatient Cats Raid, Quick Service Coins, Wrong Colour Leaves |
 | Raids | Rush Director > **Order moments** > Raid | Wind Up, Sprint Multiplier, Save Bonus, Saved Text; Raid Every on each phase |
-| Kitten stampede | Rush Director > **Kitten Stampede** | Herd Roam Min/Max, Max Kittens (24), Hit Radius, Wall Run Chance, Flood Chance, First Herd Floods |
+| Kitten stampede | Rush Director > **Kitten Stampede** | Herd Roam Min/Max, Max Kittens (24), Hit Radius, Flood Chance, First Herd Floods |
 | Launcher kittens | Rush Director > **Launcher kittens** | Shakes To Free (3), Shake Speed, Bored After (8 s), Stack Chance, Hint ("SHAKE!"); Latch Every on each phase |
 | Spy cats | Rush Director > **Spy cats** | Approach Seconds (8), Swing Period, Scare Seconds (2.2), Swings Needed (3), Look Angle, Steal Coins, spy music volumes |
 | Mafia heist | Rush Director > **Mafia heist** | Heists Per Phase (2), Heist Gang (2), Walk Speed, Treats (3), Steal (10), Pillage Seconds (5), theme volume |
