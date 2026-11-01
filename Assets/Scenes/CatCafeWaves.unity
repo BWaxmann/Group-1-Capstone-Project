@@ -864,7 +864,6 @@ MonoBehaviour:
   kittenHitRadius: 0.35
   kittenScore: 2
   kittenCoins: 1
-  wallRunChance: 0.4
   floodChance: 0.3
   firstHerdFloods: 1
   launcherKitten:
@@ -942,6 +941,7 @@ MonoBehaviour:
       m_NumAlphaKeys: 2
     eveningSkyExposure: 0.7
   warmUpAtStart: 1
+  shaderVariants: {fileID: 0}
   shiftSky:
     enabled: 1
     startTimeOfDay: 38
@@ -1011,24 +1011,6 @@ MonoBehaviour:
   ventChance: 0.35
   kittenVentChance: 0.5
   ventArc: 120
-  popUpSeats: 6
-  popGapStart: 1.8
-  popGapEnd: 1
-  doublePopsFrom: 0.6
-  popUp:
-    warning: 0.45
-    heightMin: 1.2
-    heightMax: 1.7
-    riseTime: 0.45
-    hang: 0.4
-    hangPerExtraTreat: 0.15
-    treatsMin: 2
-    treatsMax: 3
-    fallTime: 0.45
-    hitRadius: 0.4
-    glowColour: {r: 1, g: 0.8, b: 0.15, a: 1}
-  popUpScore: 5
-  popUpCoins: 2
   catchIntro: 1
   catchIntroHint: Alternative trigger!
   catchIntroPraise: Nice catch!
@@ -4500,7 +4482,7 @@ PrefabInstance:
     - target: {fileID: 3002100922782927731, guid: 37ec1b64d908765418646da2904f7fe2,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.403
+      value: 1.21
       objectReference: {fileID: 0}
     - target: {fileID: 3002100922782927731, guid: 37ec1b64d908765418646da2904f7fe2,
         type: 3}
@@ -4510,7 +4492,7 @@ PrefabInstance:
     - target: {fileID: 3002100922782927731, guid: 37ec1b64d908765418646da2904f7fe2,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.839
+      value: -1.27
       objectReference: {fileID: 0}
     - target: {fileID: 3002100922782927731, guid: 37ec1b64d908765418646da2904f7fe2,
         type: 3}
@@ -4570,7 +4552,7 @@ PrefabInstance:
     - target: {fileID: 3002100922782927730, guid: 37ec1b64d908765418646da2904f7fe2,
         type: 3}
       propertyPath: playerVisionVerticalOffset
-      value: -0.35
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3711362044388984577, guid: 37ec1b64d908765418646da2904f7fe2,
         type: 3}
@@ -8778,6 +8760,32 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 977510622112336781, guid: a727da49b44d50341ab071e657b48c70,
+        type: 3}
+      propertyPath: m_Icon
+      value: 
+      objectReference: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000,
+        type: 0}
+    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.4246832
+      objectReference: {fileID: 0}
+    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9053421
+      objectReference: {fileID: 0}
+    - target: {fileID: 977510622806173442, guid: a727da49b44d50341ab071e657b48c70,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -50.261
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a727da49b44d50341ab071e657b48c70, type: 3}
@@ -19850,7 +19858,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc43e151e0eb4f829cc1dcfd2855e418, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  floatingWord: {fileID: 6719706673125339221, guid: 5daa376485bd7e54c9b574ed1a871b90, type: 3}
+  floatingWord: {fileID: 6719706673125339221, guid: 5daa376485bd7e54c9b574ed1a871b90,
+    type: 3}
   ringTemplate: {fileID: 0}
   kittenTrailTemplate: {fileID: 0}
   propTrailTemplate: {fileID: 0}
@@ -23150,7 +23159,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: d6976512b7151d14d8cb28a2d8ab777c,
+      objectReference: {fileID: 21300000, guid: 8f8ff07163710094ba43b7522ef88017,
         type: 3}
     - target: {fileID: 2780329069265821727, guid: cb2aeaca6a05c3048a37ea60f1adcef3,
         type: 3}
@@ -25646,7 +25655,7 @@ PrefabInstance:
 
         Right trigger = Orange
 
-        Alternative trigger = catch</size>
+        Grip trigger = catch</size>
 
         <size=45%>Point at the launchers and pull the trigger</size>'
       objectReference: {fileID: 0}
