@@ -48,14 +48,26 @@ MonoBehaviour:
   pregameDelay: 1
   pregameCountdownTime: 3
   roundMaxTimes:
-  - 90
-  - 90
-  - 90
+  - 180
+  roundMinTimes:
+  - 180
+  maxCatsToEndRoundEarly: 3
   pauseBetweenRounds: 1
   fadeDuration: 1
   particleManagerPrefab: {fileID: 3430501722288906063, guid: 52035a7c5563c4346a9650d3acffb850,
     type: 3}
   pregameCanvas: {fileID: 0}
+  startupMessage: 'Feed the cats!
+
+    <size=60%>Left trigger = Blue
+
+    Right trigger = Orange
+
+    Grip = catch</size>
+
+    <size=45%>Point at the launchers and pull the trigger</size>'
+  startupBoxes: []
+  bannerReplacesGameUI: 1
   countdownText: {fileID: 0}
   countdownEndText: GO!
   countdownDisappearDelay: 1
@@ -75,6 +87,7 @@ MonoBehaviour:
   catsFedText: {fileID: 0}
   penaltyText: {fileID: 0}
   finalScoreText: {fileID: 0}
+  scoreParticlePool: {fileID: 0}
   scoreParticlePoolPrefab: {fileID: 4464022665838828940, guid: 4c962085e336b7141a4ee729f24db24a,
     type: 3}
   soundEffectSource: {fileID: 893389621652222314}
@@ -137,6 +150,33 @@ MonoBehaviour:
     _soundClip: {fileID: 8300000, guid: ae7be194a3a91c249aa527f4883b80ea, type: 3}
     _volume: 0.8
     _pitch: 1
+  comboWindow: 3
+  catsPerComboLevel: 3
+  maxComboLevel: 4
+  comboPitchStep: 0.08
+  comboText: {fileID: 0}
+  comboTextFormat: COMBO x{0}!
+  comboTextColour: {r: 1, g: 0.84, b: 0, a: 1}
+  finaleDuration: 30
+  finaleBannerText: 
+  finaleBannerDuration: 2.5
+  finaleMusicPitch: 1.12
+  finaleSound:
+    _soundClip: {fileID: 0}
+    _volume: 1
+    _pitch: 1
+  endCelebrationSpread: 1
+  rankText: {fileID: 0}
+  bestScoreText: {fileID: 0}
+  ranks:
+  - minimumScore: 0
+    title: Cat Sitter
+  - minimumScore: 800
+    title: Good Kitty Keeper
+  - minimumScore: 2000
+    title: Treat Master
+  - minimumScore: 3500
+    title: Purr-fect Barista
 --- !u!82 &893389621652222314
 AudioSource:
   m_ObjectHideFlags: 0
