@@ -97,7 +97,7 @@ BillboardCanvas (B), InstructionsText (B).
 **Pickups (B):** `Scripts/Pickups`. Cat Cafe Waves only allows x2 points (Rush Director > Allowed Pickups).
 
 **Editor menus (`Assets/Editor`):** Catastrophe Cafe > Editor Headset (Index or mouse), Add Cafe Prefabs To Scene,
-Make Pop-Up Word Prefab, Save Shader Variants From The Last Play, Build for Valve Index. QuestBuild makes the Quest APKs.
+Make Pop-Up Word Prefab, Save Shader Variants From The Last Play, Build for Valve Index. QuestBuild makes the Quest APKs and the Liminal .limapp (see below).
 
 **Not used by Cat Cafe Waves** (kept until closer to release, Brian's call): CatChaosDirector, the two scene
 generators, SpaceCafeVisuals, WallWalkingTestScript, NinjaWaypoints, WaypointManager, Speen, Yarnball, TrajectoryPreview.
@@ -109,6 +109,19 @@ lobby, a little each frame. A shader is compiled the first time something is dra
 first boss cat; to pay that in the lobby too: Edit > Project Settings > Graphics > Shader Loading > Clear, play a whole
 round in the editor, stop, Catastrophe Cafe > Save Shader Variants From The Last Play, save the scene. Never call
 Shader.WarmupAllShaders: on the Quest it compiles every variant in the build and freezes the splash screen for minutes.
+
+## Building for Liminal
+
+What Liminal's app loads, and what goes on their store, is a `.limapp`: the scene as an asset bundle plus our scripts
+as a managed assembly (so it has to be Mono, never IL2CPP). Catastrophe Cafe > Build Cat Cafe Waves for Liminal makes
+one with the Android target active (File > Build Settings), into Builds/Quest with a date on it. From the command line
+it is `-buildTarget Android -executeMethod QuestBuild.BatchBuildLimapp`; `-buildTarget Win64 -executeMethod
+QuestBuild.BatchBuildLimappWindows` makes the Windows one for the SDK's Platform Viewer scene
+(Assets/Liminal/PlatformViewer/Scenes), the closest thing to their app without a headset: point its App Preview Config's
+Emulator Path at the file and press Play. The builder needs Assets/Liminal/liminalapp.json, the app manifest: its id is
+the number Liminal gives the app (999, the SDK's placeholder, until then) and its version goes up with each submission.
+The plain APKs (Build Cat Cafe Waves for Quest) are for testers without Liminal's app: [ExperienceApp] starts itself
+when there is no platform around it.
 
 ## Working together
 
