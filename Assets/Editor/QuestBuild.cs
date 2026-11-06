@@ -200,7 +200,15 @@ public static class QuestBuild
             }
             EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
             Debug.Log($"[Quest Build] Liminal build of {scene} for {target} ({device})...");
-            AppBuilder.BuildLimapp(target, device);
+            try
+            {
+                AppBuilder.BuildLimapp(target, device);
+            }
+            catch (ExitGUIException)
+            {
+                // The SDK closes its progress bar with GUIUtility.ExitGUI, which throws this by design; with no GUI
+                // to catch it (a batch build) it lands here, after the .limapp has already been written
+            }
 
             string made = NewestLimapp();
             if (made == null)
