@@ -802,6 +802,44 @@ public partial class RushDirector : MonoBehaviour
             StartCoroutine(WelcomeRoutine());
         }
         StartCoroutine(LobbyRoutine());
+        LogSettingsCheck();
+    }
+
+    // One Console line of what reached this component: inside Liminal's app the scene is rebuilt from the SDK's own
+    // serialization, and a reference or number it dropped shows up here as "missing" or 0 (then a wave does nothing)
+    void LogSettingsCheck()
+    {
+        string Has(UnityEngine.Object thing)
+        {
+            if (thing != null)
+            {
+                return "ok";
+            }
+            return "MISSING";
+        }
+        int spyLines = 0;
+        if (spy != null)
+        {
+            spyLines = 1;
+        }
+        int heistSettings = 0;
+        if (heist != null)
+        {
+            heistSettings = 1;
+        }
+        int tipLines = 0;
+        if (tipsBoard != null && tipsBoard.lines != null)
+        {
+            tipLines = tipsBoard.lines.Count;
+        }
+        Debug.Log("[Cat Cafe Waves] Settings check: " +
+                  $"phases {phases.Count}, doors {doors.Count}, ninja stops {ninjaStops.Count}, allowed pickups {allowedPickups.Count}; " +
+                  $"cat pool {Has(catPool)}, ninja prefab {Has(ninjaPrefab)}, mafia prefab {Has(mafiaPrefab)}, tin {Has(tinPrefab)}, " +
+                  $"treat prefabs {Has(leftTreatPrefab)}/{Has(rightTreatPrefab)}, first customer cat {Has(firstCustomerCat)}, spot {Has(firstCustomerSpot)}, " +
+                  $"shader variants {Has(shaderVariants)}, tutorial image {Has(ninjaInputTutorialImage)}; " +
+                  $"treat speed {treatSpeed}, kitten speed {kittenSpeedMin}-{kittenSpeedMax}, max kittens {maxKittens}, herd roam {herdRoamMin}-{herdRoamMax}, " +
+                  $"flood chance {floodChance}, catch aim {catchAimAngle}, bubble {bubbleScale}; " +
+                  $"spy settings {spyLines}, heist settings {heistSettings}, tip lines {tipLines}, announcer {announcer}, waves {waves}, holes {fedCatsUseHoles}, vents {catsUseVents}.");
     }
 
     IEnumerator WelcomeRoutine()
