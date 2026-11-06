@@ -825,7 +825,7 @@ MonoBehaviour:
   missedPropsStayDown: 1
   bossMakesMess: 1
   dragPropsHome: 1
-  propDropMargin: 0.35
+  propDropMargin: 0.8
   remixPropDropMargin: 0.6
   restockPiles: 1
   tidyBonusCoins: 10
@@ -1032,7 +1032,7 @@ MonoBehaviour:
   maxAirborne: 6
   launchUpSpeed: 5.5
   launchTowardPlayerSpeed: 2.2
-  launchSpread: 30
+  launchSpread: 25
   propGravity: 9
   maxHeightAboveFloor: 2.6
   catchableAfter: 0

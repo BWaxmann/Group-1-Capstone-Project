@@ -314,7 +314,7 @@ public partial class RushDirector : MonoBehaviour
 
     [Min(0f)]
     [Tooltip("How far past a pile's table edge (metres) a carried prop still counts as over it when let go.")]
-    public float propDropMargin = 0.35f;
+    public float propDropMargin = 0.8f;
 
     [Min(0f)]
     [Tooltip("The same in the Dinner Rush finale (more forgiving: there's a lot going on).")]
