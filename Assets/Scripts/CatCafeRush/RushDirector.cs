@@ -896,6 +896,7 @@ public partial class RushDirector : MonoBehaviour
             return false;
         }
         Transform spot = firstCustomerSpot;
+        bool exact = spot != null;   // the marker is where it goes, on the navmesh or not (up on the counter, say)
         if (spot == null)
         {
             // Just in front of the player, facing it
@@ -911,7 +912,7 @@ public partial class RushDirector : MonoBehaviour
             spot = marker.transform;
         }
         Vector3 position = spot.position;
-        if (NavMesh.SamplePosition(position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
+        if (!exact && NavMesh.SamplePosition(position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
         {
             position = floor.position;
         }
@@ -923,6 +924,19 @@ public partial class RushDirector : MonoBehaviour
         }
         cat.gameObject.SetActive(true);
         cat.Initialise(spot, position);
+        if (exact)
+        {
+            // It only stands there, so it needs no navmesh: taken over like a kitten, its own navigation off until it
+            // goes back to the pool (the happy launch and the pool's next Initialise take care of that)
+            cat.TakeOver();
+            NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = false;
+            }
+            cat.transform.position = position;
+            cat.transform.rotation = spot.rotation;
+        }
 
         List<CatOrder.Food> foods = new List<CatOrder.Food>();
         foods.Add(new CatOrder.Food
