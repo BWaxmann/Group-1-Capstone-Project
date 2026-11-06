@@ -811,12 +811,8 @@ MonoBehaviour:
   announcer: 1
   welcomeLine: welcome
   firstCustomer: 1
-<<<<<<< HEAD
-  firstCustomerSpot: {fileID: 1017871796}
-=======
   firstCustomerCat: {fileID: 312829851}
   firstCustomerSpot: {fileID: 0}
->>>>>>> f733894 (Scene: the first customer, a Ginger Cat seated at its marker on the counter)
   firstCustomerTimeout: 90
   firstCustomerSign: {fileID: 0}
   firstCustomerSignHeight: 1.3
