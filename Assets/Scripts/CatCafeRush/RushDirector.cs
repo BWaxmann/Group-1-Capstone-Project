@@ -671,6 +671,8 @@ public partial class RushDirector : MonoBehaviour
 
     void Start()
     {
+        ninjaInputTutorialImage?.SetActive(false);
+
         // The Mafia cat for heists, borrowed from the boss spawner (which may have switched itself off)
         foreach (BossCatSpawner spawner in Resources.FindObjectsOfTypeAll<BossCatSpawner>())
         {
