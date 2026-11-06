@@ -76,3 +76,9 @@ crashlytics-build.properties
 
 # Maya swatch thumbnails
 .mayaSwatches/
+
+# Liminal app packages are build outputs
+*.limapp
+*.ulimapp
+*.limapp.meta
+*.ulimapp.meta

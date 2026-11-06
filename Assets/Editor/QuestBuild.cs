@@ -200,7 +200,15 @@ public static class QuestBuild
             }
             EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
             Debug.Log($"[Quest Build] Liminal build of {scene} for {target} ({device})...");
-            AppBuilder.BuildLimapp(target, device);
+            try
+            {
+                AppBuilder.BuildLimapp(target, device);
+            }
+            catch (ExitGUIException)
+            {
+                // The SDK closes its progress bar with GUIUtility.ExitGUI, which throws this by design; with no GUI
+                // to catch it (a batch build) it lands here, after the .limapp has already been written
+            }
 
             string made = NewestLimapp();
             if (made == null)
@@ -244,16 +252,26 @@ public static class QuestBuild
 
     static string NewestLimapp()
     {
-        if (!Directory.Exists(LimappFolder))
+        return NewestLimapp(LimappFolder, "");
+    }
+
+    // The newest .limapp in `folder` whose name starts with `prefix` (empty = any); null if there is none
+    static string NewestLimapp(string folder, string prefix)
+    {
+        if (!Directory.Exists(folder))
         {
             return null;
         }
         string newest = null;
         DateTime newestTime = DateTime.MinValue;
-        foreach (string file in Directory.GetFiles(LimappFolder))
+        foreach (string file in Directory.GetFiles(folder))
         {
             string extension = Path.GetExtension(file).ToLowerInvariant();
             if (extension != ".limapp" && extension != ".ulimapp")
+            {
+                continue;
+            }
+            if (!Path.GetFileName(file).StartsWith(prefix))
             {
                 continue;
             }
@@ -265,6 +283,71 @@ public static class QuestBuild
             }
         }
         return newest;
+    }
+
+    // ---------- Liminal's Platform Viewer with our .limapp inside: the way their app runs it, on a Quest ----------
+
+    const string ViewerScene = "Assets/Liminal/PlatformViewer/Scenes/PlatformAppViewer.unity";
+    const string ViewerConfigPath = "Assets/Liminal/PlatformViewer/CatCafePreviewConfig.asset";
+    const string StreamingAssetsFolder = "Assets/StreamingAssets";
+
+    // The SDK's Platform Viewer scene as a Mono APK (it loads managed code, like Liminal's app) with the newest Quest
+    // .limapp from Builds/Quest in its StreamingAssets, where the viewer's config says to look. The nearest thing to
+    // Liminal's own app on the headset. Run with -buildTarget Android, after BatchBuildLimapp.
+    public static void BatchBuildViewer()
+    {
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
+        {
+            Debug.LogError("[Quest Build] Run with -buildTarget Android for the viewer APK.");
+            EditorApplication.Exit(1);
+            return;
+        }
+        string limapp = NewestLimapp(OutputFolder, "CatCafe-Waves-2");   // the Quest ones; the Windows ones are CatCafe-Waves-Windows-
+        if (limapp == null)
+        {
+            Debug.LogError($"[Quest Build] No Quest .limapp in {OutputFolder}: run BatchBuildLimapp first.");
+            EditorApplication.Exit(1);
+            return;
+        }
+        AppPreviewConfig config = AssetDatabase.LoadAssetAtPath<AppPreviewConfig>(ViewerConfigPath);
+        if (config == null)
+        {
+            Debug.LogError($"[Quest Build] {ViewerConfigPath} is missing (Create > Liminal > PreviewConfig, and put it in the viewer scene's Preview Config slot).");
+            EditorApplication.Exit(1);
+            return;
+        }
+        if (string.IsNullOrEmpty(config.AndroidAppFullName))
+        {
+            Debug.LogError($"[Quest Build] {ViewerConfigPath} has no Android App Full Name (the file name the viewer loads from StreamingAssets).");
+            EditorApplication.Exit(1);
+            return;
+        }
+
+        Directory.CreateDirectory(StreamingAssetsFolder);
+        string inside = Path.Combine(StreamingAssetsFolder, config.AndroidAppFullName);
+        bool ok = false;
+        try
+        {
+            File.Copy(limapp, inside, true);
+            AssetDatabase.Refresh();
+            Debug.Log($"[Quest Build] Viewer APK with {Path.GetFileName(limapp)} inside, as {config.AndroidAppFullName}.");
+            monoBuild = true;
+            ok = CheckAndroidTools(interactive: false) && Build(ViewerScene, "Viewer") != null;
+        }
+        finally
+        {
+            // The copy was only for the build
+            if (File.Exists(inside))
+            {
+                File.Delete(inside);
+            }
+            if (File.Exists(inside + ".meta"))
+            {
+                File.Delete(inside + ".meta");
+            }
+            AssetDatabase.Refresh();
+        }
+        EditorApplication.Exit(ok ? 0 : 1);
     }
 
     // Returns the APK path, or null if the build failed

@@ -463,6 +463,17 @@ public class GameManager : MonoBehaviour
 
     public void GrabbedLaunchers()
     {
+        BeginCountdown();
+    }
+
+    // The countdown and then the round: what picking the launchers up used to start, and what feeding the first
+    // customer starts in Cat Cafe Waves. Only from the lobby.
+    public void BeginCountdown()
+    {
+        if (state != GameState.Initialising)
+        {
+            return;
+        }
         playerInputsEnabled = false;
 
         Invoke(nameof(InitiatePregame), pregameDelay);

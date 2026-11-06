@@ -262,6 +262,29 @@ public partial class RushDirector : MonoBehaviour
 
     public string welcomeLine = "welcome";
 
+    [Header("The first customer")]
+
+    [Tooltip("With the launchers in the player's hands from the start, one cat waits to be fed (a treat of each colour); feeding it starts the countdown. Off = the countdown starts by itself after the welcome.")]
+    public bool firstCustomer = true;
+
+    [Tooltip("Where the first customer waits (an empty object in the scene, its blue arrow the way the cat faces). Empty = just in front of the player.")]
+    public Transform firstCustomerSpot;
+
+    [Min(0f)]
+    [Tooltip("Seconds the first customer waits before it gives up and the countdown starts anyway. 0 = forever.")]
+    public float firstCustomerTimeout = 90f;
+
+    [Tooltip("Optional. Hung above the first customer until it's fed: a prefab of the arrow and glow that used to mark the launchers, say.")]
+    public GameObject firstCustomerSign;
+
+    [Min(0f)]
+    [Tooltip("How high above the cat's feet the sign hangs, in metres.")]
+    public float firstCustomerSignHeight = 1.3f;
+
+    [Min(0f)]
+    [Tooltip("With no first customer: seconds after the rig is up before the countdown starts by itself.")]
+    public float startsByItselfAfter = 8f;
+
     public string closingLine = "closing";
 
     public string bossFedLine = "boss_fed";
@@ -597,6 +620,9 @@ public partial class RushDirector : MonoBehaviour
     public float catchIntroTimeout = 12f;
 
     PlayerInput player;
+    bool launchersReady;
+    CatOrder firstCustomerOrder;
+    GameObject firstCustomerSignInstance;
     Phase current;
     bool playing;
 
@@ -756,6 +782,7 @@ public partial class RushDirector : MonoBehaviour
             }
             StartCoroutine(WelcomeRoutine());
         }
+        StartCoroutine(LobbyRoutine());
     }
 
     IEnumerator WelcomeRoutine()
@@ -764,6 +791,165 @@ public partial class RushDirector : MonoBehaviour
         if (!playing)
         {
             Say(welcomeLine);
+        }
+    }
+
+    // ---------- The lobby: launchers in hand, and the first customer who opens the cafe ----------
+
+    // The launchers as the shift needs them: each hand's food (with a tin of that colour hanging under it), the reticle
+    // colours, the treat speed. Once: the lobby does it as soon as the rig is up, the shift start makes sure.
+    void SetUpLaunchers()
+    {
+        if (launchersReady || player == null)
+        {
+            return;
+        }
+        launchersReady = true;
+        player.treatSpeed = treatSpeed;
+        player.SetReticleColours(leftColour, rightColour);
+        player.blockFire = LauncherKitten.BlocksFire;
+        player.LoadFood(false, leftFood);
+        player.LoadFood(true, rightFood);
+        if (tinPrefab != null)
+        {
+            SpaceCafeVisuals.TinUnderLauncher(player.Launcher(false), tinPrefab, leftColour, tinSize);
+            SpaceCafeVisuals.TinUnderLauncher(player.Launcher(true), tinPrefab, rightColour, tinSize);
+        }
+    }
+
+    // Waits for the player rig (Liminal switches it on after the scene starts). With the launchers already in its
+    // hands the cafe opens the new way: one customer waits to be fed, and that starts the countdown. With a floating
+    // pair to pick up instead, picking it up starts the countdown, as it always did.
+    IEnumerator LobbyRoutine()
+    {
+        float giveUpAt = Time.time + 10f;
+        while ((player == null || player.eyePoint == null) && Time.time < giveUpAt)
+        {
+            if (player == null)
+            {
+                player = FindObjectOfType<PlayerInput>();
+            }
+            yield return null;
+        }
+        if (player == null || playing)
+        {
+            yield break;
+        }
+        yield return null;   // the rig's own Start has run by now
+        if (!player.hasLaunchers)
+        {
+            yield break;
+        }
+        SetUpLaunchers();
+
+        if (!firstCustomer || !SeatFirstCustomer())
+        {
+            yield return new WaitForSeconds(startsByItselfAfter);
+            if (!playing)
+            {
+                GameManager.instance.BeginCountdown();
+            }
+            yield break;
+        }
+        if (firstCustomerTimeout <= 0f)
+        {
+            yield break;
+        }
+        yield return new WaitForSeconds(firstCustomerTimeout);
+        if (!playing && firstCustomerOrder != null)
+        {
+            // Nobody fed it: it wanders off, and the shift starts anyway
+            CatOrder waiting = firstCustomerOrder;
+            firstCustomerOrder = null;
+            TakeDownFirstCustomerSign();
+            Vector3? exit = NearestExit(waiting.transform.position);
+            if (exit.HasValue)
+            {
+                waiting.RunOff(exit.Value);
+            }
+            GameManager.instance.BeginCountdown();
+        }
+    }
+
+    // One cat in front of the player, wanting one treat of each colour, as patient as can be
+    bool SeatFirstCustomer()
+    {
+        if (catPool == null)
+        {
+            return false;
+        }
+        Transform spot = firstCustomerSpot;
+        if (spot == null)
+        {
+            // Just in front of the player, facing it
+            Vector3 forward = Flat(player.transform.forward);
+            if (forward.sqrMagnitude < 0.001f)
+            {
+                forward = Vector3.forward;
+            }
+            forward = forward.normalized;
+            GameObject marker = new GameObject("First Customer Spot");
+            marker.transform.position = player.transform.position + forward * 1.8f;
+            marker.transform.rotation = Quaternion.LookRotation(-forward);
+            spot = marker.transform;
+        }
+        Vector3 position = spot.position;
+        if (NavMesh.SamplePosition(position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
+        {
+            position = floor.position;
+        }
+        CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
+        if (cat == null)
+        {
+            return false;
+        }
+        cat.gameObject.SetActive(true);
+        cat.Initialise(spot, position);
+
+        List<CatOrder.Food> foods = new List<CatOrder.Food>();
+        foods.Add(new CatOrder.Food
+        {
+            variation = leftFood,
+            icon = new OrderBubble.Item(leftTreatPrefab, leftColour)
+        });
+        foods.Add(new CatOrder.Food
+        {
+            variation = rightFood,
+            icon = new OrderBubble.Item(rightTreatPrefab, rightColour)
+        });
+        float generosity = 0f;
+        if (cleanShots)
+        {
+            generosity = hitboxGenerosity;
+        }
+        CatOrder order = CatOrder.Give(cat, foods, bubbleScale, generosity, catSpeedMultiplier);
+        order.orderSpotFor = waiting => position;   // it stays where it is
+        order.served = FirstCustomerServed;
+        order.OrderLater(0f, 0f);   // orders at once, and waits for good
+        firstCustomerOrder = order;
+        if (firstCustomerSign != null)
+        {
+            firstCustomerSignInstance = Instantiate(firstCustomerSign, cat.transform);
+            firstCustomerSignInstance.transform.localPosition = new Vector3(0f, firstCustomerSignHeight, 0f);
+            firstCustomerSignInstance.transform.localRotation = Quaternion.identity;
+        }
+        return true;
+    }
+
+    // Fed: it pops off happily (the usual finisher) and the countdown starts
+    void FirstCustomerServed(CatOrder order)
+    {
+        firstCustomerOrder = null;
+        TakeDownFirstCustomerSign();
+        GameManager.instance.BeginCountdown();
+    }
+
+    void TakeDownFirstCustomerSign()
+    {
+        if (firstCustomerSignInstance != null)
+        {
+            Destroy(firstCustomerSignInstance);
+            firstCustomerSignInstance = null;
         }
     }
 
@@ -839,9 +1025,7 @@ public partial class RushDirector : MonoBehaviour
             return;
         }
 
-        player.treatSpeed = treatSpeed;
-        player.SetReticleColours(leftColour, rightColour);
-        player.blockFire = LauncherKitten.BlocksFire;
+        SetUpLaunchers();
         KeepCatsOutOfPlayerSpace();
         PickEntryDoors();
         FindVents();
@@ -867,15 +1051,6 @@ public partial class RushDirector : MonoBehaviour
         if (beam != null && catchAimAngle > 0)
         {
             beam.aimAngle = catchAimAngle;
-        }
-
-        // Each hand fires its own food, with a tin of that colour hanging under the launcher
-        player.LoadFood(false, leftFood);
-        player.LoadFood(true, rightFood);
-        if (tinPrefab != null)
-        {
-            SpaceCafeVisuals.TinUnderLauncher(player.Launcher(false), tinPrefab, leftColour, tinSize);
-            SpaceCafeVisuals.TinUnderLauncher(player.Launcher(true), tinPrefab, rightColour, tinSize);
         }
 
         StartCoroutine(RunPhasesRoutine());

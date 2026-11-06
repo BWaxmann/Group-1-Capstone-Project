@@ -1,6 +1,7 @@
 using System.IO;
 using Liminal.SDK.VR;
 using TMPro;
+using Liminal.Platform.Experimental.App;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -111,6 +112,36 @@ public static class CatastropheCafeTools
         Selection.activeObject = prefab;
         EditorGUIUtility.PingObject(prefab);
         Debug.Log($"[Catastrophe Cafe] Made {path}. {where} Its Font Size is only a preview: the game sets each word's size.");
+    }
+
+    // The SDK's Platform Viewer scene loads a .limapp the way Liminal's app does, but its Play Limapp button needs a VR
+    // pointer to click. This presses it from the menu while the viewer scene is playing.
+    [MenuItem("Catastrophe Cafe/Play The Limapp In The Viewer", false, 8)]
+    static void PlayLimappInViewer()
+    {
+        if (!EditorApplication.isPlaying)
+        {
+            Debug.LogWarning("[Catastrophe Cafe] Open Assets/Liminal/PlatformViewer/Scenes/PlatformAppViewer, press Play, then run this.");
+            return;
+        }
+        PlatformAppViewer viewer = Object.FindObjectOfType<PlatformAppViewer>();
+        if (viewer == null)
+        {
+            Debug.LogWarning("[Catastrophe Cafe] No Platform App Viewer in the scene that is playing. This is for the PlatformAppViewer scene.");
+            return;
+        }
+        string limapp = "";
+        if (viewer.PreviewConfig != null)
+        {
+            limapp = viewer.PreviewConfig.EmulatorPath;
+        }
+        if (!System.IO.File.Exists(limapp))
+        {
+            Debug.LogWarning($"[Catastrophe Cafe] The viewer's config points at {limapp}, which isn't there. Build the Windows .limapp first (QuestBuild.BatchBuildLimappWindows) and copy it to that path.");
+            return;
+        }
+        Debug.Log($"[Catastrophe Cafe] Loading {limapp} in the viewer...");
+        viewer.Play();
     }
 
     const string ShaderVariantsPath = "Assets/Settings/Cat Cafe Shader Variants.shadervariants";
