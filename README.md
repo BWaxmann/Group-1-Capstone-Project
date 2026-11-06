@@ -18,7 +18,11 @@ Scripts marked **(B)** are Brian's, **(J)** are Joshua's.
 | 6 | Spy | 20 | 3 | SPY CATS! | spies | |
 | 7 | Remix (Dinner Rush) | 90 | 3 | DINNER RUSH! | finale | 14 s |
 
-Each phase has: Kind (Feed, Catch, Boss, Stampede, Pop Up, Remix, Spy), Seconds, Cats (hungry cats at once), Shortest
+Before phase 1 the launchers are already in the player's hands, and one cat (Ginger Cat (1), on the counter) waits
+with a two-colour order: feeding it pops it off and starts the 3-2-1 countdown, then the shift. If nobody feeds it for
+90 seconds the countdown starts anyway.
+
+Each phase has: Kind (Feed, Catch, Boss, Stampede, Remix, Spy), Seconds, Cats (hungry cats at once), Shortest
 and Longest Order, Banner, Line (an id in `Resources/Announcer/lines.txt`), Attack Chance, Raid Every, Latch Every.
 A phase's clock stops while the announcer is talking and while a big moment is still playing out, so a round runs a
 little longer than the seconds add up to.
@@ -32,7 +36,7 @@ little longer than the seconds add up to.
 | **Cat Spawn Manager** (x4) | scene | **SpawnManager** (B): the original wave spawners. The director holds them and brings cats in itself. |
 | **GameManager** | `Prefabs/GameManager` | **GameManager** (B): the round clock, countdown, score and tips canvases, music, finale ("LAST ORDERS!"), ranks, start-up message boxes, the 9-to-5 shift clock. |
 | **[ExperienceApp]** | `Prefabs/[ExperienceApp]` | Liminal's rig. **PlayerInput** (B): the launchers, firing, straight shots, reticle, autofire, grip threshold. |
-| **Dual Launchers** | `Prefabs/Dual Launchers` | **GrabbableLaunchers** (B): grab both to start; the Highlight Effect slot (Eleni's hover effect). |
+| **Dual Launchers** | `Prefabs/Dual Launchers` | **GrabbableLaunchers** (B): hidden now that the launchers start in the hands (PlayerInput > Launchers In Hands At Start); with that off, grab both to start. The Highlight Effect slot (Eleni's hover effect). |
 | **Cats** | `Prefabs/Cat/*`, `Resources/SpyCat` | **CatMovement** (B): the cat AI, mood, the fed launch-and-pop. The director adds **CatOrder**, **CatJuice**, **CatWaddle** (J) to pooled cats at runtime. |
 | **Treats** | `Prefabs/Treats/*` | **Treat : Launchable** (B): flight, clean shots through furniture, splats and squish on the cafe. |
 | **Prop piles** | scene | **PropPile** and **FlyingProp** (J): the plates, cups and jars cats knock flying, caught with the grip beam. They sit on **DefendPoint** (B). |
@@ -65,6 +69,7 @@ from a CafePrefabs slot when one is filled.
 | Dinner Rush finale | Rush Director > **Remix finale** | Remix Breather (6 s), Flood At (0.45), Ninja Sit Min/Max (7 to 10 s) |
 | Vents | Rush Director > **Vents** | Cats Use Vents, Vent Chance (0.35), Kitten Vent Chance (0.5), Vent Arc (120) |
 | Tips and the board | Rush Director > **Cat Cafe Waves**, **Tips board** | Coins Per Treat, Boss Coins, Raid Spill Coins, Tidy Bonus Coins; Coin Value (0.5), Currency, labels, Always Line, Fit To Board |
+| The start | Rush Director > **The first customer**; [ExperienceApp] > PlayerInput | First Customer on, First Customer Cat (a cat placed in the scene, switched off: Ginger Cat (1)) or First Customer Spot (a marker), Timeout (90 s), Sign and Sign Height, Starts By Itself After (8 s); Launchers In Hands At Start |
 | Shift clock, sky, light | Rush Director > **The shift** | Shift Clock, Start/End Hour (9 to 17), Shift Sky (start 38, end 88, dusk from 78), Shift Light, Warm Up At Start, Shader Variants |
 | Sound mix | Rush Director > **Sound mix**; GameManager > **Sounds** | Music Level (0.8), Cat Level (1.3), World Level (1.3); the music clips and intro length |
 | Announcer | Rush Director > **Cat Cafe Waves**; Cat Cafe Rush > Announcer | Announcer on, line ids; Speaker Name, Subtitle Drop and Distance. Lines: `Resources/Announcer`, sounds: `Resources/CafeSounds` |
