@@ -626,6 +626,8 @@ public partial class RushDirector : MonoBehaviour
     bool launchersReady;
     CatOrder firstCustomerOrder;
     GameObject firstCustomerSignInstance;
+    Vector3 firstCustomerCatPosition;      // where the hand-placed cat was put, taken before anything can move it
+    Quaternion firstCustomerCatRotation;
     Phase current;
     bool playing;
 
@@ -680,6 +682,20 @@ public partial class RushDirector : MonoBehaviour
 
     void Awake()
     {
+        // The hand-placed first customer keeps its authored place: noted now, before its navigation agent can drop it
+        // onto the floor below, and the cat is switched off until the lobby seats it
+        if (firstCustomerCat != null)
+        {
+            firstCustomerCatPosition = firstCustomerCat.transform.position;
+            firstCustomerCatRotation = firstCustomerCat.transform.rotation;
+            NavMeshAgent catAgent = firstCustomerCat.GetComponent<NavMeshAgent>();
+            if (catAgent != null)
+            {
+                catAgent.enabled = false;
+            }
+            firstCustomerCat.gameObject.SetActive(false);
+        }
+
         ParticleManager.effectScale = effectScale;
         PickupManager.allowed = index => allowedPickups.Contains(index);
         Treat.cleanShots = cleanShots;
@@ -894,6 +910,9 @@ public partial class RushDirector : MonoBehaviour
         bool exact;   // it goes exactly there, on the navmesh or not (up on the counter, say)
         if (cat != null)
         {
+            // Back to where it was authored (its agent may have dropped it since)
+            cat.transform.position = firstCustomerCatPosition;
+            cat.transform.rotation = firstCustomerCatRotation;
             spot = cat.transform;
             exact = true;
         }
