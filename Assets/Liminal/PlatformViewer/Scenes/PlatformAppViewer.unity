@@ -713,7 +713,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Avatar: {fileID: 1630716854}
   ExperienceAppPlayer: {fileID: 3473043119503296449}
-  PreviewConfig: {fileID: 11400000, guid: 3a4df585a93abb54287991a55599773e, type: 2}
+  PreviewConfig: {fileID: 11400000, guid: 729d98062b3b4a60b9295e235b67cb37, type: 2}
   LoadingBar: {fileID: 2038825751}
   SceneContainer: {fileID: 7260775234727785935}
 --- !u!1 &3473043119503296452
