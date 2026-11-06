@@ -669,7 +669,7 @@ MonoBehaviour:
   wrapUpMax: 12
   lastCallSeconds: 3
   ninjaWaitsForCatches: 6
-  musicLevel: 0.8
+  musicLevel: 0.65
   catLevel: 1.3
   worldLevel: 1.3
   phases:
@@ -892,7 +892,7 @@ MonoBehaviour:
     finalLabel: 'Tips:'
     tallyScale: 1.25
     fitToBoard: 1
-    alwaysLine: That's more than enough for a Liminal VR Premium Subscription!
+    alwaysLine: 
     lines:
     - from: 0
       text: Hmm... that's one fancy cat biscuit.
@@ -903,7 +903,7 @@ MonoBehaviour:
     - from: 20
       text: A whole month of premium cat food!
     - from: 30
-      text: That's more than enough for a Liminal VR Premium Subscription!
+      text: That's more than enough for a deluxe scratching post!
     - from: 45
       text: Wow! That's practically a new VR headset!
   shiftClock: 1
@@ -1013,7 +1013,7 @@ MonoBehaviour:
   kittenVentChance: 0.5
   ventArc: 120
   catchIntro: 1
-  catchIntroHint: Alternative trigger!
+  catchIntroHint: Grip!
   catchIntroPraise: Nice catch!
   catchIntroTimeout: 12
   voice: {fileID: 41138495}
