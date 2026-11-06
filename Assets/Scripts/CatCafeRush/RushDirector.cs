@@ -95,6 +95,12 @@ public partial class RushDirector : MonoBehaviour
     [Tooltip("How far the background sounds carry (footsteps, props knocked, landing and put back) (1 = as set).")]
     public float worldLevel = 1.3f;
 
+    [Tooltip("Optional. Plays quietly from the moment the scene is up until the countdown starts (Eleni's ambient loop), then fades out as the game's own music takes over.")]
+    public AudioClip lobbyMusic;
+
+    [Range(0f, 1f)]
+    public float lobbyMusicVolume = 0.35f;
+
     [Header("Round")]
 
     public List<Phase> phases = new List<Phase>
@@ -626,6 +632,7 @@ public partial class RushDirector : MonoBehaviour
     bool launchersReady;
     CatOrder firstCustomerOrder;
     GameObject firstCustomerSignInstance;
+    SoundBite lobbyMusicBite;
     Vector3 firstCustomerCatPosition;      // where the hand-placed cat was put, taken before anything can move it
     Quaternion firstCustomerCatRotation;
     Phase current;
@@ -759,6 +766,7 @@ public partial class RushDirector : MonoBehaviour
             GameManager.instance.SetRoundLength(roundLength);
         }
         GameManager.instance.GameStart += OnGameStart;
+        GameManager.instance.StartCountdown += StopLobbyMusic;
         FlyingProp.Grabbed += PropGrabbed;
         GameManager.instance.GameEnd += OnGameEnd;
         // (dressing only, so nothing else hangs on it)
@@ -803,6 +811,26 @@ public partial class RushDirector : MonoBehaviour
         }
         StartCoroutine(LobbyRoutine());
         LogSettingsCheck();
+        StartLobbyMusic();
+    }
+
+    // The ambient loop under the lobby, from the first frame until the countdown; the game's own music starts then
+    void StartLobbyMusic()
+    {
+        if (lobbyMusic == null || lobbyMusicVolume <= 0f)
+        {
+            return;
+        }
+        lobbyMusicBite = SoundBite.Play("Lobby Music", lobbyMusic, lobbyMusicVolume * SoundLevels.music, 1f, null, loop: true, fadeIn: 1.5f);
+    }
+
+    void StopLobbyMusic()
+    {
+        if (lobbyMusicBite != null)
+        {
+            lobbyMusicBite.Stop(2f);
+            lobbyMusicBite = null;
+        }
     }
 
     // One Console line of what reached this component: inside Liminal's app the scene is rebuilt from the SDK's own
@@ -1147,6 +1175,7 @@ public partial class RushDirector : MonoBehaviour
         {
             GameManager.instance.GameStart -= OnGameStart;
             GameManager.instance.GameEnd -= OnGameEnd;
+            GameManager.instance.StartCountdown -= StopLobbyMusic;
         }
     }
 
