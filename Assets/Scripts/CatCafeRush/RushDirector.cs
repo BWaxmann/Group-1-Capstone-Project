@@ -267,7 +267,7 @@ public partial class RushDirector : MonoBehaviour
     [Tooltip("With the launchers in the player's hands from the start, one cat waits to be fed (a treat of each colour); feeding it starts the countdown. Off = the countdown starts by itself after the welcome.")]
     public bool firstCustomer = true;
 
-    [Tooltip("A cat placed in the scene by hand to be the first customer: it stays exactly where it is, no pool and no navmesh involved. Empty = one from the pool, at the spot below.")]
+    [Tooltip("A cat placed in the scene by hand to be the first customer: it stays exactly where it is, no pool and no navmesh involved. Leave it switched off (unticked) in the scene, or its navigation drops it onto the floor as the scene loads; the lobby switches it on. Empty = one from the pool, at the spot below.")]
     public CatMovement firstCustomerCat;
 
     [Tooltip("Without a cat above: where the first customer from the pool waits (an empty object in the scene, its blue arrow the way the cat faces). Empty = just in front of the player.")]
