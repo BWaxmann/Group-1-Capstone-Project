@@ -842,8 +842,19 @@ public partial class RushDirector : MonoBehaviour
         }
         SetUpLaunchers();
 
+        // The cat pool fills over the first second or two
+        giveUpAt = Time.time + 10f;
+        while (firstCustomer && catPool != null && !catPool.isReady && Time.time < giveUpAt)
+        {
+            yield return null;
+        }
+
         if (!firstCustomer || !SeatFirstCustomer())
         {
+            if (firstCustomer)
+            {
+                Debug.LogWarning($"[Cat Cafe Waves] No first customer could be seated: the countdown starts by itself in {startsByItselfAfter} s.");
+            }
             yield return new WaitForSeconds(startsByItselfAfter);
             if (!playing)
             {
@@ -876,6 +887,12 @@ public partial class RushDirector : MonoBehaviour
     {
         if (catPool == null)
         {
+            Debug.LogWarning("[Cat Cafe Waves] No Cat Pool on the Rush Director, so no first customer.");
+            return false;
+        }
+        if (!catPool.isReady)
+        {
+            Debug.LogWarning("[Cat Cafe Waves] The cat pool wasn't ready in time, so no first customer.");
             return false;
         }
         Transform spot = firstCustomerSpot;
@@ -901,6 +918,7 @@ public partial class RushDirector : MonoBehaviour
         CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
         if (cat == null)
         {
+            Debug.LogWarning("[Cat Cafe Waves] The cat pool had no cat to spare for the first customer.");
             return false;
         }
         cat.gameObject.SetActive(true);
