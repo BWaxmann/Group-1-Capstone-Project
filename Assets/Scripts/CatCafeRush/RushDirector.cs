@@ -267,7 +267,10 @@ public partial class RushDirector : MonoBehaviour
     [Tooltip("With the launchers in the player's hands from the start, one cat waits to be fed (a treat of each colour); feeding it starts the countdown. Off = the countdown starts by itself after the welcome.")]
     public bool firstCustomer = true;
 
-    [Tooltip("Where the first customer waits (an empty object in the scene, its blue arrow the way the cat faces). Empty = just in front of the player.")]
+    [Tooltip("A cat placed in the scene by hand to be the first customer: it stays exactly where it is, no pool and no navmesh involved. Empty = one from the pool, at the spot below.")]
+    public CatMovement firstCustomerCat;
+
+    [Tooltip("Without a cat above: where the first customer from the pool waits (an empty object in the scene, its blue arrow the way the cat faces). Empty = just in front of the player.")]
     public Transform firstCustomerSpot;
 
     [Min(0f)]
@@ -842,9 +845,9 @@ public partial class RushDirector : MonoBehaviour
         }
         SetUpLaunchers();
 
-        // The cat pool fills over the first second or two
+        // The cat pool fills over the first second or two (a cat placed in the scene by hand needs no pool)
         giveUpAt = Time.time + 10f;
-        while (firstCustomer && catPool != null && !catPool.isReady && Time.time < giveUpAt)
+        while (firstCustomer && firstCustomerCat == null && catPool != null && !catPool.isReady && Time.time < giveUpAt)
         {
             yield return null;
         }
@@ -882,45 +885,60 @@ public partial class RushDirector : MonoBehaviour
         }
     }
 
-    // One cat in front of the player, wanting one treat of each colour, as patient as can be
+    // One cat in front of the player, wanting one treat of each colour, as patient as can be: the cat placed in the
+    // scene for it, or one from the pool at the marker (or just in front of the player)
     bool SeatFirstCustomer()
     {
-        if (catPool == null)
+        CatMovement cat = firstCustomerCat;
+        Transform spot;
+        bool exact;   // it goes exactly there, on the navmesh or not (up on the counter, say)
+        if (cat != null)
         {
-            Debug.LogWarning("[Cat Cafe Waves] No Cat Pool on the Rush Director, so no first customer.");
-            return false;
+            spot = cat.transform;
+            exact = true;
         }
-        if (!catPool.isReady)
+        else
         {
-            Debug.LogWarning("[Cat Cafe Waves] The cat pool wasn't ready in time, so no first customer.");
-            return false;
-        }
-        Transform spot = firstCustomerSpot;
-        bool exact = spot != null;   // the marker is where it goes, on the navmesh or not (up on the counter, say)
-        if (spot == null)
-        {
-            // Just in front of the player, facing it
-            Vector3 forward = Flat(player.transform.forward);
-            if (forward.sqrMagnitude < 0.001f)
+            if (catPool == null)
             {
-                forward = Vector3.forward;
+                Debug.LogWarning("[Cat Cafe Waves] No First Customer Cat and no Cat Pool on the Rush Director, so no first customer.");
+                return false;
             }
-            forward = forward.normalized;
-            GameObject marker = new GameObject("First Customer Spot");
-            marker.transform.position = player.transform.position + forward * 1.8f;
-            marker.transform.rotation = Quaternion.LookRotation(-forward);
-            spot = marker.transform;
+            if (!catPool.isReady)
+            {
+                Debug.LogWarning("[Cat Cafe Waves] The cat pool wasn't ready in time, so no first customer.");
+                return false;
+            }
+            spot = firstCustomerSpot;
+            exact = spot != null;
+            if (spot == null)
+            {
+                // Just in front of the player, facing it
+                Vector3 forward = Flat(player.transform.forward);
+                if (forward.sqrMagnitude < 0.001f)
+                {
+                    forward = Vector3.forward;
+                }
+                forward = forward.normalized;
+                GameObject marker = new GameObject("First Customer Spot");
+                marker.transform.position = player.transform.position + forward * 1.8f;
+                marker.transform.rotation = Quaternion.LookRotation(-forward);
+                spot = marker.transform;
+            }
         }
         Vector3 position = spot.position;
         if (!exact && NavMesh.SamplePosition(position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
         {
             position = floor.position;
         }
-        CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
         if (cat == null)
         {
-            Debug.LogWarning("[Cat Cafe Waves] The cat pool had no cat to spare for the first customer.");
-            return false;
+            cat = catPool.GetRandomObjectFromPool<CatMovement>();
+            if (cat == null)
+            {
+                Debug.LogWarning("[Cat Cafe Waves] The cat pool had no cat to spare for the first customer.");
+                return false;
+            }
         }
         cat.gameObject.SetActive(true);
         cat.Initialise(spot, position);
