@@ -38,8 +38,8 @@ public class TipsBoard : MonoBehaviour
         [Tooltip("Fit and rearrange the board's texts at runtime (auto-size, 'Tips' labels, tally layout). Turn off once the board is laid out in the editor: then only the values are written.")]
         public bool fitToBoard = true;
 
-        [Tooltip("Shown at the end whatever the tips (for now, for laughs). Empty = the line for the amount, from the list below.")]
-        public string alwaysLine = "That's more than enough for a Liminal VR Premium Subscription!";
+        [Tooltip("Shown at the end whatever the tips. Empty = the line for the amount, from the list below.")]
+        public string alwaysLine = "";
 
         [Tooltip("What the tips could buy, from the smallest amount up.")]
         public List<Line> lines = new List<Line>
@@ -48,7 +48,7 @@ public class TipsBoard : MonoBehaviour
             new Line { from = 5, text = "Enough for a nice coffee. Treat yourself!" },
             new Line { from = 12, text = "That's a brand new cat toy!" },
             new Line { from = 20, text = "A whole month of premium cat food!" },
-            new Line { from = 30, text = "That's more than enough for a Liminal VR Premium Subscription!" },
+            new Line { from = 30, text = "That's more than enough for a deluxe scratching post!" },
             new Line { from = 45, text = "Wow! That's practically a new VR headset!" },
         };
     }
