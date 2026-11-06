@@ -421,6 +421,44 @@ public class GameManager : MonoBehaviour
             comboText.color = comboTextColour;
             comboText.gameObject.SetActive(false);
         }
+        LogSettingsCheck();
+    }
+
+    // One Console line of which sounds and prefabs reached this component: inside Liminal's app the scene is rebuilt
+    // from the SDK's own serialization, and anything it dropped shows up here as MISSING
+    void LogSettingsCheck()
+    {
+        string Clip(SoundData sound)
+        {
+            if (sound.soundClip != null)
+            {
+                return "ok";
+            }
+            return "MISSING";
+        }
+        string Has(UnityEngine.Object thing)
+        {
+            if (thing != null)
+            {
+                return "ok";
+            }
+            return "MISSING";
+        }
+        int hitSounds = 0;
+        if (catHitSounds != null)
+        {
+            hitSounds = catHitSounds.Length;
+        }
+        int boxes = 0;
+        if (startupBoxes != null)
+        {
+            boxes = startupBoxes.Length;
+        }
+        Debug.Log("[Game Manager] Settings check: " +
+                  $"music intro {Clip(gameMusicIntroAndOutro)}, music loop {Clip(gameMusicLoop)}, postgame music {Clip(postgameMusic)}, " +
+                  $"countdown {Clip(countdownSound)}, game start {Clip(gameStartSound)}, cat pop {Clip(catPopSound)}, cat launch {Clip(catLaunchSound)}, " +
+                  $"finale {Clip(finaleSound)}, cat hit sounds {hitSounds}; particle manager prefab {Has(particleManagerPrefab)}, " +
+                  $"score particles prefab {Has(scoreParticlePoolPrefab)}, startup boxes {boxes}, countdown text {Has(countdownText)}, score text {Has(scoreText)}.");
     }
 
     void Update()

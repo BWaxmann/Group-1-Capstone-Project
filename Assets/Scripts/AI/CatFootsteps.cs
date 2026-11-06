@@ -77,6 +77,10 @@ public class CatFootsteps : MonoBehaviour
 
     void PlayFootstepSound()
     {
+        if (footstepClips == null || footstepClips.Length == 0 || footstepSource == null)
+        {
+            return;
+        }
         if (randomiseFootstepClipOrder)
         {
             mostRecentClipIndex = Random.Range(0, footstepClips.Length);

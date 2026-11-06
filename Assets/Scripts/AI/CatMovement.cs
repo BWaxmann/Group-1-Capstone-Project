@@ -959,6 +959,10 @@ public class CatMovement : MonoBehaviour
 
     protected virtual void DropPickup()
     {
+        if (pickupDrops == null || pickupDrops.Length == 0 || PickupManager.instance == null)
+        {
+            return;
+        }
         float max = 0;
         foreach (PickupDrop pd in pickupDrops)
         {
