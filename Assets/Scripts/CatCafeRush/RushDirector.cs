@@ -910,7 +910,13 @@ public partial class RushDirector : MonoBehaviour
         bool exact;   // it goes exactly there, on the navmesh or not (up on the counter, say)
         if (cat != null)
         {
-            // Back to where it was authored (its agent may have dropped it since)
+            // Back to where it was authored (its agent may have dropped it since); with a marker set as well, the marker
+            // says where, since nothing can drop an empty object
+            if (firstCustomerSpot != null)
+            {
+                firstCustomerCatPosition = firstCustomerSpot.position;
+                firstCustomerCatRotation = firstCustomerSpot.rotation;
+            }
             cat.transform.position = firstCustomerCatPosition;
             cat.transform.rotation = firstCustomerCatRotation;
             spot = cat.transform;
