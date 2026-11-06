@@ -589,7 +589,7 @@ public partial class RushDirector : MonoBehaviour
              "waits until it's caught (or the time below runs out). Someone who knows what to do catches it straight away.")]
     public bool catchIntro = false;
 
-    public string catchIntroHint = "Alternative trigger!";
+    public string catchIntroHint = "Grip!";
 
     public string catchIntroPraise = "Nice catch!";
 

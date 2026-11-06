@@ -26,6 +26,13 @@ public class Announcer : MonoBehaviour
     [Min(0.5f)]
     public float maxWait = 4f;
 
+    [Tooltip("The speaker's chime before the first line of the run, so the player is listening before she talks. Empty = Resources/CafeSounds/pa_chime.")]
+    public AudioClip firstLineChime;
+
+    [Tooltip("Seconds of quiet between the end of that chime and the first line.")]
+    [Min(0f)]
+    public float chimeGap = 0.7f;
+
     [Header("Subtitles")]
     [Min(0.5f)]
     public float subtitleDistance = 1.6f;
@@ -73,6 +80,7 @@ public class Announcer : MonoBehaviour
     readonly Dictionary<string, Line> lines = new Dictionary<string, Line>();
     readonly List<Queued> queue = new List<Queued>();
     Queued speaking;
+    bool chimed;
     bool isSpeaking;
 
     // A line the game is waiting on (one that explains something) is queued or being said
@@ -318,6 +326,21 @@ public class Announcer : MonoBehaviour
 
             speaking = next;
             isSpeaking = true;
+            if (!chimed)
+            {
+                // The first thing heard is the speaker's chime, then a breath, so the first words aren't missed
+                chimed = true;
+                AudioClip chime = firstLineChime;
+                if (chime == null)
+                {
+                    chime = Resources.Load<AudioClip>("CafeSounds/pa_chime");
+                }
+                if (chime != null)
+                {
+                    source.PlayOneShot(chime, volume);
+                    yield return new WaitForSeconds(chime.length + chimeGap);
+                }
+            }
             if (next.sting != null)
             {
                 source.PlayOneShot(next.sting, volume);

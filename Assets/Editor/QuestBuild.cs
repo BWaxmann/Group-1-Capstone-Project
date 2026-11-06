@@ -2,10 +2,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
+using Liminal.SDK.Build;
+using Liminal.SDK.Editor.Build;
 using Liminal.SDK.VR;
 using UnityEditor;
 using UnityEditor.Android;
 using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
@@ -18,6 +21,8 @@ using Debug = UnityEngine.Debug;
 // headset type) is put back afterwards, so the team's project settings and build list are untouched.
 // Menu: Catastrophe Cafe > Build Space Cafe for Quest (APK), or Build Cat Cafe Waves for Quest (APK)
 // Command line: Unity -batchmode -quit -buildTarget Android -executeMethod QuestBuild.BatchBuild (or BatchBuildWaves)
+// The real thing for Liminal is a .limapp (see BatchBuildLimapp below): the scene as an asset bundle plus our scripts
+// as a managed assembly, which their app loads.
 public static class QuestBuild
 {
     const string SpaceCafeScene = "Assets/Scenes/SpaceCafe_Prototype.unity";
@@ -116,6 +121,150 @@ public static class QuestBuild
         }
         bool ok = CheckAndroidTools(interactive: false) && Build(scene, name) != null;
         EditorApplication.Exit(ok ? 0 : 1);
+    }
+
+    // ---------- The Liminal .limapp: what their app loads, and what goes on their store ----------
+
+    const string ManifestPath = "Assets/Liminal/liminalapp.json";
+    const string LimappFolder = "Assets/_Builds";   // where the SDK's builder writes
+
+    // Cat Cafe Waves packed the way Liminal's Quest app loads it. Mono, like their app (it loads managed code, so it
+    // can't be IL2CPP). Needs the app manifest (the app id Liminal gives us; 999 until then).
+    // Command line: Unity -batchmode -quit -buildTarget Android -executeMethod QuestBuild.BatchBuildLimapp
+    public static void BatchBuildLimapp()
+    {
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
+        {
+            Debug.LogError("[Quest Build] Run with -buildTarget Android for the Quest .limapp.");
+            EditorApplication.Exit(1);
+            return;
+        }
+        bool ok = BuildLimapp(WavesScene, BuildTarget.Android, AppBuildInfo.BuildTargetDevices.GearVR, "Waves") != null;
+        EditorApplication.Exit(ok ? 0 : 1);
+    }
+
+    // The Windows .limapp, for the SDK's Platform Viewer scene in the editor (Assets/Liminal/PlatformViewer): the
+    // closest thing to their app without a headset. Command line: ... -buildTarget Win64 -executeMethod QuestBuild.BatchBuildLimappWindows
+    public static void BatchBuildLimappWindows()
+    {
+        BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
+        if (target != BuildTarget.StandaloneWindows && target != BuildTarget.StandaloneWindows64)
+        {
+            Debug.LogError("[Quest Build] Run with -buildTarget Win64 for the Windows .limapp.");
+            EditorApplication.Exit(1);
+            return;
+        }
+        bool ok = BuildLimapp(WavesScene, BuildTarget.StandaloneWindows, AppBuildInfo.BuildTargetDevices.Emulator, "Waves-Windows") != null;
+        EditorApplication.Exit(ok ? 0 : 1);
+    }
+
+    [MenuItem("Catastrophe Cafe/Build Cat Cafe Waves for Liminal (.limapp, Quest)", false, 23)]
+    static void BuildLimappFromMenu()
+    {
+        if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.Android)
+        {
+            EditorUtility.DisplayDialog("Liminal build", "Switch the build target to Android first (File > Build Settings).", "OK");
+            return;
+        }
+        string limapp = BuildLimapp(WavesScene, BuildTarget.Android, AppBuildInfo.BuildTargetDevices.GearVR, "Waves");
+        if (limapp != null)
+        {
+            EditorUtility.RevealInFinder(limapp);
+        }
+    }
+
+    // Returns the .limapp path, or null if the build failed. The SDK's builder works on the open scene and writes into
+    // Assets/_Builds; the result is copied out to Builds/Quest with a date on it, and the bundle name the builder puts on
+    // the scene's meta is taken off again.
+    static string BuildLimapp(string scene, BuildTarget target, AppBuildInfo.BuildTargetDevices device, string name)
+    {
+        if (!File.Exists(scene))
+        {
+            Debug.LogError($"[Quest Build] {scene} is missing.");
+            return null;
+        }
+        if (!File.Exists(ManifestPath))
+        {
+            Debug.LogError($"[Quest Build] {ManifestPath} is missing: Liminal > Create or Update App Manifest.");
+            return null;
+        }
+
+        ScriptingImplementation backend = PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android);
+        SerializedObject projectSettings = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset")[0]);
+        bool hadBackendEntry = FindAndroidBackendEntry(projectSettings) >= 0;
+        try
+        {
+            if (target == BuildTarget.Android)
+            {
+                PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.Mono2x);
+            }
+            EditorSceneManager.OpenScene(scene, OpenSceneMode.Single);
+            Debug.Log($"[Quest Build] Liminal build of {scene} for {target} ({device})...");
+            AppBuilder.BuildLimapp(target, device);
+
+            string made = NewestLimapp();
+            if (made == null)
+            {
+                Debug.LogError($"[Quest Build] The Liminal builder finished but left no .limapp in {LimappFolder}. See the Console.");
+                return null;
+            }
+            Directory.CreateDirectory(OutputFolder);
+            string limapp = $"{OutputFolder}/CatCafe-{name}-{DateTime.Now:yyyyMMdd-HHmm}.limapp";
+            File.Copy(made, limapp, true);
+            Debug.Log($"[Quest Build] Done: {Path.GetFullPath(limapp)} ({new FileInfo(limapp).Length / (1024f * 1024f):F1} MB).");
+            return limapp;
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[Quest Build] The Liminal build failed: {e.Message}");
+            Debug.LogException(e);
+            return null;
+        }
+        finally
+        {
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, backend);
+            if (!hadBackendEntry)
+            {
+                projectSettings.Update();
+                int entry = FindAndroidBackendEntry(projectSettings);
+                if (entry >= 0)
+                {
+                    projectSettings.FindProperty("scriptingBackend").DeleteArrayElementAtIndex(entry);
+                    projectSettings.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+            AssetImporter sceneImporter = AssetImporter.GetAtPath(scene);
+            if (sceneImporter != null && !string.IsNullOrEmpty(sceneImporter.assetBundleName))
+            {
+                sceneImporter.SetAssetBundleNameAndVariant("", "");
+            }
+            AssetDatabase.SaveAssets();
+        }
+    }
+
+    static string NewestLimapp()
+    {
+        if (!Directory.Exists(LimappFolder))
+        {
+            return null;
+        }
+        string newest = null;
+        DateTime newestTime = DateTime.MinValue;
+        foreach (string file in Directory.GetFiles(LimappFolder))
+        {
+            string extension = Path.GetExtension(file).ToLowerInvariant();
+            if (extension != ".limapp" && extension != ".ulimapp")
+            {
+                continue;
+            }
+            DateTime written = File.GetLastWriteTime(file);
+            if (written > newestTime)
+            {
+                newestTime = written;
+                newest = file;
+            }
+        }
+        return newest;
     }
 
     // Returns the APK path, or null if the build failed
