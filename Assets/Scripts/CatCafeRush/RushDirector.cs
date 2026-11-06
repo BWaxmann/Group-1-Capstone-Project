@@ -954,6 +954,7 @@ public partial class RushDirector : MonoBehaviour
             }
             cat.transform.position = position;
             cat.transform.rotation = spot.rotation;
+            StartCoroutine(HoldFirstCustomerRoutine(cat, position));
         }
 
         List<CatOrder.Food> foods = new List<CatOrder.Food>();
@@ -984,6 +985,32 @@ public partial class RushDirector : MonoBehaviour
             firstCustomerSignInstance.transform.localRotation = Quaternion.identity;
         }
         return true;
+    }
+
+    // Keeps the first customer exactly where it was put while it waits, whatever else would move it, and says in the
+    // Console if something kept trying (so we can find out what)
+    IEnumerator HoldFirstCustomerRoutine(CatMovement cat, Vector3 position)
+    {
+        int corrections = 0;
+        float farthest = 0f;
+        while (firstCustomerOrder != null && cat != null && cat.gameObject.activeInHierarchy)
+        {
+            float away = Vector3.Distance(cat.transform.position, position);
+            if (away > 0.001f)
+            {
+                corrections++;
+                if (away > farthest)
+                {
+                    farthest = away;
+                }
+                cat.transform.position = position;
+            }
+            yield return null;
+        }
+        if (corrections > 0)
+        {
+            Debug.LogWarning($"[Cat Cafe Waves] The first customer was pulled off its spot {corrections} time(s), up to {farthest:F2} m, and put back each time.");
+        }
     }
 
     // Fed: it pops off happily (the usual finisher) and the countdown starts
