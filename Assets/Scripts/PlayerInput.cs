@@ -621,8 +621,6 @@ public class PlayerInput : MonoBehaviour
             reticleLeft.Configure(shotSpeed, !straightShots);
             reticleRight.SetSpread(StyleSpread(Style(true)));
             reticleLeft.SetSpread(StyleSpread(Style(false)));
-            reticleRight.SetVisible(show);
-            reticleLeft.SetVisible(show);
         }
     }
 

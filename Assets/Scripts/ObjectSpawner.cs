@@ -20,6 +20,9 @@ public class ObjectSpawner : MonoBehaviour
     List<GameObject>[] objectPools;
     List<int> variationsForRandomPick = new List<int>();
 
+    // True once the initial pool has been made (it is spread over the first frames)
+    public bool isReady { get; private set; }
+
     void Start()
     {
         if (objectsInPool == null || objectsInPool.Length == 0)
@@ -57,6 +60,7 @@ public class ObjectSpawner : MonoBehaviour
                 variationsForRandomPick.Add(i);
             }
         }
+        isReady = true;
     }
 
     public GameObject GetObjectFromPool(int variation)

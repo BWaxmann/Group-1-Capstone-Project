@@ -337,7 +337,7 @@ public partial class RushDirector : MonoBehaviour
 
     [Min(0f)]
     [Tooltip("How far past a pile's table edge (metres) a carried prop still counts as over it when let go.")]
-    public float propDropMargin = 0.35f;
+    public float propDropMargin = 0.8f;
 
     [Min(0f)]
     [Tooltip("The same in the Dinner Rush finale (more forgiving: there's a lot going on).")]
@@ -842,8 +842,19 @@ public partial class RushDirector : MonoBehaviour
         }
         SetUpLaunchers();
 
+        // The cat pool fills over the first second or two
+        giveUpAt = Time.time + 10f;
+        while (firstCustomer && catPool != null && !catPool.isReady && Time.time < giveUpAt)
+        {
+            yield return null;
+        }
+
         if (!firstCustomer || !SeatFirstCustomer())
         {
+            if (firstCustomer)
+            {
+                Debug.LogWarning($"[Cat Cafe Waves] No first customer could be seated: the countdown starts by itself in {startsByItselfAfter} s.");
+            }
             yield return new WaitForSeconds(startsByItselfAfter);
             if (!playing)
             {
@@ -876,9 +887,16 @@ public partial class RushDirector : MonoBehaviour
     {
         if (catPool == null)
         {
+            Debug.LogWarning("[Cat Cafe Waves] No Cat Pool on the Rush Director, so no first customer.");
+            return false;
+        }
+        if (!catPool.isReady)
+        {
+            Debug.LogWarning("[Cat Cafe Waves] The cat pool wasn't ready in time, so no first customer.");
             return false;
         }
         Transform spot = firstCustomerSpot;
+        bool exact = spot != null;   // the marker is where it goes, on the navmesh or not (up on the counter, say)
         if (spot == null)
         {
             // Just in front of the player, facing it
@@ -894,17 +912,31 @@ public partial class RushDirector : MonoBehaviour
             spot = marker.transform;
         }
         Vector3 position = spot.position;
-        if (NavMesh.SamplePosition(position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
+        if (!exact && NavMesh.SamplePosition(position, out NavMeshHit floor, 1.5f, NavMesh.AllAreas))
         {
             position = floor.position;
         }
         CatMovement cat = catPool.GetRandomObjectFromPool<CatMovement>();
         if (cat == null)
         {
+            Debug.LogWarning("[Cat Cafe Waves] The cat pool had no cat to spare for the first customer.");
             return false;
         }
         cat.gameObject.SetActive(true);
         cat.Initialise(spot, position);
+        if (exact)
+        {
+            // It only stands there, so it needs no navmesh: taken over like a kitten, its own navigation off until it
+            // goes back to the pool (the happy launch and the pool's next Initialise take care of that)
+            cat.TakeOver();
+            NavMeshAgent agent = cat.GetComponent<NavMeshAgent>();
+            if (agent != null)
+            {
+                agent.enabled = false;
+            }
+            cat.transform.position = position;
+            cat.transform.rotation = spot.rotation;
+        }
 
         List<CatOrder.Food> foods = new List<CatOrder.Food>();
         foods.Add(new CatOrder.Food
