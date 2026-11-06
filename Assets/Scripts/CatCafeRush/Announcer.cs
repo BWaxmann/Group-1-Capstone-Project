@@ -130,6 +130,7 @@ public class Announcer : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI subtitleText;
 
+    bool customSubtitlePanel;
     bool subtitleShowing;
     bool subtitlePlaced;
     bool following;
@@ -151,10 +152,12 @@ public class Announcer : MonoBehaviour
         LoadLines();
         if (subtitleCanvas == null)
         {
+            customSubtitlePanel = false;
             BuildSubtitle();
         }
         else
         {
+            customSubtitlePanel = true;
             // Allow for using subtitle canvas built in the editor
             if (subtitlePanel == null)
             {
@@ -462,8 +465,17 @@ public class Announcer : MonoBehaviour
         // A short line gets a narrower panel; anything longer wraps inside the full width. The layout then sizes
         // the panel's height to the wrapped words.
         subtitleText.text = name + text;
-        float oneLine = subtitleText.GetPreferredValues(subtitleText.text, 100000f, 100000f).x;   // unwrapped
-        subtitlePanel.sizeDelta = new Vector2(Mathf.Clamp(oneLine + Padding * 2 + 16f, 200f, Width), subtitlePanel.sizeDelta.y);
+
+        if (customSubtitlePanel)
+        {
+            subtitlePanel.sizeDelta = new Vector2(subtitlePanel.sizeDelta.x, subtitleText.GetPreferredValues(10000f, 1f).y);
+        }
+        else
+        {
+            float oneLine = subtitleText.GetPreferredValues(subtitleText.text, 100000f, 100000f).x;   // unwrapped
+            subtitlePanel.sizeDelta = new Vector2(Mathf.Clamp(oneLine + Padding * 2 + 16f, 200f, Width), subtitlePanel.sizeDelta.y);
+        }
+
         LayoutRebuilder.ForceRebuildLayoutImmediate(subtitlePanel);
     }
 
