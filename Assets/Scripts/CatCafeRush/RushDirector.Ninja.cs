@@ -97,6 +97,7 @@ public partial class RushDirector : MonoBehaviour
         if (prop != null && prop.Knock(new Vector3(viewer.x, prop.transform.position.y, viewer.z), true))
         {
             GameObject hint = FloatingWord.Make(catchIntroHint, new Color(1f, 0.85f, 0.2f), 2.2f);
+            ninjaInputTutorialImage?.SetActive(true);
             float timer = 0;
             float nextBuzz = 0;
             while (playing && timer < catchIntroTimeout && prop.state == FlyingProp.State.Flying)
@@ -113,6 +114,7 @@ public partial class RushDirector : MonoBehaviour
                 yield return null;
             }
             Destroy(hint);
+            ninjaInputTutorialImage?.SetActive(false);
             if (prop.state == FlyingProp.State.Held || prop.state == FlyingProp.State.Returning)
             {
                 FloatingWord.Show(catchIntroPraise, prop.centre + Vector3.up * 0.3f, new Color(0.4f, 1f, 0.5f));

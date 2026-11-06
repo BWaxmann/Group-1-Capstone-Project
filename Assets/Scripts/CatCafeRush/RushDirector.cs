@@ -174,6 +174,8 @@ public partial class RushDirector : MonoBehaviour
 
     public string bossLeftBanner = "THE NINJA VANISHED!";
 
+    [SerializeField] GameObject ninjaInputTutorialImage;
+
     [Header("Feel")]
 
     [Min(1f)]
