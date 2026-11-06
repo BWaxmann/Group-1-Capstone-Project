@@ -29,6 +29,10 @@ public class PlayerInput : MonoBehaviour
     GameObject launcherLeft;
 
     [SerializeField]
+    [Tooltip("The launchers are in the player's hands from the start, and any floating pair to pick up is hidden; the round starts another way (Cat Cafe Waves: feeding the first customer). Off = picking the launchers up starts the round, as before.")]
+    bool launchersInHandsAtStart = true;
+
+    [SerializeField]
     [Tooltip("Optional. A treats pool already in the scene; if empty, one is made from the prefab below.")]
     ObjectSpawner treatsSpawner;
 
@@ -430,6 +434,15 @@ public class PlayerInput : MonoBehaviour
         launcherLeft.gameObject.SetActive(false);
         launcherRight.gameObject.SetActive(false);
         GameManager.instance.GameEnd += StopLaunchers;
+
+        if (launchersInHandsAtStart)
+        {
+            TakeLaunchers();
+            foreach (GrabbableLaunchers floating in FindObjectsOfType<GrabbableLaunchers>())
+            {
+                floating.gameObject.SetActive(false);
+            }
+        }
 
         if (launcherLeftDisplayFace != null)
         {
@@ -846,19 +859,28 @@ public class PlayerInput : MonoBehaviour
         }
     }
 
+    // The floating pair picked up: into the hands, and the round starts
     void GetLaunchers()
     {
-        launchersActive = true;
-
         lastPerceivedLaunchers.gameObject.SetActive(false);
         lastPerceivedLaunchers = null;
+        TakeLaunchers();
+        Haptics.PulseBoth(Haptics.Strength.Medium);
+        GameManager.instance.GrabbedLaunchers();
+    }
+
+    // The launchers into the hands, with the treats pool and the pickups they need
+    void TakeLaunchers()
+    {
+        if (launchersActive)
+        {
+            return;
+        }
+        launchersActive = true;
         handLeft.gameObject.SetActive(false);
         handRight.gameObject.SetActive(false);
         launcherLeft.gameObject.SetActive(true);
         launcherRight.gameObject.SetActive(true);
-        Haptics.PulseBoth(Haptics.Strength.Medium);
-
-        GameManager.instance.GrabbedLaunchers();
 
         // Older scenes keep their treats pool and Pickup Manager in the scene; otherwise they're made now
         if (treatsSpawner == null && treatsSpawnerPrefab != null)
@@ -871,6 +893,20 @@ public class PlayerInput : MonoBehaviour
             pickupManager = Instantiate(pickupManagerPrefab);
         }
         if (pickupManager != null)
+        {
+            StartCoroutine(PickupsFollowTheEyeRoutine(pickupManager));
+        }
+    }
+
+    // The head can take a few frames to turn up (Liminal switches the rig on after the scene starts)
+    IEnumerator PickupsFollowTheEyeRoutine(PickupManager pickupManager)
+    {
+        float giveUpAt = Time.time + 10f;
+        while (eye == null && Time.time < giveUpAt)
+        {
+            yield return null;
+        }
+        if (eye != null && pickupManager != null)
         {
             pickupManager.SetPlayerVisionPoint(eye);
         }
