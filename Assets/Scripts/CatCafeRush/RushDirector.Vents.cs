@@ -8,19 +8,28 @@ using Random = UnityEngine.Random;
 // Rush Director, the vents: found when the round starts (only the ones the player can see), handed out to whoever needs one
 public partial class RushDirector : MonoBehaviour
 {
-    // Vents high up (in the ceiling) that the player can see: where spies come down from
+    // Vents high up (in the ceiling) that the player can see: where spies come down from. With none in view (where the
+    // player stands at the start can hide them all, in the editor especially) the ceiling vents out of sight will do:
+    // a spy from a vent round the corner beats no spy wave at all
     List<CafeVent> CeilingVents()
     {
-        return vents.FindAll(vent => vent != null && vent.dropHeight > 1.5f);
+        List<CafeVent> ceiling = vents.FindAll(vent => vent != null && vent.dropHeight > 1.5f);
+        if (ceiling.Count == 0)
+        {
+            ceiling = hiddenVents.FindAll(vent => vent != null && vent.dropHeight > 1.5f);
+        }
+        return ceiling;
     }
 
     readonly List<CafeVent> vents = new List<CafeVent>();
+    readonly List<CafeVent> hiddenVents = new List<CafeVent>();   // the ones the player can't see from where they stand
     int droppingIn;   // cats on their way out of a vent
 
     // Every vent with a lid ("Vent..." objects with a "...Lid" inside) that has floor to land on
     void FindVents()
     {
         vents.Clear();
+        hiddenVents.Clear();
         if (player == null)
         {
             return;
@@ -82,6 +91,10 @@ public partial class RushDirector : MonoBehaviour
             if (CanSee(viewer, made.opening) || CanSee(viewer, below))
             {
                 vents.Add(made);
+            }
+            else
+            {
+                hiddenVents.Add(made);
             }
         }
         Debug.Log($"[Cat Cafe Waves] Cats can come out of {vents.Count} vent(s).");

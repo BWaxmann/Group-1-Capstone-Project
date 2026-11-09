@@ -227,6 +227,7 @@ public partial class RushDirector : MonoBehaviour
                     Haptics.PulseBoth(Haptics.Strength.Strong);
                     CatRaid.CancelAll();
                     SendCatsAway();
+                    FindVents();   // from where the player stands now, not where they stood at the start
                     if (CeilingVents().Count > 0)
                     {
                         spyMusic = SoundBite.Play("Spy Music", Resources.Load<AudioClip>("CafeSounds/spy_music_loop"), spyMusicVolume,
@@ -236,7 +237,7 @@ public partial class RushDirector : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogWarning("[Cat Cafe Waves] No ceiling vent the player can see for the spy cats: ordinary feeding instead.");
+                        Debug.LogWarning("[Cat Cafe Waves] No ceiling vent in the cafe for the spy cats: ordinary feeding instead.");
                         current = new Phase { kind = Kind.Feed, seconds = phase.seconds, cats = phase.cats, shortestOrder = phase.shortestOrder, longestOrder = phase.longestOrder };
                         yield return WaitClockRoutine(Mathf.Max(0, phase.seconds - lastCallSeconds));
                         windingDown = true;
