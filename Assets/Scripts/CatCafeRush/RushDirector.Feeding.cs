@@ -290,7 +290,7 @@ public partial class RushDirector : MonoBehaviour
                 {
                     continue;
                 }
-                if (InGoodView(eye, hit.position))
+                if (InGoodView(eye, hit.position) && InGoodView(eye, hit.position + 0.5f * Vector3.up))
                 {
                     orderSpots.Add(hit.position);
                 }
