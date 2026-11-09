@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 // The Cat Chaos boss phase: a ninja cat that blinks between the prop piles and loose props in front of the player,
 // swatting things into the air at every stop. It sits still for a moment after each blink, which is the chance to
@@ -249,10 +250,23 @@ public class NinjaRushCat : BossCat
     void Blink(Vector3 position)
     {
         DisappearParticleEffect();
-        agent.Warp(position);
-        if (agent.isOnNavMesh)
+        // On the navmesh it warps there; a stop off it (a table top that isn't baked) it simply stands on, agent off
+        if (NavMesh.SamplePosition(position, out NavMeshHit onMesh, 0.15f, NavMesh.AllAreas))
         {
-            agent.isStopped = true;
+            if (!agent.enabled)
+            {
+                agent.enabled = true;
+            }
+            agent.Warp(onMesh.position);
+            if (agent.isOnNavMesh)
+            {
+                agent.isStopped = true;
+            }
+        }
+        else
+        {
+            agent.enabled = false;
+            transform.position = position;
         }
         Vector3 face = ViewerPosition() - position;
         face.y = 0;

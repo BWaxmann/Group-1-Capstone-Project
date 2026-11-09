@@ -270,12 +270,14 @@ public partial class RushDirector : MonoBehaviour
                 towards = Vector3.forward;
             }
             Vector3 beside = at + towards * 0.35f;
-            if (!NavMesh.SamplePosition(beside, out NavMeshHit hit, 0.6f, NavMesh.AllAreas) &&
-                !NavMesh.SamplePosition(at, out hit, 1.5f, NavMesh.AllAreas))
+            // On the navmesh if the table top is baked; the table top itself if not (the old fallback to the navmesh
+            // within 1.5 m found the floor, and put the ninja under the table)
+            Vector3 stop = beside;
+            if (NavMesh.SamplePosition(beside, out NavMeshHit hit, 0.6f, NavMesh.AllAreas))
             {
-                continue;
+                stop = hit.position;
             }
-            stops.Add(hit.position);
+            stops.Add(stop);
             forPiles.Add(pile);
         }
         return stops.Count > 0;
