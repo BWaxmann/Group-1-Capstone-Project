@@ -672,6 +672,8 @@ MonoBehaviour:
   musicLevel: 0.65
   catLevel: 1.3
   worldLevel: 1.3
+  lobbyMusic: {fileID: 0}
+  lobbyMusicVolume: 0.35
   phases:
   - kind: 0
     seconds: 20
@@ -832,8 +834,8 @@ MonoBehaviour:
   missedPropsStayDown: 1
   bossMakesMess: 1
   dragPropsHome: 1
-  propDropMargin: 0.8
-  remixPropDropMargin: 0.6
+  propDropMargin: 3.5
+  remixPropDropMargin: 3
   restockPiles: 1
   tidyBonusCoins: 10
   tidyBonusScore: 30
@@ -3299,7 +3301,7 @@ PrefabInstance:
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.02
+      value: 0.833
       objectReference: {fileID: 0}
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
@@ -3314,7 +3316,7 @@ PrefabInstance:
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.96592593
+      value: 0.9220908
       objectReference: {fileID: 0}
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
@@ -3324,7 +3326,7 @@ PrefabInstance:
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.2588188
+      value: 0.38697365
       objectReference: {fileID: 0}
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
@@ -3339,7 +3341,7 @@ PrefabInstance:
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 150
+      value: 134.46701
       objectReference: {fileID: 0}
     - target: {fileID: 3658786338670920099, guid: e6c849d365d000c43bae96b28a545dcc,
         type: 3}

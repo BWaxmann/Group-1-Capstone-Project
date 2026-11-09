@@ -328,7 +328,7 @@ MonoBehaviour:
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
   treatsUntilFull: 3
-  moodCanvas: {fileID: 8821123876356601709}
+  moodCanvas: {fileID: 0}
   moodImage: {fileID: 3022476459237305550}
   healthBar: {fileID: 5799717670926838134}
   moodSprites:
@@ -366,6 +366,12 @@ MonoBehaviour:
     _soundClip: {fileID: 8300000, guid: c0aab488f70a805409a4b3c03b2f6b84, type: 3}
     _volume: 1
     _pitch: 1
+  finisherStyle: 0
+  finisherFreeze: 0.09
+  launchUpSpeed: 4.5
+  launchSpinSpeed: 900
+  launchDuration: 0.6
+  launchPopParticleIndex: 2
 --- !u!195 &4121764387368476190
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -3518,6 +3524,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mood Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5075749303913509827, guid: 94bbdedc2d45f7045be180ad3c546eb0,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3625,12 +3661,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 94bbdedc2d45f7045be180ad3c546eb0, type: 3}
---- !u!1 &8821123876356601709 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
-    type: 3}
-  m_PrefabInstance: {fileID: 2139970694323368391}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &6611877007260156420 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5075749303913509827, guid: 94bbdedc2d45f7045be180ad3c546eb0,

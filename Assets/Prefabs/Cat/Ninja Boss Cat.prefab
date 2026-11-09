@@ -289,7 +289,7 @@ MonoBehaviour:
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
   treatsUntilFull: 35
-  moodCanvas: {fileID: 5164562339712232704}
+  moodCanvas: {fileID: 0}
   moodImage: {fileID: 1456673871926802083}
   healthBar: {fileID: 7906745371441607451}
   moodSprites:
@@ -327,7 +327,14 @@ MonoBehaviour:
     _soundClip: {fileID: 8300000, guid: c0aab488f70a805409a4b3c03b2f6b84, type: 3}
     _volume: 1
     _pitch: 1
+  finisherStyle: 0
+  finisherFreeze: 0.09
+  launchUpSpeed: 4.5
+  launchSpinSpeed: 900
+  launchDuration: 0.6
+  launchPopParticleIndex: 2
   despawnAfter: 60
+  despawnAfterOverride: 0
   waypointSitShortDuration: 1
   waypointSitLongDuration: 5
   shortsBeforeLong: 2
@@ -1879,6 +1886,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mood Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5075749303913509827, guid: 94bbdedc2d45f7045be180ad3c546eb0,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2016,12 +2053,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &5164562339712232704 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
-    type: 3}
-  m_PrefabInstance: {fileID: 2338616678301576106}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5907482986526654988
 PrefabInstance:
   m_ObjectHideFlags: 0

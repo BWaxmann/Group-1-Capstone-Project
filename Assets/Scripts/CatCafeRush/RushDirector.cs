@@ -1254,7 +1254,8 @@ public partial class RushDirector : MonoBehaviour
     static bool CanSee(Vector3 eye, Vector3 point)
     {
         Vector3 to = point - eye;
-        foreach (RaycastHit hit in Physics.RaycastAll(eye, to.normalized, to.magnitude - 0.05f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        // Brian: changed this from Raycast to SphereCast to make it less likely that cats end up in spaces where it is difficult to shoot them
+        foreach (RaycastHit hit in Physics.SphereCastAll(eye, 1f, to.normalized, to.magnitude - 0.05f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             Collider other = hit.collider;
             if (other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null ||

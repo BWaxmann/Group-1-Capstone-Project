@@ -68,7 +68,7 @@ MonoBehaviour:
   jiggleAnimationTrigger: Jiggle
   jiggleAnimationLayer: Jiggle Layer
   treatsUntilFull: 25
-  moodCanvas: {fileID: 7208881986297875757}
+  moodCanvas: {fileID: 0}
   moodImage: {fileID: 4003705318992057998}
   healthBar: {fileID: 5628733085759214390}
   moodSprites:
@@ -106,7 +106,14 @@ MonoBehaviour:
     _soundClip: {fileID: 8300000, guid: c0aab488f70a805409a4b3c03b2f6b84, type: 3}
     _volume: 1
     _pitch: 1
+  finisherStyle: 0
+  finisherFreeze: 0.09
+  launchUpSpeed: 4.5
+  launchSpinSpeed: 900
+  launchDuration: 0.6
+  launchPopParticleIndex: 2
   despawnAfter: 60
+  despawnAfterOverride: 0
   armourMaxHealth: 20
   armourOnCat: {fileID: 5531940779085849484}
   armourSeperatedPrefab: {fileID: 1771873258311260714, guid: b001db49f12bb8947ad1907c6c63c471,
@@ -1063,6 +1070,36 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mood Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4273354785402204255, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8472908753859461762, guid: 94bbdedc2d45f7045be180ad3c546eb0,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5075749303913509827, guid: 94bbdedc2d45f7045be180ad3c546eb0,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1200,12 +1237,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &7208881986297875757 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7482829117525608106, guid: 94bbdedc2d45f7045be180ad3c546eb0,
-    type: 3}
-  m_PrefabInstance: {fileID: 275650413417401223}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1063154079616589440
 PrefabInstance:
   m_ObjectHideFlags: 0
