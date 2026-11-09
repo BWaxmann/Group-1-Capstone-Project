@@ -44,7 +44,7 @@ public class SpyCat : MonoBehaviour
 
         [Range(5f, 60f)]
         [Tooltip("How directly the player has to be looking at it for waving to count, in degrees.")]
-        public float lookAngle = 25f;
+        public float lookAngle = 30f;
 
         [Min(0.2f)]
         [Tooltip("How fast the hands have to be moving (m/s, the two averaged) for waving at full strength.")]
@@ -345,7 +345,7 @@ public class SpyCat : MonoBehaviour
         {
             waving = 0;   // a real wave goes back and forth
         }
-        bool looking = eye != null && Vector3.Angle(eye.forward, middle - eye.position) <= settings.lookAngle;
+        bool looking = eye != null && Vector3.Angle(eye.forward, cat.transform.position - eye.position) <= settings.lookAngle;
         if (looking && waving > settings.waveSpeed * 0.35f)
         {
             nerve += Time.deltaTime / settings.scareSeconds * Mathf.Clamp01(waving / settings.waveSpeed);
