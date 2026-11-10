@@ -435,7 +435,7 @@ public class CatRaid : MonoBehaviour
     {
         if (windUpClip == null)
         {
-            windUpClip = Resources.Load<AudioClip>("CafeSounds/windup");
+            windUpClip = CafeResources.Load<AudioClip>("CafeSounds/windup");
         }
         if (windUpClip == null)
         {

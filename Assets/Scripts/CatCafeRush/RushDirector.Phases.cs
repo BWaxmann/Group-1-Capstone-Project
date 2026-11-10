@@ -230,8 +230,8 @@ public partial class RushDirector : MonoBehaviour
                     FindVents();   // from where the player stands now, not where they stood at the start
                     if (CeilingVents().Count > 0)
                     {
-                        spyMusic = SoundBite.Play("Spy Music", Resources.Load<AudioClip>("CafeSounds/spy_music_loop"), spyMusicVolume,
-                                                  musicUnderSpyMusic, Resources.Load<AudioClip>("CafeSounds/spy_music_intro"),
+                        spyMusic = SoundBite.Play("Spy Music", CafeResources.Load<AudioClip>("CafeSounds/spy_music_loop"), spyMusicVolume,
+                                                  musicUnderSpyMusic, CafeResources.Load<AudioClip>("CafeSounds/spy_music_intro"),
                                                   loop: true, fadeIn: 0.05f);
                         yield return SpyCatsRoutine(phase);
                     }

@@ -433,7 +433,7 @@ public class MafiaHeist : MonoBehaviour
     {
         if (themeClip == null)
         {
-            themeClip = Resources.Load<AudioClip>("CafeSounds/mafia_theme");
+            themeClip = CafeResources.Load<AudioClip>("CafeSounds/mafia_theme");
         }
         theme = SoundBite.Play("Mafia Theme", themeClip, settings.themeVolume, settings.musicUnderTheme, null, fadeIn: 0.1f, fadeOut: 1.5f);
     }

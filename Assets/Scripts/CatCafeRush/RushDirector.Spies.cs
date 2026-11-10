@@ -107,7 +107,7 @@ public partial class RushDirector : MonoBehaviour
         if (!lookedForSpyPrefab)
         {
             lookedForSpyPrefab = true;
-            spyPrefab = Resources.Load<GameObject>(SpyPrefabPath);
+            spyPrefab = CafeResources.Load<GameObject>(SpyPrefabPath);
         }
         if (spyPrefab != null)
         {

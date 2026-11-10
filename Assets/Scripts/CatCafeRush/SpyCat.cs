@@ -747,7 +747,7 @@ public class SpyCat : MonoBehaviour
     {
         if (sting == null)
         {
-            sting = Resources.Load<AudioClip>("CafeSounds/spy_sting");
+            sting = CafeResources.Load<AudioClip>("CafeSounds/spy_sting");
         }
         if (sting == null)
         {

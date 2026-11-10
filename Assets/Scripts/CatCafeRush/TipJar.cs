@@ -135,7 +135,7 @@ public class TipJar : MonoBehaviour
             clinkSource.spatialBlend = 1f;
             clinkSource.minDistance = 1.5f;
         }
-        clink = Resources.Load<AudioClip>("CafeSounds/coin");
+        clink = CafeResources.Load<AudioClip>("CafeSounds/coin");
         if (body != null)
         {
             SetFill(0);
@@ -279,7 +279,7 @@ public class TipJar : MonoBehaviour
         coins -= (int)FullAfter;
         SetFill(coins / FullAfter);
         FloatingWord.Show(fullText, top + Vector3.up * 0.25f, coinColour, 3f, 1.6f);
-        AudioClip ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
+        AudioClip ding = CafeResources.Load<AudioClip>("CafeSounds/order_ding");
         if (ding != null)
         {
             clinkSource.PlayOneShot(ding, 0.9f);

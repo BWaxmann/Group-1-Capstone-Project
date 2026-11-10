@@ -41,14 +41,8 @@ public static class Warmup
             }
         }
 
-        // What's otherwise loaded from Resources the moment a wave starts (the spy and Mafia music, the stings, the
-        // spy cat): found now, so that lookup never lands as a hitch mid-round
-        Resources.LoadAll<AudioClip>("CafeSounds");
-        yield return null;
-        Resources.LoadAll<GameObject>("SpyCat");
-        yield return null;
-        frame = Stopwatch.StartNew();
-
+        // (What the waves load by name is listed on the scene's Cafe Resources object, so it's loaded with the scene
+        // and decoded here with everything else)
         int clips = 0;
         foreach (AudioClip clip in Resources.FindObjectsOfTypeAll<AudioClip>())
         {

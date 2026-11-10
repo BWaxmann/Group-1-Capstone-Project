@@ -80,14 +80,29 @@ public class Outline : MonoBehaviour {
 
   private bool needsUpdate;
 
+  // Catastrophe Cafe: set when the materials weren't found (see Awake)
+  private bool noMaterials;
+  private static bool warnedNoMaterials;
+
   void Awake() {
 
     // Cache renderers
     renderers = GetComponentsInChildren<Renderer>();
 
-    // Instantiate outline materials
-    outlineMaskMaterial = Instantiate(Resources.Load<Material>(@"Materials/OutlineMask"));
-    outlineFillMaterial = Instantiate(Resources.Load<Material>(@"Materials/OutlineFill"));
+    // Instantiate outline materials. Catastrophe Cafe: from the scene's Cafe Resources lists, since Liminal's app
+    // doesn't ship the Resources folders; without them the outline stays off (a warning once, no errors every frame)
+    Material mask = CafeResources.Load<Material>(@"Materials/OutlineMask");
+    Material fill = CafeResources.Load<Material>(@"Materials/OutlineFill");
+    if (mask == null || fill == null) {
+      noMaterials = true;
+      if (!warnedNoMaterials) {
+        warnedNoMaterials = true;
+        Debug.LogWarning("[Cat Cafe Waves] The outline materials (QuickOutline/Resources/Materials) weren't found, so nothing gets an outline. Run Catastrophe Cafe > Fill Cafe Resources From The Resources Folders and save the scene.");
+      }
+      return;
+    }
+    outlineMaskMaterial = Instantiate(mask);
+    outlineFillMaterial = Instantiate(fill);
 
     outlineMaskMaterial.name = "OutlineMask (Instance)";
     outlineFillMaterial.name = "OutlineFill (Instance)";
@@ -100,6 +115,9 @@ public class Outline : MonoBehaviour {
   }
 
   void OnEnable() {
+    if (noMaterials) {
+      return;
+    }
     foreach (var renderer in renderers) {
 
       // Append outline shaders
@@ -138,6 +156,9 @@ public class Outline : MonoBehaviour {
   }
 
   void OnDisable() {
+    if (noMaterials) {
+      return;
+    }
     foreach (var renderer in renderers) {
 
       // Remove outline shaders
@@ -284,6 +305,9 @@ public class Outline : MonoBehaviour {
   }
 
   void UpdateMaterialProperties() {
+    if (noMaterials) {
+      return;
+    }
 
     // Apply properties according to mode
     outlineFillMaterial.SetColor("_OutlineColor", outlineColor);

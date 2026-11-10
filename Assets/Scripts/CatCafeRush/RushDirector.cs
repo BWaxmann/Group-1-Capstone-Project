@@ -867,7 +867,7 @@ public partial class RushDirector : MonoBehaviour
                   $"shader variants {Has(shaderVariants)}, tutorial image {Has(ninjaInputTutorialImage)}; " +
                   $"treat speed {treatSpeed}, kitten speed {kittenSpeedMin}-{kittenSpeedMax}, max kittens {maxKittens}, herd roam {herdRoamMin}-{herdRoamMax}, " +
                   $"flood chance {floodChance}, catch aim {catchAimAngle}, bubble {bubbleScale}; " +
-                  $"spy settings {spyLines}, heist settings {heistSettings}, tip lines {tipLines}, announcer {announcer}, waves {waves}, holes {fedCatsUseHoles}, vents {catsUseVents}.");
+                  $"spy settings {spyLines}, heist settings {heistSettings}, tip lines {tipLines}, cafe resources {CafeResources.Check()}, announcer {announcer}, waves {waves}, holes {fedCatsUseHoles}, vents {catsUseVents}.");
     }
 
     IEnumerator WelcomeRoutine()

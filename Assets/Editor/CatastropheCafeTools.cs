@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using System.IO;
 using Liminal.SDK.VR;
 using TMPro;
 using Liminal.Platform.Experimental.App;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 // Menu tools for testing on a Valve Index as well as the Quest.
@@ -61,6 +63,113 @@ public static class CatastropheCafeTools
         Undo.RegisterCreatedObjectUndo(made, "Add Cafe Prefabs");
         Selection.activeObject = made;
         Debug.Log("[Catastrophe Cafe] Cafe Prefabs added. Fill its slots with your prefabs; empty slots keep the built-in look. Save the scene.");
+    }
+
+    // The lists on the scene's Cafe Resources object (made if there isn't one): everything in the Resources folders,
+    // which is what the game loads by name, and so what Liminal's app, which takes only what the scene refers to,
+    // carries with it. Run it again whenever a sound, a line or a prefab is added to a Resources folder; save the scene.
+    [MenuItem("Catastrophe Cafe/Fill Cafe Resources From The Resources Folders", false, 4)]
+    static void FillCafeResources()
+    {
+        CafeResources holder = Object.FindObjectOfType<CafeResources>();
+        if (holder == null)
+        {
+            GameObject made = new GameObject("Cafe Resources");
+            holder = made.AddComponent<CafeResources>();
+            Undo.RegisterCreatedObjectUndo(made, "Add Cafe Resources");
+        }
+        Undo.RecordObject(holder, "Fill Cafe Resources");
+
+        string[] folders = ResourcesFolders();
+        List<string> paths = new List<string>();
+        foreach (string guid in AssetDatabase.FindAssets("", folders))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!AssetDatabase.IsValidFolder(path) && !paths.Contains(path))
+            {
+                paths.Add(path);
+            }
+        }
+        paths.Sort(System.StringComparer.Ordinal);
+
+        List<AudioClip> sounds = new List<AudioClip>();
+        List<GameObject> prefabs = new List<GameObject>();
+        List<TextAsset> texts = new List<TextAsset>();
+        List<Material> materials = new List<Material>();
+        List<string> leftOut = new List<string>();
+        List<string> clashes = new List<string>();
+        Dictionary<string, string> seen = new Dictionary<string, string>();
+        foreach (string path in paths)
+        {
+            Object asset = AssetDatabase.LoadMainAssetAtPath(path);
+            if (asset is AudioClip)
+            {
+                sounds.Add((AudioClip)asset);
+            }
+            else if (asset is GameObject)
+            {
+                prefabs.Add((GameObject)asset);
+            }
+            else if (asset is TextAsset)
+            {
+                texts.Add((TextAsset)asset);
+            }
+            else if (asset is Material)
+            {
+                materials.Add((Material)asset);
+            }
+            else
+            {
+                leftOut.Add(path);
+                continue;
+            }
+            // The game finds a file by its name and type, so two of the same name in different folders would clash
+            string key = asset.GetType().Name + ":" + asset.name.ToLowerInvariant();
+            if (seen.ContainsKey(key))
+            {
+                clashes.Add(path + " and " + seen[key]);
+            }
+            else
+            {
+                seen[key] = path;
+            }
+        }
+
+        holder.sounds = sounds;
+        holder.prefabs = prefabs;
+        holder.texts = texts;
+        holder.materials = materials;
+        EditorUtility.SetDirty(holder);
+        EditorSceneManager.MarkSceneDirty(holder.gameObject.scene);
+        Selection.activeObject = holder.gameObject;
+
+        string notes = "";
+        if (clashes.Count > 0)
+        {
+            notes += " Same name twice (the game takes the first): " + string.Join("; ", clashes.ToArray()) + ".";
+        }
+        if (leftOut.Count > 0)
+        {
+            notes += " Left out (not a sound, prefab, text or material; a shader comes along with its material): " + string.Join(", ", leftOut.ToArray()) + ".";
+        }
+        Debug.Log($"[Catastrophe Cafe] Cafe Resources: {sounds.Count} sound(s), {prefabs.Count} prefab(s), {texts.Count} text(s), {materials.Count} material(s) " +
+                  $"from {string.Join(", ", folders)}. Save the scene.{notes}");
+    }
+
+    // Every Resources folder of ours: not TextMesh Pro's or the SDK's, which Liminal's app has of its own
+    static string[] ResourcesFolders()
+    {
+        List<string> folders = new List<string>();
+        foreach (string folder in Directory.GetDirectories("Assets", "Resources", SearchOption.AllDirectories))
+        {
+            string path = folder.Replace('\\', '/');
+            if (path.StartsWith("Assets/TextMesh Pro/") || path.StartsWith("Assets/Liminal/"))
+            {
+                continue;
+            }
+            folders.Add(path);
+        }
+        return folders.ToArray();
     }
 
     const string PopUpWordPrefabPath = "Assets/Prefabs/UI/Pop-Up Word.prefab";

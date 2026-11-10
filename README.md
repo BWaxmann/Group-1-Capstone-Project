@@ -101,7 +101,7 @@ BillboardCanvas (B), InstructionsText (B).
 
 **Pickups (B):** `Scripts/Pickups`. Cat Cafe Waves only allows x2 points (Rush Director > Allowed Pickups).
 
-**Editor menus (`Assets/Editor`):** Catastrophe Cafe > Editor Headset (Index or mouse), Add Cafe Prefabs To Scene,
+**Editor menus (`Assets/Editor`):** Catastrophe Cafe > Editor Headset (Index or mouse), Add Cafe Prefabs To Scene, Fill Cafe Resources From The Resources Folders,
 Make Pop-Up Word Prefab, Save Shader Variants From The Last Play, Build for Valve Index. QuestBuild makes the Quest APKs and the Liminal .limapp (see below).
 
 **Not used by Cat Cafe Waves** (kept until closer to release, Brian's call): CatChaosDirector, the two scene
@@ -128,6 +128,15 @@ the number Liminal gives the app (999, the SDK's placeholder, until then) and it
 The plain APKs (Build Cat Cafe Waves for Quest) are for testers without Liminal's app: [ExperienceApp] starts itself
 when there is no platform around it.
 
+Liminal's app takes only what the scene refers to: the Resources folders don't ship with a .limapp, so nothing in the
+game may rely on `Resources.Load`. Everything loaded by name (the announcer's lines and voice, the waves' music and
+stings, the spy cat, the shift sky, the outline materials) goes through `CafeResources.Load`, which finds it in the
+lists on the scene's Cafe Resources object. After adding a file to a Resources folder, run Catastrophe Cafe > Fill Cafe
+Resources From The Resources Folders and save the scene; in the editor and the APK a file left off the lists still
+loads, with a warning. Liminal's answers (Tin, 10 Nov 2026): the NavMesh module and TextMeshPro are fine to use;
+serialized fields are kept (their Platform Viewer is out of date, so a field that comes back empty there is theirs to
+sort out); the app id, and anything else platform-specific, is theirs to sort out once the APK plays well.
+
 ## Working together
 
 - Pull before you start. Commit small and often, with a message that says what changed.
@@ -135,5 +144,5 @@ when there is no platform around it.
   gets lost in a stash.
 - Commit scene changes on their own, not mixed in with scripts or art.
 - Don't commit `Assets/Art/Fonts/Salted Caramel SDF.asset` (it rewrites itself every run) or `unityProject.vrmanifest`.
-- The Console says which CafePrefabs slots are in use when the game starts. A prefab that isn't showing up usually
-  isn't in its slot.
+- The Console says which CafePrefabs slots are in use when the game starts, and what the Cafe Resources lists hold. A
+  prefab that isn't showing up usually isn't in its slot; a sound or a line that has gone quiet usually isn't in the lists.

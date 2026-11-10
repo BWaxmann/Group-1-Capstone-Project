@@ -58,11 +58,11 @@ public class ShiftSky : MonoBehaviour
         {
             return null;
         }
-        GameObject controllerPrefab = Resources.Load<GameObject>(ControllerPath);
-        GameObject cyclePrefab = Resources.Load<GameObject>(CyclePath);
+        GameObject controllerPrefab = CafeResources.Load<GameObject>(ControllerPath);
+        GameObject cyclePrefab = CafeResources.Load<GameObject>(CyclePath);
         if (controllerPrefab == null || cyclePrefab == null)
         {
-            Debug.LogWarning("[Cat Cafe Waves] The shift sky's prefabs aren't in Resources/ShiftSky: the sky stays as it is.");
+            Debug.LogWarning("[Cat Cafe Waves] The shift sky's prefabs (Resources/ShiftSky) weren't found: the sky stays as it is.");
             return null;
         }
 

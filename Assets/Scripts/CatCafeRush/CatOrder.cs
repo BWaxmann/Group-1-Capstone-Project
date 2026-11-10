@@ -435,7 +435,7 @@ public class CatOrder : MonoBehaviour
     {
         if (ding == null)
         {
-            ding = Resources.Load<AudioClip>("CafeSounds/order_ding");
+            ding = CafeResources.Load<AudioClip>("CafeSounds/order_ding");
         }
         if (ding == null)
         {

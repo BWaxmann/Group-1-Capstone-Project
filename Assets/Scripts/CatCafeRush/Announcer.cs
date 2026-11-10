@@ -193,10 +193,10 @@ public class Announcer : MonoBehaviour
 
     void LoadLines()
     {
-        TextAsset file = Resources.Load<TextAsset>("Announcer/lines");
+        TextAsset file = CafeResources.Load<TextAsset>("Announcer/lines");
         if (file == null)
         {
-            Debug.LogWarning("[Announcer] No Resources/Announcer/lines.txt found.");
+            Debug.LogWarning("[Announcer] Announcer/lines.txt wasn't found (in the Cafe Resources lists or in Resources): no lines.");
             return;
         }
         foreach (string raw in file.text.Split('\n'))
@@ -222,7 +222,7 @@ public class Announcer : MonoBehaviour
             {
                 shown = said;
             }
-            lines[id] = new Line { text = shown, clip = Resources.Load<AudioClip>("Announcer/" + id) };
+            lines[id] = new Line { text = shown, clip = CafeResources.Load<AudioClip>("Announcer/" + id) };
         }
     }
 
@@ -305,7 +305,7 @@ public class Announcer : MonoBehaviour
         }
         if (!stings.TryGetValue(name, out AudioClip clip))
         {
-            clip = Resources.Load<AudioClip>("CafeSounds/" + name);
+            clip = CafeResources.Load<AudioClip>("CafeSounds/" + name);
             stings[name] = clip;
         }
         return clip;
@@ -336,7 +336,7 @@ public class Announcer : MonoBehaviour
                 AudioClip chime = firstLineChime;
                 if (chime == null)
                 {
-                    chime = Resources.Load<AudioClip>("CafeSounds/pa_chime");
+                    chime = CafeResources.Load<AudioClip>("CafeSounds/pa_chime");
                 }
                 if (chime != null)
                 {
