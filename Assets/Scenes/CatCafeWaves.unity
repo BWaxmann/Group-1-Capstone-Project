@@ -19159,6 +19159,89 @@ OffMeshLink:
   m_BiDirectional: 1
   m_Activated: 1
   m_AutoUpdatePositions: 0
+--- !u!1 &1823721314
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1823721316}
+  - component: {fileID: 1823721315}
+  m_Layer: 0
+  m_Name: Cafe Resources
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1823721315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823721314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4d17eafa2eb482bb62320dc9782769c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - {fileID: 8300000, guid: 1389648f022494e41b73e1eef03e8a59, type: 3}
+  - {fileID: 8300000, guid: 625c1065dcb0e1e9881534b044359a5e, type: 3}
+  - {fileID: 8300000, guid: cb8452672e8e7a02a29a789ee5ef89f6, type: 3}
+  - {fileID: 8300000, guid: 7389f0e3551a9484fa401571487aa645, type: 3}
+  - {fileID: 8300000, guid: a4b285e963728a147b98560595043249, type: 3}
+  - {fileID: 8300000, guid: 6723b75f225d1c6438ed234d1a9cfb88, type: 3}
+  - {fileID: 8300000, guid: 89ae5c797e9504f4baa6d966c211fc1d, type: 3}
+  - {fileID: 8300000, guid: 35ab383022cb470498644c0f62f3035a, type: 3}
+  - {fileID: 8300000, guid: 2f102ec8c1896904cab5975dde897c24, type: 3}
+  - {fileID: 8300000, guid: fabde1aaf9d3b5d4498dd8cb7026a68e, type: 3}
+  - {fileID: 8300000, guid: 9db5252395f0c6040a2481b5dc3144e8, type: 3}
+  - {fileID: 8300000, guid: 9fe96658e73e6a14a9fa6c765945f6ce, type: 3}
+  - {fileID: 8300000, guid: a176bbd5c0a85814dbf4d7cd82f9dbf4, type: 3}
+  - {fileID: 8300000, guid: d365983ee99f45a42bc25f671fabbe23, type: 3}
+  - {fileID: 8300000, guid: 6c001378b56d69c47ad357d4a2dec7e8, type: 3}
+  - {fileID: 8300000, guid: 5aa722f4c6e945c469513e50463cb653, type: 3}
+  - {fileID: 8300000, guid: d34ad0441e871764fa1ab5c13fa9ba10, type: 3}
+  - {fileID: 8300000, guid: 45f0ef1bc9a088a4d9a95f4ee14d64f7, type: 3}
+  - {fileID: 8300000, guid: c8e95648783f4ee4991ffa7ebb08101a, type: 3}
+  - {fileID: 8300000, guid: 84b5f2b1e52d2df4d9c732b690dd4d59, type: 3}
+  - {fileID: 8300000, guid: 60d4fd81b5c304a47a26541c9d7fb373, type: 3}
+  - {fileID: 8300000, guid: c3ad12dc218d085b786813169551d921, type: 3}
+  - {fileID: 8300000, guid: b5b157fccdae7fe638f6a6194a62f44d, type: 3}
+  - {fileID: 8300000, guid: 62219b377743a0047960c0d38f179e37, type: 3}
+  - {fileID: 8300000, guid: b29d58fa22605ffb0fcfa265ddfc71c4, type: 3}
+  - {fileID: 8300000, guid: 5c9b565637fab66880fa574257288c5a, type: 3}
+  - {fileID: 8300000, guid: bff52adc5d2e46e7acc5a94c4ac42dca, type: 3}
+  - {fileID: 8300000, guid: 7bf7a5199f4daab4aa435e56ede44235, type: 3}
+  - {fileID: 8300000, guid: 046e24ab4e8632d4d9441f78add3c609, type: 3}
+  - {fileID: 8300000, guid: ed39b7aa5442ecac65edc4f99ded7586, type: 3}
+  prefabs:
+  - {fileID: 8806667431029049813, guid: 11e42a13b83448c88ef31c4a49fbe7ce, type: 3}
+  - {fileID: 7406743463563026406, guid: 348fc1046f8048ea88967ab5ed86bb77, type: 3}
+  - {fileID: 8180139127190145470, guid: 097e33c0fedc59e4088dff3e414a7522, type: 3}
+  texts:
+  - {fileID: 4900000, guid: ce8865f4ac0355020c8c0107b39d2b24, type: 3}
+  materials:
+  - {fileID: 2100000, guid: 311313efa011949e98b6761d652ad13c, type: 2}
+  - {fileID: 2100000, guid: 106f3ff43a17d4967a2b64c7a92e49ec, type: 2}
+--- !u!4 &1823721316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823721314}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 20
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1828058210
 GameObject:
   m_ObjectHideFlags: 0
