@@ -118,15 +118,15 @@ Shader.WarmupAllShaders: on the Quest it compiles every variant in the build and
 ## Building for Liminal
 
 What Liminal's app loads, and what goes on their store, is a `.limapp`: the scene as an asset bundle plus our scripts
-as a managed assembly (so it has to be Mono, never IL2CPP). Catastrophe Cafe > Build Cat Cafe Waves for Liminal makes
-one with the Android target active (File > Build Settings), into Builds/Quest with a date on it. From the command line
-it is `-buildTarget Android -executeMethod QuestBuild.BatchBuildLimapp`; `-buildTarget Win64 -executeMethod
-QuestBuild.BatchBuildLimappWindows` makes the Windows one for the SDK's Platform Viewer scene
-(Assets/Liminal/PlatformViewer/Scenes), the closest thing to their app without a headset: point its App Preview Config's
-Emulator Path at the file and press Play. The builder needs Assets/Liminal/liminalapp.json, the app manifest: its id is
-the number Liminal gives the app (999, the SDK's placeholder, until then) and its version goes up with each submission.
-The plain APKs (Build Cat Cafe Waves for Quest) are for testers without Liminal's app: [ExperienceApp] starts itself
-when there is no platform around it.
+as a managed assembly (so it has to be Mono, never IL2CPP). Liminal does that themselves, from our APK (Damian,
+10 Nov 2026): what we hand over is a Quest APK that plays well, with this repository behind it, and the platform-specific
+details, the app id among them, are theirs to sort out. The APKs (Build Cat Cafe Waves for Quest) run on their own:
+[ExperienceApp] starts itself when there is no platform around it, and the Mono one is the closer match to their app.
+Catastrophe Cafe > Build Cat Cafe Waves for Liminal still makes a `.limapp` of our own, only for trying the game inside
+the SDK's Platform Viewer scene (Assets/Liminal/PlatformViewer/Scenes): from the command line `-buildTarget Android
+-executeMethod QuestBuild.BatchBuildLimapp`, or `-buildTarget Win64 -executeMethod QuestBuild.BatchBuildLimappWindows`
+for the Windows one the viewer's App Preview Config points at. That builder needs Assets/Liminal/liminalapp.json, the
+app manifest (id 999, the SDK's placeholder). The viewer is out of date, so what it drops is Liminal's to fix, not ours.
 
 Liminal's app takes only what the scene refers to: the Resources folders don't ship with a .limapp, so nothing in the
 game may rely on `Resources.Load`. Everything loaded by name (the announcer's lines and voice, the waves' music and
