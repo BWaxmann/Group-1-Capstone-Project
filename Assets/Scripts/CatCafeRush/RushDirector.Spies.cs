@@ -27,6 +27,10 @@ public partial class RushDirector : MonoBehaviour
         // wave it off at once). The wave waits until it's been dealt with and the announcer has finished.
         yield return new WaitForSeconds(0.8f);
         SpyCat first = SendSpy();
+        if (first == null)
+        {
+            Debug.LogWarning($"[Cat Cafe Waves] Spy wave: no spy could be sent (ceiling vents {CeilingVents().Count}).");
+        }
         if (first != null)
         {
             first.holdBack = () => voice != null && voice.talking;
@@ -126,6 +130,8 @@ public partial class RushDirector : MonoBehaviour
                 spies.Add(spyCat);
                 return spyCat;
             }
+            Debug.LogWarning("[Cat Cafe Waves] Spy wave: the spy prefab has no CatMovement on it (the loader?): a phat cat from the pool instead.");
+            Destroy(made);
         }
         if (catPool == null)
         {

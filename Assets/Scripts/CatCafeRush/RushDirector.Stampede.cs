@@ -71,6 +71,8 @@ public partial class RushDirector : MonoBehaviour
         int count = Random.Range(kittensPerHerdMin, Mathf.Max(kittensPerHerdMin, kittensPerHerdMax) + 1);
         count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));   // a herd keeps together
+        LogHerd("Herd", count, path);
+        int sent = 0;
         for (int i = 0; i < count && playing; i++)
         {
             CatMovement cat;
@@ -86,12 +88,17 @@ public partial class RushDirector : MonoBehaviour
             {
                 KittenRun.Launch(cat, path, Random.Range(-0.6f, 0.6f), speed * Random.Range(0.92f, 1.08f),
                                  kittenScale, kittenHitRadius, KittenFed);
+                sent++;
                 if (i == 0)
                 {
                     cat.DustPuff(KittenRun.DustSize);   // a puff of dust as the herd bursts in
                 }
             }
             yield return new WaitForSeconds(Random.Range(0.12f, 0.3f));
+        }
+        if (sent < count)
+        {
+            Debug.LogWarning($"[Cat Cafe Waves] Herd: the cat pool gave {sent} of {count} kitten(s).");
         }
     }
 
@@ -102,6 +109,7 @@ public partial class RushDirector : MonoBehaviour
         count = Mathf.Min(count, maxKittens - KittenRun.running.Count);
         float speed = Random.Range(kittenSpeedMin, Mathf.Max(kittenSpeedMin, kittenSpeedMax));
         float spread = 0.6f;
+        LogHerd("Flood", count, path);
         yield return vent.OpenRoutine();
         for (int i = 0; i < count && playing; i++)
         {
@@ -190,6 +198,23 @@ public partial class RushDirector : MonoBehaviour
     }
 
     // Where a flood goes from the spot under its vent: off across the floor in front of the player to one side
+    // One Console line per herd: inside Liminal's loader the kittens never showed, and nothing said why
+    void LogHerd(string kind, int count, List<Vector3> path)
+    {
+        float length = 0;
+        for (int i = 1; i < path.Count; i++)
+        {
+            length += Vector3.Distance(path[i - 1], path[i]);
+        }
+        string from = "nowhere";
+        if (path.Count > 0)
+        {
+            from = path[0].ToString();
+        }
+        bool poolReady = catPool != null && catPool.isReady;
+        Debug.Log($"[Cat Cafe Waves] {kind}: {count} kitten(s) along {path.Count} point(s), {length:F1} m from {from}; pool ready {poolReady}, {KittenRun.running.Count} running.");
+    }
+
     List<Vector3> FloodPath(Vector3 from)
     {
         if (player == null)

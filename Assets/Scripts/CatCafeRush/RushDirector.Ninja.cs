@@ -181,6 +181,7 @@ public partial class RushDirector : MonoBehaviour
     {
         if (ninja == null)
         {
+            Debug.LogWarning("[Cat Cafe Waves] Ninja wave: there is no ninja (Ninja Prefab unset, or it didn't survive the loader).");
             return;
         }
         List<Vector3> stops;
@@ -201,6 +202,7 @@ public partial class RushDirector : MonoBehaviour
         {
             if (ninjaStops.Count == 0)
             {
+                Debug.LogWarning("[Cat Cafe Waves] Ninja wave: no ninja stops.");
                 return;
             }
             stops = StopsAwayFromPlayer();
@@ -214,6 +216,7 @@ public partial class RushDirector : MonoBehaviour
             }
         }
         ninja.stops = stops;
+        Debug.Log($"[Cat Cafe Waves] Ninja wave: {ninja.name} to {stops.Count} stop(s), boss {boss}, piles {ninja.piles.Count}.");
         ninja.holdStill = holdAt.HasValue;   // before it starts, or its first move happens straight away
         // Blowing up piles, its phase sends it away when it's over (a long phase or a slow catch intro mustn't time it
         // out early); otherwise it keeps its own timer, as in Cat Cafe Rush
