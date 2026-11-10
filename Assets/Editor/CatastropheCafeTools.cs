@@ -253,6 +253,78 @@ public static class CatastropheCafeTools
         viewer.Play();
     }
 
+    // The special cats are prefabs with other prefabs nested inside them (the cat model, its mood canvas, its shadow,
+    // its armour). Liminal's loader rebuilds our components on a prefab by walking its children by index, and with
+    // prefabs nested inside, the order it meets at load isn't the order it recorded at build ("Child not found at
+    // index" in the viewer's log), so the ninja, the spies and the armoured boss came out broken. Unpacked completely,
+    // a prefab is plain objects in one file, in one order. Run this once (it edits the prefab files), then commit them.
+    static readonly string[] SpecialCatPrefabs =
+    {
+        "Assets/Prefabs/CatChaos/Ninja Rush Cat.prefab",
+        "Assets/Resources/SpyCat/Spy Phat Cat.prefab",
+        "Assets/Prefabs/Cat/Armoured Boss Cat.prefab",
+    };
+
+    [MenuItem("Catastrophe Cafe/Unpack The Special Cat Prefabs (For The Liminal Loader)", false, 9)]
+    static void UnpackSpecialCats()
+    {
+        foreach (string path in SpecialCatPrefabs)
+        {
+            UnpackNestedPrefabs(path);
+        }
+        AssetDatabase.SaveAssets();
+        Debug.Log("[Catastrophe Cafe] Special cat prefabs unpacked. Commit the three prefab files.");
+    }
+
+    // The same from the command line: -executeMethod CatastropheCafeTools.BatchUnpackSpecialCats
+    public static void BatchUnpackSpecialCats()
+    {
+        UnpackSpecialCats();
+        EditorApplication.Exit(0);
+    }
+
+    static void UnpackNestedPrefabs(string path)
+    {
+        GameObject contents = PrefabUtility.LoadPrefabContents(path);
+        if (contents == null)
+        {
+            Debug.LogError($"[Catastrophe Cafe] {path} couldn't be opened.");
+            return;
+        }
+        int unpacked = 0;
+        List<string> names = new List<string>();
+        List<GameObject> failed = new List<GameObject>();
+        bool again = true;
+        while (again)
+        {
+            // Outermost first: unpacking one flattens everything nested inside it, so the search starts over
+            again = false;
+            foreach (Transform child in contents.GetComponentsInChildren<Transform>(true))
+            {
+                if (failed.Contains(child.gameObject) || !PrefabUtility.IsAnyPrefabInstanceRoot(child.gameObject))
+                {
+                    continue;
+                }
+                try
+                {
+                    PrefabUtility.UnpackPrefabInstance(child.gameObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                    unpacked++;
+                    names.Add(child.name);
+                    again = true;
+                    break;
+                }
+                catch (System.Exception e)
+                {
+                    failed.Add(child.gameObject);
+                    Debug.LogWarning($"[Catastrophe Cafe] {path}: {child.name} couldn't be unpacked: {e.Message}");
+                }
+            }
+        }
+        PrefabUtility.SaveAsPrefabAsset(contents, path);
+        PrefabUtility.UnloadPrefabContents(contents);
+        Debug.Log($"[Catastrophe Cafe] {path}: {unpacked} nested prefab instance(s) unpacked ({string.Join(", ", names.ToArray())}).");
+    }
+
     const string ShaderVariantsPath = "Assets/Settings/Cat Cafe Shader Variants.shadervariants";
 
     // The shaders the last Play session drew with, saved as a collection for the Rush Director's Shader Variants slot:
