@@ -111,11 +111,12 @@ public class Treat : Launchable
 
         // What did it fly through since the last step? The nearest cat or pickup on that stretch is hit.
         // (A jump far longer than one step's flight means it was moved, not flown: skip that stretch.)
-        Vector3 travelled = now - lastPosition;
+        // Brian: I changed this to be forward looking instead
+        Vector3 travelled = Time.fixedDeltaTime * rb.velocity;
         float distance = travelled.magnitude;
         if (distance > 0.0001f && distance < 3f)
         {
-            RaycastHit[] hits = Physics.SphereCastAll(lastPosition, SweepRadius, travelled / distance, distance,
+            RaycastHit[] hits = Physics.SphereCastAll(now, SweepRadius, rb.velocity.normalized, distance * 1.1f,
                                                       Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
             foreach (RaycastHit hit in hits)
@@ -216,7 +217,16 @@ public class Treat : Launchable
             nextSplatSound = Time.time + 0.08f;
             AudioSource.PlayClipAtPoint(treatHittingFloorSound.soundClip, hit.point, 0.6f * SoundLevels.world);
         }
-        Despawn();
+
+        // Brian : Let treats stick around in the scene a bit
+        Invoke(nameof(Despawn), treatOnFloorLifetime);
+        isActive = false;
+        for (int i = 0; i < ownColliders.Length; i++)
+        {
+            ownColliders[i].isTrigger = false;
+        }
+        rb.velocity = 0.1f * (Vector3.Reflect(rb.velocity, hit.normal) + rb.velocity.magnitude * 0.5f * Random.insideUnitSphere);
+        rb.useGravity = true;
     }
 
     // The cats' eating crumbs, small (the Particle Manager's pool), when no splat prefab is set
