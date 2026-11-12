@@ -142,7 +142,7 @@ public class MafiaHeist : MonoBehaviour
         {
             timer += Time.deltaTime;
             float left = Flat(jarSpot - transform.position).magnitude;
-            if (!agent.pathPending && left < 0.35f)
+            if (!agent.pathPending && left < 0.5f)
             {
                 break;
             }

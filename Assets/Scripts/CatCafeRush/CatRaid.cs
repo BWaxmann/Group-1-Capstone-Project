@@ -199,6 +199,7 @@ public class CatRaid : MonoBehaviour
         transform.rotation = facing;
 
         // Sprint
+        Debug.DrawLine(transform.position, floorSpot, Color.red, 20f);
         agent.speed = savedSpeed * settings.sprintMultiplier;
         agent.acceleration = Mathf.Max(savedAcceleration, 25f);
         agent.angularSpeed = Mathf.Max(savedAngularSpeed, 720f);
@@ -213,7 +214,7 @@ public class CatRaid : MonoBehaviour
             Vector3 gap = floorSpot - transform.position;
             gap.y = 0;
             left = gap.magnitude;
-            if (!agent.pathPending && left < 0.35f)
+            if (!agent.pathPending && left < 0.6f)
             {
                 break;
             }
