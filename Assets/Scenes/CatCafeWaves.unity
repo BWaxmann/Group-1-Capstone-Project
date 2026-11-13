@@ -21470,6 +21470,12 @@ MonoBehaviour:
   recipe: {fileID: 0}
   reticle: {fileID: 4424201970551141230, guid: c3e16d144b559ab408780e46f55eebd0, type: 3}
   beamTemplate: {fileID: 0}
+  homeZone: {fileID: 8846737274113074935, guid: 203adc7959d47c14a8337fb4805c044f,
+    type: 3}
+  homeZoneRadius: 1
+  homeArrow: {fileID: 6873068661707337292, guid: b5c82704664cc75408397d2701ac03a0,
+    type: 3}
+  homeArrowHeight: 0.9
 --- !u!4 &2010222704
 Transform:
   m_ObjectHideFlags: 0
