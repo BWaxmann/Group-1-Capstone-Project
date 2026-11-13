@@ -273,26 +273,30 @@ public partial class RushDirector : MonoBehaviour
         {
             forward = Vector3.forward;
         }
-        for (float distance = 2.5f; distance <= 6.5f; distance += 0.8f)
+        for (float distance = 2.5f; distance <= 10.5f; distance += 0.8f)
         {
-            for (float angle = -50f; angle <= 50f; angle += 10f)
+            float minAngle = distance == 2.5f ? 0f : 20f;
+            for (float angle = 20f; angle <= 60f; angle += 10f)
             {
-                Vector3 point = at + Quaternion.Euler(0, angle, 0) * forward * distance;
-                if (!NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas))
-                {
-                    continue;
-                }
-                if (Mathf.Abs(hit.position.y - at.y) > 0.3f)
-                {
-                    continue;   // on the floor, not up on the furniture
-                }
-                if (orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f))
-                {
-                    continue;
-                }
-                if (InGoodView(eye, hit.position) && InGoodView(eye, hit.position + 0.5f * Vector3.up))
+                Vector3 point = at + Quaternion.Euler(0, -angle, 0) * forward * distance;
+                if (NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas) 
+                    && Mathf.Abs(hit.position.y - at.y) <= 0.3f 
+                    && !orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f) 
+                    && InGoodView(eye, hit.position) && InGoodView(eye, hit.position + 0.5f * Vector3.up))
                 {
                     orderSpots.Add(hit.position);
+                    Debug.DrawLine(hit.position, hit.position + Vector3.up, Color.blue, 20f);
+                }
+
+                if (angle == 20f) continue;
+                point = at + Quaternion.Euler(0, angle, 0) * forward * distance;
+                if (NavMesh.SamplePosition(point, out hit, 0.4f, NavMesh.AllAreas)
+                    && Mathf.Abs(hit.position.y - at.y) <= 0.3f
+                    && !orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f)
+                    && InGoodView(eye, hit.position) && InGoodView(eye, hit.position + 0.5f * Vector3.up))
+                {
+                    orderSpots.Add(hit.position);
+                    Debug.DrawLine(hit.position, hit.position + Vector3.up, Color.blue, 20f);
                 }
             }
         }

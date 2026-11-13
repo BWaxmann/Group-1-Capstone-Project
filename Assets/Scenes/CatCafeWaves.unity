@@ -815,7 +815,7 @@ MonoBehaviour:
   firstCustomer: 1
   firstCustomerCat: {fileID: 312829851}
   firstCustomerSpot: {fileID: 0}
-  firstCustomerTimeout: 1
+  firstCustomerTimeout: 90
   firstCustomerSign: {fileID: 0}
   firstCustomerSignHeight: 1.3
   startsByItselfAfter: 8
