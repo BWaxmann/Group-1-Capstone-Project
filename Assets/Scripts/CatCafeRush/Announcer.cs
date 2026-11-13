@@ -324,6 +324,10 @@ public class Announcer : MonoBehaviour
             if (Time.time - next.queuedAt > maxWait)
             {
                 next.done?.Invoke(false);
+                if (queue.Count == 0)
+                {
+                    subtitleShowing = false;
+                }
                 continue;
             }
 
