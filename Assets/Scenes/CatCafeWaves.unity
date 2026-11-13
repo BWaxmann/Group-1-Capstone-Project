@@ -811,7 +811,10 @@ MonoBehaviour:
   playerSpace: {x: 2.2, y: 0.6, z: 2.2}
   effectScale: 0.5
   announcer: 1
-  welcomeLine: welcome
+  welcomeLines:
+  - welcome_1
+  - welcome_2
+  - welcome_3
   firstCustomer: 1
   firstCustomerCat: {fileID: 312829851}
   firstCustomerSpot: {fileID: 0}
@@ -21472,7 +21475,7 @@ MonoBehaviour:
   beamTemplate: {fileID: 0}
   homeZone: {fileID: 8846737274113074935, guid: 203adc7959d47c14a8337fb4805c044f,
     type: 3}
-  homeZoneRadius: 1
+  homeZoneRadius: 3
   homeArrow: {fileID: 6873068661707337292, guid: b5c82704664cc75408397d2701ac03a0,
     type: 3}
   homeArrowHeight: 0.9

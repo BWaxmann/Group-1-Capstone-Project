@@ -266,7 +266,7 @@ public partial class RushDirector : MonoBehaviour
     [Tooltip("The cafe manager calls out each phase on the speaker (each phase's Line), with subtitles.")]
     public bool announcer = false;
 
-    public string welcomeLine = "welcome";
+    public string[] welcomeLines = { "welcome_1", "welcome_2", "welcome_3" };
 
     [Header("The first customer")]
 
@@ -875,7 +875,10 @@ public partial class RushDirector : MonoBehaviour
         yield return new WaitForSeconds(1.5f);
         if (!playing)
         {
-            Say(welcomeLine);
+            foreach (string s in welcomeLines)
+            {
+                Say(s);
+            }
         }
     }
 
