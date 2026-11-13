@@ -110,6 +110,24 @@ public class CafePrefabs : MonoBehaviour
     [Tooltip("Optional. A LineRenderer that styles the catch beam from the launcher to a prop (material, width, colours). Its points are drawn by code. Empty = a plain glowing line.")]
     LineRenderer beamTemplate;
 
+    [Header("Catch")]
+
+    [SerializeField]
+    [Tooltip("Optional. The effect that marks the table a held prop has to be brought back to in the ninja phases (the rainbow area). It plays while a prop is held, scaled so its footprint fits the table top. Empty = a thin ring drawn in code.")]
+    GameObject homeZone;
+
+    [SerializeField]
+    [Tooltip("The radius in metres the Home Zone effect covers at scale 1, as authored. It is scaled by the table's radius divided by this.")]
+    float homeZoneRadius = 1f;
+
+    [SerializeField]
+    [Tooltip("Optional. A big arrow (or any marker) that hangs over that table while a prop is held, pointing down at it. It faces the player and bobs; its own animation, if any, keeps playing. Empty = no arrow.")]
+    GameObject homeArrow;
+
+    [SerializeField]
+    [Tooltip("How high above the table top the arrow hangs, in metres.")]
+    float homeArrowHeight = 0.9f;
+
     public static FloatingWord FloatingWordPrefab
     {
         get
@@ -194,6 +212,54 @@ public class CafePrefabs : MonoBehaviour
         }
     }
 
+    public static GameObject HomeZonePrefab
+    {
+        get
+        {
+            if (instance != null)
+            {
+                return instance.homeZone;
+            }
+            return null;
+        }
+    }
+
+    public static float HomeZoneRadius
+    {
+        get
+        {
+            if (instance != null && instance.homeZoneRadius > 0.05f)
+            {
+                return instance.homeZoneRadius;
+            }
+            return 1f;
+        }
+    }
+
+    public static GameObject HomeArrowPrefab
+    {
+        get
+        {
+            if (instance != null)
+            {
+                return instance.homeArrow;
+            }
+            return null;
+        }
+    }
+
+    public static float HomeArrowHeight
+    {
+        get
+        {
+            if (instance != null)
+            {
+                return instance.homeArrowHeight;
+            }
+            return 0.9f;
+        }
+    }
+
     void Awake()
     {
         if (instance == null)
@@ -213,7 +279,7 @@ public class CafePrefabs : MonoBehaviour
         return $"pop-up word {Which(floatingWord)}, rings {Which(ringTemplate)}, kitten trail {Which(kittenTrailTemplate)}, "
              + $"prop trail {Which(propTrailTemplate)}, splat {Which(splat)}, order bubble {Which(orderBubble)}, "
              + $"tip jar {Which(tipJar)}, rope {Which(ropeTemplate)}, recipe {Which(recipe)}, reticle {Which(reticle)}, "
-             + $"beam {Which(beamTemplate)}.";
+             + $"beam {Which(beamTemplate)}, home zone {Which(homeZone)}, home arrow {WhichOrNone(homeArrow)}.";
     }
 
     static string Which(Object slot)
@@ -223,5 +289,14 @@ public class CafePrefabs : MonoBehaviour
             return "from prefab";
         }
         return "built in code";
+    }
+
+    static string WhichOrNone(Object slot)
+    {
+        if (slot != null)
+        {
+            return "from prefab";
+        }
+        return "none";
     }
 }

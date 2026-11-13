@@ -130,11 +130,16 @@ public class FlyingProp : MonoBehaviour
     bool drifting;
     bool falling;           // dropped off the beam away from its pile: straight down (it can still be grabbed)
     bool caughtThisFlight;  // the catch score is paid once per time it's knocked flying
+    // The marker on its pile's table while it's held in a ninja phase: Cafe Prefabs' Home Zone effect and Home Arrow,
+    // or a thin ring drawn in code when the Zone slot is empty
+    GameObject homeMarker;
     LineRenderer homeRing;
+    ParticleSystem[] homeEffects;
+    Transform homeArrow;
     GameObject dragHint;
 
-    // Cat Cafe Waves' ninja phases: a caught prop has to be dragged back over its pile and let go there (a ring marks
-    // the spot); let go anywhere else and it drops
+    // Cat Cafe Waves' ninja phases: a caught prop has to be dragged back over its pile and let go there (a marker on
+    // its table shows where); let go anywhere else and it drops
     public static bool dragHome;
     // The drop zone is the top of whatever the pile sits on (its table); this if nothing wide is found under it
     public static float dropRadius = 0.8f;
@@ -279,6 +284,14 @@ public class FlyingProp : MonoBehaviour
     {
         airborne.Remove(this);
         all.Remove(this);
+    }
+
+    void OnDestroy()
+    {
+        if (homeMarker != null)
+        {
+            Destroy(homeMarker);
+        }
     }
 
     // Sends the prop up on a slow arc, drifting towards the player. Returns false if it can't go right now.
@@ -462,7 +475,7 @@ public class FlyingProp : MonoBehaviour
             ReturnHome();
             return;
         }
-        ShowHomeRing(false);
+        ShowHomeMarker(false);
         if (dragHint != null)
         {
             Destroy(dragHint);
@@ -487,7 +500,7 @@ public class FlyingProp : MonoBehaviour
         {
             return;
         }
-        ShowHomeRing(false);
+        ShowHomeMarker(false);
         if (dragHint != null)
         {
             Destroy(dragHint);
@@ -579,7 +592,7 @@ public class FlyingProp : MonoBehaviour
                 transform.Rotate(Vector3.up, 90f * dt, Space.World);
                 if (dragHome)
                 {
-                    UpdateHomeRing();
+                    UpdateHomeMarker();
                 }
                 break;
 
@@ -801,51 +814,122 @@ public class FlyingProp : MonoBehaviour
         return back;
     }
 
-    // While it's held in a ninja phase: a ring round its spot on the pile, brighter once it's close enough to let go
-    void UpdateHomeRing()
+    // While it's held in a ninja phase: the marker on its pile's table, livelier once it's close enough to let go
+    void UpdateHomeMarker()
     {
-        ShowHomeRing(true);
+        ShowHomeMarker(true);
         bool close = nearHome;
         float pulse = 0.5f + 0.5f * Mathf.Sin(Time.time * (close ? 14f : 6f));
-        Color colour;
-        if (close)
+        if (homeRing != null)
         {
-            colour = new Color(0.4f, 1f, 0.5f);
+            Color colour;
+            if (close)
+            {
+                colour = new Color(0.4f, 1f, 0.5f);
+            }
+            else
+            {
+                colour = new Color(1f, 0.85f, 0.2f);
+            }
+            colour.a = Mathf.Lerp(0.5f, 1f, pulse);
+            homeRing.startColor = homeRing.endColor = colour;
+            if (close)
+            {
+                homeRing.widthMultiplier = 0.05f;
+            }
+            else
+            {
+                homeRing.widthMultiplier = 0.03f;
+            }
         }
-        else
+        if (homeEffects != null)
         {
-            colour = new Color(1f, 0.85f, 0.2f);
+            // The effect runs at double speed while the prop is over the table
+            float speed = 1f;
+            if (close)
+            {
+                speed = 2f;
+            }
+            foreach (ParticleSystem effect in homeEffects)
+            {
+                if (effect != null)
+                {
+                    ParticleSystem.MainModule main = effect.main;
+                    main.simulationSpeed = speed;
+                }
+            }
         }
-        colour.a = Mathf.Lerp(0.5f, 1f, pulse);
-        homeRing.startColor = homeRing.endColor = colour;
-        if (close)
+        float hintHeight = 0.45f;
+        if (homeArrow != null)
         {
-            homeRing.widthMultiplier = 0.05f;
+            // Hangs over the table pointing down at it, facing the player, bobbing faster while the prop is over it
+            float bobSpeed = 3f;
+            float size = 1f;
+            if (close)
+            {
+                bobSpeed = 8f;
+                size = 1f + 0.1f * pulse;
+            }
+            float height = CafePrefabs.HomeArrowHeight + Mathf.Abs(Mathf.Sin(Time.time * bobSpeed)) * 0.08f;
+            homeArrow.position = zoneCentre + Vector3.up * height;
+            homeArrow.localScale = Vector3.one * size;
+            FloatingWord.FacePlayer(homeArrow);
+            hintHeight = CafePrefabs.HomeArrowHeight + 0.55f;   // the words above the arrow, not through it
         }
-        else
-        {
-            homeRing.widthMultiplier = 0.03f;
-        }
-        homeRing.transform.parent.position = zoneCentre + Vector3.up * 0.02f;
         if (dragHint != null)
         {
-            dragHint.transform.position = zoneCentre + Vector3.up * (0.45f + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * 0.05f);
+            dragHint.transform.position = zoneCentre + Vector3.up * (hintHeight + Mathf.Abs(Mathf.Sin(Time.time * 4f)) * 0.05f);
             FloatingWord.FacePlayer(dragHint.transform);
         }
     }
 
-    void ShowHomeRing(bool show)
+    // Made the first time it's needed: Cafe Prefabs' Home Zone effect scaled to the table top (its particle systems
+    // set to scale with the hierarchy, so the scale reaches them), or a thin ring drawn in code when that slot is
+    // empty; and the Home Arrow, if there is one, inside a pivot the code moves and turns while the prefab's own
+    // animation plays on inside it
+    void ShowHomeMarker(bool show)
     {
-        if (show && homeRing == null)
+        if (show && homeMarker == null)
         {
-            Transform holder = new GameObject("Drop Ring").transform;
-            holder.rotation = Quaternion.Euler(90f, 0, 0);
             MeasureZone();
-            homeRing = SpaceCafeVisuals.Ring(holder, "Ring", zoneRadius, 0.03f, Color.white);
+            homeMarker = new GameObject(name + " Drop Zone");
+            homeMarker.transform.position = zoneCentre + Vector3.up * 0.02f;
+            GameObject zonePrefab = CafePrefabs.HomeZonePrefab;
+            if (zonePrefab != null)
+            {
+                GameObject zone = Instantiate(zonePrefab, homeMarker.transform, false);
+                zone.name = "Zone";
+                zone.transform.localPosition = Vector3.zero;
+                zone.transform.localRotation = Quaternion.identity;
+                zone.transform.localScale = Vector3.one * (zoneRadius / CafePrefabs.HomeZoneRadius);
+                zone.SetActive(true);
+                homeEffects = zone.GetComponentsInChildren<ParticleSystem>(true);
+                foreach (ParticleSystem effect in homeEffects)
+                {
+                    ParticleSystem.MainModule main = effect.main;
+                    main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                }
+            }
+            else
+            {
+                Transform ringHolder = new GameObject("Ring").transform;
+                ringHolder.SetParent(homeMarker.transform, false);
+                ringHolder.localRotation = Quaternion.Euler(90f, 0, 0);
+                homeRing = SpaceCafeVisuals.Ring(ringHolder, "Ring", zoneRadius, 0.03f, Color.white);
+            }
+            GameObject arrowPrefab = CafePrefabs.HomeArrowPrefab;
+            if (arrowPrefab != null)
+            {
+                homeArrow = new GameObject("Arrow").transform;
+                homeArrow.SetParent(homeMarker.transform, false);
+                GameObject arrow = Instantiate(arrowPrefab, homeArrow, false);
+                arrow.name = "Arrow Art";
+                arrow.SetActive(true);
+            }
         }
-        if (homeRing != null && homeRing.transform.parent.gameObject.activeSelf != show)
+        if (homeMarker != null && homeMarker.activeSelf != show)
         {
-            homeRing.transform.parent.gameObject.SetActive(show);
+            homeMarker.SetActive(show);
         }
     }
 

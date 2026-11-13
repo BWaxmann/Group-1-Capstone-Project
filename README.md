@@ -101,7 +101,7 @@ BillboardCanvas (B), InstructionsText (B).
 
 **Pickups (B):** `Scripts/Pickups`. Cat Cafe Waves only allows x2 points (Rush Director > Allowed Pickups).
 
-**Editor menus (`Assets/Editor`):** Catastrophe Cafe > Editor Headset (Index or mouse), Add Cafe Prefabs To Scene, Fill Cafe Resources From The Resources Folders,
+**Editor menus (`Assets/Editor`):** Catastrophe Cafe > Editor Headset (Index or mouse), Add Cafe Prefabs To Scene, Fill Cafe Resources From The Resources Folders, Make Home Arrow Prefab From The Launcher Pointer, Wire The Catch Phase Prefabs (Home Zone + Arrow),
 Make Pop-Up Word Prefab, Save Shader Variants From The Last Play, Build for Valve Index. QuestBuild makes the Quest APKs and the Liminal .limapp (see below).
 
 **Not used by Cat Cafe Waves** (kept until closer to release, Brian's call): CatChaosDirector, the two scene

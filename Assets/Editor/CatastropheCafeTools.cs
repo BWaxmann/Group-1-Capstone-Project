@@ -325,6 +325,129 @@ public static class CatastropheCafeTools
         Debug.Log($"[Catastrophe Cafe] {path}: {unpacked} nested prefab instance(s) unpacked ({string.Join(", ", names.ToArray())}).");
     }
 
+    // The catch phases: a held prop has to be brought back over its table. The marker there is Eleni's rainbow area
+    // effect (the Home Zone slot of Cafe Prefabs) with a big arrow hanging over it (the Home Arrow slot). The arrow is
+    // Brian's bobbing pointer from the Dual Launchers prefab, copied out as a flat prefab of its own, bigger.
+    const string DualLaunchersPrefabPath = "Assets/Prefabs/Dual Launchers.prefab";
+    const string LauncherPointerName = "Pointer Canvas";
+    const string HomeArrowPrefabPath = "Assets/Prefabs/UI/Home Arrow.prefab";
+    const string HomeZonePrefabPath = "Assets/Effects/Hyper Casual FX/Prefabs/Area/MASHEDArea_magic_multicolor 1.prefab";
+    const float HomeArrowScale = 2.5f;
+
+    [MenuItem("Catastrophe Cafe/Make Home Arrow Prefab From The Launcher Pointer", false, 6)]
+    static void MakeHomeArrowPrefab()
+    {
+        GameObject prefab = MakeHomeArrow();
+        if (prefab != null)
+        {
+            Selection.activeObject = prefab;
+            EditorGUIUtility.PingObject(prefab);
+        }
+    }
+
+    static GameObject MakeHomeArrow()
+    {
+        GameObject launchers = AssetDatabase.LoadAssetAtPath<GameObject>(DualLaunchersPrefabPath);
+        if (launchers == null)
+        {
+            Debug.LogError($"[Catastrophe Cafe] {DualLaunchersPrefabPath} not found.");
+            return null;
+        }
+        Transform pointer = null;
+        foreach (Transform child in launchers.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == LauncherPointerName)
+            {
+                pointer = child;
+                break;
+            }
+        }
+        if (pointer == null)
+        {
+            Debug.LogError($"[Catastrophe Cafe] No {LauncherPointerName} inside {DualLaunchersPrefabPath}.");
+            return null;
+        }
+        GameObject copy = Object.Instantiate(pointer.gameObject);
+        copy.name = "Home Arrow";
+        copy.SetActive(true);
+        if (PrefabUtility.IsPartOfPrefabInstance(copy))
+        {
+            // Flat, on purpose: Liminal's loader breaks on prefabs nested inside prefabs
+            GameObject outermost = PrefabUtility.GetOutermostPrefabInstanceRoot(copy);
+            if (outermost != null)
+            {
+                PrefabUtility.UnpackPrefabInstance(outermost, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            }
+        }
+        RectTransform rect = copy.GetComponent<RectTransform>();
+        if (rect != null)
+        {
+            rect.anchoredPosition3D = Vector3.zero;   // the pivot at the arrow itself: the game hangs it where it wants
+            rect.localRotation = Quaternion.identity;
+            rect.localScale = rect.localScale * HomeArrowScale;
+        }
+        Directory.CreateDirectory(Path.GetDirectoryName(HomeArrowPrefabPath));
+        GameObject prefab = PrefabUtility.SaveAsPrefabAsset(copy, HomeArrowPrefabPath);
+        Object.DestroyImmediate(copy);
+        if (prefab == null)
+        {
+            Debug.LogError($"[Catastrophe Cafe] {HomeArrowPrefabPath} couldn't be saved.");
+            return null;
+        }
+        Debug.Log($"[Catastrophe Cafe] Made {HomeArrowPrefabPath} from the launchers' {LauncherPointerName}, {HomeArrowScale}x the size. If it points up, turn it round on the prefab (Rotation Z 180).");
+        return prefab;
+    }
+
+    // Puts the rainbow area and the arrow into the Home Zone and Home Arrow slots of the scene's Cafe Prefabs object
+    // (making the arrow prefab first if it isn't there yet). Then save the scene.
+    [MenuItem("Catastrophe Cafe/Wire The Catch Phase Prefabs (Home Zone + Arrow)", false, 6)]
+    static void WireCatchPrefabs()
+    {
+        CafePrefabs holder = Object.FindObjectOfType<CafePrefabs>();
+        if (holder == null)
+        {
+            Debug.LogError("[Catastrophe Cafe] The open scene has no Cafe Prefabs object (Catastrophe Cafe > Add Cafe Prefabs To Scene first).");
+            return;
+        }
+        GameObject zone = AssetDatabase.LoadAssetAtPath<GameObject>(HomeZonePrefabPath);
+        GameObject arrow = AssetDatabase.LoadAssetAtPath<GameObject>(HomeArrowPrefabPath);
+        if (arrow == null)
+        {
+            arrow = MakeHomeArrow();
+        }
+        SerializedObject serialized = new SerializedObject(holder);
+        string report = FillSlot(serialized, "homeZone", zone, "Home Zone", HomeZonePrefabPath)
+                      + FillSlot(serialized, "homeArrow", arrow, "Home Arrow", HomeArrowPrefabPath);
+        serialized.ApplyModifiedProperties();
+        EditorSceneManager.MarkSceneDirty(holder.gameObject.scene);
+        Selection.activeObject = holder.gameObject;
+        Debug.Log($"[Catastrophe Cafe] Catch phase prefabs: {report}Save the scene (Ctrl+S), then it gets committed.");
+    }
+
+    static string FillSlot(SerializedObject serialized, string field, GameObject prefab, string label, string path)
+    {
+        SerializedProperty slot = serialized.FindProperty(field);
+        if (slot == null)
+        {
+            return $"{label}: Cafe Prefabs has no {field} field. ";
+        }
+        if (prefab == null)
+        {
+            return $"{label}: {path} is missing, so the slot was left as it was. ";
+        }
+        Object before = slot.objectReferenceValue;
+        slot.objectReferenceValue = prefab;
+        if (before == prefab)
+        {
+            return $"{label}: already {prefab.name}. ";
+        }
+        if (before != null)
+        {
+            return $"{label}: {prefab.name} replaces {before.name}. ";
+        }
+        return $"{label}: {prefab.name}. ";
+    }
+
     const string ShaderVariantsPath = "Assets/Settings/Cat Cafe Shader Variants.shadervariants";
 
     // The shaders the last Play session drew with, saved as a collection for the Rush Director's Shader Variants slot:
