@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // Cat Cafe Waves: the prefabs the game's scripts spawn, set up in the editor on one scene object ("Cafe Prefabs").
 // A slot left empty is built in code at runtime instead, as before, so the game keeps working while prefabs are made.
@@ -117,8 +118,9 @@ public class CafePrefabs : MonoBehaviour
     GameObject homeZone;
 
     [SerializeField]
-    [Tooltip("The radius in metres the Home Zone effect covers at scale 1, as authored. It is scaled by the table's radius divided by this.")]
-    float homeZoneRadius = 1f;
+    [FormerlySerializedAs("homeZoneRadius")]
+    [Tooltip("How big the Home Zone effect is on the table: 1 = its widest particle shape reaches the table's edge, 0.6 = well inside it. The effect's own size is measured from its particle shapes.")]
+    float homeZoneSize = 1f;
 
     [SerializeField]
     [Tooltip("Optional. A big arrow (or any marker) that hangs over that table while a prop is held, pointing down at it. It faces the player and bobs; its own animation, if any, keeps playing. Empty = no arrow.")]
@@ -224,13 +226,13 @@ public class CafePrefabs : MonoBehaviour
         }
     }
 
-    public static float HomeZoneRadius
+    public static float HomeZoneSize
     {
         get
         {
-            if (instance != null && instance.homeZoneRadius > 0.05f)
+            if (instance != null && instance.homeZoneSize > 0.05f)
             {
-                return instance.homeZoneRadius;
+                return instance.homeZoneSize;
             }
             return 1f;
         }

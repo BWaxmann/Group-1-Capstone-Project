@@ -261,6 +261,7 @@ public partial class RushDirector : MonoBehaviour
         return CanSee(eye.position, at + Vector3.up * 0.25f);
     }
 
+    // Spots fanned out in front of the player: straight ahead only at the nearest ring, then to both sides
     void FindOrderSpots(Transform eye)
     {
         Vector3 at = player.transform.position;
@@ -275,31 +276,77 @@ public partial class RushDirector : MonoBehaviour
         }
         for (float distance = 2.5f; distance <= 10.5f; distance += 0.8f)
         {
-            float minAngle = distance == 2.5f ? 0f : 20f;
-            for (float angle = 20f; angle <= 60f; angle += 10f)
+            float minAngle = 20f;
+            if (distance < 2.6f)
             {
-                Vector3 point = at + Quaternion.Euler(0, -angle, 0) * forward * distance;
-                if (NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas) 
-                    && Mathf.Abs(hit.position.y - at.y) <= 0.3f 
-                    && !orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f) 
-                    && InGoodView(eye, hit.position) && InGoodView(eye, hit.position + 0.5f * Vector3.up))
+                minAngle = 0f;
+            }
+            for (float angle = minAngle; angle <= 60f; angle += 10f)
+            {
+                TryOrderSpot(eye, at + Quaternion.Euler(0, -angle, 0) * forward * distance, at.y);
+                if (angle > 0f)
                 {
-                    orderSpots.Add(hit.position);
-                    Debug.DrawLine(hit.position, hit.position + Vector3.up, Color.blue, 20f);
-                }
-
-                if (angle == 20f) continue;
-                point = at + Quaternion.Euler(0, angle, 0) * forward * distance;
-                if (NavMesh.SamplePosition(point, out hit, 0.4f, NavMesh.AllAreas)
-                    && Mathf.Abs(hit.position.y - at.y) <= 0.3f
-                    && !orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f)
-                    && InGoodView(eye, hit.position) && InGoodView(eye, hit.position + 0.5f * Vector3.up))
-                {
-                    orderSpots.Add(hit.position);
-                    Debug.DrawLine(hit.position, hit.position + Vector3.up, Color.blue, 20f);
+                    TryOrderSpot(eye, at + Quaternion.Euler(0, angle, 0) * forward * distance, at.y);
                 }
             }
         }
+    }
+
+    // A good spot is on the floor, clear of the other spots, in good view low and high with a treat-wide line to it (so
+    // no table top between the player and the cat), and with nothing over it (so not under a table or a chair)
+    void TryOrderSpot(Transform eye, Vector3 point, float floorY)
+    {
+        if (!NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas) || Mathf.Abs(hit.position.y - floorY) > 0.3f)
+        {
+            return;
+        }
+        if (orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f))
+        {
+            return;
+        }
+        if (!InGoodView(eye, hit.position) || !InGoodView(eye, hit.position + 0.5f * Vector3.up))
+        {
+            return;
+        }
+        if (!ClearShot(eye.position, hit.position + 0.3f * Vector3.up) || CoveredFromAbove(hit.position))
+        {
+            return;
+        }
+        orderSpots.Add(hit.position);
+        Debug.DrawLine(hit.position, hit.position + Vector3.up, Color.blue, 20f);
+    }
+
+    // Like CanSee, but as wide as a treat: a table edge a thin ray squeaks past still blocks the shot
+    static bool ClearShot(Vector3 from, Vector3 to)
+    {
+        Vector3 line = to - from;
+        foreach (RaycastHit hit in Physics.SphereCastAll(from, 0.12f, line.normalized, line.magnitude - 0.2f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            Collider other = hit.collider;
+            if (other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null ||
+                other.GetComponentInParent<PlayerInput>() != null)
+            {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    // Something solid within head height over the spot: a table top, a chair, a shelf
+    static bool CoveredFromAbove(Vector3 floorPoint)
+    {
+        foreach (RaycastHit hit in Physics.RaycastAll(floorPoint + Vector3.up * 0.1f, Vector3.up, 1.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        {
+            Collider other = hit.collider;
+            if (other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null ||
+                other.GetComponentInParent<PlayerInput>() != null)
+            {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 
     void Served(CatOrder order)

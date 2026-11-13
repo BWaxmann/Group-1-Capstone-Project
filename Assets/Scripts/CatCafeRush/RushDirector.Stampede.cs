@@ -38,7 +38,7 @@ public partial class RushDirector : MonoBehaviour
             List<Vector3> path;
             if (vent != null)
             {
-                path = FloodPath(vent.floorSpot);
+                path = Roam(FloodPath(vent.floorSpot), Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
             }
             else
             {
@@ -162,7 +162,7 @@ public partial class RushDirector : MonoBehaviour
         List<Vector3> path;
         if (vent != null)
         {
-            path = FloodPath(vent.floorSpot);
+            path = Roam(FloodPath(vent.floorSpot), Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
         }
         else
         {
@@ -197,7 +197,6 @@ public partial class RushDirector : MonoBehaviour
         return best;
     }
 
-    // Where a flood goes from the spot under its vent: off across the floor in front of the player to one side
     // One Console line per herd: inside Liminal's loader the kittens never showed, and nothing said why
     void LogHerd(string kind, int count, List<Vector3> path)
     {
@@ -215,6 +214,8 @@ public partial class RushDirector : MonoBehaviour
         Debug.Log($"[Cat Cafe Waves] {kind}: {count} kitten(s) along {path.Count} point(s), {length:F1} m from {from}; pool ready {poolReady}, {KittenRun.running.Count} running.");
     }
 
+    // Where a flood goes from the spot under its vent: off across the floor in front of the player to one side, and a
+    // proper run of it (a flood whose exit is a metre from its vent is over before anyone has seen it)
     List<Vector3> FloodPath(Vector3 from)
     {
         if (player == null)
@@ -233,32 +234,41 @@ public partial class RushDirector : MonoBehaviour
             forward = Vector3.forward;
         }
         Vector3 right = Vector3.Cross(Vector3.up, forward);
-        for (int attempt = 0; attempt < 8; attempt++)
+        float[] minRuns = { 4f, 1.5f };   // a long run if there is one, a short one rather than none
+        foreach (float minRun in minRuns)
         {
-            Vector3 away = at + forward * Random.Range(2.5f, 5f) + right * Random.Range(3.5f, 5.5f) * (Random.value < 0.5f ? 1f : -1f);
-            if (!NavMesh.SamplePosition(away, out NavMeshHit finish, 2f, NavMesh.AllAreas))
+            for (int attempt = 0; attempt < 10; attempt++)
             {
-                continue;
+                Vector3 away = at + forward * Random.Range(2.5f, 5f) + right * Random.Range(3.5f, 5.5f) * (Random.value < 0.5f ? 1f : -1f);
+                if (!NavMesh.SamplePosition(away, out NavMeshHit finish, 2f, NavMesh.AllAreas))
+                {
+                    continue;
+                }
+                if (Mathf.Abs(finish.position.y - from.y) > 0.3f)
+                {
+                    continue;
+                }
+                float straight = Vector3.Distance(from, finish.position);
+                if (straight < minRun)
+                {
+                    continue;
+                }
+                if (!NavMesh.CalculatePath(from, finish.position, NavMesh.AllAreas, navPath) ||
+                    navPath.status != NavMeshPathStatus.PathComplete)
+                {
+                    continue;
+                }
+                float length = 0;
+                for (int i = 1; i < navPath.corners.Length; i++)
+                {
+                    length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
+                }
+                if (length > straight * 2f + 2f)
+                {
+                    continue;   // no big detours round the room
+                }
+                return new List<Vector3>(navPath.corners);
             }
-            if (Mathf.Abs(finish.position.y - from.y) > 0.3f)
-            {
-                continue;
-            }
-            if (!NavMesh.CalculatePath(from, finish.position, NavMesh.AllAreas, navPath) ||
-                navPath.status != NavMeshPathStatus.PathComplete)
-            {
-                continue;
-            }
-            float length = 0;
-            for (int i = 1; i < navPath.corners.Length; i++)
-            {
-                length += Vector3.Distance(navPath.corners[i - 1], navPath.corners[i]);
-            }
-            if (length > Vector3.Distance(from, finish.position) * 2f + 2f)
-            {
-                continue;   // no big detours round the room
-            }
-            return new List<Vector3>(navPath.corners);
         }
         return null;
     }
@@ -351,8 +361,13 @@ public partial class RushDirector : MonoBehaviour
     // Just across if no spots can be found.
     List<Vector3> RoamPath(bool fromLeft, float seconds)
     {
-        List<Vector3> across = HerdPath(fromLeft);
-        if (across == null || seconds <= 0 || player == null)
+        return Roam(HerdPath(fromLeft), seconds);
+    }
+
+    // The zig-zagging added to any run: `across` starts where the kittens appear and ends where they leave
+    List<Vector3> Roam(List<Vector3> across, float seconds)
+    {
+        if (across == null || across.Count < 2 || seconds <= 0 || player == null)
         {
             return across;
         }
@@ -383,7 +398,7 @@ public partial class RushDirector : MonoBehaviour
         Vector3 at = across[0];
         float length = 0;
         NavMeshPath leg = new NavMeshPath();
-        for (int tries = 0; tries < 40 && length < wanted; tries++)
+        for (int tries = 0; tries < 60 && length < wanted; tries++)
         {
             Vector3 spot = head + forward * Random.Range(2.2f, 6f) + right * Random.Range(-3.5f, 3.5f);
             spot.y = floorY;
@@ -392,7 +407,7 @@ public partial class RushDirector : MonoBehaviour
                 continue;
             }
             float straight = Flat(floor.position - at).magnitude;
-            if (straight < 1.8f)
+            if (straight < 1.4f)
             {
                 continue;   // a proper dash, not a shuffle
             }
@@ -405,7 +420,7 @@ public partial class RushDirector : MonoBehaviour
             {
                 legLength += Vector3.Distance(leg.corners[i - 1], leg.corners[i]);
             }
-            if (legLength > straight * 1.6f + 0.5f)
+            if (legLength > straight * 1.8f + 0.8f)
             {
                 continue;   // not the long way round the furniture
             }

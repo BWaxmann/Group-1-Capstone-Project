@@ -901,14 +901,28 @@ public class FlyingProp : MonoBehaviour
                 zone.name = "Zone";
                 zone.transform.localPosition = Vector3.zero;
                 zone.transform.localRotation = Quaternion.identity;
-                zone.transform.localScale = Vector3.one * (zoneRadius / CafePrefabs.HomeZoneRadius);
                 zone.SetActive(true);
+                // How far the effect reaches as authored: its widest particle shape. The whole thing is then scaled so
+                // that reach lands on the table's edge (times the Home Zone Size setting)
                 homeEffects = zone.GetComponentsInChildren<ParticleSystem>(true);
+                float footprint = 0f;
                 foreach (ParticleSystem effect in homeEffects)
                 {
                     ParticleSystem.MainModule main = effect.main;
                     main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                    ParticleSystem.ShapeModule shape = effect.shape;
+                    if (shape.enabled)
+                    {
+                        float reach = Mathf.Max(shape.radius, Mathf.Max(shape.scale.x, shape.scale.z) * 0.5f);
+                        float effectScale = Mathf.Max(effect.transform.localScale.x, effect.transform.localScale.z);
+                        footprint = Mathf.Max(footprint, reach * effectScale);
+                    }
                 }
+                if (footprint < 0.05f)
+                {
+                    footprint = 1f;
+                }
+                zone.transform.localScale = Vector3.one * (zoneRadius * CafePrefabs.HomeZoneSize / footprint);
             }
             else
             {
