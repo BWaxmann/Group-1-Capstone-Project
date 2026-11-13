@@ -165,7 +165,8 @@ public partial class RushDirector : MonoBehaviour
         lastArrival = Time.time;
     }
 
-    // Floor spots in front of the player with a clear view of a cat standing there (found once, when first needed)
+    // Spots in front of the player (on the floor, and up on the walkways when wanted) with a clear view of a cat
+    // standing there (found once, when first needed)
     readonly List<Vector3> orderSpots = new List<Vector3>();
     readonly Dictionary<CatOrder, Vector3> spotTaken = new Dictionary<CatOrder, Vector3>();
     bool lookedForOrderSpots;
@@ -187,7 +188,9 @@ public partial class RushDirector : MonoBehaviour
         {
             return null;
         }
-        if (InGoodView(eye, order.transform.position))
+        // Staying put is fine only where a treat can reach it: in view, a treat-wide line to its body, nothing over it
+        Vector3 here = order.transform.position;
+        if (InGoodView(eye, here) && ClearShot(eye.position, here + 0.3f * Vector3.up) && !CoveredFromAbove(here, 1.5f))
         {
             return null;
         }
@@ -211,31 +214,53 @@ public partial class RushDirector : MonoBehaviour
             spotTaken.Remove(done);
         }
 
+        // The nearest free spot it can actually get to; with none free, the nearest spot it can get to (two cats
+        // sharing beats one under a table)
+        NavMeshPath path = new NavMeshPath();
         Vector3? best = null;
+        Vector3? nearest = null;
         float bestDistance = float.MaxValue;
+        float nearestDistance = float.MaxValue;
         foreach (Vector3 spot in orderSpots)
         {
+            float distance = Vector3.Distance(spot, order.transform.position);
+            if (distance >= bestDistance && distance >= nearestDistance)
+            {
+                continue;
+            }
+            if (!NavMesh.CalculatePath(order.transform.position, spot, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete)
+            {
+                continue;
+            }
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = spot;
+            }
             bool free = true;
             foreach (KeyValuePair<CatOrder, Vector3> taken in spotTaken)
             {
-                if (taken.Key != order && Flat(taken.Value - spot).magnitude < 0.9f)
+                if (taken.Key != order && Vector3.Distance(taken.Value, spot) < 0.9f)
                 {
                     free = false;
                 }
             }
             foreach (CatOrder other in orders)
             {
-                if (other != null && other != order && other.isHungry && Flat(other.transform.position - spot).magnitude < 0.9f)
+                if (other != null && other != order && other.isHungry && Vector3.Distance(other.transform.position, spot) < 0.9f)
                 {
                     free = false;
                 }
             }
-            float distance = Flat(spot - order.transform.position).magnitude;
             if (free && distance < bestDistance)
             {
                 bestDistance = distance;
                 best = spot;
             }
+        }
+        if (best == null)
+        {
+            best = nearest;
         }
         if (best != null)
         {
@@ -283,24 +308,52 @@ public partial class RushDirector : MonoBehaviour
             }
             for (float angle = minAngle; angle <= 60f; angle += 10f)
             {
-                TryOrderSpot(eye, at + Quaternion.Euler(0, -angle, 0) * forward * distance, at.y);
+                TryOrderSpots(eye, at + Quaternion.Euler(0, -angle, 0) * forward * distance, at.y);
                 if (angle > 0f)
                 {
-                    TryOrderSpot(eye, at + Quaternion.Euler(0, angle, 0) * forward * distance, at.y);
+                    TryOrderSpots(eye, at + Quaternion.Euler(0, angle, 0) * forward * distance, at.y);
                 }
             }
         }
     }
 
-    // A good spot is on the floor, clear of the other spots, in good view low and high with a treat-wide line to it (so
-    // no table top between the player and the cat), and with nothing over it (so not under a table or a chair)
-    void TryOrderSpot(Transform eye, Vector3 point, float floorY)
+    static readonly float[] WalkwayHeights = { 1.2f, 1.7f, 2.2f, 2.7f, 3.2f };
+
+    // The floor at `point`, and any walkway above it when those are wanted
+    void TryOrderSpots(Transform eye, Vector3 point, float floorY)
     {
-        if (!NavMesh.SamplePosition(point, out NavMeshHit hit, 0.4f, NavMesh.AllAreas) || Mathf.Abs(hit.position.y - floorY) > 0.3f)
+        TryOrderSpot(eye, point, floorY, 0f);
+        if (orderSpotsOnWalkways)
+        {
+            foreach (float height in WalkwayHeights)
+            {
+                TryOrderSpot(eye, point, floorY, height);
+            }
+        }
+    }
+
+    // A good spot is on the floor (or, `raised` metres up, on a walkway: not a table top), clear of the other spots, in
+    // good view low and high with a treat-wide line to it (so no table top between the player and the cat), and with
+    // nothing over it (so not under a table or a chair)
+    void TryOrderSpot(Transform eye, Vector3 point, float floorY, float raised)
+    {
+        if (!NavMesh.SamplePosition(point + Vector3.up * raised, out NavMeshHit hit, 0.4f, NavMesh.AllAreas))
         {
             return;
         }
-        if (orderSpots.Exists(spot => Flat(spot - hit.position).magnitude < 0.7f))
+        float up = hit.position.y - floorY;
+        if (raised <= 0f)
+        {
+            if (Mathf.Abs(up) > 0.3f)
+            {
+                return;
+            }
+        }
+        else if (up < 0.8f || up > 3.5f || Mathf.Abs(up - raised) > 0.5f)
+        {
+            return;
+        }
+        if (orderSpots.Exists(spot => Vector3.Distance(spot, hit.position) < 0.7f))
         {
             return;
         }
@@ -308,7 +361,12 @@ public partial class RushDirector : MonoBehaviour
         {
             return;
         }
-        if (!ClearShot(eye.position, hit.position + 0.3f * Vector3.up) || CoveredFromAbove(hit.position))
+        float headroom = 1.5f;
+        if (raised > 0f)
+        {
+            headroom = 0.8f;   // the ceiling is close over a hanging walkway
+        }
+        if (!ClearShot(eye.position, hit.position + 0.3f * Vector3.up) || CoveredFromAbove(hit.position, headroom))
         {
             return;
         }
@@ -334,9 +392,9 @@ public partial class RushDirector : MonoBehaviour
     }
 
     // Something solid within head height over the spot: a table top, a chair, a shelf
-    static bool CoveredFromAbove(Vector3 floorPoint)
+    static bool CoveredFromAbove(Vector3 floorPoint, float reach)
     {
-        foreach (RaycastHit hit in Physics.RaycastAll(floorPoint + Vector3.up * 0.1f, Vector3.up, 1.5f, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        foreach (RaycastHit hit in Physics.RaycastAll(floorPoint + Vector3.up * 0.1f, Vector3.up, reach, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             Collider other = hit.collider;
             if (other.GetComponentInParent<CatMovement>() != null || other.GetComponentInParent<FlyingProp>() != null ||

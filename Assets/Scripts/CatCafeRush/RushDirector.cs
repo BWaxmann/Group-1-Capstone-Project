@@ -378,6 +378,10 @@ public partial class RushDirector : MonoBehaviour
              "up) a few seconds later. Their patience ring then drains.")]
     public bool orderMoments = false;
 
+    [Tooltip("Order spots up on the hanging walkways too (any walkable surface the player can see 0.8 m to 3.5 m above " +
+             "the floor), so some cats order from up there. A cat is only sent up when it has a complete path.")]
+    public bool orderSpotsOnWalkways = true;
+
     [Min(0f)]
     public float orderDelayMin = 2f;
 
@@ -608,6 +612,10 @@ public partial class RushDirector : MonoBehaviour
     [Range(0f, 1f)]
     [Tooltip("Feed phases: the chance each new cat comes out of a vent instead of a door.")]
     public float ventChance = 0.35f;
+
+    [Range(0f, 1f)]
+    [Tooltip("Of the cats that come from a vent, the share sent to a wall vent whose cats land up on the walkways (when one is free), so those vents get used.")]
+    public float walkwayVentShare = 0.6f;
 
     [Range(0f, 1f)]
     [Tooltip("The chance a launcher kitten comes out of a vent.")]

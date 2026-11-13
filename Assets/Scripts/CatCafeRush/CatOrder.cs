@@ -328,7 +328,7 @@ public class CatOrder : MonoBehaviour
             cat.StopAllCoroutines();   // stops its roaming
             agent.isStopped = false;
             agent.SetDestination(spot.Value);
-            float giveUp = Time.time + 6f;
+            float giveUp = Time.time + 10f;   // a walkway spot can be a climb away
             while (isHungry && Time.time < giveUp && (agent.pathPending || agent.remainingDistance > 0.3f))
             {
                 yield return null;

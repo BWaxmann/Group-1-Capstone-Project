@@ -113,10 +113,19 @@ public partial class RushDirector : MonoBehaviour
         List<CafeVent> free = vents.FindAll(vent =>
             vent != null && !vent.busy && (!floorOnly || vent.landsOnFloor) &&
             (forward.sqrMagnitude < 0.001f || Vector3.Angle(forward, Flat(vent.floorSpot - at)) <= ventArc));
-        if (free.Count > 0)
+        if (free.Count == 0)
         {
-            return free[Random.Range(0, free.Count)];
+            return null;
         }
-        return null;
+        // The wall vents, whose cats land up on the walkways, hardly ever came up in an even draw
+        if (!floorOnly)
+        {
+            List<CafeVent> upHigh = free.FindAll(vent => !vent.landsOnFloor);
+            if (upHigh.Count > 0 && Random.value < walkwayVentShare)
+            {
+                return upHigh[Random.Range(0, upHigh.Count)];
+            }
+        }
+        return free[Random.Range(0, free.Count)];
     }
 }
