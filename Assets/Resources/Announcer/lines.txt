@@ -4,7 +4,9 @@
 # and one is picked at random each time (never the same one twice running). A take with a recording always wins
 # over one without. The real voice is ElevenLabs (Joshua); any .wav left here is a Windows placeholder
 # (powershell -File Tools/make-announcer-voice.ps1 -Only <id> re-records one).
-welcome | Morning friend! Ready for your shift? Blue treats are in your left hand, orange are in your right! Squeeze the trigger to send treats flying! Your first customer is waiting: feed it both colours and we'll open up!
+welcome | Morning friend! Ready for your shift?
+welcome2 | Blue treats are in your left hand, orange are in your right! 
+welcome3 | Squeeze the trigger to send treats flying! Your first customer is waiting: feed it both colours and we'll open up!
 feed_first | Customers incoming! Feed them the coloured treat in their bubble, and see the tips fly your way!
 feed_first_2 | Customers! Feed them the colour in their bubble.
 stampede | Uh oh... kitten stampede! Feed as many as you can!

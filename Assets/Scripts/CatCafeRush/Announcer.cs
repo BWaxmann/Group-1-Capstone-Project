@@ -364,6 +364,7 @@ public class Announcer : MonoBehaviour
                 source.volume = volume;
                 source.Play();
                 length = next.line.clip.length;
+                Debug.Log($"Playing voice line {source.clip.name}");
             }
             else
             {
@@ -371,6 +372,7 @@ public class Announcer : MonoBehaviour
                 length = Mathf.Clamp(next.line.text.Length * 0.06f, 1.5f, 6f);
             }
             yield return new WaitForSeconds(length + 0.4f);
+            Debug.Log($"Voice Line {source.clip.name} has finished playing.");
             isSpeaking = false;
             if (queue.Count == 0)
             {
