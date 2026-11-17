@@ -382,6 +382,10 @@ public partial class RushDirector : MonoBehaviour
              "the floor), so some cats order from up there. A cat is only sent up when it has a complete path.")]
     public bool orderSpotsOnWalkways = true;
 
+    [Tooltip("Spy phase: once the first spy (the one that's explained) has been waved off, customers come in and order " +
+             "again (up to the phase's Cats) while the spies keep dropping. Off = the spies on their own.")]
+    public bool spyPhaseKeepsCustomers = true;
+
     [Min(0f)]
     public float orderDelayMin = 2f;
 

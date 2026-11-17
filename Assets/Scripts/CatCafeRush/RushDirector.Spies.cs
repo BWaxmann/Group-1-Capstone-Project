@@ -19,6 +19,9 @@ public partial class RushDirector : MonoBehaviour
     }
 
     // Spies through the phase, a new one every so often (quicker as it goes on), however many are still dangling
+    // Spy phase: the first spy has been dealt with, so customers may come in again (Spy Phase Keeps Customers)
+    bool spyCustomersIn;
+
     IEnumerator SpyCatsRoutine(Phase phase)
     {
         float start = clock;
@@ -42,6 +45,7 @@ public partial class RushDirector : MonoBehaviour
             waveHeld = false;
             yield return WaitClockRoutine(Mathf.Lerp(spyGapStart, spyGapEnd, 0f));
         }
+        spyCustomersIn = true;
         while (playing && clock < end - (spy.lowerSeconds + spy.approachSeconds) * 0.6f)
         {
             // Each spy on its own timer: one still dangling doesn't hold up the next (as many as there are free vents)

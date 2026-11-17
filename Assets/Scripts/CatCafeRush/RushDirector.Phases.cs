@@ -226,6 +226,7 @@ public partial class RushDirector : MonoBehaviour
                 case Kind.Spy:
                     Haptics.PulseBoth(Haptics.Strength.Strong);
                     CatRaid.CancelAll();
+                    spyCustomersIn = false;   // the cafe is cleared while the first spy is explained
                     SendCatsAway();
                     FindVents();   // from where the player stands now, not where they stood at the start
                     if (CeilingVents().Count > 0)
@@ -335,7 +336,8 @@ public partial class RushDirector : MonoBehaviour
     // Phases where hungry cats with orders keep coming in
     bool HasOrders(Kind kind)
     {
-        return kind == Kind.Feed || kind == Kind.Remix || (kind == Kind.Boss && !bossMakesMess);
+        return kind == Kind.Feed || kind == Kind.Remix || (kind == Kind.Boss && !bossMakesMess) ||
+               (kind == Kind.Spy && spyPhaseKeepsCustomers && spyCustomersIn);
     }
 
     // Feeding-like phases: launcher kittens and the Mafia cat carry on through them
