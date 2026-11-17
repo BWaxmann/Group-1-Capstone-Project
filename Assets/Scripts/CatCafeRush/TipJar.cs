@@ -27,8 +27,16 @@ public class TipJar : MonoBehaviour
     Transform body;
 
     [SerializeField]
+    [Tooltip("Determines whether a single fill object is scaled to the fill level or multiple fill objects are swapped out as the jar is filled.")]
+    bool discreteFillLevels = true;
+
+    [SerializeField]
     [Tooltip("The gold inside, authored FULL with its pivot at its base: it's squashed down in Y as the jar fills.")]
     Transform fill;
+
+    [SerializeField]
+    [Tooltip("The gold inside, ordered from empty to full, with each object being swapped out for the next as the jar is filled.")]
+    GameObject[] fillLevels;
 
     [SerializeField]
     [Tooltip("The lid, switched off; shown once the jar is full and set aside.")]
@@ -115,7 +123,11 @@ public class TipJar : MonoBehaviour
     // Whatever the prefab didn't bring
     void Build()
     {
-        fillFromPrefab = fill != null;
+        if (fillLevels == null || fillLevels.Length == 0)
+        {
+            discreteFillLevels = false;
+        }
+        fillFromPrefab = fill != null && !discreteFillLevels;
         if (fillFromPrefab)
         {
             fillScale = fill.localScale;
@@ -146,9 +158,12 @@ public class TipJar : MonoBehaviour
         body.SetParent(transform, false);
 
         // The gold inside draws first, then the glass over it
-        GameObject gold = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, body, "Coins Inside", coinColour);
-        gold.GetComponent<Renderer>().sharedMaterial.renderQueue = 3000;
-        fill = gold.transform;
+        if (!discreteFillLevels || fillLevels == null || fillLevels.Length == 0)
+        {
+            GameObject gold = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, body, "Coins Inside", coinColour);
+            gold.GetComponent<Renderer>().sharedMaterial.renderQueue = 3000;
+            fill = gold.transform;
+        }
         SetFill(0);
 
         GameObject glass = SpaceCafeVisuals.Shape(PrimitiveType.Cylinder, body, "Glass", glassColour);
@@ -181,6 +196,15 @@ public class TipJar : MonoBehaviour
 
     void SetFill(float amount)
     {
+        if (discreteFillLevels)
+        {
+            int fillIndex = Mathf.RoundToInt(amount * (fillLevels.Length + 1)) - 1;
+            for (int i = 0; i < fillLevels.Length; i++)
+            {
+                fillLevels[i].SetActive(i == fillIndex);
+            }
+            return;
+        }
         if (fill == null)
         {
             return;
