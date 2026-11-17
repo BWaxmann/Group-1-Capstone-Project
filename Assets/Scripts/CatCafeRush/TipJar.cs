@@ -198,7 +198,8 @@ public class TipJar : MonoBehaviour
     {
         if (discreteFillLevels)
         {
-            int fillIndex = Mathf.RoundToInt(amount * (fillLevels.Length + 1)) - 1;
+            // The first level from the first coin, the last one only when full
+            int fillIndex = Mathf.CeilToInt(Mathf.Clamp01(amount) * fillLevels.Length) - 1;
             for (int i = 0; i < fillLevels.Length; i++)
             {
                 fillLevels[i].SetActive(i == fillIndex);

@@ -123,6 +123,11 @@ public class CafePrefabs : MonoBehaviour
     float homeZoneSize = 1f;
 
     [SerializeField]
+    [Range(0.05f, 1f)]
+    [Tooltip("How bright the Home Zone effect is: 1 = as authored, 0.5 = half (its particles' start colour alpha is scaled).")]
+    float homeZoneBrightness = 0.5f;
+
+    [SerializeField]
     [Tooltip("Optional. A big arrow (or any marker) that hangs over that table while a prop is held, pointing down at it. It faces the player and bobs; its own animation, if any, keeps playing. Empty = no arrow.")]
     GameObject homeArrow;
 
@@ -235,6 +240,18 @@ public class CafePrefabs : MonoBehaviour
                 return instance.homeZoneSize;
             }
             return 1f;
+        }
+    }
+
+    public static float HomeZoneBrightness
+    {
+        get
+        {
+            if (instance != null)
+            {
+                return instance.homeZoneBrightness;
+            }
+            return 0.5f;
         }
     }
 

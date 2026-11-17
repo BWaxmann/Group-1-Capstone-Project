@@ -883,6 +883,49 @@ public class FlyingProp : MonoBehaviour
         }
     }
 
+    // A particle start colour with its alpha scaled by `brightness`, whatever mode it's in
+    static ParticleSystem.MinMaxGradient Dimmed(ParticleSystem.MinMaxGradient colour, float brightness)
+    {
+        switch (colour.mode)
+        {
+            case ParticleSystemGradientMode.Color:
+                return new ParticleSystem.MinMaxGradient(DimmedColour(colour.color, brightness));
+            case ParticleSystemGradientMode.TwoColors:
+                return new ParticleSystem.MinMaxGradient(DimmedColour(colour.colorMin, brightness), DimmedColour(colour.colorMax, brightness));
+            case ParticleSystemGradientMode.Gradient:
+            case ParticleSystemGradientMode.RandomColor:
+                ParticleSystem.MinMaxGradient one = new ParticleSystem.MinMaxGradient(DimmedGradient(colour.gradient, brightness));
+                one.mode = colour.mode;
+                return one;
+            case ParticleSystemGradientMode.TwoGradients:
+                return new ParticleSystem.MinMaxGradient(DimmedGradient(colour.gradientMin, brightness), DimmedGradient(colour.gradientMax, brightness));
+        }
+        return colour;
+    }
+
+    static Color DimmedColour(Color colour, float brightness)
+    {
+        colour.a *= brightness;
+        return colour;
+    }
+
+    static Gradient DimmedGradient(Gradient gradient, float brightness)
+    {
+        if (gradient == null)
+        {
+            return null;
+        }
+        GradientAlphaKey[] alphas = gradient.alphaKeys;
+        for (int i = 0; i < alphas.Length; i++)
+        {
+            alphas[i].alpha *= brightness;
+        }
+        Gradient dimmed = new Gradient();
+        dimmed.mode = gradient.mode;
+        dimmed.SetKeys(gradient.colorKeys, alphas);
+        return dimmed;
+    }
+
     // Made the first time it's needed: Cafe Prefabs' Home Zone effect scaled to the table top (its particle systems
     // set to scale with the hierarchy, so the scale reaches them), or a thin ring drawn in code when that slot is
     // empty; and the Home Arrow, if there is one, inside a pivot the code moves and turns while the prefab's own
@@ -906,10 +949,12 @@ public class FlyingProp : MonoBehaviour
                 // that reach lands on the table's edge (times the Home Zone Size setting)
                 homeEffects = zone.GetComponentsInChildren<ParticleSystem>(true);
                 float footprint = 0f;
+                float brightness = CafePrefabs.HomeZoneBrightness;
                 foreach (ParticleSystem effect in homeEffects)
                 {
                     ParticleSystem.MainModule main = effect.main;
                     main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+                    main.startColor = Dimmed(main.startColor, brightness);
                     ParticleSystem.ShapeModule shape = effect.shape;
                     if (shape.enabled)
                     {
