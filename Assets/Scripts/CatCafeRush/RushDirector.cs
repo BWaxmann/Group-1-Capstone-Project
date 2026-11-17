@@ -1120,6 +1120,7 @@ public partial class RushDirector : MonoBehaviour
     {
         firstCustomerOrder = null;
         TakeDownFirstCustomerSign();
+        voice.StopVoiceAndClearQueue();
         GameManager.instance.BeginCountdown();
     }
 

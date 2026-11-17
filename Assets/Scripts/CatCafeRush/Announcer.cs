@@ -263,6 +263,16 @@ public class Announcer : MonoBehaviour
         }
     }
 
+    public void StopVoiceAndClearQueue()
+    {
+        queue.Clear();
+        subtitleShowing = false;
+        source.Stop();
+        isSpeaking = false;
+        StopAllCoroutines();
+        StartCoroutine(RunRoutine());
+    }
+
     readonly Dictionary<string, string> lastTake = new Dictionary<string, string>();
 
     Line PickTake(string id)
