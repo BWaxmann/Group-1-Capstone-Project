@@ -20,7 +20,7 @@ carry | Nice catch! Now drag it back to its table and let go!
 busted | Busted! You stopped the Big Boss Cat. Your tips are safe!
 heist | Oh no! He's made off with your tips! Try to feed him faster next time!
 tidy | Let's see how tidy you kept the place?
-catch | Oh no! Pesky Ninja Cats! They love to make a mess. Squeeze the grip to catch, and carry the mess back to the table!
+catch | Oh no! The Ninja Cat is making a mess! Use the grip trigger to catch the mess and drag it back to the table!
 spies | Uh oh! The competition has sent spy cats to steal our delicious treat recipe! Look at them and wave your arms to scare them off!
 popup | Pop-up cats! Feed them every treat in their bubble before they land!
 boss | The Ninja Cat is back, and it's hungry! Feed it this time to make it go away!
