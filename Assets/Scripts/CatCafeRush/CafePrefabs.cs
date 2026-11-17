@@ -119,7 +119,7 @@ public class CafePrefabs : MonoBehaviour
 
     [SerializeField]
     [FormerlySerializedAs("homeZoneRadius")]
-    [Tooltip("How big the Home Zone effect is on the table: 1 = its widest particle shape reaches the table's edge, 0.6 = well inside it. The effect's own size is measured from its particle shapes.")]
+    [Tooltip("How far around the table a held prop counts as home (let go there and it goes back): 1 = the table's edge, 3 = three times as far out. The Home Zone effect itself always just fits the table top.")]
     float homeZoneSize = 1f;
 
     [SerializeField]

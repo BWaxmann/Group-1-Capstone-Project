@@ -167,7 +167,8 @@ public class FlyingProp : MonoBehaviour
     // Where to carry it back to: the middle of its pile's table top
     public Vector3 dropCentre { get { MeasureZone(); return zoneCentre; } }
 
-    // Held anywhere over its pile's table (from just above the top to well up in the air)
+    // Held anywhere over its pile's table, or around it out to Cafe Prefabs' Home Zone Size (from just below the top to
+    // well up in the air)
     public bool nearHome
     {
         get
@@ -179,7 +180,8 @@ public class FlyingProp : MonoBehaviour
             MeasureZone();
             Vector3 c = centre;
             float across = new Vector2(c.x - zoneCentre.x, c.z - zoneCentre.z).magnitude;
-            return across <= zoneRadius + dropMargin && c.y >= zoneCentre.y - 0.25f - dropMargin && c.y <= zoneCentre.y + 2f;
+            float reach = zoneRadius * Mathf.Max(1f, CafePrefabs.HomeZoneSize) + dropMargin;
+            return across <= reach && c.y >= zoneCentre.y - 0.25f - dropMargin && c.y <= zoneCentre.y + 2f;
         }
     }
 
@@ -946,7 +948,7 @@ public class FlyingProp : MonoBehaviour
                 zone.transform.localRotation = Quaternion.identity;
                 zone.SetActive(true);
                 // How far the effect reaches as authored: its widest particle shape. The whole thing is then scaled so
-                // that reach lands on the table's edge (times the Home Zone Size setting)
+                // that reach lands on the table's edge (the drop area itself can reach further: Home Zone Size)
                 homeEffects = zone.GetComponentsInChildren<ParticleSystem>(true);
                 float footprint = 0f;
                 float brightness = CafePrefabs.HomeZoneBrightness;
@@ -967,7 +969,7 @@ public class FlyingProp : MonoBehaviour
                 {
                     footprint = 1f;
                 }
-                zone.transform.localScale = Vector3.one * (zoneRadius * CafePrefabs.HomeZoneSize / footprint);
+                zone.transform.localScale = Vector3.one * (zoneRadius / footprint);   // fits the table top
             }
             else
             {
