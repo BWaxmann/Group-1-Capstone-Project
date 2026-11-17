@@ -146,6 +146,43 @@ public partial class RushDirector : MonoBehaviour
         yield return vent.CloseRoutine();
     }
 
+    float nextChanceFloodAt;
+
+    // The finale: a new customer may be a kitten flood instead (Remix Flood Chance). True if one started.
+    bool TryChanceFlood()
+    {
+        if (current == null || current.kind != Kind.Remix || windingDown || remixFloodChance <= 0f || flooding)
+        {
+            return false;
+        }
+        if (clock < nextChanceFloodAt || BusyEvents() >= remixMaxBusy || Random.value >= remixFloodChance)
+        {
+            return false;
+        }
+        CafeVent vent = FloodVent();
+        if (vent == null)
+        {
+            return false;
+        }
+        List<Vector3> path = Roam(FloodPath(vent.floorSpot), Random.Range(herdRoamMin, Mathf.Max(herdRoamMin, herdRoamMax)));
+        if (path == null)
+        {
+            return false;
+        }
+        Debug.Log($"[Cat Cafe Waves] Finale: a customer's chance came up, kitten flood at {clock:0}s.");
+        nextChanceFloodAt = clock + remixFloodCooldown;
+        BigStarted();
+        flooding = true;
+        StartCoroutine(ChanceFloodRoutine(vent, path));
+        return true;
+    }
+
+    IEnumerator ChanceFloodRoutine(CafeVent vent, List<Vector3> path)
+    {
+        yield return FloodRoutine(vent, path);
+        flooding = false;
+    }
+
     // The remix finale's kitten flood, partway through (when there's room for it)
     IEnumerator RemixFloodRoutine(Phase phase)
     {

@@ -607,6 +607,30 @@ public partial class RushDirector : MonoBehaviour
     [Min(0.2f)]
     public float remixNinjaSitMax = 10f;
 
+    [Tooltip("The finale as a rotation: customers keep coming, and every Remix Rotation Gap seconds one big thing turns up " +
+             "(a ninja visit that blows up a pile and leaves, a Mafia heist or a spy, never the same one twice running). " +
+             "Off = the ninja stays the whole finale, with Remix Heists and the Remix Spy Gap as before.")]
+    public bool remixRotation = true;
+
+    [Min(1f)]
+    [Tooltip("Seconds from one big thing in the rotation to the next (it also waits while Remix Max Busy things are going on).")]
+    public float remixRotationGapMin = 5f;
+
+    [Min(1f)]
+    public float remixRotationGapMax = 10f;
+
+    [Min(1f)]
+    [Tooltip("A ninja visit in the rotation: how long it stays (it blows up a pile soon after it appears, then leaves).")]
+    public float remixNinjaVisitSeconds = 5f;
+
+    [Range(0f, 1f)]
+    [Tooltip("The finale: the chance each new customer is a kitten flood out of a vent instead (0 = none).")]
+    public float remixFloodChance = 0.1f;
+
+    [Min(0f)]
+    [Tooltip("Seconds after a flood starts before another may come from the Remix Flood Chance.")]
+    public float remixFloodCooldown = 20f;
+
     [Header("Vents")]
 
     [Tooltip("Cats can come in through the cafe's vents (objects named Vent... with a ...Lid inside): the lid swings open " +
@@ -1322,6 +1346,11 @@ public partial class RushDirector : MonoBehaviour
         orders.RemoveAll(o => o == null || !o.isHungry);
         if (orders.Count + droppingIn < current.cats)
         {
+            if (TryChanceFlood())
+            {
+                lastArrival = Time.time;
+                return;
+            }
             SendInCat();
         }
     }

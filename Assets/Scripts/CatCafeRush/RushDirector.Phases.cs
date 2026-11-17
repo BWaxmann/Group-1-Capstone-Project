@@ -151,17 +151,21 @@ public partial class RushDirector : MonoBehaviour
                     // spies drop in now and then, the Mafia cat strolls in, and a kitten flood pours out once
                     Haptics.PulseBoth(Haptics.Strength.Huge);
                     yield return WaitClockRoutine(1f);
-                    SummonNinja(true);
-                    if (ninja != null)
+                    nextChanceFloodAt = 0f;
+                    if (remixRotation)
                     {
-                        ninja.Configure(false, bossKnocksPerStop, remixNinjaSitMin, remixNinjaSitMax, ninjaExplodesPiles && ninja.piles.Count > 0);
+                        StartCoroutine(RemixRotationRoutine(phase));
                     }
-                    StartCoroutine(HeistsRoutine(phase, remixHeists, remixHeistGang));
+                    else
+                    {
+                        SummonRemixNinja();
+                        StartCoroutine(HeistsRoutine(phase, remixHeists, remixHeistGang));
+                        StartCoroutine(RemixSpiesRoutine(phase));
+                    }
                     if (remixFloodAt > 0)
                     {
                         StartCoroutine(RemixFloodRoutine(phase));
                     }
-                    StartCoroutine(RemixSpiesRoutine(phase));
                     float remixUntil = clock + Mathf.Max(0, phase.seconds - 1f - TidyBonusSeconds);
                     while (playing && clock < remixUntil)
                     {
@@ -362,6 +366,10 @@ public partial class RushDirector : MonoBehaviour
         {
             busy++;
         }
+        if (ninjaVisiting)
+        {
+            busy++;
+        }
         busy += SpyCat.active.Count;
         return busy;
     }
@@ -388,6 +396,114 @@ public partial class RushDirector : MonoBehaviour
             nextBigAt = Mathf.Max(nextBigAt, clock + remixBreather);
         }
         lastBusy = busy;
+    }
+
+    // ---------------- The finale as a rotation (Remix Rotation) ----------------
+
+    bool ninjaVisiting;
+    int lastRotation = -1;   // 0 ninja, 1 heist, 2 spy
+    static readonly string[] RotationNames = { "ninja", "heist", "spy" };
+
+    void SummonRemixNinja()
+    {
+        SummonNinja(true);
+        if (ninja != null)
+        {
+            ninja.Configure(false, bossKnocksPerStop, remixNinjaSitMin, remixNinjaSitMax, ninjaExplodesPiles && ninja.piles.Count > 0);
+        }
+    }
+
+    // Every few seconds one big thing: a ninja visit, a Mafia heist or a spy (not the one before, when another can go)
+    IEnumerator RemixRotationRoutine(Phase phase)
+    {
+        lastRotation = -1;
+        float end = clock + phase.seconds - TidyBonusSeconds;
+        float nextAt = clock + 2f;
+        while (playing && current == phase && !windingDown && clock < end - 6f)
+        {
+            if (clock < nextAt || BusyEvents() >= remixMaxBusy)
+            {
+                yield return null;
+                continue;
+            }
+            List<int> ready = new List<int>();
+            if (ninja != null && !ninja.gameObject.activeInHierarchy && !PropsUp())
+            {
+                ready.Add(0);
+            }
+            if (mafiaHeists && mafiaPrefab != null && tipJar != null && MafiaHeist.current == null && MayIntroduce(heistLine))
+            {
+                ready.Add(1);
+            }
+            if (CeilingVents().Exists(vent => !vent.busy) && MayIntroduce(SpyLine))
+            {
+                ready.Add(2);
+            }
+            if (ready.Count > 1)
+            {
+                ready.Remove(lastRotation);
+            }
+            if (ready.Count == 0)
+            {
+                yield return new WaitForSeconds(0.5f);
+                continue;
+            }
+            int pick = ready[Random.Range(0, ready.Count)];
+            bool started = false;
+            switch (pick)
+            {
+                case 0:
+                    StartCoroutine(NinjaVisitRoutine(phase));
+                    started = true;
+                    break;
+                case 1:
+                    StartHeist(remixHeistGang);
+                    started = MafiaHeist.current != null;
+                    break;
+                case 2:
+                    started = SendSpy() != null;
+                    break;
+            }
+            if (started)
+            {
+                Debug.Log($"[Cat Cafe Waves] Finale rotation: {RotationNames[pick]} at {clock:0}s.");
+                lastRotation = pick;
+                nextAt = clock + Random.Range(remixRotationGapMin, Mathf.Max(remixRotationGapMin, remixRotationGapMax));
+            }
+            else
+            {
+                yield return new WaitForSeconds(0.5f);
+            }
+        }
+    }
+
+    // The ninja blinks in, blows up a pile, and leaves
+    IEnumerator NinjaVisitRoutine(Phase phase)
+    {
+        ninjaVisiting = true;
+        SummonRemixNinja();
+        float until = clock + remixNinjaVisitSeconds;
+        while (playing && current == phase && !windingDown && clock < until && ninja != null && ninja.gameObject.activeInHierarchy)
+        {
+            yield return null;
+        }
+        if (ninja != null)
+        {
+            ninja.Leave();
+        }
+        ninjaVisiting = false;
+    }
+
+    static bool PropsUp()
+    {
+        foreach (FlyingProp prop in FlyingProp.airborne)
+        {
+            if (prop != null && (prop.state == FlyingProp.State.Flying || prop.state == FlyingProp.State.Held))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     // A big thing just started: in the finale, the next waits a breather
