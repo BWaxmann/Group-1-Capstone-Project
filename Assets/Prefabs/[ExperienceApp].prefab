@@ -951,6 +951,7 @@ MonoBehaviour:
     type: 3}
   launcherRight: {fileID: 573315912397353760}
   launcherLeft: {fileID: 120319723378119119}
+  launchersInHandsAtStart: 1
   treatsSpawner: {fileID: 0}
   treatsSpawnerPrefab: {fileID: 5150667049326835244, guid: 5bfce678b66ec5c4bbcf0c2bc4e70567,
     type: 3}
@@ -2056,6 +2057,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1501980177204792930, guid: 5a3d39c72e99c0d4691e7e528ed91244,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: d5508c1fa14cfc343901bf68f41f6820, type: 2}
     - target: {fileID: 1351770628280334394, guid: 5a3d39c72e99c0d4691e7e528ed91244,
         type: 3}
       propertyPath: m_Materials.Array.data[0]
