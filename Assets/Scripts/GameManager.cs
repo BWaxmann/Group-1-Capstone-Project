@@ -1172,6 +1172,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public int ApplyMultipliersToCoins(int coins)
+    {
+        return Mathf.FloorToInt(coins * scoreMultiplier * comboLevel);
+    }
+
     // True while the tips board runs: score changes stop popping up, and the tip jar's coins pop up as money instead
     [System.NonSerialized]
     public bool moneyPopups;

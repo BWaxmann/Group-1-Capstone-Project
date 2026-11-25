@@ -252,6 +252,7 @@ public class TipJar : MonoBehaviour
     {
         if (count > 0 && isActiveAndEnabled)
         {
+            count = GameManager.instance.ApplyMultipliersToCoins(count);
             CoinsChanged?.Invoke(from, count);
             StartCoroutine(CoinShowerRoutine(from, count));
         }
