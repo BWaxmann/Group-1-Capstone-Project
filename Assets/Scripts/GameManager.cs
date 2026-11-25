@@ -1159,7 +1159,8 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (scoreParticlePool != null)
+        // In the waves game the pop-ups show the tips instead (TipsBoard turns this on)
+        if (scoreParticlePool != null && !moneyPopups)
         {
             ScoreParticle scoreParticle = scoreParticlePool.GetObjectFromPool<ScoreParticle>(0);
             if (scoreParticle != null)
@@ -1168,6 +1169,25 @@ public class GameManager : MonoBehaviour
                 scoreParticle.Initialise(change, position);
 
             }
+        }
+    }
+
+    // True while the tips board runs: score changes stop popping up, and the tip jar's coins pop up as money instead
+    [System.NonSerialized]
+    public bool moneyPopups;
+
+    // A score-style pop-up with any text (green for a gain, red for a loss)
+    public void ShowPopup(string text, bool gain, Vector3 position)
+    {
+        if (scoreParticlePool == null)
+        {
+            return;
+        }
+        ScoreParticle scoreParticle = scoreParticlePool.GetObjectFromPool<ScoreParticle>(0);
+        if (scoreParticle != null)
+        {
+            scoreParticle.gameObject.SetActive(true);
+            scoreParticle.Show(text, gain, position);
         }
     }
 

@@ -244,11 +244,15 @@ public class TipJar : MonoBehaviour
         Destroy(coin);
     }
 
+    // Coins earned (+) or lost (-), and where: the tips board pops them up as money
+    public event System.Action<Vector3, int> CoinsChanged;
+
     // Coins pop out at `from` and arc into the jar one after another
     public void AddCoins(Vector3 from, int count)
     {
         if (count > 0 && isActiveAndEnabled)
         {
+            CoinsChanged?.Invoke(from, count);
             StartCoroutine(CoinShowerRoutine(from, count));
         }
     }
@@ -408,6 +412,10 @@ public class TipJar : MonoBehaviour
     {
         int lost = Mathf.Min(count, coins);
         coins -= lost;
+        if (lost > 0)
+        {
+            CoinsChanged?.Invoke(from, -lost);
+        }
         SetFill(coins / FullAfter);
         Vector3 away = transform.position - from;
         away.y = 0;

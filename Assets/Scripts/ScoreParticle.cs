@@ -20,22 +20,26 @@ public class ScoreParticle : MonoBehaviour
     {
         if (scoreValue > 0)
         {
-            scoreText.color = plusScoreColour;
-            scoreText.text = $"+{scoreValue}";
+            Show($"+{scoreValue}", true, position);
         }
         else if (scoreValue < 0)
         {
-            scoreText.color = minusScoreColour;
-            scoreText.text = scoreValue.ToString();
+            Show(scoreValue.ToString(), false, position);
         }
         else
         {
             Disappear();
-            return;
         }
+    }
 
+    // Any text, green for a gain and red for a loss (the waves game shows tips, e.g. "+$1.50")
+    public void Show(string text, bool gain, Vector3 position)
+    {
+        scoreText.color = gain ? plusScoreColour : minusScoreColour;
+        scoreText.text = text;
         transform.position = position;
 
+        CancelInvoke(nameof(Disappear));
         Invoke(nameof(Disappear), displayDuration);
     }
 

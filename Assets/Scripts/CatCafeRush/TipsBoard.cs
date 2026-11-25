@@ -72,14 +72,37 @@ public class TipsBoard : MonoBehaviour
         {
             board = game.gameObject.AddComponent<TipsBoard>();
         }
+        if (board.jar != null)
+        {
+            board.jar.CoinsChanged -= board.PopUpTips;
+        }
         board.game = game;
         board.jar = jar;
         board.settings = settings;
+        // The pop-ups show tips, not the old score
+        jar.CoinsChanged += board.PopUpTips;
+        game.moneyPopups = true;
         if (settings.fitToBoard)
         {
             board.Restyle();
         }
         return board;
+    }
+
+    void PopUpTips(Vector3 at, int coins)
+    {
+        if (game != null && coins != 0)
+        {
+            game.ShowPopup((coins > 0 ? "+" : "-") + Money(Mathf.Abs(coins)), coins > 0, at);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (jar != null)
+        {
+            jar.CoinsChanged -= PopUpTips;
+        }
     }
 
     string Money(int coins)
